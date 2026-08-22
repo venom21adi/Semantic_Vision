@@ -17,6 +17,7 @@ vi.mock('./api/client', async (importOriginal) => {
     getGraphState: vi.fn(),
     saveGraphState: vi.fn(),
     getDoc: vi.fn(),
+    getImpact: vi.fn(),
   }
 })
 
@@ -131,6 +132,28 @@ describe('App', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Document' }))
 
     await waitFor(() => expect(screen.getByText('# greet')).toBeInTheDocument())
+  })
+
+  it('fetches and displays impact analysis via the context menu, and jumps to a clicked caller', async () => {
+    mockedClient.getImpact.mockResolvedValue({
+      target: 'app.py::Greeter.greet',
+      callers: [{ id: 'app.py', depth: 1, direct: true }],
+      edges: [
+        { source: 'app.py', target: 'app.py::Greeter.greet', kind: 'calls', external: false, ambiguous: false },
+      ],
+      cycles: [],
+    })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
+
+    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+    expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
+
+    await user.click(screen.getByRole('button', { name: 'View caller app.py' }))
+
+    expect(screen.getByRole('heading', { name: 'app.py' })).toBeInTheDocument()
   })
 
   it('remembers the loaded path in localStorage and pre-fills it next time', async () => {

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from semantic_vision.analysis.impact import Caller
 from semantic_vision.models import Edge, Node, ParseError
 from semantic_vision.persistence.models import DocIndexEntry, NodePosition
 
@@ -52,3 +53,10 @@ class DocResponse(BaseModel):
     node_id: str
     markdown: str
     updated_at: str
+
+
+class ImpactResponse(BaseModel):
+    target: str
+    callers: list[Caller]
+    edges: list[Edge]
+    cycles: list[list[str]]

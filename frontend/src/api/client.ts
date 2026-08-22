@@ -4,6 +4,7 @@ import type {
   FunctionSourceResponse,
   GraphResponse,
   GraphStateResponse,
+  ImpactResponse,
   NodePosition,
   ParseRepoResponse,
 } from './types'
@@ -75,4 +76,10 @@ export function getDoc(path: string, id: string): Promise<DocResponse> {
   return request<DocResponse>(
     `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
   )
+}
+
+export function getImpact(path: string, id: string, maxDepth?: number): Promise<ImpactResponse> {
+  const params = new URLSearchParams({ path, id })
+  if (maxDepth !== undefined) params.set('max_depth', String(maxDepth))
+  return request<ImpactResponse>(`/api/impact?${params.toString()}`)
 }

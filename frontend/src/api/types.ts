@@ -69,3 +69,16 @@ export interface DocResponse {
   markdown: string
   updated_at: string
 }
+
+export interface Caller {
+  id: string
+  depth: number
+  direct: boolean
+}
+
+export interface ImpactResponse {
+  target: string
+  callers: Caller[]
+  edges: GraphEdge[]
+  cycles: string[][]
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -21,6 +21,16 @@ import { neighborNodeIds } from './transform'
 
 export const LARGE_GRAPH_NODE_THRESHOLD = 300
 export const AUTO_SAVE_POSITIONS_INTERVAL_MS = 60_000
+const DIMMED_NODE_OPACITY = 0.25
+const DIMMED_EDGE_OPACITY = 0.1
+
+export interface GraphHighlight {
+  nodeIds: ReadonlySet<string>
+  /** Keys of the form `${source}->${target}`, matching each edge's own
+   * source/target ids (kind-independent, since a highlighted chain is
+   * always a `calls` chain in practice). */
+  edgeKeys: ReadonlySet<string>
+}
 
 export interface GraphCanvasProps {
   nodes: Node<GraphNodeData>[]
@@ -34,6 +44,10 @@ export interface GraphCanvasProps {
    * positions (including any the user has dragged), so a moved layout
    * survives a reload. Omit to disable auto-save. */
   onAutoSavePositions?: (positions: Record<string, NodePosition>) => void
+  /** When set, dims every node/edge not part of it (e.g. an impact
+   * analysis caller chain) instead of resetting the canvas to just that
+   * subset -- so the rest of the graph stays visible for context. */
+  highlight?: GraphHighlight | null
 }
 
 function GraphCanvasInner({
@@ -45,12 +59,23 @@ function GraphCanvasInner({
   onImpactAnalysis,
   onViewSource,
   onAutoSavePositions,
+  highlight,
 }: GraphCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, , onEdgesChange] = useEdgesState(initialEdges)
   const [contextMenu, setContextMenu] = useState<ContextMenuTarget | null>(null)
   const { fitView } = useReactFlow()
   const nodesRef = useRef(nodes)
+
+  // The edges' own base style (color, dash pattern, external/ambiguous
+  // dimming) comes from `initialEdges` and must survive highlighting --
+  // restoring it exactly once a highlight clears, not just resetting to
+  // opacity 1.
+  const baseEdgeStyleById = useMemo(() => {
+    const map = new Map<string, Edge['style']>()
+    for (const edge of initialEdges) map.set(edge.id, edge.style)
+    return map
+  }, [initialEdges])
 
   useEffect(() => {
     setNodes(initialNodes)
@@ -79,17 +104,39 @@ function GraphCanvasInner({
     }
   }, [onAutoSavePositions])
 
-  // Keeps canvas selection in sync when it's driven from elsewhere (e.g. a
-  // future sidebar/tree selection), not just from clicks on the canvas.
-  useEffect(() => {
-    setNodes((current) =>
-      current.map((node) =>
-        node.selected === (node.id === selectedNodeId)
-          ? node
-          : { ...node, selected: node.id === selectedNodeId },
-      ),
-    )
-  }, [selectedNodeId, setNodes])
+  // Selection and highlight are rendered as a pure derivation of the raw
+  // `nodes`/`edges` state, `selectedNodeId`, and `highlight` -- not as
+  // effects that mutate that state -- so they can never fall out of sync
+  // with it (e.g. an unrelated prop change resetting `nodes` via the
+  // resync effect above, which would otherwise silently wipe an
+  // already-applied `selected`/highlight style until *that* prop next
+  // changes, since an effect only reruns when its own deps change).
+  const displayNodes = useMemo(
+    () =>
+      nodes.map((node) => {
+        const selected = node.id === selectedNodeId
+        const opacity = !highlight ? 1 : highlight.nodeIds.has(node.id) ? 1 : DIMMED_NODE_OPACITY
+        if (node.selected === selected && node.style?.opacity === opacity) return node
+        return { ...node, selected, style: { ...node.style, opacity } }
+      }),
+    [nodes, selectedNodeId, highlight],
+  )
+
+  const displayEdges = useMemo(
+    () =>
+      edges.map((edge) => {
+        const baseStyle = baseEdgeStyleById.get(edge.id)
+        const key = `${edge.source}->${edge.target}`
+        const opacity = !highlight
+          ? (baseStyle?.opacity ?? 1)
+          : highlight.edgeKeys.has(key)
+            ? 1
+            : DIMMED_EDGE_OPACITY
+        if (edge.style?.opacity === opacity) return edge
+        return { ...edge, style: { ...baseStyle, opacity } }
+      }),
+    [edges, highlight, baseEdgeStyleById],
+  )
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
@@ -127,7 +174,7 @@ function GraphCanvasInner({
     [onSelectNode],
   )
 
-  const isLargeGraph = nodes.length > LARGE_GRAPH_NODE_THRESHOLD
+  const isLargeGraph = displayNodes.length > LARGE_GRAPH_NODE_THRESHOLD
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -147,12 +194,12 @@ function GraphCanvasInner({
             fontSize: 13,
           }}
         >
-          Large graph: {nodes.length} nodes. Rendering may be slow.
+          Large graph: {displayNodes.length} nodes. Rendering may be slow.
         </div>
       )}
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={displayNodes}
+        edges={displayEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}

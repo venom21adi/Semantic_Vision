@@ -5,6 +5,7 @@ import {
   getFunctionSource,
   getGraph,
   getGraphState,
+  getImpact,
   parseRepo,
   saveGraphState,
 } from './api/client'
@@ -12,9 +13,11 @@ import type { GraphEdge, GraphNode, NodePosition, ParseErrorInfo } from './api/t
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
-import { GraphCanvas } from './graph/GraphCanvas'
+import { GraphCanvas, type GraphHighlight } from './graph/GraphCanvas'
 import { buildFlowGraph, scopeToFile } from './graph/transform'
 import { getLastRepoPath, setLastRepoPath } from './utils/localStorage'
+
+const EMPTY_GRAPH: { nodes: GraphNode[]; edges: GraphEdge[] } = { nodes: [], edges: [] }
 
 interface LoadedRepo {
   path: string
@@ -79,13 +82,33 @@ export default function App() {
     [repo, selectedNodeId],
   )
 
-  const scopedGraph = useMemo(() => {
-    if (!repo) return { nodes: [] as GraphNode[], edges: [] as GraphEdge[] }
-    if (view === 'file' && selectedNode && selectedNode.kind !== 'directory') {
-      return scopeToFile(repo.nodes, repo.edges, selectedNode.file)
-    }
+  // Split into two independently-memoized branches, each keyed only on
+  // what actually changes its content, rather than one memo keyed on
+  // `selectedNode` (which changes on every click, including clicks that
+  // don't affect the Codebase-view graph at all -- e.g. jumping between
+  // callers in the Impact Analysis pane). A single combined memo would
+  // return a fresh object identity on every such click, which cascades
+  // into `flowGraph` rebuilding brand-new node/edge objects via dagre,
+  // which in turn resets GraphCanvas's own node/edge state (see its
+  // `initialNodes` resync effect) -- discarding any live drag position
+  // and any highlight/selection styling until the next render catches up.
+  const codebaseGraph = useMemo(() => {
+    if (!repo) return EMPTY_GRAPH
     return { nodes: repo.nodes, edges: repo.edges }
-  }, [repo, view, selectedNode])
+  }, [repo])
+
+  const fileScopedGraph = useMemo(() => {
+    if (!repo || !selectedNode || selectedNode.kind === 'directory') return null
+    return scopeToFile(repo.nodes, repo.edges, selectedNode.file)
+    // Keyed on the file/kind, not the whole `selectedNode` object, so
+    // selecting a different symbol within the same already-scoped file
+    // doesn't recompute this (and doesn't need to -- the scoped node/edge
+    // set is identical either way). Deliberately not exhaustive: adding
+    // `selectedNode` itself back in would defeat the point.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repo, selectedNode?.file, selectedNode?.kind])
+
+  const scopedGraph = view === 'file' && fileScopedGraph ? fileScopedGraph : codebaseGraph
 
   const flowGraph = useMemo(() => {
     const built = buildFlowGraph(scopedGraph.nodes, scopedGraph.edges)
@@ -131,9 +154,28 @@ export default function App() {
     [repo],
   )
 
-  const handleImpactAnalysis = useCallback((_nodeId: string) => {
-    setPane({ kind: 'stub', feature: 'Impact Analysis' })
-  }, [])
+  const handleImpactAnalysis = useCallback(
+    async (nodeId: string) => {
+      if (!repo) return
+      setPane({ kind: 'impact', status: 'loading' })
+      try {
+        const result = await getImpact(repo.path, nodeId)
+        setPane({ kind: 'impact', status: 'loaded', result })
+      } catch (error) {
+        setPane({ kind: 'impact', status: 'error', message: errorMessage(error) })
+      }
+    },
+    [repo],
+  )
+
+  const impactHighlight: GraphHighlight | null = useMemo(() => {
+    if (pane?.kind !== 'impact' || pane.status !== 'loaded') return null
+    const { result } = pane
+    return {
+      nodeIds: new Set([result.target, ...result.callers.map((caller) => caller.id)]),
+      edgeKeys: new Set(result.edges.map((edge) => `${edge.source}->${edge.target}`)),
+    }
+  }, [pane])
 
   // Stable identity (no `repo` dependency, read via `repoRef` instead) so
   // GraphCanvas's auto-save interval effect doesn't tear down and recreate
@@ -221,10 +263,11 @@ export default function App() {
               onImpactAnalysis={handleImpactAnalysis}
               onViewSource={handleViewSource}
               onAutoSavePositions={handleAutoSavePositions}
+              highlight={impactHighlight}
             />
           )}
         </main>
-        <DetailsPanel selectedNode={selectedNode} pane={pane} />
+        <DetailsPanel selectedNode={selectedNode} pane={pane} onSelectCaller={setSelectedNodeId} />
       </div>
     </div>
   )

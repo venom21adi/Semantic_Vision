@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 
+from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.schemas import (
     DocIndexResponse,
@@ -11,6 +12,7 @@ from semantic_vision.api.schemas import (
     FunctionSourceResponse,
     GraphResponse,
     GraphStateResponse,
+    ImpactResponse,
     ParseRepoRequest,
     ParseRepoResponse,
     SaveGraphStateRequest,
@@ -99,6 +101,24 @@ def save_graph_state(request: SaveGraphStateRequest, path: str = Query(...)) -> 
     result = _get_cached(path)
     state = persistence.write_graph_state(Path(result.root), request.positions)
     return GraphStateResponse(positions=state.positions, updated_at=state.updated_at)
+
+
+@router.get("/impact", response_model=ImpactResponse)
+def get_impact(
+    path: str = Query(...),
+    id: str = Query(...),
+    max_depth: int = Query(DEFAULT_MAX_DEPTH, ge=1),
+) -> ImpactResponse:
+    result = _get_cached(path)
+    if not any(node.id == id for node in result.nodes):
+        raise HTTPException(status_code=404, detail=f"Node not found: {id}")
+
+    reverse_index = cache.get_reverse_caller_index(path)
+    assert reverse_index is not None, "reverse index is built alongside the cached parse result"
+    impact = find_upstream_callers(id, reverse_index, max_depth=max_depth)
+    return ImpactResponse(
+        target=impact.target, callers=impact.callers, edges=impact.edges, cycles=impact.cycles
+    )
 
 
 @router.get("/docs", response_model=DocIndexResponse)

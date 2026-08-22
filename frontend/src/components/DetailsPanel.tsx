@@ -1,4 +1,4 @@
-import type { GraphNode } from '../api/types'
+import type { Caller, GraphNode, ImpactResponse } from '../api/types'
 
 export type ActivePane =
   | { kind: 'source'; status: 'loading' }
@@ -8,15 +8,18 @@ export type ActivePane =
   | { kind: 'doc'; status: 'loaded'; markdown: string }
   | { kind: 'doc'; status: 'not-found' }
   | { kind: 'doc'; status: 'error'; message: string }
-  | { kind: 'stub'; feature: 'Impact Analysis' }
+  | { kind: 'impact'; status: 'loading' }
+  | { kind: 'impact'; status: 'loaded'; result: ImpactResponse }
+  | { kind: 'impact'; status: 'error'; message: string }
   | null
 
 interface DetailsPanelProps {
   selectedNode: GraphNode | null
   pane: ActivePane
+  onSelectCaller: (nodeId: string) => void
 }
 
-export function DetailsPanel({ selectedNode, pane }: DetailsPanelProps) {
+export function DetailsPanel({ selectedNode, pane, onSelectCaller }: DetailsPanelProps) {
   return (
     <aside
       style={{
@@ -106,12 +109,97 @@ export function DetailsPanel({ selectedNode, pane }: DetailsPanelProps) {
         </div>
       )}
 
-      {pane?.kind === 'stub' && (
+      {pane?.kind === 'impact' && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>{pane.feature}</h3>
-          <p style={{ color: '#94a3b8' }}>{pane.feature} is not implemented yet.</p>
+          <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>Impact Analysis</h3>
+          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'error' && (
+            <p role="alert" style={{ color: '#fca5a5' }}>
+              {pane.message}
+            </p>
+          )}
+          {pane.status === 'loaded' && (
+            <ImpactCallers result={pane.result} onSelectCaller={onSelectCaller} />
+          )}
         </div>
       )}
     </aside>
+  )
+}
+
+function ImpactCallers({
+  result,
+  onSelectCaller,
+}: {
+  result: ImpactResponse
+  onSelectCaller: (nodeId: string) => void
+}) {
+  if (result.callers.length === 0) {
+    return <p style={{ color: '#94a3b8' }}>No callers found.</p>
+  }
+
+  const direct = result.callers.filter((caller) => caller.direct)
+  const transitive = result.callers.filter((caller) => !caller.direct)
+
+  return (
+    <div>
+      {result.cycles.length > 0 && (
+        <p role="alert" style={{ color: '#fca5a5', margin: '0 0 8px' }}>
+          Circular call chain detected.
+        </p>
+      )}
+      {direct.length > 0 && (
+        <CallerGroup title="Direct callers" callers={direct} onSelectCaller={onSelectCaller} />
+      )}
+      {transitive.length > 0 && (
+        <CallerGroup
+          title="Transitive callers"
+          callers={transitive}
+          onSelectCaller={onSelectCaller}
+        />
+      )}
+    </div>
+  )
+}
+
+function CallerGroup({
+  title,
+  callers,
+  onSelectCaller,
+}: {
+  title: string
+  callers: Caller[]
+  onSelectCaller: (nodeId: string) => void
+}) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <h4 style={{ fontSize: 11, textTransform: 'uppercase', color: '#94a3b8', margin: '0 0 4px' }}>
+        {title}
+      </h4>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        {callers.map((caller) => (
+          <li key={caller.id}>
+            <button
+              type="button"
+              aria-label={`View caller ${caller.id}`}
+              onClick={() => onSelectCaller(caller.id)}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                background: 'transparent',
+                border: 'none',
+                color: '#f8fafc',
+                padding: '4px 0',
+                cursor: 'pointer',
+                fontSize: 12,
+              }}
+            >
+              {caller.id} <span style={{ color: '#64748b' }}>(depth {caller.depth})</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

@@ -243,6 +243,65 @@ def test_doc_returns_saved_markdown(temp_repo: Path):
     assert body["markdown"] == "# greet\n\nReturns 1."
 
 
+def test_impact_requires_prior_parse():
+    resp = client.get(
+        "/api/impact", params={"path": str(FIXTURES / "simple_repo"), "id": "app.py::Greeter.greet"}
+    )
+
+    assert resp.status_code == 404
+
+
+def test_impact_missing_node_returns_404():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/impact", params={"path": repo_path, "id": "app.py::DoesNotExist"})
+
+    assert resp.status_code == 404
+
+
+def test_impact_with_no_callers_returns_empty_result():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/impact", params={"path": repo_path, "id": "app.py::Greeter.greet"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["target"] == "app.py::Greeter.greet"
+    assert body["callers"] == []
+    assert body["edges"] == []
+    assert body["cycles"] == []
+
+
+def test_impact_reports_a_circular_call_chain_end_to_end():
+    repo_path = str(FIXTURES / "circular_calls_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/impact", params={"path": repo_path, "id": "a.py::func_a"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["target"] == "a.py::func_a"
+    callers_by_id = {c["id"]: c for c in body["callers"]}
+    assert callers_by_id["c.py::func_c"] == {"id": "c.py::func_c", "depth": 1, "direct": True}
+    assert callers_by_id["b.py::func_b"] == {"id": "b.py::func_b", "depth": 2, "direct": False}
+    assert body["cycles"] == [["a.py::func_a", "b.py::func_b"]]
+
+
+def test_impact_max_depth_limits_transitive_callers():
+    repo_path = str(FIXTURES / "circular_calls_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/impact",
+        params={"path": repo_path, "id": "a.py::func_a", "max_depth": 1},
+    )
+
+    assert resp.status_code == 200
+    assert {c["id"] for c in resp.json()["callers"]} == {"c.py::func_c"}
+
+
 def test_cors_configured_for_vite_dev_server():
     resp = client.options(
         "/api/graph",
