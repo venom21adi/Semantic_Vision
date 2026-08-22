@@ -28,6 +28,11 @@ about your code leaves your computer.
   upstream that calls it, direct vs. transitive, with circular call
   chains flagged rather than silently mishandled, and the whole chain
   highlighted on the graph.
+- **AI-generated documentation** — right-click any function to generate
+  Markdown docs (Purpose, Parameters, Returns, Side Effects, Notes) from
+  its source plus its direct callers/callees and parent class, streamed
+  live from your choice of provider — a local [Ollama](https://ollama.com)
+  model, OpenAI, or Anthropic — and saved back into the repo.
 - **Persistent layout** — drag nodes around; positions and analysis
   state are saved locally (inside the inspected repo) and restored the
   next time you open it.
@@ -47,7 +52,7 @@ and what's still ahead:
 | Searchable file/function tree | ✅ Available |
 | Persisted layout & view state | ✅ Available |
 | Impact analysis (upstream callers, cycle detection) | ✅ Available |
-| AI-generated function documentation | 🚧 Planned |
+| AI-generated function documentation | ✅ Available |
 | Function-level execution flowcharts | 🚧 Planned |
 | Docker packaging / one-command setup | 🚧 Planned |
 | Multi-language support (beyond Python) | 🚧 Planned |
@@ -77,6 +82,26 @@ npm run dev
 Then open `http://localhost:5173`, enter the absolute path to any local
 Python repository, and click **Load**.
 
+## AI documentation setup
+
+Right-click any function and choose **Document** to generate Markdown
+docs for it. Pick a provider in the panel that opens — no extra setup is
+required to try it, but each provider needs one of the following before
+generation will work:
+
+- **Ollama** (local, free, private) — install [Ollama](https://ollama.com),
+  run `ollama serve`, and pull a model: `ollama pull llama3`. The backend
+  talks to it at `http://localhost:11434` by default.
+- **OpenAI** — set an `OPENAI_API_KEY` environment variable before
+  starting the backend. Uses `gpt-4o-mini` by default.
+- **Anthropic** — set an `ANTHROPIC_API_KEY` environment variable before
+  starting the backend. Uses `claude-haiku-4-5` by default.
+
+Any of the three default model names can be overridden with
+`SEMANTIC_VISION_OLLAMA_MODEL`, `SEMANTIC_VISION_OPENAI_MODEL`, or
+`SEMANTIC_VISION_ANTHROPIC_MODEL`. Generated docs are only written to
+disk when you click **Save** — nothing is persisted automatically.
+
 ## How it works
 
 Semantic Vision has two parts:
@@ -84,7 +109,12 @@ Semantic Vision has two parts:
 - **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
   repository with Python's `ast` module, resolves imports and call sites
   into a graph of nodes and edges, and serves it over a small REST API.
-  Parsing is purely static: your code is never executed.
+  Parsing is purely static: your code is never executed. AI
+  documentation is generated separately, on demand, via
+  [LiteLLM](https://docs.litellm.ai/) against whichever provider you
+  pick — only the target function's source, its direct callers/callees'
+  signatures, and its parent class header are sent, never the whole
+  repository.
 - **Frontend** (`frontend/`) — a React + TypeScript app that renders the
   graph with [`@xyflow/react`](https://reactflow.dev/) and `dagre`
   auto-layout, and persists your layout and saved analysis state in a
