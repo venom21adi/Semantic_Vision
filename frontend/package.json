@@ -13,8 +13,12 @@
   "dependencies": {
     "@xyflow/react": "^12.11.3",
     "dagre": "^0.8.5",
+    "highlight.js": "^11.12.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",

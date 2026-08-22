@@ -1,5 +1,6 @@
 import type {
   DocIndexResponse,
+  DocProvider,
   DocResponse,
   FunctionSourceResponse,
   GraphResponse,
@@ -82,4 +83,45 @@ export function getImpact(path: string, id: string, maxDepth?: number): Promise<
   const params = new URLSearchParams({ path, id })
   if (maxDepth !== undefined) params.set('max_depth', String(maxDepth))
   return request<ImpactResponse>(`/api/impact?${params.toString()}`)
+}
+
+export function saveDoc(path: string, id: string, markdown: string): Promise<DocResponse> {
+  return request<DocResponse>(
+    `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+    { method: 'POST', body: JSON.stringify({ markdown }) },
+  )
+}
+
+export async function* streamDoc(
+  path: string,
+  id: string,
+  provider: DocProvider,
+  signal?: AbortSignal,
+): AsyncGenerator<string> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/generate-doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider }),
+      signal,
+    },
+  )
+
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null)
+    const detail =
+      body && typeof body === 'object' && 'detail' in body ? String(body.detail) : undefined
+    throw new ApiError(response.status, detail ?? response.statusText)
+  }
+
+  const reader = response.body?.getReader()
+  if (!reader) return
+
+  const decoder = new TextDecoder()
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) return
+    yield decoder.decode(value, { stream: true })
+  }
 }

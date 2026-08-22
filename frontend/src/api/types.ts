@@ -82,3 +82,5 @@ export interface ImpactResponse {
   edges: GraphEdge[]
   cycles: string[][]
 }
+
+export type DocProvider = 'ollama' | 'openai' | 'anthropic'

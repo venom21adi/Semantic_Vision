@@ -3,18 +3,23 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 
+from semantic_vision.ai.context import assemble_context
+from semantic_vision.ai.providers import ProviderError, stream_documentation
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.schemas import (
     DocIndexResponse,
     DocResponse,
     FunctionSourceResponse,
+    GenerateDocRequest,
     GraphResponse,
     GraphStateResponse,
     ImpactResponse,
     ParseRepoRequest,
     ParseRepoResponse,
+    SaveDocRequest,
     SaveGraphStateRequest,
 )
 from semantic_vision.models import NodeKind, ParseResult
@@ -141,3 +146,31 @@ def get_doc(path: str = Query(...), id: str = Query(...)) -> DocResponse:
         raise HTTPException(status_code=404, detail=f"No saved documentation for: {id}")
 
     return DocResponse(node_id=id, markdown=markdown, updated_at=entry.updated_at)
+
+
+@router.post("/generate-doc")
+def generate_doc(
+    request: GenerateDocRequest, path: str = Query(...), id: str = Query(...)
+) -> StreamingResponse:
+    result = _get_cached(path)
+    node = next((n for n in result.nodes if n.id == id), None)
+    if node is None or node.kind != NodeKind.FUNCTION:
+        raise HTTPException(status_code=404, detail=f"Function not found: {id}")
+
+    context = assemble_context(result, id)
+    try:
+        stream = stream_documentation(request.provider, context)
+    except ProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return StreamingResponse(stream, media_type="text/plain")
+
+
+@router.post("/doc", response_model=DocResponse)
+def save_doc(request: SaveDocRequest, path: str = Query(...), id: str = Query(...)) -> DocResponse:
+    result = _get_cached(path)
+    if not any(n.id == id for n in result.nodes):
+        raise HTTPException(status_code=404, detail=f"Node not found: {id}")
+
+    entry = persistence.write_doc(Path(result.root), id, request.markdown)
+    return DocResponse(node_id=id, markdown=request.markdown, updated_at=entry.updated_at)

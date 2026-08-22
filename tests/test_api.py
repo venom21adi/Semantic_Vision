@@ -302,6 +302,100 @@ def test_impact_max_depth_limits_transitive_callers():
     assert {c["id"] for c in resp.json()["callers"]} == {"c.py::func_c"}
 
 
+def test_generate_doc_requires_prior_parse():
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": str(FIXTURES / "simple_repo"), "id": "app.py::Greeter.greet"},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_generate_doc_missing_node_returns_404():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": repo_path, "id": "app.py::DoesNotExist"},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_generate_doc_streams_content(monkeypatch):
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def fake_stream(provider, context):
+        assert provider == "ollama"
+        yield "# greet\n\n"
+        yield "Documentation."
+
+    monkeypatch.setattr(routes_module, "stream_documentation", fake_stream)
+
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": repo_path, "id": "app.py::Greeter.greet"},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.text == "# greet\n\nDocumentation."
+
+
+def test_generate_doc_provider_failure_returns_502(monkeypatch):
+    from semantic_vision.ai.providers import ProviderError
+
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def failing_stream(provider, context):
+        raise ProviderError("boom")
+
+    monkeypatch.setattr(routes_module, "stream_documentation", failing_stream)
+
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": repo_path, "id": "app.py::Greeter.greet"},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 502
+
+
+def test_save_doc_round_trips(temp_repo: Path):
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    save_resp = client.post(
+        "/api/doc",
+        params={"path": repo_path, "id": "app.py::greet"},
+        json={"markdown": "# greet\n\nReturns 1."},
+    )
+    assert save_resp.status_code == 200
+    assert save_resp.json()["markdown"] == "# greet\n\nReturns 1."
+
+    get_resp = client.get("/api/doc", params={"path": repo_path, "id": "app.py::greet"})
+    assert get_resp.status_code == 200
+    assert get_resp.json()["markdown"] == "# greet\n\nReturns 1."
+
+
+def test_save_doc_missing_node_returns_404(temp_repo: Path):
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/doc",
+        params={"path": repo_path, "id": "app.py::DoesNotExist"},
+        json={"markdown": "# nope"},
+    )
+
+    assert resp.status_code == 404
+
+
 def test_cors_configured_for_vite_dev_server():
     resp = client.options(
         "/api/graph",

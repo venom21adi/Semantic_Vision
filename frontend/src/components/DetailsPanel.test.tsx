@@ -14,16 +14,38 @@ const node: GraphNode = {
 }
 
 const noop = vi.fn()
+const docProps = {
+  docProvider: 'ollama' as const,
+  onDocProviderChange: noop,
+  onGenerateDoc: noop,
+  onSaveDoc: noop,
+}
 
 describe('DetailsPanel', () => {
   it('shows a placeholder when nothing is selected', () => {
-    render(<DetailsPanel selectedNode={null} pane={null} onSelectCaller={noop} onClosePane={noop} />)
+    render(
+      <DetailsPanel
+        selectedNode={null}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+      />,
+    )
 
     expect(screen.getByText(/select a node/i)).toBeInTheDocument()
   })
 
   it('shows the selected node metadata', () => {
-    render(<DetailsPanel selectedNode={node} pane={null} onSelectCaller={noop} onClosePane={noop} />)
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+      />,
+    )
 
     expect(screen.getByRole('heading', { name: 'greet' })).toBeInTheDocument()
     expect(screen.getByText('function')).toBeInTheDocument()
@@ -38,6 +60,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'source', status: 'loaded', source: 'def greet(): ...' }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
@@ -51,23 +74,25 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'source', status: 'error', message: 'boom' }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
     expect(screen.getByRole('alert')).toHaveTextContent('boom')
   })
 
-  it('renders loaded documentation', () => {
+  it('renders loaded documentation as rendered markdown', () => {
     render(
       <DetailsPanel
         selectedNode={node}
-        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet' }}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: true }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
-    expect(screen.getByText('# greet')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument()
   })
 
   it('renders a not-found message when no documentation is saved', () => {
@@ -77,6 +102,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'doc', status: 'not-found' }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
@@ -90,6 +116,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'doc', status: 'error', message: 'boom' }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
@@ -104,6 +131,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
@@ -126,6 +154,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
@@ -151,6 +180,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={onSelectCaller}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 
@@ -169,6 +199,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={noop}
         onClosePane={onClosePane}
+        {...docProps}
       />,
     )
 
@@ -184,6 +215,7 @@ describe('DetailsPanel', () => {
         pane={{ kind: 'impact', status: 'error', message: 'boom' }}
         onSelectCaller={noop}
         onClosePane={noop}
+        {...docProps}
       />,
     )
 

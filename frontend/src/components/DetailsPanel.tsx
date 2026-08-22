@@ -1,12 +1,14 @@
-import type { Caller, GraphNode, ImpactResponse } from '../api/types'
+import type { Caller, DocProvider, GraphNode, ImpactResponse } from '../api/types'
+import { DocPane } from './DocPane'
 
 export type ActivePane =
   | { kind: 'source'; status: 'loading' }
   | { kind: 'source'; status: 'loaded'; source: string }
   | { kind: 'source'; status: 'error'; message: string }
   | { kind: 'doc'; status: 'loading' }
-  | { kind: 'doc'; status: 'loaded'; markdown: string }
   | { kind: 'doc'; status: 'not-found' }
+  | { kind: 'doc'; status: 'generating'; markdown: string }
+  | { kind: 'doc'; status: 'loaded'; markdown: string; saved: boolean }
   | { kind: 'doc'; status: 'error'; message: string }
   | { kind: 'impact'; status: 'loading' }
   | { kind: 'impact'; status: 'loaded'; result: ImpactResponse }
@@ -18,9 +20,22 @@ interface DetailsPanelProps {
   pane: ActivePane
   onSelectCaller: (nodeId: string) => void
   onClosePane: () => void
+  docProvider: DocProvider
+  onDocProviderChange: (provider: DocProvider) => void
+  onGenerateDoc: () => void
+  onSaveDoc: () => void
 }
 
-export function DetailsPanel({ selectedNode, pane, onSelectCaller, onClosePane }: DetailsPanelProps) {
+export function DetailsPanel({
+  selectedNode,
+  pane,
+  onSelectCaller,
+  onClosePane,
+  docProvider,
+  onDocProviderChange,
+  onGenerateDoc,
+  onSaveDoc,
+}: DetailsPanelProps) {
   return (
     <aside
       style={{
@@ -82,30 +97,14 @@ export function DetailsPanel({ selectedNode, pane, onSelectCaller, onClosePane }
         <div style={{ marginTop: 16 }}>
           <PaneHeader title="Document" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
-          {pane.status === 'error' && (
-            <p role="alert" style={{ color: '#fca5a5' }}>
-              {pane.message}
-            </p>
-          )}
-          {pane.status === 'not-found' && (
-            <p style={{ color: '#94a3b8' }}>
-              No saved documentation yet. AI documentation generation is not implemented yet.
-            </p>
-          )}
-          {pane.status === 'loaded' && (
-            <pre
-              style={{
-                background: '#0f172a',
-                border: '1px solid #1e293b',
-                borderRadius: 6,
-                padding: 10,
-                overflowX: 'auto',
-                fontSize: 12,
-                whiteSpace: 'pre-wrap',
-              }}
-            >
-              {pane.markdown}
-            </pre>
+          {pane.status !== 'loading' && (
+            <DocPane
+              pane={pane}
+              provider={docProvider}
+              onProviderChange={onDocProviderChange}
+              onGenerate={onGenerateDoc}
+              onSave={onSaveDoc}
+            />
           )}
         </div>
       )}

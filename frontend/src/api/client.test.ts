@@ -1,5 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, getFunctionSource, getGraph, parseRepo } from './client'
+import { ApiError, getFunctionSource, getGraph, parseRepo, saveDoc, streamDoc } from './client'
+
+function streamFrom(chunks: string[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder()
+  let index = 0
+  return new ReadableStream({
+    pull(controller) {
+      if (index < chunks.length) {
+        controller.enqueue(encoder.encode(chunks[index]))
+        index += 1
+      } else {
+        controller.close()
+      }
+    },
+  })
+}
 
 const originalFetch = globalThis.fetch
 
@@ -62,5 +77,56 @@ describe('api client', () => {
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
     await expect(parseRepo('/bad')).rejects.toBeInstanceOf(ApiError)
+  })
+
+  it('streamDoc POSTs the provider and yields decoded chunks', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(streamFrom(['Hello', ' world']), { status: 200 }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const chunks: string[] = []
+    for await (const chunk of streamDoc('/repo', 'app.py::greet', 'ollama')) {
+      chunks.push(chunk)
+    }
+
+    expect(chunks).toEqual(['Hello', ' world'])
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(String(url)).toContain('/api/generate-doc')
+    expect(init?.method).toBe('POST')
+    expect(JSON.parse(init?.body as string)).toEqual({ provider: 'ollama' })
+  })
+
+  it('streamDoc throws ApiError with the backend detail on non-2xx', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ detail: 'boom' }), { status: 502 }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const iterate = async () => {
+      for await (const _chunk of streamDoc('/repo', 'app.py::greet', 'ollama')) {
+        // never reached
+      }
+    }
+
+    await expect(iterate()).rejects.toMatchObject({ status: 502, message: 'boom' })
+  })
+
+  it('saveDoc POSTs the markdown and returns the parsed JSON', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ node_id: 'app.py::greet', markdown: '# greet', updated_at: 'now' }),
+        { status: 200 },
+      ),
+    )
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await saveDoc('/repo', 'app.py::greet', '# greet')
+
+    expect(result.markdown).toBe('# greet')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(String(url)).toContain('/api/doc')
+    expect(init?.method).toBe('POST')
+    expect(JSON.parse(init?.body as string)).toEqual({ markdown: '# greet' })
   })
 })

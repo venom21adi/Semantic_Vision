@@ -7,9 +7,11 @@ import {
   getGraphState,
   getImpact,
   parseRepo,
+  saveDoc,
   saveGraphState,
+  streamDoc,
 } from './api/client'
-import type { GraphEdge, GraphNode, NodePosition, ParseErrorInfo } from './api/types'
+import type { DocProvider, GraphEdge, GraphNode, NodePosition, ParseErrorInfo } from './api/types'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
@@ -42,11 +44,28 @@ export default function App() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [pane, setPane] = useState<ActivePane>(null)
   const [view, setView] = useState<GraphView>('codebase')
+  const [docProvider, setDocProvider] = useState<DocProvider>('ollama')
 
   const repoRef = useRef(repo)
   useEffect(() => {
     repoRef.current = repo
   }, [repo])
+
+  const paneRef = useRef(pane)
+  useEffect(() => {
+    paneRef.current = pane
+  }, [pane])
+
+  // Tracks the in-flight doc-generation request (if any) so navigating
+  // away mid-stream -- selecting a different node, closing the pane, or
+  // starting a fresh generation -- can cancel it instead of leaving a
+  // dangling fetch that keeps calling `setPane` for a pane the user has
+  // already left.
+  const generationRef = useRef<AbortController | null>(null)
+  const cancelGeneration = useCallback(() => {
+    generationRef.current?.abort()
+    generationRef.current = null
+  }, [])
 
   const handleLoad = useCallback(async (path: string) => {
     setLoading(true)
@@ -139,10 +158,11 @@ export default function App() {
   const handleDocument = useCallback(
     async (nodeId: string) => {
       if (!repo) return
+      cancelGeneration()
       setPane({ kind: 'doc', status: 'loading' })
       try {
         const result = await getDoc(repo.path, nodeId)
-        setPane({ kind: 'doc', status: 'loaded', markdown: result.markdown })
+        setPane({ kind: 'doc', status: 'loaded', markdown: result.markdown, saved: true })
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           setPane({ kind: 'doc', status: 'not-found' })
@@ -151,8 +171,45 @@ export default function App() {
         }
       }
     },
-    [repo],
+    [repo, cancelGeneration],
   )
+
+  const handleGenerateDoc = useCallback(async () => {
+    if (!repo || !selectedNodeId) return
+    cancelGeneration()
+    const controller = new AbortController()
+    generationRef.current = controller
+
+    setPane({ kind: 'doc', status: 'generating', markdown: '' })
+    try {
+      let markdown = ''
+      for await (const chunk of streamDoc(repo.path, selectedNodeId, docProvider, controller.signal)) {
+        // A chunk can arrive after `abort()` was already called (the
+        // underlying fetch/reader hasn't rejected yet) -- checking here,
+        // not just after the loop, stops it from being applied to a pane
+        // that may since belong to a different node or action.
+        if (controller.signal.aborted) return
+        markdown += chunk
+        setPane({ kind: 'doc', status: 'generating', markdown })
+      }
+      if (controller.signal.aborted) return
+      setPane({ kind: 'doc', status: 'loaded', markdown, saved: false })
+    } catch (error) {
+      if (controller.signal.aborted) return
+      setPane({ kind: 'doc', status: 'error', message: errorMessage(error) })
+    }
+  }, [repo, selectedNodeId, docProvider, cancelGeneration])
+
+  const handleSaveDoc = useCallback(async () => {
+    const current = paneRef.current
+    if (!repo || !selectedNodeId || current?.kind !== 'doc' || current.status !== 'loaded') return
+    try {
+      await saveDoc(repo.path, selectedNodeId, current.markdown)
+      setPane({ kind: 'doc', status: 'loaded', markdown: current.markdown, saved: true })
+    } catch (error) {
+      setPane({ kind: 'doc', status: 'error', message: errorMessage(error) })
+    }
+  }, [repo, selectedNodeId])
 
   const handleImpactAnalysis = useCallback(
     async (nodeId: string) => {
@@ -173,12 +230,19 @@ export default function App() {
   // Analysis/Document/Source pane -- and the graph highlighting that
   // comes with it -- has an obvious way out instead of staying stuck
   // until some other context-menu action happens to replace it.
-  const handleSelectNode = useCallback((nodeId: string | null) => {
-    setSelectedNodeId(nodeId)
-    if (nodeId === null) setPane(null)
-  }, [])
+  const handleSelectNode = useCallback(
+    (nodeId: string | null) => {
+      cancelGeneration()
+      setSelectedNodeId(nodeId)
+      if (nodeId === null) setPane(null)
+    },
+    [cancelGeneration],
+  )
 
-  const handleClosePane = useCallback(() => setPane(null), [])
+  const handleClosePane = useCallback(() => {
+    cancelGeneration()
+    setPane(null)
+  }, [cancelGeneration])
 
   const impactHighlight: GraphHighlight | null = useMemo(() => {
     if (pane?.kind !== 'impact' || pane.status !== 'loaded') return null
@@ -284,6 +348,10 @@ export default function App() {
           pane={pane}
           onSelectCaller={setSelectedNodeId}
           onClosePane={handleClosePane}
+          docProvider={docProvider}
+          onDocProviderChange={setDocProvider}
+          onGenerateDoc={handleGenerateDoc}
+          onSaveDoc={handleSaveDoc}
         />
       </div>
     </div>

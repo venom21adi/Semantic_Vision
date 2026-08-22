@@ -5,6 +5,8 @@ the wire format, per the build plan's API contracts.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel
 
 from semantic_vision.analysis.impact import Caller
@@ -53,6 +55,14 @@ class DocResponse(BaseModel):
     node_id: str
     markdown: str
     updated_at: str
+
+
+class GenerateDocRequest(BaseModel):
+    provider: Literal["ollama", "openai", "anthropic"]
+
+
+class SaveDocRequest(BaseModel):
+    markdown: str
 
 
 class ImpactResponse(BaseModel):

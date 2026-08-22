@@ -17,6 +17,8 @@ vi.mock('./api/client', async (importOriginal) => {
     getGraphState: vi.fn(),
     saveGraphState: vi.fn(),
     getDoc: vi.fn(),
+    saveDoc: vi.fn(),
+    streamDoc: vi.fn(),
     getImpact: vi.fn(),
   }
 })
@@ -131,7 +133,90 @@ describe('App', () => {
     fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
     await user.click(screen.getByRole('menuitem', { name: 'Document' }))
 
-    await waitFor(() => expect(screen.getByText('# greet')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument(),
+    )
+  })
+
+  it('generates documentation by streaming, then saves it', async () => {
+    mockedClient.getDoc.mockRejectedValueOnce(new client.ApiError(404, 'No saved documentation'))
+    mockedClient.streamDoc.mockReturnValueOnce(
+      (async function* () {
+        yield '# greet\n\n'
+        yield 'Returns a greeting.'
+      })(),
+    )
+    mockedClient.saveDoc.mockResolvedValue({
+      node_id: 'app.py::Greeter.greet',
+      markdown: '# greet\n\nReturns a greeting.',
+      updated_at: '2026-01-01T00:00:00+00:00',
+    })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Document' }))
+    await waitFor(() => expect(screen.getByText(/no saved documentation yet/i)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /generate/i }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument(),
+    )
+    expect(mockedClient.streamDoc).toHaveBeenCalledWith(
+      '/repo',
+      'app.py::Greeter.greet',
+      'ollama',
+      expect.anything(),
+    )
+
+    const saveButton = screen.getByRole('button', { name: 'Save' })
+    await user.click(saveButton)
+
+    await waitFor(() => expect(mockedClient.saveDoc).toHaveBeenCalledWith(
+      '/repo',
+      'app.py::Greeter.greet',
+      '# greet\n\nReturns a greeting.',
+    ))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saved' })).toBeInTheDocument())
+  })
+
+  it('ignores stream chunks that arrive after generation is cancelled by switching nodes', async () => {
+    mockedClient.getDoc.mockRejectedValueOnce(new client.ApiError(404, 'No saved documentation'))
+
+    let releaseSecondChunk!: () => void
+    const gate = new Promise<void>((resolve) => {
+      releaseSecondChunk = resolve
+    })
+    mockedClient.streamDoc.mockReturnValueOnce(
+      (async function* () {
+        yield '# greet\n\n'
+        await gate
+        yield 'stale content that must never render'
+      })(),
+    )
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Document' }))
+    await waitFor(() => expect(screen.getByText(/no saved documentation yet/i)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /generate/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument(),
+    )
+
+    const signal = mockedClient.streamDoc.mock.calls[0][3]
+    expect(signal?.aborted).toBe(false)
+
+    // Selecting a different node cancels the in-flight generation
+    // (App.tsx's `handleSelectNode` -> `cancelGeneration`).
+    await user.click(screen.getByTestId('rf__node-app.py'))
+    expect(signal?.aborted).toBe(true)
+
+    releaseSecondChunk()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.queryByText(/stale content/)).not.toBeInTheDocument()
   })
 
   it('fetches and displays impact analysis via the context menu, and jumps to a clicked caller', async () => {
