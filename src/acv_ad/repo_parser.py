@@ -5,6 +5,7 @@ a deterministic `ParseResult`.
 from __future__ import annotations
 
 import ast
+import os
 from pathlib import Path
 
 from acv_ad.models import ParseError, ParseResult
@@ -19,6 +20,8 @@ def parse_repository(root: str | Path) -> ParseResult:
     root_path = Path(root)
     if not root_path.is_dir():
         raise NotADirectoryError(f"Not a directory: {root_path}")
+    if not os.access(root_path, os.R_OK):
+        raise PermissionError(f"Directory is not readable: {root_path}")
     root_path = root_path.resolve()
 
     files = discover_python_files(root_path)

@@ -144,6 +144,25 @@ def test_missing_directory_raises():
         parse_repository(FIXTURES / "does_not_exist")
 
 
+def test_unreadable_directory_raises():
+    """Windows ACLs don't reliably honor POSIX-style chmod, so a real
+    unreadable directory isn't a portable way to exercise this path --
+    the `os.access` check itself is monkeypatched instead."""
+    import acv_ad.repo_parser as repo_parser_module
+
+    original_access = repo_parser_module.os.access
+
+    def denied(path, mode):
+        if Path(path) == (FIXTURES / "simple_repo"):
+            return False
+        return original_access(path, mode)
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(repo_parser_module.os, "access", denied)
+        with pytest.raises(PermissionError):
+            parse_repository(FIXTURES / "simple_repo")
+
+
 def test_bare_relative_from_import_resolves_locally():
     """`from . import sibling` must resolve `sibling` to the sibling
     module in the same package, not be misread as an absolute top-level

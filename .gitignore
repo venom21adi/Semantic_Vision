@@ -8,5 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
-.claude/*
+.claude/
 .docs/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
