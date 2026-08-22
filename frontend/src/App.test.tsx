@@ -156,6 +156,53 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'app.py' })).toBeInTheDocument()
   })
 
+  it('clears the Impact Analysis pane (and its graph highlight) when clicking empty canvas space', async () => {
+    mockedClient.getImpact.mockResolvedValue({
+      target: 'app.py::Greeter.greet',
+      callers: [{ id: 'app.py', depth: 1, direct: true }],
+      edges: [],
+      cycles: [],
+    })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
+    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+
+    // Regression: previously there was no way to dismiss the Impact
+    // Analysis pane/highlight once opened. Clicking empty canvas space
+    // (which already deselects the node) should also clear it.
+    const pane = document.querySelector('.react-flow__pane')
+    expect(pane).not.toBeNull()
+    fireEvent.click(pane as Element)
+
+    expect(screen.queryByText('Direct callers')).not.toBeInTheDocument()
+    // Exact text, not a substring regex: React Flow renders its own
+    // hidden a11y description ("Press enter or space to select a node...")
+    // which would otherwise also match a loose /select a node/i pattern.
+    expect(screen.getByText('Select a node to see details.')).toBeInTheDocument()
+  })
+
+  it('closes the active pane via its own close button, without deselecting the node', async () => {
+    mockedClient.getImpact.mockResolvedValue({
+      target: 'app.py::Greeter.greet',
+      callers: [{ id: 'app.py', depth: 1, direct: true }],
+      edges: [],
+      cycles: [],
+    })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
+    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Close Impact Analysis panel' }))
+
+    expect(screen.queryByText('Direct callers')).not.toBeInTheDocument()
+    // The node itself stays selected -- only the pane closed.
+    expect(screen.getByRole('heading', { name: 'greet' })).toBeInTheDocument()
+  })
+
   it('remembers the loaded path in localStorage and pre-fills it next time', async () => {
     expect(getLastRepoPath()).toBeNull()
 

@@ -17,13 +17,13 @@ const noop = vi.fn()
 
 describe('DetailsPanel', () => {
   it('shows a placeholder when nothing is selected', () => {
-    render(<DetailsPanel selectedNode={null} pane={null} onSelectCaller={noop} />)
+    render(<DetailsPanel selectedNode={null} pane={null} onSelectCaller={noop} onClosePane={noop} />)
 
     expect(screen.getByText(/select a node/i)).toBeInTheDocument()
   })
 
   it('shows the selected node metadata', () => {
-    render(<DetailsPanel selectedNode={node} pane={null} onSelectCaller={noop} />)
+    render(<DetailsPanel selectedNode={node} pane={null} onSelectCaller={noop} onClosePane={noop} />)
 
     expect(screen.getByRole('heading', { name: 'greet' })).toBeInTheDocument()
     expect(screen.getByText('function')).toBeInTheDocument()
@@ -37,6 +37,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'source', status: 'loaded', source: 'def greet(): ...' }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -49,6 +50,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'source', status: 'error', message: 'boom' }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -61,6 +63,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'doc', status: 'loaded', markdown: '# greet' }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -73,6 +76,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'doc', status: 'not-found' }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -85,6 +89,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'doc', status: 'error', message: 'boom' }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -98,6 +103,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -119,6 +125,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 
@@ -143,6 +150,7 @@ describe('DetailsPanel', () => {
         selectedNode={node}
         pane={{ kind: 'impact', status: 'loaded', result }}
         onSelectCaller={onSelectCaller}
+        onClosePane={noop}
       />,
     )
 
@@ -151,12 +159,31 @@ describe('DetailsPanel', () => {
     expect(onSelectCaller).toHaveBeenCalledWith('a.py::caller_direct')
   })
 
+  it('calls onClosePane when the pane close button is clicked', async () => {
+    const onClosePane = vi.fn()
+    const result: ImpactResponse = { target: node.id, callers: [], edges: [], cycles: [] }
+    const user = userEvent.setup()
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={{ kind: 'impact', status: 'loaded', result }}
+        onSelectCaller={noop}
+        onClosePane={onClosePane}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Close Impact Analysis panel' }))
+
+    expect(onClosePane).toHaveBeenCalledTimes(1)
+  })
+
   it('renders an impact analysis error', () => {
     render(
       <DetailsPanel
         selectedNode={node}
         pane={{ kind: 'impact', status: 'error', message: 'boom' }}
         onSelectCaller={noop}
+        onClosePane={noop}
       />,
     )
 

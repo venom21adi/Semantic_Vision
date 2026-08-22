@@ -168,6 +168,18 @@ export default function App() {
     [repo],
   )
 
+  // Clicking empty canvas space already deselects (calls this with
+  // `null`); it also clears the active pane, so an Impact
+  // Analysis/Document/Source pane -- and the graph highlighting that
+  // comes with it -- has an obvious way out instead of staying stuck
+  // until some other context-menu action happens to replace it.
+  const handleSelectNode = useCallback((nodeId: string | null) => {
+    setSelectedNodeId(nodeId)
+    if (nodeId === null) setPane(null)
+  }, [])
+
+  const handleClosePane = useCallback(() => setPane(null), [])
+
   const impactHighlight: GraphHighlight | null = useMemo(() => {
     if (pane?.kind !== 'impact' || pane.status !== 'loaded') return null
     const { result } = pane
@@ -236,7 +248,7 @@ export default function App() {
             nodes={repo.nodes}
             edges={repo.edges}
             selectedNodeId={selectedNodeId}
-            onSelectNode={setSelectedNodeId}
+            onSelectNode={handleSelectNode}
             view={view}
             onViewChange={setView}
           />
@@ -258,7 +270,7 @@ export default function App() {
               nodes={flowGraph.nodes}
               edges={flowGraph.edges}
               selectedNodeId={selectedNodeId}
-              onSelectNode={setSelectedNodeId}
+              onSelectNode={handleSelectNode}
               onDocument={handleDocument}
               onImpactAnalysis={handleImpactAnalysis}
               onViewSource={handleViewSource}
@@ -267,7 +279,12 @@ export default function App() {
             />
           )}
         </main>
-        <DetailsPanel selectedNode={selectedNode} pane={pane} onSelectCaller={setSelectedNodeId} />
+        <DetailsPanel
+          selectedNode={selectedNode}
+          pane={pane}
+          onSelectCaller={setSelectedNodeId}
+          onClosePane={handleClosePane}
+        />
       </div>
     </div>
   )

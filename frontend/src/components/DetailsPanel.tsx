@@ -17,9 +17,10 @@ interface DetailsPanelProps {
   selectedNode: GraphNode | null
   pane: ActivePane
   onSelectCaller: (nodeId: string) => void
+  onClosePane: () => void
 }
 
-export function DetailsPanel({ selectedNode, pane, onSelectCaller }: DetailsPanelProps) {
+export function DetailsPanel({ selectedNode, pane, onSelectCaller, onClosePane }: DetailsPanelProps) {
   return (
     <aside
       style={{
@@ -52,7 +53,7 @@ export function DetailsPanel({ selectedNode, pane, onSelectCaller }: DetailsPane
 
       {pane?.kind === 'source' && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>Source</h3>
+          <PaneHeader title="Source" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
           {pane.status === 'error' && (
             <p role="alert" style={{ color: '#fca5a5' }}>
@@ -79,7 +80,7 @@ export function DetailsPanel({ selectedNode, pane, onSelectCaller }: DetailsPane
 
       {pane?.kind === 'doc' && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>Document</h3>
+          <PaneHeader title="Document" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
           {pane.status === 'error' && (
             <p role="alert" style={{ color: '#fca5a5' }}>
@@ -111,7 +112,7 @@ export function DetailsPanel({ selectedNode, pane, onSelectCaller }: DetailsPane
 
       {pane?.kind === 'impact' && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>Impact Analysis</h3>
+          <PaneHeader title="Impact Analysis" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
           {pane.status === 'error' && (
             <p role="alert" style={{ color: '#fca5a5' }}>
@@ -124,6 +125,37 @@ export function DetailsPanel({ selectedNode, pane, onSelectCaller }: DetailsPane
         </div>
       )}
     </aside>
+  )
+}
+
+function PaneHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+      }}
+    >
+      <h3 style={{ fontSize: 13, margin: 0 }}>{title}</h3>
+      <button
+        type="button"
+        aria-label={`Close ${title} panel`}
+        onClick={onClose}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: '#94a3b8',
+          cursor: 'pointer',
+          fontSize: 16,
+          lineHeight: 1,
+          padding: 0,
+        }}
+      >
+        ×
+      </button>
+    </div>
   )
 }
 

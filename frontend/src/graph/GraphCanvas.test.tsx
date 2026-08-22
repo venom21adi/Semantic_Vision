@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Node } from '@xyflow/react'
 import { describe, expect, it, vi } from 'vitest'
@@ -39,6 +39,25 @@ describe('GraphCanvas', () => {
     await user.click(screen.getByText('a'))
 
     expect(onSelectNode).toHaveBeenCalledWith('a')
+  })
+
+  it('calls onSelectNode(null) when clicking empty canvas space', () => {
+    const onSelectNode = vi.fn()
+    const { container } = render(
+      <GraphCanvas
+        nodes={[makeNode('a')]}
+        edges={[]}
+        selectedNodeId="a"
+        {...noop}
+        onSelectNode={onSelectNode}
+      />,
+    )
+
+    const pane = container.querySelector('.react-flow__pane')
+    expect(pane).not.toBeNull()
+    fireEvent.click(pane as Element)
+
+    expect(onSelectNode).toHaveBeenCalledWith(null)
   })
 
   it('shows a warning banner above the node-count threshold', () => {
