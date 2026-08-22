@@ -9,7 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .claude/
-.docs/
+docs/
 
 # Node / frontend
 node_modules/
