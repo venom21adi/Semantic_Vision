@@ -1,112 +1,96 @@
 # Semantic Vision
 
-Semantic Vision parses a source repository and presents its structure,
-dependencies, call relationships, impact radius, execution flow, and
-AI-generated function documentation through a local web application. The
-parsing layer targets Python first; the graph, API, and persistence layers
-are built to stay language-neutral so other languages can plug in later.
+**See the meaning inside your codebase.**
 
-See `docs/BUILD-PLAN.md` for the full implementation sequence and API
-contracts, and `docs/PROGRESS.md` for a milestone-by-milestone progress
-report (including notable bugs caught during review and how they were
-fixed). `docs/` and `.claude/` are local-only (listed in `.gitignore`,
-not tracked in git), so a fresh clone of this repo won't include them —
-see whoever shared the repo with you for a copy if you don't already
-have one.
+![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
+Semantic Vision parses a Python repository and turns it into an
+explorable map of your codebase: an interactive dependency/call graph, a
+searchable file tree, and one-click **impact analysis** that shows
+everything upstream that would be affected by a change to a given
+function — direct callers, transitive callers, and circular call chains,
+all highlighted on the graph. It runs entirely on your machine: a small
+local backend does the parsing, a local frontend renders it, and nothing
+about your code leaves your computer.
+
+![Semantic Vision showing its own persistence module: a sidebar tree, the call graph, and a selected function's details](assets/screenshot.png)
+
+## Features
+
+- **Interactive codebase graph** — directories, files, classes, and
+  functions as a zoomable, pannable graph, color-coded by kind, with
+  call/import/defines edges and arrowheads.
+- **Searchable tree + file scoping** — real-time filtering by name
+  across the whole repo, or scope the graph down to a single file's own
+  structure.
+- **Impact analysis** — right-click any function to see everything
+  upstream that calls it, direct vs. transitive, with circular call
+  chains flagged rather than silently mishandled, and the whole chain
+  highlighted on the graph.
+- **Persistent layout** — drag nodes around; positions and analysis
+  state are saved locally (inside the inspected repo) and restored the
+  next time you open it.
+- **Fast, local, and private** — a FastAPI backend statically parses
+  your code with Python's own `ast` module (nothing is executed), a
+  React frontend renders it. No account, no cloud, no telemetry.
 
 ## Status
 
-**Milestones 1-5 are implemented and tested** — parsing, the backend API,
-the frontend graph, sidebar/persistence, and impact analysis.
+Semantic Vision is under active development. Here's what works today
+and what's still ahead:
 
-### Milestone 1: Parsing foundation (`src/semantic_vision/`)
+| Feature | Status |
+|---|---|
+| Codebase parsing — imports, classes, functions, call graph | ✅ Available |
+| Interactive graph visualization | ✅ Available |
+| Searchable file/function tree | ✅ Available |
+| Persisted layout & view state | ✅ Available |
+| Impact analysis (upstream callers, cycle detection) | ✅ Available |
+| AI-generated function documentation | 🚧 Planned |
+| Function-level execution flowcharts | 🚧 Planned |
+| Docker packaging / one-command setup | 🚧 Planned |
+| Multi-language support (beyond Python) | 🚧 Planned |
 
-- Recursive Python file discovery (`parser/discovery.py`), tolerant of
-  per-file syntax errors.
-- AST extraction of directories, files, imports, classes, methods,
-  functions, variables, and call sites (`parser/extractor.py`), including
-  defs nested under `if`/`for`/`try`/`with`/`match` and through arbitrary
-  depths of closures.
-- Canonical symbol table with ids like `path/file.py::Class.method`
-  (`resolver/symbol_table.py`).
-- Import resolution — absolute, relative, star — distinguishing local,
-  external, and ambiguous targets (`resolver/imports.py`).
-- Call-site resolution — same-file, `self`/`cls`, imported symbols,
-  multi-hop dotted chains, builtins, decorators — down to `calls` edges
-  marked `external`/`ambiguous` where relevant (`resolver/calls.py`).
-- `repo_parser.parse_repository()` orchestrates the above into a
-  deterministic, sorted `ParseResult`.
+The parsing layer targets Python today; the graph, API, and persistence
+layers are built to stay language-neutral so other languages can plug
+in later.
 
-### Milestone 2: Backend API (`src/semantic_vision/api/`)
+## Quick start
 
-- FastAPI app (`api/app.py`) with CORS for the Vite dev server.
-- `POST /api/parse-repo`, `GET /api/graph`, `GET /api/function-source`,
-  with directory-existence/readability validation and a per-path
-  in-memory cache (`api/cache.py`) so repeated `GET`s skip re-parsing.
+Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js 20+.
 
-### Milestone 3: Frontend shell and graph (`frontend/src/graph/`)
+```bash
+git clone https://github.com/venom21adi/Semantic_Vision.git
+cd Semantic_Vision
 
-- React 19 + Vite + TypeScript frontend rendering the parsed graph with
-  `@xyflow/react` and `dagre` auto-layout (`graph/layout.ts`).
-- Colored node types — directory/file/class/function — with arrowheads,
-  drag/zoom/pan/fit-view, minimap, and dot-grid background
-  (`graph/nodeTypes.tsx`).
-- Node selection synced to a details panel; double-click fits a node's
-  neighborhood; a warning banner above 300 nodes.
-- Right-click context menu for Document / Impact Analysis / View Source
-  (`graph/ContextMenu.tsx`); View Source is fully wired to the backend.
+# Backend — from the repo root
+uv sync
+uv run uvicorn semantic_vision.api.app:app --port 8000
 
-### Milestone 4: Sidebar and persistence (`src/semantic_vision/persistence/`, `frontend/src/tree/`)
+# Frontend — in a second terminal, from frontend/
+cd frontend
+npm install
+npm run dev
+```
 
-- Repository loader with spinner, success stats, and collapsible parse
-  errors; last-used path remembered via `localStorage`.
-- Directory/file/class/function tree with real-time filtering (match
-  count, Escape/clear) and a Codebase/File view toggle.
-- `.visualiser/` persistence — `graph_state.json`, `metadata.json`,
-  `docs/index.json`, `docs/{hash}.md` — written atomically (temp file +
-  rename) with merge-on-save semantics so a scoped view (e.g. File view)
-  can't clobber other nodes' saved positions.
-- Node positions and saved documentation restored on repo load; dragged
-  positions auto-saved every 60 seconds, plus a flush on view switch.
+Then open `http://localhost:5173`, enter the absolute path to any local
+Python repository, and click **Load**.
 
-### Milestone 5: Impact analysis (`src/semantic_vision/analysis/`)
+## How it works
 
-- Reverse caller index (`build_reverse_caller_index`), built once per
-  parse and cached alongside the parsed repo (`api/cache.py`).
-- Breadth-first upstream traversal (`find_upstream_callers`) with
-  configurable `max_depth` (default 5), direct-vs-transitive caller
-  separation, and ancestor-path cycle detection that tells a genuine
-  circular call chain apart from an ordinary diamond call shape at any
-  depth.
-- `GET /api/impact` endpoint (`ImpactResponse`).
-- Impact pane in the details panel: callers grouped into
-  Direct/Transitive, a circular-call-chain warning, clickable callers
-  that jump the graph selection to them, and graph highlighting (the
-  target + its callers stay fully visible, everything else dims).
+Semantic Vision has two parts:
 
-Not yet started: **Milestone 6** (AI documentation), **Milestone 7**
-(execution flowchart), **Milestone 8** (Docker packaging).
-
-Current test status: 57 backend tests (`uv run pytest -q`) and 86
-frontend tests (`npm run test -- --run`), both green; `uv run ruff check .`
-and the frontend's `tsc`/oxlint checks are clean.
-
-## Next steps
-
-Per the build plan's milestone order:
-
-1. **Milestone 6 — AI documentation** (`TASK-08`): constrained-context
-   assembly, LiteLLM provider integration (Ollama/OpenAI/Anthropic),
-   streamed Markdown documentation with save/regenerate.
-2. **Milestone 7 — File-level execution flowchart** (`TASK-09`):
-   control-flow representation and rendering for a selected function.
-3. **Milestone 8 — Packaging and documentation** (`TASK-11`): Docker
-   Compose for both services and a product-focused README.
+- **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
+  repository with Python's `ast` module, resolves imports and call sites
+  into a graph of nodes and edges, and serves it over a small REST API.
+  Parsing is purely static: your code is never executed.
+- **Frontend** (`frontend/`) — a React + TypeScript app that renders the
+  graph with [`@xyflow/react`](https://reactflow.dev/) and `dagre`
+  auto-layout, and persists your layout and saved analysis state in a
+  `.visualiser/` folder inside the repo you're inspecting.
 
 ## Development
-
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/) for the
-backend, and Node.js for the frontend.
 
 ```bash
 # Backend
@@ -119,3 +103,13 @@ npm install
 npm run test -- --run
 npm run dev
 ```
+
+## Contributing
+
+Issues and pull requests are welcome. This project is early and moving
+fast — for anything beyond a small fix, please open an issue first to
+discuss the approach.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

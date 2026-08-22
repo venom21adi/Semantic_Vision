@@ -1,8 +1,9 @@
 [project]
 name = "semantic-vision"
 version = "0.1.0"
-description = "Add your description here"
+description = "Parses a codebase and visualises its structure, dependencies, call graph, and impact radius through a local web app."
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.141.1",
