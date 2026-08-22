@@ -1,44 +1,50 @@
 # Semantic Vision
 
-**See the meaning inside your codebase.**
+**Understand any Python codebase in minutes, not days.**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-Semantic Vision parses a Python repository and turns it into an
-explorable map of your codebase: an interactive dependency/call graph, a
-searchable file tree, and one-click **impact analysis** that shows
-everything upstream that would be affected by a change to a given
-function — direct callers, transitive callers, and circular call chains,
-all highlighted on the graph. It runs entirely on your machine: a small
-local backend does the parsing, a local frontend renders it, and nothing
-about your code leaves your computer.
+Dropping into an unfamiliar codebase usually means grepping for callers,
+tracing imports by hand, and guessing what a function actually touches
+before you dare change it. Semantic Vision replaces that with a live,
+explorable map: point it at a repo and get an interactive call graph, a
+searchable structure tree, one-click **impact analysis** for "what
+breaks if I touch this," and **AI-generated documentation** for
+whatever doesn't have any yet — all running entirely on your machine.
+Parsing is purely static (your code is never executed), and nothing
+about it leaves your computer unless you explicitly ask for AI docs.
 
 ![Semantic Vision showing its own persistence module: a sidebar tree, the call graph, and a selected function's details](assets/screenshot.png)
 
 ## Features
 
-- **Interactive codebase graph** — directories, files, classes, and
-  functions as a zoomable, pannable graph, color-coded by kind, with
-  call/import/defines edges and arrowheads.
-- **Searchable tree + file scoping** — real-time filtering by name
-  across the whole repo, or scope the graph down to a single file's own
-  structure.
-- **Impact analysis** — right-click any function to see everything
-  upstream that calls it, direct vs. transitive, with circular call
-  chains flagged rather than silently mishandled, and the whole chain
-  highlighted on the graph.
-- **AI-generated documentation** — right-click any function to generate
-  Markdown docs (Purpose, Parameters, Returns, Side Effects, Notes) from
-  its source plus its direct callers/callees and parent class, streamed
-  live from your choice of provider — a local [Ollama](https://ollama.com)
-  model, OpenAI, or Anthropic — and saved back into the repo.
-- **Persistent layout** — drag nodes around; positions and analysis
-  state are saved locally (inside the inspected repo) and restored the
-  next time you open it.
+- **See the whole call graph at a glance** — every directory, file,
+  class, and function as a zoomable, color-coded graph with
+  call/import/defines edges. Structure that would take an hour of
+  grepping to piece together by hand is visible on one screen.
+- **Find anything instantly** — real-time search across the whole repo,
+  or scope the graph down to a single file's own structure when you
+  only care about a slice.
+- **Know what you'll break before you break it** — right-click any
+  function for impact analysis: every direct and transitive caller,
+  circular call chains flagged instead of silently mishandled, and the
+  whole chain highlighted live on the graph.
+- **Never write another docstring by hand** — right-click any function
+  to generate real Markdown documentation (Purpose, Parameters,
+  Returns, Side Effects, Notes) from its actual source, callers,
+  callees, and parent class, streamed live from your choice of a local
+  [Ollama](https://ollama.com) model, OpenAI, or Anthropic, and saved
+  straight into the repo.
+- **Pick up exactly where you left off** — dragged layout, saved docs,
+  and analysis state persist locally and restore instantly next time
+  you open the same repo. The save location defaults to the repo's
+  `.git` root — auto-detected even if you've scoped the graph down to a
+  subfolder for performance — and can be changed at any time.
 - **Fast, local, and private** — a FastAPI backend statically parses
-  your code with Python's own `ast` module (nothing is executed), a
-  React frontend renders it. No account, no cloud, no telemetry.
+  your code with Python's own `ast` module, a React frontend renders
+  it. No account, no cloud, no telemetry, nothing installed beyond a
+  Python and a Node toolchain you already have.
 
 ## Status
 
@@ -82,12 +88,26 @@ npm run dev
 Then open `http://localhost:5173`, enter the absolute path to any local
 Python repository, and click **Load**.
 
+By default, everything Semantic Vision saves (layout, impact analysis
+state, generated docs) is written to a `.visualiser/` folder at the
+repository's `.git` root — even if the path you loaded is a subfolder
+scoped down for performance on a large repo. A **Save location** field
+next to the repository path shows and lets you override this before or
+after loading; the first time anything is saved, a notice names exactly
+where it went, with an inline **Change** control to relocate future
+saves without re-parsing.
+
 ## AI documentation setup
 
 Right-click any function and choose **Document** to generate Markdown
-docs for it. Pick a provider in the panel that opens — no extra setup is
-required to try it, but each provider needs one of the following before
-generation will work:
+docs for it, assembled from its real source, callers, callees, and
+parent class — not just the function in isolation:
+
+![Generated documentation for a function, streamed live and shown alongside its call graph](assets/ai-documentation.png)
+
+Pick a provider in the panel that opens — no extra setup is required to
+try it, but each provider needs one of the following before generation
+will work:
 
 - **Ollama** (local, free, private) — install [Ollama](https://ollama.com),
   run `ollama serve`, and pull one or more models, e.g.
@@ -104,7 +124,8 @@ OpenAI's and Anthropic's default model names can be overridden with
 `SEMANTIC_VISION_OPENAI_MODEL` / `SEMANTIC_VISION_ANTHROPIC_MODEL`; for
 Ollama, use the model picker in the panel instead. Generated docs are
 only written to disk when you click **Save** — nothing is persisted
-automatically.
+automatically, and they're written to the **Save location** described
+above.
 
 ## How it works
 
