@@ -36,6 +36,36 @@ _METADATA_FILENAME = "metadata.json"
 _DOCS_INDEX_FILENAME = "index.json"
 
 
+def resolve_doc_root(parsed_root: Path, requested: str | None) -> Path:
+    """Where `.visualiser/` should actually live for a parsed repository.
+
+    Parsing a large repository can be scoped down to a single subfolder
+    for performance (e.g. `src/myapp/api/` instead of the whole tree);
+    `.visualiser/` naively living at that scoped path would scatter saved
+    docs/positions across whichever subfolder happened to be open when
+    they were saved, and the same function's doc would be invisible again
+    the next time a *different* scope of the same project is loaded.
+
+    `requested` (an explicit path the caller asked for) always wins. Its
+    resolution is *stable*, so repeatedly asking for the same value with
+    or without a trailing separator, `.`/`..` segments, etc. all end up
+    at the same key.
+
+    Without one, the nearest ancestor directory containing `.git` is used
+    -- a reasonably reliable "this is the project" signal that doesn't
+    depend on how much of the tree was scoped in for parsing. Falls back
+    to `parsed_root` itself (today's behavior) if no `.git` is found.
+    """
+    if requested:
+        return Path(requested).resolve()
+
+    current = parsed_root.resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return current
+
+
 def _visualiser_dir(repo_root: Path) -> Path:
     return repo_root / ".visualiser"
 

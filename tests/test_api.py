@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 import semantic_vision.api.routes as routes_module
 from semantic_vision.api.app import app
 from semantic_vision.api.cache import cache
+from semantic_vision.persistence.store import resolve_doc_root as _real_resolve_doc_root
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -19,6 +20,24 @@ def _clear_cache():
     cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _no_git_root_detection(monkeypatch):
+    """Fixture repos live inside this project's own git repo, so the real
+    ancestor-`.git` auto-detection in `resolve_doc_root` would resolve
+    every fixture-based parse to this project's own repo root instead of
+    the fixture's own directory -- polluting the real repo's
+    `.visualiser/` and colliding across unrelated tests. Default every
+    test to the pre-auto-detection behavior (doc_root == the explicit
+    override, or the parsed path itself); tests that specifically cover
+    detection restore the real function themselves.
+    """
+
+    def _identity_resolve(parsed_root: Path, requested: str | None) -> Path:
+        return Path(requested).resolve() if requested else parsed_root.resolve()
+
+    monkeypatch.setattr(routes_module.persistence, "resolve_doc_root", _identity_resolve)
+
+
 def test_parse_repo_success():
     resp = client.post("/api/parse-repo", json={"path": str(FIXTURES / "simple_repo")})
 
@@ -28,6 +47,49 @@ def test_parse_repo_success():
     assert body["edge_count"] == 7
     assert body["parse_errors"] == []
     assert body["path"] == (FIXTURES / "simple_repo").resolve().as_posix()
+
+
+def test_parse_repo_doc_root_defaults_to_the_parsed_path():
+    repo_path = str(FIXTURES / "simple_repo")
+    resp = client.post("/api/parse-repo", json={"path": repo_path})
+
+    body = resp.json()
+    assert body["doc_root"] == body["path"]
+
+
+def test_parse_repo_honors_an_explicit_doc_root(tmp_path: Path):
+    doc_root = tmp_path / "wherever-i-want"
+    doc_root.mkdir()
+
+    resp = client.post(
+        "/api/parse-repo",
+        json={"path": str(FIXTURES / "simple_repo"), "doc_root": str(doc_root)},
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["doc_root"] == doc_root.resolve().as_posix()
+    assert (doc_root / ".visualiser" / "metadata.json").is_file()
+
+
+def test_parse_repo_auto_detects_the_nearest_git_root(monkeypatch, tmp_path: Path):
+    """Restores the real `resolve_doc_root` (undoing this file's autouse
+    identity stub) to verify the actual ancestor-`.git` detection works
+    end-to-end through the API, using a throwaway fake project under
+    `tmp_path` so it can't collide with this project's own git repo."""
+    monkeypatch.setattr(routes_module.persistence, "resolve_doc_root", _real_resolve_doc_root)
+
+    project_root = tmp_path / "project"
+    (project_root / ".git").mkdir(parents=True)
+    scoped = project_root / "src" / "app"
+    scoped.mkdir(parents=True)
+    (scoped / "mod.py").write_text("def f():\n    pass\n", encoding="utf-8")
+
+    resp = client.post("/api/parse-repo", json={"path": str(scoped)})
+
+    assert resp.status_code == 200
+    assert resp.json()["doc_root"] == project_root.resolve().as_posix()
+    assert (project_root / ".visualiser" / "metadata.json").is_file()
+    assert not (scoped / ".visualiser").exists()
 
 
 def test_parse_repo_invalid_path_returns_400():
@@ -148,6 +210,42 @@ def temp_repo(tmp_path: Path) -> Path:
     never land inside the checked-in `tests/fixtures/` directories."""
     (tmp_path / "app.py").write_text("def greet():\n    return 1\n", encoding="utf-8")
     return tmp_path
+
+
+def test_update_doc_root_requires_prior_parse(temp_repo: Path):
+    resp = client.put(
+        "/api/doc-root", params={"path": str(temp_repo)}, json={"doc_root": str(temp_repo)}
+    )
+
+    assert resp.status_code == 404
+
+
+def test_update_doc_root_moves_future_saves_without_reparsing(temp_repo: Path):
+    """Relocating the save path shouldn't force re-parsing the repo --
+    parsing a large repo can be slow, which is the whole reason a doc
+    root might need to be scoped separately from what's parsed."""
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    new_location = temp_repo / "moved-here"
+    new_location.mkdir()
+
+    resp = client.put(
+        "/api/doc-root", params={"path": repo_path}, json={"doc_root": str(new_location)}
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["doc_root"] == new_location.resolve().as_posix()
+
+    save_resp = client.put(
+        "/api/graph-state",
+        params={"path": repo_path},
+        json={"positions": {"app.py::greet": {"x": 1, "y": 2}}},
+    )
+
+    assert save_resp.status_code == 200
+    assert (new_location / ".visualiser" / "graph_state.json").is_file()
+    assert not (temp_repo / ".visualiser" / "graph_state.json").exists()
 
 
 def test_graph_state_defaults_to_empty_before_any_save(temp_repo: Path):

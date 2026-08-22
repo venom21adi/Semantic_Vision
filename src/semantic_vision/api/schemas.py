@@ -16,13 +16,29 @@ from semantic_vision.persistence.models import DocIndexEntry, NodePosition
 
 class ParseRepoRequest(BaseModel):
     path: str
+    doc_root: str | None = None
+    """Where `.visualiser/` should be written. Defaults (server-side) to
+    the nearest ancestor `.git` root of `path` -- see
+    `persistence.store.resolve_doc_root`."""
 
 
 class ParseRepoResponse(BaseModel):
     path: str
+    doc_root: str
+    """The resolved save location actually in effect -- whatever
+    `resolve_doc_root` picked, whether that came from `doc_root` on the
+    request or was auto-detected."""
     node_count: int
     edge_count: int
     parse_errors: list[ParseError]
+
+
+class DocRootResponse(BaseModel):
+    doc_root: str
+
+
+class UpdateDocRootRequest(BaseModel):
+    doc_root: str
 
 
 class GraphResponse(BaseModel):

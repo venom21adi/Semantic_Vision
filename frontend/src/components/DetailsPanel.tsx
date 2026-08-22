@@ -29,6 +29,10 @@ interface DetailsPanelProps {
   onRefreshOllamaModels: () => void
   onGenerateDoc: () => void
   onSaveDoc: () => void
+  docRoot: string
+  onChangeDocRoot: (newDocRoot: string) => void
+  docSaveNoticeDismissed: boolean
+  onDismissDocSaveNotice: () => void
 }
 
 export function DetailsPanel({
@@ -45,6 +49,10 @@ export function DetailsPanel({
   onRefreshOllamaModels,
   onGenerateDoc,
   onSaveDoc,
+  docRoot,
+  onChangeDocRoot,
+  docSaveNoticeDismissed,
+  onDismissDocSaveNotice,
 }: DetailsPanelProps) {
   return (
     <aside
@@ -119,6 +127,10 @@ export function DetailsPanel({
               onRefreshOllamaModels={onRefreshOllamaModels}
               onGenerate={onGenerateDoc}
               onSave={onSaveDoc}
+              docRoot={docRoot}
+              onChangeDocRoot={onChangeDocRoot}
+              noticeDismissed={docSaveNoticeDismissed}
+              onDismissNotice={onDismissDocSaveNotice}
             />
           )}
         </div>

@@ -11,6 +11,7 @@ import {
   saveDoc,
   saveGraphState,
   streamDoc,
+  updateDocRoot,
 } from './api/client'
 import type { DocProvider, GraphEdge, GraphNode, NodePosition, ParseErrorInfo } from './api/types'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
@@ -18,12 +19,20 @@ import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
 import { GraphCanvas, type GraphHighlight } from './graph/GraphCanvas'
 import { buildFlowGraph, scopeToFile } from './graph/transform'
-import { getLastRepoPath, setLastRepoPath } from './utils/localStorage'
+import {
+  dismissDocSaveNotice,
+  getLastRepoPath,
+  getRememberedDocRoot,
+  isDocSaveNoticeDismissed,
+  setLastRepoPath,
+  setRememberedDocRoot,
+} from './utils/localStorage'
 
 const EMPTY_GRAPH: { nodes: GraphNode[]; edges: GraphEdge[] } = { nodes: [], edges: [] }
 
 interface LoadedRepo {
   path: string
+  docRoot: string
   nodes: GraphNode[]
   edges: GraphEdge[]
   nodeCount: number
@@ -49,6 +58,9 @@ export default function App() {
   const [ollamaModels, setOllamaModels] = useState<string[]>([])
   const [ollamaModelsLoading, setOllamaModelsLoading] = useState(false)
   const [ollamaModel, setOllamaModel] = useState('')
+  const [docSaveNoticeDismissed, setDocSaveNoticeDismissed] = useState(() =>
+    isDocSaveNoticeDismissed(),
+  )
 
   const repoRef = useRef(repo)
   useEffect(() => {
@@ -95,17 +107,18 @@ export default function App() {
     void refreshOllamaModels()
   }, [refreshOllamaModels])
 
-  const handleLoad = useCallback(async (path: string) => {
+  const handleLoad = useCallback(async (path: string, docRoot: string) => {
     setLoading(true)
     setLoadError(null)
     try {
-      const parseResult = await parseRepo(path)
+      const parseResult = await parseRepo(path, docRoot || undefined)
       const [graph, graphState] = await Promise.all([
         getGraph(parseResult.path),
         getGraphState(parseResult.path),
       ])
       setRepo({
         path: parseResult.path,
+        docRoot: parseResult.doc_root,
         nodes: graph.nodes,
         edges: graph.edges,
         nodeCount: parseResult.node_count,
@@ -114,6 +127,7 @@ export default function App() {
         positions: graphState.positions,
       })
       setLastRepoPath(path)
+      setRememberedDocRoot(path, parseResult.doc_root)
       setSelectedNodeId(null)
       setPane(null)
       setView('codebase')
@@ -122,6 +136,24 @@ export default function App() {
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const handleChangeDocRoot = useCallback(async (newDocRoot: string) => {
+    const current = repoRef.current
+    const trimmed = newDocRoot.trim()
+    if (!current || !trimmed) return
+    try {
+      const result = await updateDocRoot(current.path, trimmed)
+      setRememberedDocRoot(current.path, result.doc_root)
+      setRepo((prev) => (prev ? { ...prev, docRoot: result.doc_root } : prev))
+    } catch (error) {
+      setLoadError(errorMessage(error))
+    }
+  }, [])
+
+  const handleDismissDocSaveNotice = useCallback(() => {
+    dismissDocSaveNotice()
+    setDocSaveNoticeDismissed(true)
   }, [])
 
   const selectedNode = useMemo(
@@ -312,6 +344,9 @@ export default function App() {
   const showFileViewPlaceholder =
     repo !== null && view === 'file' && (!selectedNode || selectedNode.kind === 'directory')
 
+  const lastRepoPath = getLastRepoPath()
+  const rememberedDocRoot = lastRepoPath ? getRememberedDocRoot(lastRepoPath) : null
+
   return (
     <div
       style={{
@@ -328,7 +363,9 @@ export default function App() {
           onLoad={handleLoad}
           loading={loading}
           error={loadError}
-          initialPath={getLastRepoPath() ?? undefined}
+          initialPath={lastRepoPath ?? undefined}
+          initialDocRoot={rememberedDocRoot ?? undefined}
+          resolvedDocRoot={repo?.docRoot ?? null}
           stats={
             repo
               ? {
@@ -392,6 +429,10 @@ export default function App() {
           onRefreshOllamaModels={refreshOllamaModels}
           onGenerateDoc={handleGenerateDoc}
           onSaveDoc={handleSaveDoc}
+          docRoot={repo?.docRoot ?? ''}
+          onChangeDocRoot={handleChangeDocRoot}
+          docSaveNoticeDismissed={docSaveNoticeDismissed}
+          onDismissDocSaveNotice={handleDismissDocSaveNotice}
         />
       </div>
     </div>

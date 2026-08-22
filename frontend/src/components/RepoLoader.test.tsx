@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { RepoLoader } from './RepoLoader'
 
 describe('RepoLoader', () => {
-  it('calls onLoad with the trimmed path on submit', async () => {
+  it('calls onLoad with the trimmed path and an empty doc root by default', async () => {
     const onLoad = vi.fn()
     const user = userEvent.setup()
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
@@ -12,7 +12,53 @@ describe('RepoLoader', () => {
     await user.type(screen.getByLabelText('Repository path'), '  /some/repo  ')
     await user.click(screen.getByRole('button', { name: /load/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo')
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '')
+  })
+
+  it('calls onLoad with a manually typed save location', async () => {
+    const onLoad = vi.fn()
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
+
+    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
+    await user.type(screen.getByLabelText('Save location'), '  /my/save/spot  ')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/my/save/spot')
+  })
+
+  it('pre-fills the save location from initialDocRoot', () => {
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={null}
+        initialDocRoot="/remembered/save"
+      />,
+    )
+
+    expect(screen.getByLabelText('Save location')).toHaveValue('/remembered/save')
+  })
+
+  it('updates the save location field when resolvedDocRoot changes', () => {
+    const { rerender } = render(
+      <RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />,
+    )
+
+    expect(screen.getByLabelText('Save location')).toHaveValue('')
+
+    rerender(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={null}
+        resolvedDocRoot="/auto/detected/root"
+      />,
+    )
+
+    expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/root')
   })
 
   it('disables the button for a blank path', () => {

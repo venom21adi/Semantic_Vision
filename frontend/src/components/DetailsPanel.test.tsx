@@ -24,6 +24,10 @@ const docProps = {
   onRefreshOllamaModels: noop,
   onGenerateDoc: noop,
   onSaveDoc: noop,
+  docRoot: '/repo',
+  onChangeDocRoot: noop,
+  docSaveNoticeDismissed: true,
+  onDismissDocSaveNotice: noop,
 }
 
 describe('DetailsPanel', () => {

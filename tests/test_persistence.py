@@ -100,3 +100,50 @@ def test_write_doc_replaces_previous_entry_for_same_node(tmp_path: Path):
 
     assert len(index.entries) == 1
     assert store.read_doc(tmp_path, "app.py::greet") == "second version"
+
+
+def test_resolve_doc_root_uses_explicit_override_ignoring_git(tmp_path: Path):
+    parsed = tmp_path / "sub"
+    parsed.mkdir()
+    (tmp_path / ".git").mkdir()  # would be auto-detected if not overridden
+    override = tmp_path / "elsewhere"
+    override.mkdir()
+
+    resolved = store.resolve_doc_root(parsed, str(override))
+
+    assert resolved == override.resolve()
+
+
+def test_resolve_doc_root_falls_back_to_parsed_root_when_no_git_found(tmp_path: Path):
+    parsed = tmp_path / "sub"
+    parsed.mkdir()
+
+    resolved = store.resolve_doc_root(parsed, None)
+
+    assert resolved == parsed.resolve()
+
+
+def test_resolve_doc_root_finds_git_at_the_parsed_root_itself(tmp_path: Path):
+    parsed = tmp_path / "repo"
+    parsed.mkdir()
+    (parsed / ".git").mkdir()
+
+    resolved = store.resolve_doc_root(parsed, None)
+
+    assert resolved == parsed.resolve()
+
+
+def test_resolve_doc_root_walks_up_to_an_ancestor_git_root(tmp_path: Path):
+    """Parsing can be scoped down to a subfolder for performance; the
+    save location should still land at the real project root, not the
+    scoped-down folder, so different scoped views of the same project
+    share one save location."""
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    (project_root / ".git").mkdir()
+    scoped = project_root / "src" / "app"
+    scoped.mkdir(parents=True)
+
+    resolved = store.resolve_doc_root(scoped, None)
+
+    assert resolved == project_root.resolve()

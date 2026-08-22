@@ -2,6 +2,7 @@ import type {
   DocIndexResponse,
   DocProvider,
   DocResponse,
+  DocRootResponse,
   FunctionSourceResponse,
   GraphResponse,
   GraphStateResponse,
@@ -39,10 +40,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function parseRepo(path: string): Promise<ParseRepoResponse> {
+export function parseRepo(path: string, docRoot?: string): Promise<ParseRepoResponse> {
   return request<ParseRepoResponse>('/api/parse-repo', {
     method: 'POST',
-    body: JSON.stringify({ path }),
+    body: JSON.stringify({ path, doc_root: docRoot || undefined }),
+  })
+}
+
+export function updateDocRoot(path: string, docRoot: string): Promise<DocRootResponse> {
+  return request<DocRootResponse>(`/api/doc-root?path=${encodeURIComponent(path)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ doc_root: docRoot }),
   })
 }
 

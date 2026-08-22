@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, getFunctionSource, getGraph, parseRepo, saveDoc, streamDoc } from './client'
+import {
+  ApiError,
+  getFunctionSource,
+  getGraph,
+  parseRepo,
+  saveDoc,
+  streamDoc,
+  updateDocRoot,
+} from './client'
 
 function streamFrom(chunks: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder()
@@ -42,6 +50,39 @@ describe('api client', () => {
     expect(String(url)).toContain('/api/parse-repo')
     expect(init?.method).toBe('POST')
     expect(JSON.parse(init?.body as string)).toEqual({ path: '/repo' })
+  })
+
+  it('parseRepo includes doc_root in the body when given', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ path: '/repo', doc_root: '/save', node_count: 0, edge_count: 0, parse_errors: [] }),
+          { status: 200 },
+        ),
+      )
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    await parseRepo('/repo', '/save')
+
+    const [, init] = fetchMock.mock.calls[0]
+    expect(JSON.parse(init?.body as string)).toEqual({ path: '/repo', doc_root: '/save' })
+  })
+
+  it('updateDocRoot PUTs the new doc root and returns the resolved value', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ doc_root: '/resolved' }), { status: 200 }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await updateDocRoot('/repo', '/new-location')
+
+    expect(result.doc_root).toBe('/resolved')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(String(url)).toContain('/api/doc-root')
+    expect(String(url)).toContain(encodeURIComponent('/repo'))
+    expect(init?.method).toBe('PUT')
+    expect(JSON.parse(init?.body as string)).toEqual({ doc_root: '/new-location' })
   })
 
   it('getGraph GETs with the path query-encoded', async () => {

@@ -12,6 +12,7 @@ vi.mock('./api/client', async (importOriginal) => {
   return {
     ...actual,
     parseRepo: vi.fn(),
+    updateDocRoot: vi.fn(),
     getGraph: vi.fn(),
     getFunctionSource: vi.fn(),
     getGraphState: vi.fn(),
@@ -67,6 +68,7 @@ beforeEach(() => {
   mockedClient.saveGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.parseRepo.mockResolvedValue({
     path: '/repo',
+    doc_root: '/repo',
     node_count: 2,
     edge_count: 1,
     parse_errors: [],
@@ -333,6 +335,92 @@ describe('App', () => {
 
     render(<App />)
     expect(screen.getAllByLabelText('Repository path')[1]).toHaveValue('/repo')
+  })
+
+  it('shows the resolved save location after loading, and remembers it for next time', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/auto/detected/git-root',
+      node_count: 2,
+      edge_count: 1,
+      parse_errors: [],
+    })
+
+    await loadSampleRepo()
+
+    expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/git-root')
+
+    render(<App />)
+    expect(screen.getAllByLabelText('Save location')[1]).toHaveValue('/auto/detected/git-root')
+  })
+
+  it('shows a save-location notice on a loaded doc, and lets the user dismiss it for good', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/the/save/root',
+      node_count: 2,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    mockedClient.getDoc.mockResolvedValueOnce({
+      node_id: 'app.py::Greeter.greet',
+      markdown: '# greet',
+      updated_at: '2026-01-01T00:00:00+00:00',
+    })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Document' }))
+
+    await waitFor(() => expect(screen.getByText(/the\/save\/root/)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /don't show again/i }))
+
+    expect(screen.queryByText(/the\/save\/root/)).not.toBeInTheDocument()
+
+    // Reload the same doc pane -- the dismissal should stick.
+    mockedClient.getDoc.mockResolvedValueOnce({
+      node_id: 'app.py::Greeter.greet',
+      markdown: '# greet',
+      updated_at: '2026-01-01T00:00:00+00:00',
+    })
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Document' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument(),
+    )
+    expect(screen.queryByText(/the\/save\/root/)).not.toBeInTheDocument()
+  })
+
+  it('changes the save location from the notice without re-parsing the repo', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/original/root',
+      node_count: 2,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    mockedClient.getDoc.mockResolvedValueOnce({
+      node_id: 'app.py::Greeter.greet',
+      markdown: '# greet',
+      updated_at: '2026-01-01T00:00:00+00:00',
+    })
+    mockedClient.updateDocRoot.mockResolvedValue({ doc_root: '/new/root' })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Document' }))
+    await waitFor(() => expect(screen.getByText(/original\/root/)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Change' }))
+    await user.clear(screen.getByLabelText('New save location'))
+    await user.type(screen.getByLabelText('New save location'), '/new/root')
+    await user.click(screen.getByRole('button', { name: 'Update' }))
+
+    await waitFor(() => expect(mockedClient.updateDocRoot).toHaveBeenCalledWith('/repo', '/new/root'))
+    expect(mockedClient.parseRepo).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(screen.getByText(/new\/root/)).toBeInTheDocument())
   })
 
   it('fetches saved graph-state positions when loading a repository', async () => {

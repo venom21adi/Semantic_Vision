@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -17,6 +18,10 @@ interface DocPaneProps {
   onRefreshOllamaModels: () => void
   onGenerate: () => void
   onSave: () => void
+  docRoot: string
+  onChangeDocRoot: (newDocRoot: string) => void
+  noticeDismissed: boolean
+  onDismissNotice: () => void
 }
 
 const PROVIDER_OPTIONS: { value: DocProvider; label: string }[] = [
@@ -46,6 +51,10 @@ export function DocPane({
   onRefreshOllamaModels,
   onGenerate,
   onSave,
+  docRoot,
+  onChangeDocRoot,
+  noticeDismissed,
+  onDismissNotice,
 }: DocPaneProps) {
   const busy = pane.status === 'generating'
   const hasContent = pane.status === 'generating' || pane.status === 'loaded'
@@ -156,6 +165,13 @@ export function DocPane({
               {pane.markdown}
             </ReactMarkdown>
           </div>
+          {pane.status === 'loaded' && !noticeDismissed && (
+            <SaveLocationNotice
+              docRoot={docRoot}
+              onChangeDocRoot={onChangeDocRoot}
+              onDismiss={onDismissNotice}
+            />
+          )}
           {pane.status === 'loaded' && (
             <button
               type="button"
@@ -180,3 +196,93 @@ export function DocPane({
     </div>
   )
 }
+
+function SaveLocationNotice({
+  docRoot,
+  onChangeDocRoot,
+  onDismiss,
+}: {
+  docRoot: string
+  onChangeDocRoot: (newDocRoot: string) => void
+  onDismiss: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(docRoot)
+
+  function submit() {
+    const trimmed = value.trim()
+    if (trimmed && trimmed !== docRoot) onChangeDocRoot(trimmed)
+    setEditing(false)
+  }
+
+  return (
+    <div
+      role="status"
+      style={{
+        marginTop: 8,
+        padding: '6px 8px',
+        background: '#0f172a',
+        border: '1px solid #1e293b',
+        borderRadius: 6,
+        fontSize: 11,
+        color: '#94a3b8',
+      }}
+    >
+      {!editing && (
+        <>
+          <p style={{ margin: '0 0 4px' }}>
+            Documentation is saved to <code>{docRoot}</code>.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setValue(docRoot)
+              setEditing(true)
+            }}
+            style={linkButtonStyle}
+          >
+            Change
+          </button>{' '}
+          <button type="button" onClick={onDismiss} style={linkButtonStyle}>
+            Don't show again
+          </button>
+        </>
+      )}
+      {editing && (
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <input
+            type="text"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            aria-label="New save location"
+            style={{
+              flex: 1,
+              padding: '4px 6px',
+              borderRadius: 4,
+              border: '1px solid #334155',
+              background: '#0b1220',
+              color: '#f8fafc',
+              fontSize: 11,
+            }}
+          />
+          <button type="button" onClick={submit} style={linkButtonStyle}>
+            Update
+          </button>
+          <button type="button" onClick={() => setEditing(false)} style={linkButtonStyle}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const linkButtonStyle = {
+  background: 'transparent',
+  border: 'none',
+  color: '#64748b',
+  fontSize: 11,
+  padding: 0,
+  cursor: 'pointer',
+  textDecoration: 'underline',
+} as const

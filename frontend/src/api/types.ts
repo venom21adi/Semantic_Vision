@@ -26,9 +26,14 @@ export interface ParseErrorInfo {
 
 export interface ParseRepoResponse {
   path: string
+  doc_root: string
   node_count: number
   edge_count: number
   parse_errors: ParseErrorInfo[]
+}
+
+export interface DocRootResponse {
+  doc_root: string
 }
 
 export interface GraphResponse {

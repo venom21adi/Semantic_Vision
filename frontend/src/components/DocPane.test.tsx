@@ -13,6 +13,10 @@ const baseProps = {
   onRefreshOllamaModels: vi.fn(),
   onGenerate: vi.fn(),
   onSave: vi.fn(),
+  docRoot: '/repo',
+  onChangeDocRoot: vi.fn(),
+  noticeDismissed: false,
+  onDismissNotice: vi.fn(),
 }
 
 describe('DocPane', () => {
@@ -135,5 +139,44 @@ describe('DocPane', () => {
 
     await user.click(screen.getByRole('button', { name: 'Refresh Ollama models' }))
     expect(onRefreshOllamaModels).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the save-location notice with the current doc root when loaded and not dismissed', () => {
+    render(
+      <DocPane
+        {...baseProps}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: false }}
+        docRoot="/some/project/root"
+      />,
+    )
+
+    expect(screen.getByText(/some\/project\/root/)).toBeInTheDocument()
+  })
+
+  it('hides the save-location notice once dismissed', () => {
+    render(
+      <DocPane
+        {...baseProps}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: false }}
+        noticeDismissed={true}
+      />,
+    )
+
+    expect(screen.queryByText(/to change this/i)).not.toBeInTheDocument()
+  })
+
+  it('calls onDismissNotice when "Don\'t show again" is clicked', async () => {
+    const onDismissNotice = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <DocPane
+        {...baseProps}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: false }}
+        onDismissNotice={onDismissNotice}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: /don't show again/i }))
+    expect(onDismissNotice).toHaveBeenCalledTimes(1)
   })
 })

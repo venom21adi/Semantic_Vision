@@ -14,6 +14,7 @@ class RepoCache:
     def __init__(self) -> None:
         self._results: dict[str, ParseResult] = {}
         self._reverse_indexes: dict[str, dict[str, list[str]]] = {}
+        self._doc_roots: dict[str, Path] = {}
 
     @staticmethod
     def _key(path: str) -> str:
@@ -31,9 +32,20 @@ class RepoCache:
         # Built once here, at parse time, rather than per impact query.
         self._reverse_indexes[key] = build_reverse_caller_index(result.edges)
 
+    def get_doc_root(self, path: str) -> Path | None:
+        return self._doc_roots.get(self._key(path))
+
+    def set_doc_root(self, path: str, doc_root: Path) -> None:
+        # Kept independent of `set()` so the save location can be changed
+        # (via `PUT /api/doc-root`) without forcing a re-parse -- the
+        # whole point of letting it be scoped separately from what's
+        # parsed in the first place.
+        self._doc_roots[self._key(path)] = doc_root
+
     def clear(self) -> None:
         self._results.clear()
         self._reverse_indexes.clear()
+        self._doc_roots.clear()
 
 
 cache = RepoCache()

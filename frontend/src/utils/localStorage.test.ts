@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getLastRepoPath, setLastRepoPath } from './localStorage'
+import {
+  dismissDocSaveNotice,
+  getLastRepoPath,
+  getRememberedDocRoot,
+  isDocSaveNoticeDismissed,
+  setLastRepoPath,
+  setRememberedDocRoot,
+} from './localStorage'
 
 afterEach(() => {
   localStorage.clear()
@@ -31,5 +38,32 @@ describe('localStorage helpers', () => {
     })
 
     expect(() => setLastRepoPath('/some/repo')).not.toThrow()
+  })
+
+  it('returns null for a doc root that was never remembered', () => {
+    expect(getRememberedDocRoot('/some/repo')).toBeNull()
+  })
+
+  it('round-trips a remembered doc root per repo path', () => {
+    setRememberedDocRoot('/repo-a', '/save/a')
+    setRememberedDocRoot('/repo-b', '/save/b')
+
+    expect(getRememberedDocRoot('/repo-a')).toBe('/save/a')
+    expect(getRememberedDocRoot('/repo-b')).toBe('/save/b')
+  })
+
+  it('overwrites a previously remembered doc root for the same repo path', () => {
+    setRememberedDocRoot('/repo-a', '/save/a')
+    setRememberedDocRoot('/repo-a', '/save/a-new')
+
+    expect(getRememberedDocRoot('/repo-a')).toBe('/save/a-new')
+  })
+
+  it('the doc-save notice starts un-dismissed and can be dismissed', () => {
+    expect(isDocSaveNoticeDismissed()).toBe(false)
+
+    dismissDocSaveNotice()
+
+    expect(isDocSaveNoticeDismissed()).toBe(true)
   })
 })
