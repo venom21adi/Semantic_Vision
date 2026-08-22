@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Node } from '@xyflow/react'
 import { describe, expect, it, vi } from 'vitest'
-import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD } from './GraphCanvas'
+import { AUTO_SAVE_POSITIONS_INTERVAL_MS, GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD } from './GraphCanvas'
 import type { GraphNodeData } from './nodeTypes'
 
 function makeNode(id: string, kind: GraphNodeData['kind'] = 'function'): Node<GraphNodeData> {
@@ -53,5 +53,65 @@ describe('GraphCanvas', () => {
     render(<GraphCanvas nodes={nodes} edges={[]} selectedNodeId={null} {...noop} />)
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('auto-saves positions on an interval', () => {
+    vi.useFakeTimers()
+    try {
+      const onAutoSavePositions = vi.fn()
+      render(
+        <GraphCanvas
+          nodes={[makeNode('a')]}
+          edges={[]}
+          selectedNodeId={null}
+          {...noop}
+          onAutoSavePositions={onAutoSavePositions}
+        />,
+      )
+
+      expect(onAutoSavePositions).not.toHaveBeenCalled()
+
+      vi.advanceTimersByTime(AUTO_SAVE_POSITIONS_INTERVAL_MS)
+
+      expect(onAutoSavePositions).toHaveBeenCalledTimes(1)
+      expect(onAutoSavePositions).toHaveBeenCalledWith({ a: { x: 0, y: 0 } })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('flushes current positions once more on unmount, beyond the interval ticks', () => {
+    const onAutoSavePositions = vi.fn()
+    const { unmount } = render(
+      <GraphCanvas
+        nodes={[makeNode('a')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        onAutoSavePositions={onAutoSavePositions}
+      />,
+    )
+
+    expect(onAutoSavePositions).not.toHaveBeenCalled()
+
+    unmount()
+
+    // A drag made right before switching away from this view (which
+    // remounts GraphCanvas with a fresh key) would otherwise be lost
+    // until the next 60s tick, which never comes for the old instance.
+    expect(onAutoSavePositions).toHaveBeenCalledTimes(1)
+    expect(onAutoSavePositions).toHaveBeenCalledWith({ a: { x: 0, y: 0 } })
+  })
+
+  it('does not auto-save when no callback is provided', () => {
+    vi.useFakeTimers()
+    try {
+      expect(() => {
+        render(<GraphCanvas nodes={[makeNode('a')]} edges={[]} selectedNodeId={null} {...noop} />)
+        vi.advanceTimersByTime(AUTO_SAVE_POSITIONS_INTERVAL_MS * 2)
+      }).not.toThrow()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

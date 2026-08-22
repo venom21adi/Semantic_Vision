@@ -6,12 +6,17 @@ from fastapi import APIRouter, HTTPException, Query
 
 from acv_ad.api.cache import cache
 from acv_ad.api.schemas import (
+    DocIndexResponse,
+    DocResponse,
     FunctionSourceResponse,
     GraphResponse,
+    GraphStateResponse,
     ParseRepoRequest,
     ParseRepoResponse,
+    SaveGraphStateRequest,
 )
 from acv_ad.models import NodeKind, ParseResult
+from acv_ad.persistence import store as persistence
 from acv_ad.repo_parser import parse_repository
 
 router = APIRouter(prefix="/api")
@@ -25,6 +30,12 @@ def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     cache.set(request.path, result)
+    persistence.write_metadata(
+        Path(result.root),
+        node_count=len(result.nodes),
+        edge_count=len(result.edges),
+        parse_error_count=len(result.parse_errors),
+    )
     return ParseRepoResponse(
         path=result.root,
         node_count=len(result.nodes),
@@ -74,3 +85,39 @@ def get_function_source(
         line_end=node.line_end,
         source=source,
     )
+
+
+@router.get("/graph-state", response_model=GraphStateResponse)
+def get_graph_state(path: str = Query(...)) -> GraphStateResponse:
+    result = _get_cached(path)
+    state = persistence.read_graph_state(Path(result.root))
+    return GraphStateResponse(positions=state.positions, updated_at=state.updated_at)
+
+
+@router.put("/graph-state", response_model=GraphStateResponse)
+def save_graph_state(request: SaveGraphStateRequest, path: str = Query(...)) -> GraphStateResponse:
+    result = _get_cached(path)
+    state = persistence.write_graph_state(Path(result.root), request.positions)
+    return GraphStateResponse(positions=state.positions, updated_at=state.updated_at)
+
+
+@router.get("/docs", response_model=DocIndexResponse)
+def list_docs(path: str = Query(...)) -> DocIndexResponse:
+    result = _get_cached(path)
+    index = persistence.read_docs_index(Path(result.root))
+    return DocIndexResponse(entries=index.entries)
+
+
+@router.get("/doc", response_model=DocResponse)
+def get_doc(path: str = Query(...), id: str = Query(...)) -> DocResponse:
+    result = _get_cached(path)
+    index = persistence.read_docs_index(Path(result.root))
+    entry = next((e for e in index.entries if e.node_id == id), None)
+    if entry is None:
+        raise HTTPException(status_code=404, detail=f"No saved documentation for: {id}")
+
+    markdown = persistence.read_doc(Path(result.root), id)
+    if markdown is None:
+        raise HTTPException(status_code=404, detail=f"No saved documentation for: {id}")
+
+    return DocResponse(node_id=id, markdown=markdown, updated_at=entry.updated_at)

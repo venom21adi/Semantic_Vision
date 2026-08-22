@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -14,11 +14,13 @@ import {
   type NodeMouseHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import type { NodePosition } from '../api/types'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
 import { nodeTypes, type GraphNodeData } from './nodeTypes'
 import { neighborNodeIds } from './transform'
 
 export const LARGE_GRAPH_NODE_THRESHOLD = 300
+export const AUTO_SAVE_POSITIONS_INTERVAL_MS = 60_000
 
 export interface GraphCanvasProps {
   nodes: Node<GraphNodeData>[]
@@ -28,6 +30,10 @@ export interface GraphCanvasProps {
   onDocument: (nodeId: string) => void
   onImpactAnalysis: (nodeId: string) => void
   onViewSource: (nodeId: string) => void
+  /** Called every `AUTO_SAVE_POSITIONS_INTERVAL_MS` with the current node
+   * positions (including any the user has dragged), so a moved layout
+   * survives a reload. Omit to disable auto-save. */
+  onAutoSavePositions?: (positions: Record<string, NodePosition>) => void
 }
 
 function GraphCanvasInner({
@@ -38,15 +44,40 @@ function GraphCanvasInner({
   onDocument,
   onImpactAnalysis,
   onViewSource,
+  onAutoSavePositions,
 }: GraphCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, , onEdgesChange] = useEdgesState(initialEdges)
   const [contextMenu, setContextMenu] = useState<ContextMenuTarget | null>(null)
   const { fitView } = useReactFlow()
+  const nodesRef = useRef(nodes)
 
   useEffect(() => {
     setNodes(initialNodes)
   }, [initialNodes, setNodes])
+
+  useEffect(() => {
+    nodesRef.current = nodes
+  }, [nodes])
+
+  useEffect(() => {
+    if (!onAutoSavePositions) return
+    const flush = () => {
+      const positions: Record<string, NodePosition> = {}
+      for (const node of nodesRef.current) {
+        positions[node.id] = { x: node.position.x, y: node.position.y }
+      }
+      onAutoSavePositions(positions)
+    }
+    const interval = setInterval(flush, AUTO_SAVE_POSITIONS_INTERVAL_MS)
+    return () => {
+      clearInterval(interval)
+      // Flushes whatever's been dragged since the last tick before this
+      // canvas unmounts/remounts (e.g. switching the Codebase/File view),
+      // so a drag made just before that isn't silently lost.
+      flush()
+    }
+  }, [onAutoSavePositions])
 
   // Keeps canvas selection in sync when it's driven from elsewhere (e.g. a
   // future sidebar/tree selection), not just from clicks on the canvas.

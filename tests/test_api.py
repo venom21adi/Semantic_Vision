@@ -142,6 +142,107 @@ def test_function_source_requires_prior_parse():
     assert resp.status_code == 404
 
 
+@pytest.fixture
+def temp_repo(tmp_path: Path) -> Path:
+    """A throwaway repo for persistence tests, so `.visualiser/` writes
+    never land inside the checked-in `tests/fixtures/` directories."""
+    (tmp_path / "app.py").write_text("def greet():\n    return 1\n", encoding="utf-8")
+    return tmp_path
+
+
+def test_graph_state_defaults_to_empty_before_any_save(temp_repo: Path):
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/graph-state", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    assert resp.json() == {"positions": {}, "updated_at": None}
+
+
+def test_graph_state_requires_prior_parse(temp_repo: Path):
+    resp = client.get("/api/graph-state", params={"path": str(temp_repo)})
+
+    assert resp.status_code == 404
+
+
+def test_graph_state_save_and_reload_round_trips(temp_repo: Path):
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    positions = {"app.py::greet": {"x": 12.5, "y": -4.0}}
+    save_resp = client.put(
+        "/api/graph-state", params={"path": repo_path}, json={"positions": positions}
+    )
+    assert save_resp.status_code == 200
+    assert save_resp.json()["positions"] == positions
+    assert save_resp.json()["updated_at"] is not None
+
+    get_resp = client.get("/api/graph-state", params={"path": repo_path})
+    assert get_resp.status_code == 200
+    assert get_resp.json()["positions"] == positions
+
+
+def test_graph_state_save_of_a_subset_preserves_other_saved_positions(temp_repo: Path):
+    """A client that only has a scoped subset of nodes rendered (e.g. the
+    frontend's File view) must not wipe out other nodes' saved positions
+    when it saves."""
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    client.put(
+        "/api/graph-state",
+        params={"path": repo_path},
+        json={"positions": {"app.py::greet": {"x": 1, "y": 1}, "other::node": {"x": 2, "y": 2}}},
+    )
+
+    save_resp = client.put(
+        "/api/graph-state",
+        params={"path": repo_path},
+        json={"positions": {"app.py::greet": {"x": 9, "y": 9}}},
+    )
+
+    assert save_resp.status_code == 200
+    assert save_resp.json()["positions"] == {
+        "app.py::greet": {"x": 9, "y": 9},
+        "other::node": {"x": 2, "y": 2},
+    }
+
+
+def test_docs_index_empty_before_any_doc_saved(temp_repo: Path):
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/docs", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    assert resp.json() == {"entries": []}
+
+
+def test_doc_returns_404_when_not_saved(temp_repo: Path):
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/doc", params={"path": repo_path, "id": "app.py::greet"})
+
+    assert resp.status_code == 404
+
+
+def test_doc_returns_saved_markdown(temp_repo: Path):
+    from acv_ad.persistence import store as persistence
+
+    repo_path = str(temp_repo)
+    client.post("/api/parse-repo", json={"path": repo_path})
+    persistence.write_doc(temp_repo, "app.py::greet", "# greet\n\nReturns 1.")
+
+    resp = client.get("/api/doc", params={"path": repo_path, "id": "app.py::greet"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["node_id"] == "app.py::greet"
+    assert body["markdown"] == "# greet\n\nReturns 1."
+
+
 def test_cors_configured_for_vite_dev_server():
     resp = client.options(
         "/api/graph",

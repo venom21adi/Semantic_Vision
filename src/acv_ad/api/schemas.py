@@ -8,6 +8,7 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from acv_ad.models import Edge, Node, ParseError
+from acv_ad.persistence.models import DocIndexEntry, NodePosition
 
 
 class ParseRepoRequest(BaseModel):
@@ -32,3 +33,22 @@ class FunctionSourceResponse(BaseModel):
     line_start: int
     line_end: int
     source: str
+
+
+class GraphStateResponse(BaseModel):
+    positions: dict[str, NodePosition]
+    updated_at: str | None = None
+
+
+class SaveGraphStateRequest(BaseModel):
+    positions: dict[str, NodePosition]
+
+
+class DocIndexResponse(BaseModel):
+    entries: list[DocIndexEntry]
+
+
+class DocResponse(BaseModel):
+    node_id: str
+    markdown: str
+    updated_at: str

@@ -57,6 +57,21 @@ export function buildFlowGraph(
   return { nodes: layoutGraph(flowNodes, flowEdges), edges: flowEdges }
 }
 
+/** Scopes a graph down to one file's own nodes (itself, its classes, and
+ * its functions/methods) and the edges entirely contained within that
+ * set -- used by the Codebase/File view toggle. */
+export function scopeToFile(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  file: string,
+): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  const scopedIds = new Set(nodes.filter((node) => node.file === file).map((node) => node.id))
+  return {
+    nodes: nodes.filter((node) => scopedIds.has(node.id)),
+    edges: edges.filter((edge) => scopedIds.has(edge.source) && scopedIds.has(edge.target)),
+  }
+}
+
 export function neighborNodeIds(
   nodeId: string,
   edges: { source: string; target: string }[],

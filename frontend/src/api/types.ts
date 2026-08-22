@@ -43,3 +43,29 @@ export interface FunctionSourceResponse {
   line_end: number
   source: string
 }
+
+export interface NodePosition {
+  x: number
+  y: number
+}
+
+export interface GraphStateResponse {
+  positions: Record<string, NodePosition>
+  updated_at: string | null
+}
+
+export interface DocIndexEntry {
+  node_id: string
+  hash: string
+  updated_at: string
+}
+
+export interface DocIndexResponse {
+  entries: DocIndexEntry[]
+}
+
+export interface DocResponse {
+  node_id: string
+  markdown: string
+  updated_at: string
+}

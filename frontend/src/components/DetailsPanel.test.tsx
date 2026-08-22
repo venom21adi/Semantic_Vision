@@ -47,6 +47,26 @@ describe('DetailsPanel', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('boom')
   })
 
+  it('renders loaded documentation', () => {
+    render(
+      <DetailsPanel selectedNode={node} pane={{ kind: 'doc', status: 'loaded', markdown: '# greet' }} />,
+    )
+
+    expect(screen.getByText('# greet')).toBeInTheDocument()
+  })
+
+  it('renders a not-found message when no documentation is saved', () => {
+    render(<DetailsPanel selectedNode={node} pane={{ kind: 'doc', status: 'not-found' }} />)
+
+    expect(screen.getByText(/no saved documentation yet/i)).toBeInTheDocument()
+  })
+
+  it('renders a doc error', () => {
+    render(<DetailsPanel selectedNode={node} pane={{ kind: 'doc', status: 'error', message: 'boom' }} />)
+
+    expect(screen.getByRole('alert')).toHaveTextContent('boom')
+  })
+
   it('renders a stub message for unimplemented features', () => {
     render(<DetailsPanel selectedNode={node} pane={{ kind: 'stub', feature: 'Impact Analysis' }} />)
 

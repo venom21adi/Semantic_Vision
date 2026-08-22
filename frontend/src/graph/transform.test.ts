@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { GraphEdge, GraphNode } from '../api/types'
-import { buildFlowGraph, neighborNodeIds, toFlowEdges, toFlowNodes } from './transform'
+import { buildFlowGraph, neighborNodeIds, scopeToFile, toFlowEdges, toFlowNodes } from './transform'
 
 const nodes: GraphNode[] = [
   { id: 'app.py', kind: 'file', label: 'app.py', file: 'app.py', line_start: 1, line_end: 8 },
@@ -93,5 +93,55 @@ describe('neighborNodeIds', () => {
     const neighbors = neighborNodeIds('app.py', edges)
 
     expect(neighbors).not.toContain('app.py::Greeter.greet')
+  })
+})
+
+describe('scopeToFile', () => {
+  const helpersNode: GraphNode = {
+    id: 'helpers.py::format_name',
+    kind: 'function',
+    label: 'format_name',
+    file: 'helpers.py',
+    line_start: 1,
+    line_end: 2,
+  }
+  const helpersFileNode: GraphNode = {
+    id: 'helpers.py',
+    kind: 'file',
+    label: 'helpers.py',
+    file: 'helpers.py',
+    line_start: 1,
+    line_end: 2,
+  }
+  const crossFileCall: GraphEdge = {
+    source: 'app.py::Greeter.greet',
+    target: 'helpers.py::format_name',
+    kind: 'calls',
+    external: false,
+    ambiguous: false,
+  }
+  const multiFileNodes = [...nodes, helpersFileNode, helpersNode]
+  const multiFileEdges = [...edges, crossFileCall]
+
+  it('keeps only nodes belonging to the target file', () => {
+    const scoped = scopeToFile(multiFileNodes, multiFileEdges, 'app.py')
+
+    expect(scoped.nodes.map((n) => n.id).sort()).toEqual(
+      ['app.py', 'app.py::Greeter', 'app.py::Greeter.greet'].sort(),
+    )
+  })
+
+  it('drops edges that cross into another file', () => {
+    const scoped = scopeToFile(multiFileNodes, multiFileEdges, 'app.py')
+
+    expect(scoped.edges.some((e) => e.target === 'helpers.py::format_name')).toBe(false)
+  })
+
+  it('keeps edges entirely within the target file', () => {
+    const scoped = scopeToFile(multiFileNodes, multiFileEdges, 'app.py')
+
+    expect(scoped.edges).toContainEqual(
+      expect.objectContaining({ source: 'app.py', target: 'app.py::Greeter' }),
+    )
   })
 })

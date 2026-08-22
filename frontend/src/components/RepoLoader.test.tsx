@@ -7,7 +7,7 @@ describe('RepoLoader', () => {
   it('calls onLoad with the trimmed path on submit', async () => {
     const onLoad = vi.fn()
     const user = userEvent.setup()
-    render(<RepoLoader onLoad={onLoad} loading={false} error={null} />)
+    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
 
     await user.type(screen.getByLabelText('Repository path'), '  /some/repo  ')
     await user.click(screen.getByRole('button', { name: /load/i }))
@@ -16,20 +16,69 @@ describe('RepoLoader', () => {
   })
 
   it('disables the button for a blank path', () => {
-    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} />)
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
 
     expect(screen.getByRole('button', { name: /load/i })).toBeDisabled()
   })
 
-  it('disables the button and shows a loading label while loading', () => {
-    render(<RepoLoader onLoad={vi.fn()} loading={true} error={null} />)
+  it('disables the button and shows a spinner while loading', () => {
+    render(<RepoLoader onLoad={vi.fn()} loading={true} error={null} stats={null} />)
 
-    expect(screen.getByRole('button', { name: /loading/i })).toBeDisabled()
+    const button = screen.getByRole('button', { name: /loading/i })
+    expect(button).toBeDisabled()
+    expect(button.querySelector('.spinner')).toBeInTheDocument()
   })
 
   it('shows an error message when provided', () => {
-    render(<RepoLoader onLoad={vi.fn()} loading={false} error="Directory not found" />)
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error="Directory not found" stats={null} />)
 
     expect(screen.getByRole('alert')).toHaveTextContent('Directory not found')
+  })
+
+  it('pre-fills the path from initialPath', () => {
+    render(
+      <RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} initialPath="/last/repo" />,
+    )
+
+    expect(screen.getByLabelText('Repository path')).toHaveValue('/last/repo')
+  })
+
+  it('shows success stats without a details toggle when there are no parse errors', () => {
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={{ path: '/repo', nodeCount: 5, edgeCount: 7, parseErrors: [] }}
+      />,
+    )
+
+    expect(screen.getByText(/\/repo — 5 nodes, 7 edges/)).toBeInTheDocument()
+    expect(screen.queryByText(/parse error/)).not.toBeInTheDocument()
+  })
+
+  it('shows parse errors behind a collapsible summary', async () => {
+    const user = userEvent.setup()
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={{
+          path: '/repo',
+          nodeCount: 3,
+          edgeCount: 1,
+          parseErrors: [{ file: 'bad.py', line: 2, message: 'invalid syntax' }],
+        }}
+      />,
+    )
+
+    const details = screen.getByText('1 parse error').closest('details')
+    expect(details).not.toHaveAttribute('open')
+
+    await user.click(screen.getByText('1 parse error'))
+
+    expect(details).toHaveAttribute('open')
+    expect(screen.getByText(/bad\.py:2 — invalid syntax/)).toBeInTheDocument()
   })
 })

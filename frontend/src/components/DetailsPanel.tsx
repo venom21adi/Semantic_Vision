@@ -4,7 +4,11 @@ export type ActivePane =
   | { kind: 'source'; status: 'loading' }
   | { kind: 'source'; status: 'loaded'; source: string }
   | { kind: 'source'; status: 'error'; message: string }
-  | { kind: 'stub'; feature: 'Document' | 'Impact Analysis' }
+  | { kind: 'doc'; status: 'loading' }
+  | { kind: 'doc'; status: 'loaded'; markdown: string }
+  | { kind: 'doc'; status: 'not-found' }
+  | { kind: 'doc'; status: 'error'; message: string }
+  | { kind: 'stub'; feature: 'Impact Analysis' }
   | null
 
 interface DetailsPanelProps {
@@ -65,6 +69,38 @@ export function DetailsPanel({ selectedNode, pane }: DetailsPanelProps) {
               }}
             >
               {pane.source}
+            </pre>
+          )}
+        </div>
+      )}
+
+      {pane?.kind === 'doc' && (
+        <div style={{ marginTop: 16 }}>
+          <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>Document</h3>
+          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'error' && (
+            <p role="alert" style={{ color: '#fca5a5' }}>
+              {pane.message}
+            </p>
+          )}
+          {pane.status === 'not-found' && (
+            <p style={{ color: '#94a3b8' }}>
+              No saved documentation yet. AI documentation generation is not implemented yet.
+            </p>
+          )}
+          {pane.status === 'loaded' && (
+            <pre
+              style={{
+                background: '#0f172a',
+                border: '1px solid #1e293b',
+                borderRadius: 6,
+                padding: 10,
+                overflowX: 'auto',
+                fontSize: 12,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {pane.markdown}
             </pre>
           )}
         </div>

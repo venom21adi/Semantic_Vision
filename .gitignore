@@ -15,3 +15,7 @@ wheels/
 node_modules/
 frontend/dist/
 *.tsbuildinfo
+
+# ACV-AD persisted repo state (written into whatever repo you inspect,
+# including test fixtures if you load one through a locally running app)
+.visualiser/
