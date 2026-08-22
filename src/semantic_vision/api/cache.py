@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from acv_ad.models import ParseResult
+from semantic_vision.models import ParseResult
 
 
 class RepoCache:

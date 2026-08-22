@@ -1,19 +1,19 @@
-# ACV-AD Build Plan
+# Semantic Vision Build Plan
 
-This document translates the requirements in [ACV-AD Feature Reference](ACV-AD-Feature-Reference.pdf) into an implementation sequence for this repository.
+This document translates the requirements in [Feature Reference](ACV-AD-Feature-Reference.pdf) into an implementation sequence for this repository. (The reference document predates the Semantic Vision name; it's kept under its original filename as the historical source.)
 
 ## Product Goal
 
-ACV-AD (Autonomous Codebase Visualiser & Automated Documenter) parses a Python repository and presents its structure, dependencies, call relationships, impact radius, execution flow, and AI-generated function documentation through a local web application.
+Semantic Vision parses a source repository and presents its structure, dependencies, call relationships, impact radius, execution flow, and AI-generated function documentation through a local web application.
 
-The first release includes the V1 features in the reference document. Performance prediction, multi-language parsing, team collaboration, and a VS Code extension are explicitly deferred to V2.
+The first release includes the V1 features in the reference document, and targets Python only. Performance prediction, team collaboration, and a VS Code extension are explicitly deferred to V2. Multi-language parsing is also a V2 target, but the graph, API, and persistence layers in V1 should stay language-neutral (see "Backend packages" below) so a second language parser can plug in without reshaping those layers.
 
 ## Current Repository State
 
 - `main.py` is currently a minimal Python entry point.
 - `pyproject.toml` has no runtime dependencies.
 - `README.md` is empty.
-- `docs/ACV-AD-Feature-Reference.pdf` is the requirements source.
+- `docs/ACV-AD-Feature-Reference.pdf` is the requirements source (original filename kept for provenance).
 
 ## Target Architecture
 
@@ -37,9 +37,9 @@ React/Vite frontend -> graph canvas, tree, flowchart, panes
 
 The backend should be split into focused modules:
 
-- `parser`: file discovery, AST extraction, parse-error handling
+- `parser`: file discovery, AST extraction, parse-error handling (Python-specific in V1; kept behind `repo_parser`'s orchestration boundary so a future language parser can sit alongside it)
 - `resolver`: canonical symbols, imports, call-site resolution
-- `models`: graph, source, impact, and persistence schemas
+- `models`: graph, source, impact, and persistence schemas (language-neutral: node/edge shapes don't encode Python-specific concepts)
 - `analysis`: reverse caller index and impact traversal
 - `persistence`: `.visualiser/` file storage and restoration
 - `api`: FastAPI application and route handlers

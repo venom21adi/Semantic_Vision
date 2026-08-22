@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-import acv_ad.api.routes as routes_module
-from acv_ad.api.app import app
-from acv_ad.api.cache import cache
+import semantic_vision.api.routes as routes_module
+from semantic_vision.api.app import app
+from semantic_vision.api.cache import cache
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -41,7 +41,7 @@ def test_parse_repo_unreadable_path_returns_400(monkeypatch):
     opposed to the "doesn't exist" case above) -- Windows ACLs don't
     reliably honor POSIX-style chmod, so `os.access` is monkeypatched
     rather than relying on a real unreadable directory being portable."""
-    import acv_ad.repo_parser as repo_parser_module
+    import semantic_vision.repo_parser as repo_parser_module
 
     original_access = repo_parser_module.os.access
     target = (FIXTURES / "simple_repo").resolve()
@@ -229,7 +229,7 @@ def test_doc_returns_404_when_not_saved(temp_repo: Path):
 
 
 def test_doc_returns_saved_markdown(temp_repo: Path):
-    from acv_ad.persistence import store as persistence
+    from semantic_vision.persistence import store as persistence
 
     repo_path = str(temp_repo)
     client.post("/api/parse-repo", json={"path": repo_path})

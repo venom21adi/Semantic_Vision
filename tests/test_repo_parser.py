@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from acv_ad.models import Edge, EdgeKind, Node, NodeKind
-from acv_ad.repo_parser import parse_repository
+from semantic_vision.models import Edge, EdgeKind, Node, NodeKind
+from semantic_vision.repo_parser import parse_repository
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -148,7 +148,7 @@ def test_unreadable_directory_raises():
     """Windows ACLs don't reliably honor POSIX-style chmod, so a real
     unreadable directory isn't a portable way to exercise this path --
     the `os.access` check itself is monkeypatched instead."""
-    import acv_ad.repo_parser as repo_parser_module
+    import semantic_vision.repo_parser as repo_parser_module
 
     original_access = repo_parser_module.os.access
 

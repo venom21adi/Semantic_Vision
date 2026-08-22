@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from acv_ad.models import Edge, EdgeKind, Node, NodeKind, Variable
-from acv_ad.parser.extractor import RawClass, RawModule
+from semantic_vision.models import Edge, EdgeKind, Node, NodeKind, Variable
+from semantic_vision.parser.extractor import RawClass, RawModule
 
 
 @dataclass

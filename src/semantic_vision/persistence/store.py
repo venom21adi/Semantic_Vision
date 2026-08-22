@@ -23,7 +23,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-from acv_ad.persistence.models import (
+from semantic_vision.persistence.models import (
     DocIndex,
     DocIndexEntry,
     GraphState,

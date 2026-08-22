@@ -4,8 +4,8 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 
-from acv_ad.api.cache import cache
-from acv_ad.api.schemas import (
+from semantic_vision.api.cache import cache
+from semantic_vision.api.schemas import (
     DocIndexResponse,
     DocResponse,
     FunctionSourceResponse,
@@ -15,9 +15,9 @@ from acv_ad.api.schemas import (
     ParseRepoResponse,
     SaveGraphStateRequest,
 )
-from acv_ad.models import NodeKind, ParseResult
-from acv_ad.persistence import store as persistence
-from acv_ad.repo_parser import parse_repository
+from semantic_vision.models import NodeKind, ParseResult
+from semantic_vision.persistence import store as persistence
+from semantic_vision.repo_parser import parse_repository
 
 router = APIRouter(prefix="/api")
 

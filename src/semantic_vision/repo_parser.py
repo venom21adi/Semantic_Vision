@@ -8,12 +8,12 @@ import ast
 import os
 from pathlib import Path
 
-from acv_ad.models import ParseError, ParseResult
-from acv_ad.parser.discovery import discover_python_files
-from acv_ad.parser.extractor import RawModule, extract_module
-from acv_ad.resolver.calls import resolve_calls
-from acv_ad.resolver.imports import resolve_imports
-from acv_ad.resolver.symbol_table import build_symbol_table
+from semantic_vision.models import ParseError, ParseResult
+from semantic_vision.parser.discovery import discover_python_files
+from semantic_vision.parser.extractor import RawModule, extract_module
+from semantic_vision.resolver.calls import resolve_calls
+from semantic_vision.resolver.imports import resolve_imports
+from semantic_vision.resolver.symbol_table import build_symbol_table
 
 
 def parse_repository(root: str | Path) -> ParseResult:

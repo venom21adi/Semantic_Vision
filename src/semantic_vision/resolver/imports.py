@@ -15,9 +15,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from acv_ad.models import Edge, EdgeKind
-from acv_ad.parser.extractor import RawImport, RawModule
-from acv_ad.resolver.symbol_table import ModuleIndex
+from semantic_vision.models import Edge, EdgeKind
+from semantic_vision.parser.extractor import RawImport, RawModule
+from semantic_vision.resolver.symbol_table import ModuleIndex
 
 
 @dataclass

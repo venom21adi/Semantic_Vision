@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import builtins
 
-from acv_ad.models import Edge, EdgeKind
-from acv_ad.parser.extractor import RawCall, RawClass, RawModule
-from acv_ad.resolver.imports import ImportBinding
-from acv_ad.resolver.symbol_table import ModuleIndex
+from semantic_vision.models import Edge, EdgeKind
+from semantic_vision.parser.extractor import RawCall, RawClass, RawModule
+from semantic_vision.resolver.imports import ImportBinding
+from semantic_vision.resolver.symbol_table import ModuleIndex
 
 BUILTIN_NAMES = frozenset(vars(builtins))
 

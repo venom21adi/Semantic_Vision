@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from acv_ad.persistence import store
-from acv_ad.persistence.models import NodePosition
+from semantic_vision.persistence import store
+from semantic_vision.persistence.models import NodePosition
 
 
 def test_graph_state_round_trips(tmp_path: Path):

@@ -1,9 +1,10 @@
-# ACV-AD
+# Semantic Vision
 
-Autonomous Codebase Visualiser & Automated Documenter. ACV-AD parses a Python
-repository and presents its structure, dependencies, call relationships,
-impact radius, execution flow, and AI-generated function documentation
-through a local web application.
+Semantic Vision parses a source repository and presents its structure,
+dependencies, call relationships, impact radius, execution flow, and
+AI-generated function documentation through a local web application. The
+parsing layer targets Python first; the graph, API, and persistence layers
+are built to stay language-neutral so other languages can plug in later.
 
 See [docs/BUILD-PLAN.md](docs/BUILD-PLAN.md) for the full implementation
 sequence and API contracts.
@@ -13,7 +14,7 @@ sequence and API contracts.
 **Milestones 1-4 are implemented and tested** — parsing, the backend API,
 the frontend graph, and sidebar/persistence.
 
-### Milestone 1: Parsing foundation (`src/acv_ad/`)
+### Milestone 1: Parsing foundation (`src/semantic_vision/`)
 
 - Recursive Python file discovery (`parser/discovery.py`), tolerant of
   per-file syntax errors.
@@ -31,7 +32,7 @@ the frontend graph, and sidebar/persistence.
 - `repo_parser.parse_repository()` orchestrates the above into a
   deterministic, sorted `ParseResult`.
 
-### Milestone 2: Backend API (`src/acv_ad/api/`)
+### Milestone 2: Backend API (`src/semantic_vision/api/`)
 
 - FastAPI app (`api/app.py`) with CORS for the Vite dev server.
 - `POST /api/parse-repo`, `GET /api/graph`, `GET /api/function-source`,
@@ -50,7 +51,7 @@ the frontend graph, and sidebar/persistence.
 - Right-click context menu for Document / Impact Analysis / View Source
   (`graph/ContextMenu.tsx`); View Source is fully wired to the backend.
 
-### Milestone 4: Sidebar and persistence (`src/acv_ad/persistence/`, `frontend/src/tree/`)
+### Milestone 4: Sidebar and persistence (`src/semantic_vision/persistence/`, `frontend/src/tree/`)
 
 - Repository loader with spinner, success stats, and collapsible parse
   errors; last-used path remembered via `localStorage`.

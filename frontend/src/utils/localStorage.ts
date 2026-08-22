@@ -1,4 +1,4 @@
-const LAST_REPO_PATH_KEY = 'acv-ad:last-repo-path'
+const LAST_REPO_PATH_KEY = 'semantic-vision:last-repo-path'
 
 export function getLastRepoPath(): string | null {
   try {
