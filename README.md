@@ -108,7 +108,7 @@ Right-click any function and choose **Document** to generate Markdown
 docs for it, assembled from its real source, callers, callees, and
 parent class — not just the function in isolation:
 
-![Generated documentation for a function, streamed live and shown alongside its call graph](assets/ai-documentation.png)
+![Documentation streaming live for a function, shown alongside its call graph](assets/doc-generation.gif)
 
 Pick a provider in the panel that opens — no extra setup is required to
 try it, but each provider needs one of the following before generation
