@@ -7,15 +7,17 @@ parsing layer targets Python first; the graph, API, and persistence layers
 are built to stay language-neutral so other languages can plug in later.
 
 See `docs/BUILD-PLAN.md` for the full implementation sequence and API
-contracts. `docs/` and `.claude/` are local-only (listed in
-`.gitignore`, not tracked in git), so a fresh clone of this repo won't
-include them — see whoever shared the repo with you for a copy if you
-don't already have one.
+contracts, and `docs/PROGRESS.md` for a milestone-by-milestone progress
+report (including notable bugs caught during review and how they were
+fixed). `docs/` and `.claude/` are local-only (listed in `.gitignore`,
+not tracked in git), so a fresh clone of this repo won't include them —
+see whoever shared the repo with you for a copy if you don't already
+have one.
 
 ## Status
 
-**Milestones 1-4 are implemented and tested** — parsing, the backend API,
-the frontend graph, and sidebar/persistence.
+**Milestones 1-5 are implemented and tested** — parsing, the backend API,
+the frontend graph, sidebar/persistence, and impact analysis.
 
 ### Milestone 1: Parsing foundation (`src/semantic_vision/`)
 
@@ -67,11 +69,25 @@ the frontend graph, and sidebar/persistence.
 - Node positions and saved documentation restored on repo load; dragged
   positions auto-saved every 60 seconds, plus a flush on view switch.
 
-Not yet started: **Milestone 5** (impact analysis), **Milestone 6** (AI
-documentation), **Milestone 7** (execution flowchart), **Milestone 8**
-(Docker packaging).
+### Milestone 5: Impact analysis (`src/semantic_vision/analysis/`)
 
-Current test status: 43 backend tests (`uv run pytest -q`) and 79
+- Reverse caller index (`build_reverse_caller_index`), built once per
+  parse and cached alongside the parsed repo (`api/cache.py`).
+- Breadth-first upstream traversal (`find_upstream_callers`) with
+  configurable `max_depth` (default 5), direct-vs-transitive caller
+  separation, and ancestor-path cycle detection that tells a genuine
+  circular call chain apart from an ordinary diamond call shape at any
+  depth.
+- `GET /api/impact` endpoint (`ImpactResponse`).
+- Impact pane in the details panel: callers grouped into
+  Direct/Transitive, a circular-call-chain warning, clickable callers
+  that jump the graph selection to them, and graph highlighting (the
+  target + its callers stay fully visible, everything else dims).
+
+Not yet started: **Milestone 6** (AI documentation), **Milestone 7**
+(execution flowchart), **Milestone 8** (Docker packaging).
+
+Current test status: 57 backend tests (`uv run pytest -q`) and 86
 frontend tests (`npm run test -- --run`), both green; `uv run ruff check .`
 and the frontend's `tsc`/oxlint checks are clean.
 
@@ -79,16 +95,12 @@ and the frontend's `tsc`/oxlint checks are clean.
 
 Per the build plan's milestone order:
 
-1. **Milestone 5 — Impact analysis** (`TASK-07`): reverse caller index,
-   breadth-first upstream traversal with configurable `max_depth` and
-   cycle detection, and an impact pane with clickable callers and graph
-   highlighting.
-2. **Milestone 6 — AI documentation** (`TASK-08`): constrained-context
+1. **Milestone 6 — AI documentation** (`TASK-08`): constrained-context
    assembly, LiteLLM provider integration (Ollama/OpenAI/Anthropic),
    streamed Markdown documentation with save/regenerate.
-3. **Milestone 7 — File-level execution flowchart** (`TASK-09`):
+2. **Milestone 7 — File-level execution flowchart** (`TASK-09`):
    control-flow representation and rendering for a selected function.
-4. **Milestone 8 — Packaging and documentation** (`TASK-11`): Docker
+3. **Milestone 8 — Packaging and documentation** (`TASK-11`): Docker
    Compose for both services and a product-focused README.
 
 ## Development
