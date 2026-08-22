@@ -6,8 +6,11 @@ AI-generated function documentation through a local web application. The
 parsing layer targets Python first; the graph, API, and persistence layers
 are built to stay language-neutral so other languages can plug in later.
 
-See [docs/BUILD-PLAN.md](docs/BUILD-PLAN.md) for the full implementation
-sequence and API contracts.
+See `docs/BUILD-PLAN.md` for the full implementation sequence and API
+contracts. `docs/` and `.claude/` are local-only (listed in
+`.gitignore`, not tracked in git), so a fresh clone of this repo won't
+include them — see whoever shared the repo with you for a copy if you
+don't already have one.
 
 ## Status
 
