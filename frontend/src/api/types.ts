@@ -84,3 +84,7 @@ export interface ImpactResponse {
 }
 
 export type DocProvider = 'ollama' | 'openai' | 'anthropic'
+
+export interface OllamaModelsResponse {
+  models: string[]
+}

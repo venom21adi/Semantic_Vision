@@ -22,6 +22,11 @@ interface DetailsPanelProps {
   onClosePane: () => void
   docProvider: DocProvider
   onDocProviderChange: (provider: DocProvider) => void
+  ollamaModels: string[]
+  ollamaModelsLoading: boolean
+  ollamaModel: string
+  onOllamaModelChange: (model: string) => void
+  onRefreshOllamaModels: () => void
   onGenerateDoc: () => void
   onSaveDoc: () => void
 }
@@ -33,6 +38,11 @@ export function DetailsPanel({
   onClosePane,
   docProvider,
   onDocProviderChange,
+  ollamaModels,
+  ollamaModelsLoading,
+  ollamaModel,
+  onOllamaModelChange,
+  onRefreshOllamaModels,
   onGenerateDoc,
   onSaveDoc,
 }: DetailsPanelProps) {
@@ -102,6 +112,11 @@ export function DetailsPanel({
               pane={pane}
               provider={docProvider}
               onProviderChange={onDocProviderChange}
+              ollamaModels={ollamaModels}
+              ollamaModelsLoading={ollamaModelsLoading}
+              ollamaModel={ollamaModel}
+              onOllamaModelChange={onOllamaModelChange}
+              onRefreshOllamaModels={onRefreshOllamaModels}
               onGenerate={onGenerateDoc}
               onSave={onSaveDoc}
             />

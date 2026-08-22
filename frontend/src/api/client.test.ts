@@ -86,7 +86,7 @@ describe('api client', () => {
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
     const chunks: string[] = []
-    for await (const chunk of streamDoc('/repo', 'app.py::greet', 'ollama')) {
+    for await (const chunk of streamDoc('/repo', 'app.py::greet', 'ollama', 'llama3.2:3b')) {
       chunks.push(chunk)
     }
 
@@ -94,7 +94,21 @@ describe('api client', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(String(url)).toContain('/api/generate-doc')
     expect(init?.method).toBe('POST')
-    expect(JSON.parse(init?.body as string)).toEqual({ provider: 'ollama' })
+    expect(JSON.parse(init?.body as string)).toEqual({ provider: 'ollama', model: 'llama3.2:3b' })
+  })
+
+  it('streamDoc omits model from the body when none is given', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(streamFrom(['Hi']), { status: 200 }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    for await (const _chunk of streamDoc('/repo', 'app.py::greet', 'openai', undefined)) {
+      // drain
+    }
+
+    const [, init] = fetchMock.mock.calls[0]
+    expect(JSON.parse(init?.body as string)).toEqual({ provider: 'openai' })
   })
 
   it('streamDoc throws ApiError with the backend detail on non-2xx', async () => {
@@ -104,7 +118,7 @@ describe('api client', () => {
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
     const iterate = async () => {
-      for await (const _chunk of streamDoc('/repo', 'app.py::greet', 'ollama')) {
+      for await (const _chunk of streamDoc('/repo', 'app.py::greet', 'ollama', undefined)) {
         // never reached
       }
     }

@@ -329,7 +329,7 @@ def test_generate_doc_streams_content(monkeypatch):
     repo_path = str(FIXTURES / "simple_repo")
     client.post("/api/parse-repo", json={"path": repo_path})
 
-    def fake_stream(provider, context):
+    def fake_stream(provider, context, model=None):
         assert provider == "ollama"
         yield "# greet\n\n"
         yield "Documentation."
@@ -346,13 +346,35 @@ def test_generate_doc_streams_content(monkeypatch):
     assert resp.text == "# greet\n\nDocumentation."
 
 
+def test_generate_doc_forwards_the_requested_model(monkeypatch):
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    captured = {}
+
+    def fake_stream(provider, context, model=None):
+        captured["model"] = model
+        yield "docs"
+
+    monkeypatch.setattr(routes_module, "stream_documentation", fake_stream)
+
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": repo_path, "id": "app.py::Greeter.greet"},
+        json={"provider": "ollama", "model": "qwen2.5-coder:3b"},
+    )
+
+    assert resp.status_code == 200
+    assert captured["model"] == "qwen2.5-coder:3b"
+
+
 def test_generate_doc_provider_failure_returns_502(monkeypatch):
     from semantic_vision.ai.providers import ProviderError
 
     repo_path = str(FIXTURES / "simple_repo")
     client.post("/api/parse-repo", json={"path": repo_path})
 
-    def failing_stream(provider, context):
+    def failing_stream(provider, context, model=None):
         raise ProviderError("boom")
 
     monkeypatch.setattr(routes_module, "stream_documentation", failing_stream)
@@ -364,6 +386,24 @@ def test_generate_doc_provider_failure_returns_502(monkeypatch):
     )
 
     assert resp.status_code == 502
+
+
+def test_ollama_models_returns_models_from_the_local_server(monkeypatch):
+    monkeypatch.setattr(routes_module, "list_ollama_models", lambda: ["llama3.2:3b", "gemma4:e4b"])
+
+    resp = client.get("/api/ollama-models")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"models": ["llama3.2:3b", "gemma4:e4b"]}
+
+
+def test_ollama_models_returns_empty_list_when_unreachable(monkeypatch):
+    monkeypatch.setattr(routes_module, "list_ollama_models", lambda: [])
+
+    resp = client.get("/api/ollama-models")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"models": []}
 
 
 def test_save_doc_round_trips(temp_repo: Path):

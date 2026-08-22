@@ -19,6 +19,7 @@ vi.mock('./api/client', async (importOriginal) => {
     getDoc: vi.fn(),
     saveDoc: vi.fn(),
     streamDoc: vi.fn(),
+    getOllamaModels: vi.fn(),
     getImpact: vi.fn(),
   }
 })
@@ -71,6 +72,7 @@ beforeEach(() => {
     parse_errors: [],
   })
   mockedClient.getGraph.mockResolvedValue(sampleGraph)
+  mockedClient.getOllamaModels.mockResolvedValue({ models: [] })
 })
 
 describe('App', () => {
@@ -166,6 +168,7 @@ describe('App', () => {
       '/repo',
       'app.py::Greeter.greet',
       'ollama',
+      undefined,
       expect.anything(),
     )
 
@@ -178,6 +181,39 @@ describe('App', () => {
       '# greet\n\nReturns a greeting.',
     ))
     await waitFor(() => expect(screen.getByRole('button', { name: 'Saved' })).toBeInTheDocument())
+  })
+
+  it('lists local Ollama models and generates with the one the user picks', async () => {
+    mockedClient.getOllamaModels.mockResolvedValue({
+      models: ['llama3.2:3b', 'qwen2.5-coder:3b'],
+    })
+    mockedClient.getDoc.mockRejectedValueOnce(new client.ApiError(404, 'No saved documentation'))
+    mockedClient.streamDoc.mockReturnValueOnce(
+      (async function* () {
+        yield 'docs'
+      })(),
+    )
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Document' }))
+    await waitFor(() => expect(screen.getByText(/no saved documentation yet/i)).toBeInTheDocument())
+
+    const modelSelect = await screen.findByLabelText('Ollama model')
+    await waitFor(() => expect(within(modelSelect).getAllByRole('option')).toHaveLength(2))
+
+    await user.selectOptions(modelSelect, 'qwen2.5-coder:3b')
+    await user.click(screen.getByRole('button', { name: /generate/i }))
+
+    await waitFor(() =>
+      expect(mockedClient.streamDoc).toHaveBeenCalledWith(
+        '/repo',
+        'app.py::Greeter.greet',
+        'ollama',
+        'qwen2.5-coder:3b',
+        expect.anything(),
+      ),
+    )
   })
 
   it('ignores stream chunks that arrive after generation is cancelled by switching nodes', async () => {
@@ -205,7 +241,7 @@ describe('App', () => {
       expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument(),
     )
 
-    const signal = mockedClient.streamDoc.mock.calls[0][3]
+    const signal = mockedClient.streamDoc.mock.calls[0][4]
     expect(signal?.aborted).toBe(false)
 
     // Selecting a different node cancels the in-flight generation

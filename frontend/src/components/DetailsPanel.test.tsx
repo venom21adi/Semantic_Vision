@@ -17,6 +17,11 @@ const noop = vi.fn()
 const docProps = {
   docProvider: 'ollama' as const,
   onDocProviderChange: noop,
+  ollamaModels: [] as string[],
+  ollamaModelsLoading: false,
+  ollamaModel: '',
+  onOllamaModelChange: noop,
+  onRefreshOllamaModels: noop,
   onGenerateDoc: noop,
   onSaveDoc: noop,
 }

@@ -7,6 +7,7 @@ import type {
   GraphStateResponse,
   ImpactResponse,
   NodePosition,
+  OllamaModelsResponse,
   ParseRepoResponse,
 } from './types'
 
@@ -92,10 +93,15 @@ export function saveDoc(path: string, id: string, markdown: string): Promise<Doc
   )
 }
 
+export function getOllamaModels(): Promise<OllamaModelsResponse> {
+  return request<OllamaModelsResponse>('/api/ollama-models')
+}
+
 export async function* streamDoc(
   path: string,
   id: string,
   provider: DocProvider,
+  model: string | undefined,
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
   const response = await fetch(
@@ -103,7 +109,7 @@ export async function* streamDoc(
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider }),
+      body: JSON.stringify({ provider, model }),
       signal,
     },
   )

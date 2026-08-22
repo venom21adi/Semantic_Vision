@@ -90,17 +90,21 @@ required to try it, but each provider needs one of the following before
 generation will work:
 
 - **Ollama** (local, free, private) — install [Ollama](https://ollama.com),
-  run `ollama serve`, and pull a model: `ollama pull llama3`. The backend
-  talks to it at `http://localhost:11434` by default.
+  run `ollama serve`, and pull one or more models, e.g.
+  `ollama pull llama3.2:3b`. The panel lists whatever you've actually
+  pulled and lets you pick which one to use per generation — handy for
+  swapping in a lighter model for quick testing. The backend talks to
+  Ollama at `http://localhost:11434` by default.
 - **OpenAI** — set an `OPENAI_API_KEY` environment variable before
   starting the backend. Uses `gpt-4o-mini` by default.
 - **Anthropic** — set an `ANTHROPIC_API_KEY` environment variable before
   starting the backend. Uses `claude-haiku-4-5` by default.
 
-Any of the three default model names can be overridden with
-`SEMANTIC_VISION_OLLAMA_MODEL`, `SEMANTIC_VISION_OPENAI_MODEL`, or
-`SEMANTIC_VISION_ANTHROPIC_MODEL`. Generated docs are only written to
-disk when you click **Save** — nothing is persisted automatically.
+OpenAI's and Anthropic's default model names can be overridden with
+`SEMANTIC_VISION_OPENAI_MODEL` / `SEMANTIC_VISION_ANTHROPIC_MODEL`; for
+Ollama, use the model picker in the panel instead. Generated docs are
+only written to disk when you click **Save** — nothing is persisted
+automatically.
 
 ## How it works
 

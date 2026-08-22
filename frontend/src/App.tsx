@@ -6,6 +6,7 @@ import {
   getGraph,
   getGraphState,
   getImpact,
+  getOllamaModels,
   parseRepo,
   saveDoc,
   saveGraphState,
@@ -45,6 +46,9 @@ export default function App() {
   const [pane, setPane] = useState<ActivePane>(null)
   const [view, setView] = useState<GraphView>('codebase')
   const [docProvider, setDocProvider] = useState<DocProvider>('ollama')
+  const [ollamaModels, setOllamaModels] = useState<string[]>([])
+  const [ollamaModelsLoading, setOllamaModelsLoading] = useState(false)
+  const [ollamaModel, setOllamaModel] = useState('')
 
   const repoRef = useRef(repo)
   useEffect(() => {
@@ -66,6 +70,30 @@ export default function App() {
     generationRef.current?.abort()
     generationRef.current = null
   }, [])
+
+  // Lists whatever models the user actually has pulled locally (e.g. a
+  // lighter model for quick testing), rather than only offering the one
+  // fixed default. Fetched once on mount -- independent of any loaded
+  // repo -- with a manual refresh for the common case of starting Ollama
+  // after the page is already open.
+  const refreshOllamaModels = useCallback(async () => {
+    setOllamaModelsLoading(true)
+    try {
+      const result = await getOllamaModels()
+      setOllamaModels(result.models)
+      setOllamaModel((current) =>
+        current && result.models.includes(current) ? current : (result.models[0] ?? ''),
+      )
+    } catch {
+      // Best-effort: Ollama may simply not be running -- leave the list empty.
+    } finally {
+      setOllamaModelsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshOllamaModels()
+  }, [refreshOllamaModels])
 
   const handleLoad = useCallback(async (path: string) => {
     setLoading(true)
@@ -183,7 +211,14 @@ export default function App() {
     setPane({ kind: 'doc', status: 'generating', markdown: '' })
     try {
       let markdown = ''
-      for await (const chunk of streamDoc(repo.path, selectedNodeId, docProvider, controller.signal)) {
+      const model = docProvider === 'ollama' ? ollamaModel || undefined : undefined
+      for await (const chunk of streamDoc(
+        repo.path,
+        selectedNodeId,
+        docProvider,
+        model,
+        controller.signal,
+      )) {
         // A chunk can arrive after `abort()` was already called (the
         // underlying fetch/reader hasn't rejected yet) -- checking here,
         // not just after the loop, stops it from being applied to a pane
@@ -198,7 +233,7 @@ export default function App() {
       if (controller.signal.aborted) return
       setPane({ kind: 'doc', status: 'error', message: errorMessage(error) })
     }
-  }, [repo, selectedNodeId, docProvider, cancelGeneration])
+  }, [repo, selectedNodeId, docProvider, ollamaModel, cancelGeneration])
 
   const handleSaveDoc = useCallback(async () => {
     const current = paneRef.current
@@ -350,6 +385,11 @@ export default function App() {
           onClosePane={handleClosePane}
           docProvider={docProvider}
           onDocProviderChange={setDocProvider}
+          ollamaModels={ollamaModels}
+          ollamaModelsLoading={ollamaModelsLoading}
+          ollamaModel={ollamaModel}
+          onOllamaModelChange={setOllamaModel}
+          onRefreshOllamaModels={refreshOllamaModels}
           onGenerateDoc={handleGenerateDoc}
           onSaveDoc={handleSaveDoc}
         />

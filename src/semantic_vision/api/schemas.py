@@ -59,10 +59,16 @@ class DocResponse(BaseModel):
 
 class GenerateDocRequest(BaseModel):
     provider: Literal["ollama", "openai", "anthropic"]
+    model: str | None = None
+    """Only honored for `provider == "ollama"` -- see `ai.providers.stream_documentation`."""
 
 
 class SaveDocRequest(BaseModel):
     markdown: str
+
+
+class OllamaModelsResponse(BaseModel):
+    models: list[str]
 
 
 class ImpactResponse(BaseModel):

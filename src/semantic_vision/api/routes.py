@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
 from semantic_vision.ai.context import assemble_context
-from semantic_vision.ai.providers import ProviderError, stream_documentation
+from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.schemas import (
@@ -17,6 +17,7 @@ from semantic_vision.api.schemas import (
     GraphResponse,
     GraphStateResponse,
     ImpactResponse,
+    OllamaModelsResponse,
     ParseRepoRequest,
     ParseRepoResponse,
     SaveDocRequest,
@@ -159,11 +160,16 @@ def generate_doc(
 
     context = assemble_context(result, id)
     try:
-        stream = stream_documentation(request.provider, context)
+        stream = stream_documentation(request.provider, context, request.model)
     except ProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return StreamingResponse(stream, media_type="text/plain")
+
+
+@router.get("/ollama-models", response_model=OllamaModelsResponse)
+def get_ollama_models() -> OllamaModelsResponse:
+    return OllamaModelsResponse(models=list_ollama_models())
 
 
 @router.post("/doc", response_model=DocResponse)
