@@ -17,36 +17,36 @@ about it leaves your computer unless you explicitly ask for AI docs.
 
 ![Semantic Vision showing its own persistence module: a sidebar tree, the call graph, and a selected function's details](assets/screenshot.png)
 
-## Features
+## ✨ Features
 
-- **See the whole call graph at a glance** — every directory, file,
+- 🕸️ **See the whole call graph at a glance** — every directory, file,
   class, and function as a zoomable, color-coded graph with
   call/import/defines edges. Structure that would take an hour of
   grepping to piece together by hand is visible on one screen.
-- **Find anything instantly** — real-time search across the whole repo,
-  or scope the graph down to a single file's own structure when you
-  only care about a slice.
-- **Know what you'll break before you break it** — right-click any
+- 🔍 **Find anything instantly** — real-time search across the whole
+  repo, or scope the graph down to a single file's own structure when
+  you only care about a slice.
+- 💥 **Know what you'll break before you break it** — right-click any
   function for impact analysis: every direct and transitive caller,
   circular call chains flagged instead of silently mishandled, and the
   whole chain highlighted live on the graph.
-- **Never write another docstring by hand** — right-click any function
-  to generate real Markdown documentation (Purpose, Parameters,
-  Returns, Side Effects, Notes) from its actual source, callers,
-  callees, and parent class, streamed live from your choice of a local
-  [Ollama](https://ollama.com) model, OpenAI, or Anthropic, and saved
-  straight into the repo.
-- **Pick up exactly where you left off** — dragged layout, saved docs,
-  and analysis state persist locally and restore instantly next time
-  you open the same repo. The save location defaults to the repo's
+- 📝 **Never write another docstring by hand** — right-click any
+  function to generate real Markdown documentation (Purpose,
+  Parameters, Returns, Side Effects, Notes) from its actual source,
+  callers, callees, and parent class, streamed live from your choice of
+  a local [Ollama](https://ollama.com) model, OpenAI, or Anthropic, and
+  saved straight into the repo.
+- 💾 **Pick up exactly where you left off** — dragged layout, saved
+  docs, and analysis state persist locally and restore instantly next
+  time you open the same repo. The save location defaults to the repo's
   `.git` root — auto-detected even if you've scoped the graph down to a
   subfolder for performance — and can be changed at any time.
-- **Fast, local, and private** — a FastAPI backend statically parses
+- ⚡ **Fast, local, and private** — a FastAPI backend statically parses
   your code with Python's own `ast` module, a React frontend renders
   it. No account, no cloud, no telemetry, nothing installed beyond a
   Python and a Node toolchain you already have.
 
-## Status
+## 📊 Status
 
 Semantic Vision is under active development. Here's what works today
 and what's still ahead:
@@ -67,7 +67,7 @@ The parsing layer targets Python today; the graph, API, and persistence
 layers are built to stay language-neutral so other languages can plug
 in later.
 
-## Quick start
+## 🚀 Quick start
 
 Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js 20+.
 
@@ -97,7 +97,7 @@ after loading; the first time anything is saved, a notice names exactly
 where it went, with an inline **Change** control to relocate future
 saves without re-parsing.
 
-## AI documentation setup
+## 🤖 AI documentation setup
 
 Right-click any function and choose **Document** to generate Markdown
 docs for it, assembled from its real source, callers, callees, and
@@ -127,7 +127,7 @@ only written to disk when you click **Save** — nothing is persisted
 automatically, and they're written to the **Save location** described
 above.
 
-## How it works
+## 🧩 How it works
 
 Semantic Vision has two parts:
 
@@ -145,7 +145,7 @@ Semantic Vision has two parts:
   auto-layout, and persists your layout and saved analysis state in a
   `.visualiser/` folder inside the repo you're inspecting.
 
-## Development
+## 🛠️ Development
 
 ```bash
 # Backend
@@ -159,12 +159,12 @@ npm run test -- --run
 npm run dev
 ```
 
-## Contributing
+## 🤝 Contributing
 
 Issues and pull requests are welcome. This project is early and moving
 fast — for anything beyond a small fix, please open an issue first to
 discuss the approach.
 
-## License
+## 📄 License
 
 MIT — see [LICENSE](LICENSE).
