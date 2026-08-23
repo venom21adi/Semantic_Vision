@@ -21,6 +21,49 @@ about it leaves your computer unless you explicitly ask for AI docs.
 
 ![Semantic Vision showing its own persistence module: a sidebar tree, the call graph, and a selected function's details](assets/screenshot.png)
 
+## 🤖 AI documentation setup
+
+Right-click any function and choose **Document** to generate Markdown
+docs for it, assembled from its real source, callers, callees, and
+parent class — not just the function in isolation:
+
+![Documentation streaming live for a function, shown alongside its call graph](assets/doc-generation.gif)
+
+Pick a provider in the panel that opens — no extra setup is required to
+try it, but each provider needs one of the following before generation
+will work:
+
+- **Ollama** (local, free, private) — install [Ollama](https://ollama.com),
+  run `ollama serve`, and pull one or more models, e.g.
+  `ollama pull llama3.2:3b`. The panel lists whatever you've actually
+  pulled and lets you pick which one to use per generation — handy for
+  swapping in a lighter model for quick testing. The backend talks to
+  Ollama at `http://localhost:11434` by default.
+- **OpenAI** — set an `OPENAI_API_KEY` environment variable before
+  starting the backend. Uses `gpt-4o-mini` by default.
+- **Anthropic** — set an `ANTHROPIC_API_KEY` environment variable before
+  starting the backend. Uses `claude-haiku-4-5` by default.
+
+OpenAI's and Anthropic's default model names can be overridden with
+`SEMANTIC_VISION_OPENAI_MODEL` / `SEMANTIC_VISION_ANTHROPIC_MODEL`; for
+Ollama, use the model picker in the panel instead. Generated docs are
+only written to disk when you click **Save** — nothing is persisted
+automatically, and they're written to wherever you've configured as
+the **Save location** (see Quick start below).
+
+## 🧭 Execution flowcharts
+
+Right-click any function and choose **Execution Flowchart** to see
+exactly how it behaves, built from its real AST rather than a rough
+summary: entry and return points, decisions with **Yes**/**No** edges,
+loops with a visible back-edge, I/O calls, and calls out to other
+functions in the repo — each in its own conventional flowchart shape.
+
+![An execution flowchart for a function with a loop, branches, break/continue, and an I/O call](assets/execution-flowchart.png)
+
+The flowchart replaces the graph canvas while open; **Back to graph**
+returns you to the normal call graph.
+
 ## ✨ Features
 
 🕸️ **See the whole call graph at a glance** — every directory, file,
@@ -151,49 +194,6 @@ inside the container. Two things follow from that:
   mounted repository has its own `.git` at `/workspace/repo` itself
   (true for `REPO_PATH` pointing at a repo root, not a path with no
   `.git` anywhere in its own tree).
-
-## 🧭 Execution flowcharts
-
-Right-click any function and choose **Execution Flowchart** to see
-exactly how it behaves, built from its real AST rather than a rough
-summary: entry and return points, decisions with **Yes**/**No** edges,
-loops with a visible back-edge, I/O calls, and calls out to other
-functions in the repo — each in its own conventional flowchart shape.
-
-![An execution flowchart for a function with a loop, branches, break/continue, and an I/O call](assets/execution-flowchart.png)
-
-The flowchart replaces the graph canvas while open; **Back to graph**
-returns you to the normal call graph.
-
-## 🤖 AI documentation setup
-
-Right-click any function and choose **Document** to generate Markdown
-docs for it, assembled from its real source, callers, callees, and
-parent class — not just the function in isolation:
-
-![Documentation streaming live for a function, shown alongside its call graph](assets/doc-generation.gif)
-
-Pick a provider in the panel that opens — no extra setup is required to
-try it, but each provider needs one of the following before generation
-will work:
-
-- **Ollama** (local, free, private) — install [Ollama](https://ollama.com),
-  run `ollama serve`, and pull one or more models, e.g.
-  `ollama pull llama3.2:3b`. The panel lists whatever you've actually
-  pulled and lets you pick which one to use per generation — handy for
-  swapping in a lighter model for quick testing. The backend talks to
-  Ollama at `http://localhost:11434` by default.
-- **OpenAI** — set an `OPENAI_API_KEY` environment variable before
-  starting the backend. Uses `gpt-4o-mini` by default.
-- **Anthropic** — set an `ANTHROPIC_API_KEY` environment variable before
-  starting the backend. Uses `claude-haiku-4-5` by default.
-
-OpenAI's and Anthropic's default model names can be overridden with
-`SEMANTIC_VISION_OPENAI_MODEL` / `SEMANTIC_VISION_ANTHROPIC_MODEL`; for
-Ollama, use the model picker in the panel instead. Generated docs are
-only written to disk when you click **Save** — nothing is persisted
-automatically, and they're written to the **Save location** described
-above.
 
 ## 🧩 How it works
 
