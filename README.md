@@ -7,15 +7,19 @@
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-Dropping into an unfamiliar codebase usually means grepping for callers,
-tracing imports by hand, and guessing what a function actually touches
-before you dare change it. Semantic Vision replaces that with a live,
-explorable map: point it at a repo and get an interactive call graph, a
-searchable structure tree, one-click **impact analysis** for "what
-breaks if I touch this," a **function-level execution flowchart** for
-tracing exactly how a function behaves, and **AI-generated
-documentation** for whatever doesn't have any yet — all running
-entirely on your machine.
+**What problem does this solve?**
+Engineers lose real hours every week reconstructing context on code
+they didn't write — tracing callers by hand, guessing at blast radius,
+reading files one at a time with no map of the whole. Documentation is
+supposed to fill that gap, but it's the first thing that goes stale:
+tedious to write, easy to skip, and quickly out of sync with code that
+keeps changing. Semantic Vision builds that map automatically and
+generates documentation on demand from the code as it actually is
+today — nothing to remember to update, because nothing was hand-written
+to begin with.
+
+🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 📝 AI-generated docs
+
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
 
