@@ -1,3 +1,5 @@
+![Banner](assets/Banner.png)
+
 # Semantic Vision
 
 **Understand any Python codebase in minutes, not days.**
