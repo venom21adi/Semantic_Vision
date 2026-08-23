@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -34,6 +35,14 @@ from semantic_vision.persistence.models import (
 _GRAPH_STATE_FILENAME = "graph_state.json"
 _METADATA_FILENAME = "metadata.json"
 _DOCS_INDEX_FILENAME = "index.json"
+
+# Windows-only in practice: os.replace() can transiently raise
+# PermissionError (WinError 32, ERROR_SHARING_VIOLATION) if something
+# else -- antivirus, a sync client, the search indexer -- briefly has the
+# destination file open without share-delete access. POSIX rename has no
+# such failure mode. These are typically held for well under a second.
+_REPLACE_RETRY_ATTEMPTS = 5
+_REPLACE_RETRY_DELAY_SECONDS = 0.1
 
 
 def resolve_doc_root(parsed_root: Path, requested: str | None) -> Path:
@@ -90,11 +99,24 @@ def _read_json_model[T: BaseModel](path: Path, model: type[T]) -> T | None:
 def _write_json_model(path: Path, payload: BaseModel) -> None:
     """Writes via a temp file + atomic rename so a crash or an interrupted
     write mid-flight can never leave a truncated/corrupt file behind for
-    the next read to (silently) treat as absent."""
+    the next read to (silently) treat as absent.
+
+    The rename is retried a bounded number of times on `PermissionError`
+    -- see `_REPLACE_RETRY_ATTEMPTS` -- to ride out a transient Windows
+    file lock rather than surfacing a 500 for what's normally a
+    sub-second hold from an unrelated process.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(f"{path.suffix}.tmp")
     tmp_path.write_text(payload.model_dump_json(indent=2), encoding="utf-8")
-    os.replace(tmp_path, path)
+    for attempt in range(_REPLACE_RETRY_ATTEMPTS):
+        try:
+            os.replace(tmp_path, path)
+            return
+        except PermissionError:
+            if attempt == _REPLACE_RETRY_ATTEMPTS - 1:
+                raise
+            time.sleep(_REPLACE_RETRY_DELAY_SECONDS * (attempt + 1))
 
 
 def read_graph_state(repo_root: Path) -> GraphState:

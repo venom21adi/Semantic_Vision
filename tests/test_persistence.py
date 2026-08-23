@@ -1,4 +1,7 @@
+import os
 from pathlib import Path
+
+import pytest
 
 from semantic_vision.persistence import store
 from semantic_vision.persistence.models import NodePosition
@@ -100,6 +103,46 @@ def test_write_doc_replaces_previous_entry_for_same_node(tmp_path: Path):
 
     assert len(index.entries) == 1
     assert store.read_doc(tmp_path, "app.py::greet") == "second version"
+
+
+def test_graph_state_save_retries_past_a_transient_permission_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Simulates the Windows-only failure mode where os.replace() raises
+    PermissionError (WinError 32) because something else -- antivirus, a
+    sync client, the search indexer -- transiently has the destination
+    file open. The write should ride this out rather than surfacing it as
+    an error to the caller."""
+    real_replace = os.replace
+    calls = {"count": 0}
+
+    def flaky_replace(src, dst):
+        calls["count"] += 1
+        if calls["count"] < 3:
+            raise PermissionError("The process cannot access the file")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(store.os, "replace", flaky_replace)
+    monkeypatch.setattr(store.time, "sleep", lambda _seconds: None)
+
+    store.write_graph_state(tmp_path, {"app.py::greet": NodePosition(x=1, y=2)})
+
+    assert calls["count"] == 3
+    state = store.read_graph_state(tmp_path)
+    assert state.positions == {"app.py::greet": NodePosition(x=1, y=2)}
+
+
+def test_graph_state_save_gives_up_after_persistent_permission_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    def always_denied(src, dst):
+        raise PermissionError("The process cannot access the file")
+
+    monkeypatch.setattr(store.os, "replace", always_denied)
+    monkeypatch.setattr(store.time, "sleep", lambda _seconds: None)
+
+    with pytest.raises(PermissionError):
+        store.write_graph_state(tmp_path, {"app.py::greet": NodePosition(x=1, y=2)})
 
 
 def test_resolve_doc_root_uses_explicit_override_ignoring_git(tmp_path: Path):
