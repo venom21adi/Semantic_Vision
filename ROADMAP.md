@@ -11,10 +11,11 @@ call graph, upstream impact analysis, per-function execution flowcharts, and AI-
 documentation, all running locally against your own source. The problem it solves is the time
 engineers lose reconstructing a mental model of code they didn't write — reading files one at a
 time, grepping for callers, guessing at blast radius before a change. V1 targets a single
-engineer working against a single local Python repository. V2 widens that in four directions:
+engineer working against a single local Python repository. V2 widens that in five directions:
 richer signal on the existing graph, support for the other languages real codebases are
-actually written in, a shared view for a whole team instead of one engineer at a time, and a
-presence inside the editor instead of a separate browser tab.
+actually written in, a shared view for a whole team instead of one engineer at a time, a
+presence inside the editor instead of a separate browser tab, and a connection from that graph
+down into the data layer the code actually reads and writes.
 
 ## Current release: V1
 
@@ -37,7 +38,7 @@ by that process before shipping, not zero.
 
 ## What's next: V2
 
-Four initiatives, each independently useful — none blocks the others except where noted.
+Five initiatives, each independently useful — none blocks the others except where noted.
 
 ### Function Performance Prediction
 
@@ -114,19 +115,50 @@ available directly on a function in the code, not just on the graph.
 **Status:** Planned. Independent of the other three initiatives and buildable in parallel with
 any of them — it's a new surface for the existing product, not a change to the product itself.
 
+### Code-to-Data Lineage
+
+**Problem.** The graph today stops at the boundary of the application code. A schema change —
+dropping a column, renaming a table — has real blast radius into the Python functions that read
+or write it and into any dbt models built on top of it, but nothing connects those two pictures.
+An engineer has to check the codebase and a separate dbt lineage graph by hand, and often doesn't
+think to check both.
+
+**Opportunity.** Extend the existing graph and impact-analysis engine — already built to answer
+"what calls this function" — with the data layer: database tables, SQLAlchemy models, and dbt
+models, so one click on a table surfaces every consumer in code and in the data pipeline
+together. This deliberately doesn't compete with dbt's own lineage tooling or a database GUI on
+their own turf — it ingests what they already produce and connects it to the code graph, which
+neither shows on its own.
+
+**Scope at a glance:** SQLAlchemy model and relationship parsing, extending the existing Python
+parser rather than adding a new one; read-only, local schema introspection against on-prem
+databases as ground truth; ingestion of dbt's own `manifest.json` lineage output — no SQL
+parsing or reimplementation of dbt's DAG; detection of which functions read or write which
+tables, via ORM calls and (table-level only) raw SQL query text; impact analysis extended to
+traverse across code and data in one view.
+
+**Status:** Planned. No dependency on the other four initiatives — SQLAlchemy parsing builds
+directly on the existing Python parser, and the dbt/database pieces are self-contained
+connectors into the same graph.
+
 ## Sequencing
 
 No initiative here blocks another except where stated above (multi-language needs its parsing
 groundwork first; collaboration needs its storage groundwork first). Given that, Performance
 Prediction is the natural first pick — it's the smallest, lowest-risk, and builds most directly
 on what V1 already shipped — but nothing above is committed to a specific order beyond that.
+Code-to-Data Lineage is similarly unblocked and could be picked up alongside it.
 
 ## Explicitly not planned
 
 To keep scope honest: this roadmap does not include a hosted/SaaS version, user authentication
 or access control, or a general-purpose plugin system for arbitrary third-party integrations.
 Team Collaboration Mode's "attribution" is a display name, not an identity system — see above.
-If that changes, this document will say so explicitly rather than by omission.
+Code-to-Data Lineage does not include a SQL query optimizer or performance analyzer,
+column-level lineage through raw SQL (table-level only), any ability to write to or migrate a
+connected database (introspection is read-only), or a replacement for dbt's own lineage graph
+(it ingests dbt's manifest rather than reimplementing dbt's own DAG engine). If any of this
+changes, this document will say so explicitly rather than by omission.
 
 ## Feedback
 
