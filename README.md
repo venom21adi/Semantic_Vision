@@ -8,6 +8,7 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 **What problem does this solve?**
+
 Engineers lose real hours every week reconstructing context on code
 they didn't write — tracing callers by hand, guessing at blast radius,
 reading files one at a time with no map of the whole. Documentation is
@@ -18,7 +19,9 @@ generates documentation on demand from the code as it actually is
 today — nothing to remember to update, because nothing was hand-written
 to begin with.
 
-🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 📝 AI-generated docs
+**At a glance:**
+
+🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 📝 AI-generated docs · ⚡ 100% local & private
 
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
