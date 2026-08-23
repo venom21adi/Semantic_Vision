@@ -93,3 +93,28 @@ export type DocProvider = 'ollama' | 'openai' | 'anthropic'
 export interface OllamaModelsResponse {
   models: string[]
 }
+
+export type FlowNodeKind = 'entry' | 'return' | 'statement' | 'call' | 'decision' | 'loop' | 'io'
+export type FlowEdgeKind = 'flow' | 'true' | 'false' | 'loop_back'
+
+export interface FlowNode {
+  id: string
+  kind: FlowNodeKind
+  label: string
+  line: number
+  end_line: number
+}
+
+export interface FlowEdge {
+  source: string
+  target: string
+  kind: FlowEdgeKind
+  label: string | null
+}
+
+export interface FlowchartResponse {
+  target: string
+  entry: string
+  nodes: FlowNode[]
+  edges: FlowEdge[]
+}

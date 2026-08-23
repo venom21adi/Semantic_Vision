@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from semantic_vision.analysis.impact import Caller
+from semantic_vision.flowchart.cfg import FlowEdge, FlowNode
 from semantic_vision.models import Edge, Node, ParseError
 from semantic_vision.persistence.models import DocIndexEntry, NodePosition
 
@@ -92,3 +93,10 @@ class ImpactResponse(BaseModel):
     callers: list[Caller]
     edges: list[Edge]
     cycles: list[list[str]]
+
+
+class FlowchartResponse(BaseModel):
+    target: str
+    entry: str
+    nodes: list[FlowNode]
+    edges: list[FlowEdge]

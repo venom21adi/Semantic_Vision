@@ -19,6 +19,7 @@ const noop = {
   onDocument: vi.fn(),
   onImpactAnalysis: vi.fn(),
   onViewSource: vi.fn(),
+  onExecutionFlowchart: vi.fn(),
 }
 
 describe('GraphCanvas', () => {

@@ -3,6 +3,7 @@ import type {
   DocProvider,
   DocResponse,
   DocRootResponse,
+  FlowchartResponse,
   FunctionSourceResponse,
   GraphResponse,
   GraphStateResponse,
@@ -98,6 +99,12 @@ export function saveDoc(path: string, id: string, markdown: string): Promise<Doc
   return request<DocResponse>(
     `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
     { method: 'POST', body: JSON.stringify({ markdown }) },
+  )
+}
+
+export function getFlowchart(path: string, id: string): Promise<FlowchartResponse> {
+  return request<FlowchartResponse>(
+    `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
   )
 }
 

@@ -40,6 +40,7 @@ export interface GraphCanvasProps {
   onDocument: (nodeId: string) => void
   onImpactAnalysis: (nodeId: string) => void
   onViewSource: (nodeId: string) => void
+  onExecutionFlowchart: (nodeId: string) => void
   /** Called every `AUTO_SAVE_POSITIONS_INTERVAL_MS` with the current node
    * positions (including any the user has dragged), so a moved layout
    * survives a reload. Omit to disable auto-save. */
@@ -58,6 +59,7 @@ function GraphCanvasInner({
   onDocument,
   onImpactAnalysis,
   onViewSource,
+  onExecutionFlowchart,
   onAutoSavePositions,
   highlight,
 }: GraphCanvasProps) {
@@ -222,6 +224,7 @@ function GraphCanvasInner({
           onDocument={onDocument}
           onImpactAnalysis={onImpactAnalysis}
           onViewSource={onViewSource}
+          onExecutionFlowchart={onExecutionFlowchart}
         />
       )}
     </div>

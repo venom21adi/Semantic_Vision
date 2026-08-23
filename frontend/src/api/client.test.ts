@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ApiError,
+  getFlowchart,
   getFunctionSource,
   getGraph,
   parseRepo,
@@ -95,6 +96,26 @@ describe('api client', () => {
 
     const [url] = fetchMock.mock.calls[0]
     expect(String(url)).toContain(encodeURIComponent('/some path/with spaces'))
+  })
+
+  it('getFlowchart GETs with the path and id query-encoded', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ target: 'x', entry: 'x::n0', nodes: [], edges: [] }),
+          { status: 200 },
+        ),
+      )
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await getFlowchart('/some path', 'app.py::Greeter.greet')
+
+    expect(result.target).toBe('x')
+    const [url] = fetchMock.mock.calls[0]
+    expect(String(url)).toContain('/api/flowchart')
+    expect(String(url)).toContain(encodeURIComponent('/some path'))
+    expect(String(url)).toContain(encodeURIComponent('app.py::Greeter.greet'))
   })
 
   it('throws ApiError with the backend detail message on non-2xx', async () => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
   getDoc,
+  getFlowchart,
   getFunctionSource,
   getGraph,
   getGraphState,
@@ -13,10 +14,19 @@ import {
   streamDoc,
   updateDocRoot,
 } from './api/client'
-import type { DocProvider, GraphEdge, GraphNode, NodePosition, ParseErrorInfo } from './api/types'
+import type {
+  DocProvider,
+  FlowchartResponse,
+  GraphEdge,
+  GraphNode,
+  NodePosition,
+  ParseErrorInfo,
+} from './api/types'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
+import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
+import { buildFlowchartGraph } from './flowchart/transform'
 import { GraphCanvas, type GraphHighlight } from './graph/GraphCanvas'
 import { buildFlowGraph, scopeToFile } from './graph/transform'
 import {
@@ -47,6 +57,11 @@ function errorMessage(error: unknown): string {
   return 'Something went wrong.'
 }
 
+type FlowchartState =
+  | { status: 'loading'; label: string }
+  | { status: 'loaded'; label: string; data: FlowchartResponse }
+  | { status: 'error'; label: string; message: string }
+
 export default function App() {
   const [repo, setRepo] = useState<LoadedRepo | null>(null)
   const [loading, setLoading] = useState(false)
@@ -61,6 +76,7 @@ export default function App() {
   const [docSaveNoticeDismissed, setDocSaveNoticeDismissed] = useState(() =>
     isDocSaveNoticeDismissed(),
   )
+  const [flowchartState, setFlowchartState] = useState<FlowchartState | null>(null)
 
   const repoRef = useRef(repo)
   useEffect(() => {
@@ -131,6 +147,7 @@ export default function App() {
       setSelectedNodeId(null)
       setPane(null)
       setView('codebase')
+      setFlowchartState(null)
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {
@@ -278,6 +295,31 @@ export default function App() {
     }
   }, [repo, selectedNodeId])
 
+  const handleExecutionFlowchart = useCallback(
+    async (nodeId: string) => {
+      if (!repo) return
+      const label = repo.nodes.find((node) => node.id === nodeId)?.label ?? nodeId
+      setSelectedNodeId(nodeId)
+      setFlowchartState({ status: 'loading', label })
+      try {
+        const data = await getFlowchart(repo.path, nodeId)
+        setFlowchartState({ status: 'loaded', label, data })
+      } catch (error) {
+        setFlowchartState({ status: 'error', label, message: errorMessage(error) })
+      }
+    },
+    [repo],
+  )
+
+  const handleBackToGraph = useCallback(() => {
+    setFlowchartState(null)
+  }, [])
+
+  const flowchartGraph = useMemo(() => {
+    if (!flowchartState || flowchartState.status !== 'loaded') return null
+    return buildFlowchartGraph(flowchartState.data.nodes, flowchartState.data.edges)
+  }, [flowchartState])
+
   const handleImpactAnalysis = useCallback(
     async (nodeId: string) => {
       if (!repo) return
@@ -390,17 +432,17 @@ export default function App() {
           />
         )}
         <main style={{ flex: 1, minWidth: 0 }}>
-          {!repo && (
+          {!repo && !flowchartState && (
             <div style={{ padding: 24, color: '#94a3b8' }}>
               Load a repository to see its codebase graph.
             </div>
           )}
-          {showFileViewPlaceholder && (
+          {repo && !flowchartState && showFileViewPlaceholder && (
             <div style={{ padding: 24, color: '#94a3b8' }}>
               Select a file, class, or function to see its file view.
             </div>
           )}
-          {repo && !showFileViewPlaceholder && (
+          {repo && !flowchartState && !showFileViewPlaceholder && (
             <GraphCanvas
               key={`${repo.path}:${view}:${view === 'file' ? selectedNode?.file : ''}`}
               nodes={flowGraph.nodes}
@@ -410,8 +452,43 @@ export default function App() {
               onDocument={handleDocument}
               onImpactAnalysis={handleImpactAnalysis}
               onViewSource={handleViewSource}
+              onExecutionFlowchart={handleExecutionFlowchart}
               onAutoSavePositions={handleAutoSavePositions}
               highlight={impactHighlight}
+            />
+          )}
+          {flowchartState?.status === 'loading' && (
+            <div style={{ padding: 24, color: '#94a3b8' }}>Loading flowchart…</div>
+          )}
+          {flowchartState?.status === 'error' && (
+            <div style={{ padding: 24 }}>
+              <span role="alert" style={{ color: '#fca5a5' }}>
+                {flowchartState.message}
+              </span>
+              <div style={{ marginTop: 12 }}>
+                <button
+                  onClick={handleBackToGraph}
+                  style={{
+                    background: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: 4,
+                    color: '#f8fafc',
+                    padding: '4px 10px',
+                    fontSize: 12,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Back to graph
+                </button>
+              </div>
+            </div>
+          )}
+          {flowchartState?.status === 'loaded' && flowchartGraph && (
+            <FlowchartCanvas
+              targetLabel={flowchartState.label}
+              nodes={flowchartGraph.nodes}
+              edges={flowchartGraph.edges}
+              onBack={handleBackToGraph}
             />
           )}
         </main>

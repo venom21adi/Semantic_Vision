@@ -12,8 +12,10 @@ tracing imports by hand, and guessing what a function actually touches
 before you dare change it. Semantic Vision replaces that with a live,
 explorable map: point it at a repo and get an interactive call graph, a
 searchable structure tree, one-click **impact analysis** for "what
-breaks if I touch this," and **AI-generated documentation** for
-whatever doesn't have any yet — all running entirely on your machine.
+breaks if I touch this," a **function-level execution flowchart** for
+tracing exactly how a function behaves, and **AI-generated
+documentation** for whatever doesn't have any yet — all running
+entirely on your machine.
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
 
@@ -34,6 +36,12 @@ only care about a slice.
 function for impact analysis: every direct and transitive caller,
 circular call chains flagged instead of silently mishandled, and the
 whole chain highlighted live on the graph.
+
+🧭 **Trace exactly how a function behaves** — right-click any function
+for its execution flowchart: branches, loops with visible back-edges,
+I/O, and calls out to other functions in the repo, rendered with
+conventional flowchart shapes instead of you stepping through the code
+by hand.
 
 📝 **Never write another docstring by hand** — right-click any function
 to generate real Markdown documentation (Purpose, Parameters, Returns,
@@ -66,7 +74,7 @@ and what's still ahead:
 | Persisted layout & view state | ✅ Available |
 | Impact analysis (upstream callers, cycle detection) | ✅ Available |
 | AI-generated function documentation | ✅ Available |
-| Function-level execution flowcharts | 🚧 Planned |
+| Function-level execution flowcharts | ✅ Available |
 | Docker packaging / one-command setup | 🚧 Planned |
 | Multi-language support (beyond Python) | 🚧 Planned |
 
@@ -103,6 +111,19 @@ next to the repository path shows and lets you override this before or
 after loading; the first time anything is saved, a notice names exactly
 where it went, with an inline **Change** control to relocate future
 saves without re-parsing.
+
+## 🧭 Execution flowcharts
+
+Right-click any function and choose **Execution Flowchart** to see
+exactly how it behaves, built from its real AST rather than a rough
+summary: entry and return points, decisions with **Yes**/**No** edges,
+loops with a visible back-edge, I/O calls, and calls out to other
+functions in the repo — each in its own conventional flowchart shape.
+
+![An execution flowchart for a function with a loop, branches, break/continue, and an I/O call](assets/execution-flowchart.png)
+
+The flowchart replaces the graph canvas while open; **Back to graph**
+returns you to the normal call graph.
 
 ## 🤖 AI documentation setup
 

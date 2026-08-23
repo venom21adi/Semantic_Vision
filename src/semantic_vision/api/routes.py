@@ -13,6 +13,7 @@ from semantic_vision.api.schemas import (
     DocIndexResponse,
     DocResponse,
     DocRootResponse,
+    FlowchartResponse,
     FunctionSourceResponse,
     GenerateDocRequest,
     GraphResponse,
@@ -25,6 +26,7 @@ from semantic_vision.api.schemas import (
     SaveGraphStateRequest,
     UpdateDocRootRequest,
 )
+from semantic_vision.flowchart.cfg import build_flowchart
 from semantic_vision.models import NodeKind, ParseResult
 from semantic_vision.persistence import store as persistence
 from semantic_vision.repo_parser import parse_repository
@@ -146,6 +148,22 @@ def get_impact(
     impact = find_upstream_callers(id, reverse_index, max_depth=max_depth)
     return ImpactResponse(
         target=impact.target, callers=impact.callers, edges=impact.edges, cycles=impact.cycles
+    )
+
+
+@router.get("/flowchart", response_model=FlowchartResponse)
+def get_flowchart(path: str = Query(...), id: str = Query(...)) -> FlowchartResponse:
+    result = _get_cached(path)
+    node = next((n for n in result.nodes if n.id == id), None)
+    if node is None or node.kind != NodeKind.FUNCTION:
+        raise HTTPException(status_code=404, detail=f"Function not found: {id}")
+
+    flowchart = build_flowchart(result, id)
+    return FlowchartResponse(
+        target=flowchart.target,
+        entry=flowchart.entry,
+        nodes=flowchart.nodes,
+        edges=flowchart.edges,
     )
 
 

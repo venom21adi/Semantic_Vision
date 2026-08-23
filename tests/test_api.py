@@ -204,6 +204,56 @@ def test_function_source_requires_prior_parse():
     assert resp.status_code == 404
 
 
+def test_flowchart_returns_entry_and_return_nodes():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/flowchart",
+        params={"path": repo_path, "id": "app.py::Greeter.greet"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["target"] == "app.py::Greeter.greet"
+    node_kinds = {n["id"]: n["kind"] for n in body["nodes"]}
+    assert node_kinds[body["entry"]] == "entry"
+    assert "return" in node_kinds.values()
+
+
+def test_flowchart_missing_node_returns_404():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/flowchart",
+        params={"path": repo_path, "id": "app.py::DoesNotExist"},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_flowchart_non_function_node_returns_404():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/flowchart",
+        params={"path": repo_path, "id": "app.py::Greeter"},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_flowchart_requires_prior_parse():
+    resp = client.get(
+        "/api/flowchart",
+        params={"path": str(FIXTURES / "simple_repo"), "id": "app.py::Greeter.greet"},
+    )
+
+    assert resp.status_code == 404
+
+
 @pytest.fixture
 def temp_repo(tmp_path: Path) -> Path:
     """A throwaway repo for persistence tests, so `.visualiser/` writes

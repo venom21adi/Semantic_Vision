@@ -22,6 +22,7 @@ vi.mock('./api/client', async (importOriginal) => {
     streamDoc: vi.fn(),
     getOllamaModels: vi.fn(),
     getImpact: vi.fn(),
+    getFlowchart: vi.fn(),
   }
 })
 
@@ -458,6 +459,65 @@ describe('App', () => {
     await userEvent.setup().click(within(tree).getByText('greet'))
 
     expect(screen.getByRole('heading', { name: 'greet' })).toBeInTheDocument()
+  })
+
+  it('fetches and renders the execution flowchart via the context menu, then returns to the graph', async () => {
+    mockedClient.getFlowchart.mockResolvedValue({
+      target: 'app.py::Greeter.greet',
+      entry: 'app.py::Greeter.greet::n0',
+      nodes: [
+        {
+          id: 'app.py::Greeter.greet::n0',
+          kind: 'entry',
+          label: 'def greet(self):',
+          line: 6,
+          end_line: 6,
+        },
+        {
+          id: 'app.py::Greeter.greet::n1',
+          kind: 'return',
+          label: 'return path',
+          line: 7,
+          end_line: 7,
+        },
+      ],
+      edges: [
+        {
+          source: 'app.py::Greeter.greet::n0',
+          target: 'app.py::Greeter.greet::n1',
+          kind: 'flow',
+          label: null,
+        },
+      ],
+    })
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Execution Flowchart' }))
+
+    await waitFor(() => expect(screen.getByText('Execution flowchart: greet')).toBeInTheDocument())
+    expect(mockedClient.getFlowchart).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
+    expect(screen.getByText('def greet(self):')).toBeInTheDocument()
+    expect(screen.getByText('return path')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+
+    expect(screen.queryByText('Execution flowchart: greet')).not.toBeInTheDocument()
+    expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument()
+  })
+
+  it('shows an error and a way back to the graph when fetching the flowchart fails', async () => {
+    mockedClient.getFlowchart.mockRejectedValue(new client.ApiError(404, 'Function not found'))
+
+    const user = await loadSampleRepo()
+    fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
+    await user.click(screen.getByRole('menuitem', { name: 'Execution Flowchart' }))
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Function not found'))
+
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+
+    expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument()
   })
 
   it('shows a placeholder in File view until a file-scoped node is selected', async () => {

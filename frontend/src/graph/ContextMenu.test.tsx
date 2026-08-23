@@ -6,7 +6,7 @@ import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
 const target: ContextMenuTarget = { nodeId: 'app.py::Greeter.greet', label: 'greet', x: 10, y: 10 }
 
 describe('ContextMenu', () => {
-  it('renders Document, Impact Analysis, and View Source actions', () => {
+  it('renders Document, Impact Analysis, View Source, and Execution Flowchart actions', () => {
     render(
       <ContextMenu
         target={target}
@@ -14,12 +14,35 @@ describe('ContextMenu', () => {
         onDocument={vi.fn()}
         onImpactAnalysis={vi.fn()}
         onViewSource={vi.fn()}
+        onExecutionFlowchart={vi.fn()}
       />,
     )
 
     expect(screen.getByRole('menuitem', { name: 'Document' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Impact Analysis' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'View Source' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Execution Flowchart' })).toBeInTheDocument()
+  })
+
+  it('invokes onExecutionFlowchart and closes on item click', async () => {
+    const onExecutionFlowchart = vi.fn()
+    const onClose = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <ContextMenu
+        target={target}
+        onClose={onClose}
+        onDocument={vi.fn()}
+        onImpactAnalysis={vi.fn()}
+        onViewSource={vi.fn()}
+        onExecutionFlowchart={onExecutionFlowchart}
+      />,
+    )
+
+    await user.click(screen.getByRole('menuitem', { name: 'Execution Flowchart' }))
+
+    expect(onExecutionFlowchart).toHaveBeenCalledWith('app.py::Greeter.greet')
+    expect(onClose).toHaveBeenCalled()
   })
 
   it('invokes the matching callback and closes on item click', async () => {
@@ -33,6 +56,7 @@ describe('ContextMenu', () => {
         onDocument={vi.fn()}
         onImpactAnalysis={vi.fn()}
         onViewSource={onViewSource}
+        onExecutionFlowchart={vi.fn()}
       />,
     )
 
@@ -54,6 +78,7 @@ describe('ContextMenu', () => {
           onDocument={vi.fn()}
           onImpactAnalysis={vi.fn()}
           onViewSource={vi.fn()}
+          onExecutionFlowchart={vi.fn()}
         />
       </div>,
     )
@@ -73,6 +98,7 @@ describe('ContextMenu', () => {
         onDocument={vi.fn()}
         onImpactAnalysis={vi.fn()}
         onViewSource={vi.fn()}
+        onExecutionFlowchart={vi.fn()}
       />,
     )
 

@@ -13,6 +13,7 @@ interface ContextMenuProps {
   onDocument: (nodeId: string) => void
   onImpactAnalysis: (nodeId: string) => void
   onViewSource: (nodeId: string) => void
+  onExecutionFlowchart: (nodeId: string) => void
 }
 
 export function ContextMenu({
@@ -21,6 +22,7 @@ export function ContextMenu({
   onDocument,
   onImpactAnalysis,
   onViewSource,
+  onExecutionFlowchart,
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -46,6 +48,7 @@ export function ContextMenu({
     { label: 'Document', action: onDocument },
     { label: 'Impact Analysis', action: onImpactAnalysis },
     { label: 'View Source', action: onViewSource },
+    { label: 'Execution Flowchart', action: onExecutionFlowchart },
   ]
 
   return (
