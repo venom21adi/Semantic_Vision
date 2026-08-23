@@ -9,7 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .claude/
-.github/agents
+.github/
 docs/
 ROADMAP.md
 
