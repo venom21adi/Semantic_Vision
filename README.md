@@ -7,7 +7,7 @@
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-#### What problem does this solve?
+### What problem does this solve?
 
 Engineers lose real hours every week reconstructing context on code
 they didn't write — tracing callers by hand, guessing at blast radius,
@@ -19,7 +19,7 @@ generates documentation on demand from the code as it actually is
 today — nothing to remember to update, because nothing was hand-written
 to begin with.
 
-#### At a glance
+### At a glance
 
 🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 📝 AI-generated docs · ⚡ 100% local & private
 
