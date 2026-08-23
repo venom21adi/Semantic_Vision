@@ -18,6 +18,7 @@ from semantic_vision.api.schemas import (
     GenerateDocRequest,
     GraphResponse,
     GraphStateResponse,
+    HealthResponse,
     ImpactResponse,
     OllamaModelsResponse,
     ParseRepoRequest,
@@ -32,6 +33,11 @@ from semantic_vision.persistence import store as persistence
 from semantic_vision.repo_parser import parse_repository
 
 router = APIRouter(prefix="/api")
+
+
+@router.get("/health", response_model=HealthResponse)
+def get_health() -> HealthResponse:
+    return HealthResponse(status="ok")
 
 
 @router.post("/parse-repo", response_model=ParseRepoResponse)

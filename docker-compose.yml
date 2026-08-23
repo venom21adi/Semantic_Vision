@@ -1,0 +1,40 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - SEMANTIC_VISION_OPENAI_MODEL=${SEMANTIC_VISION_OPENAI_MODEL:-}
+      - SEMANTIC_VISION_ANTHROPIC_MODEL=${SEMANTIC_VISION_ANTHROPIC_MODEL:-}
+      - SEMANTIC_VISION_OLLAMA_MODEL=${SEMANTIC_VISION_OLLAMA_MODEL:-}
+      - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # The inspected repository, read-only -- source code should never be
+      # writable from the container. `.visualiser/` needs its own mount
+      # layered on top since persistence still needs somewhere to write;
+      # see docs/BUILD-PLAN.md's "Docker Path Convention".
+      - ${REPO_PATH:-.}:/workspace/repo:ro
+      - ${REPO_PATH:-.}/.visualiser:/workspace/repo/.visualiser
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy

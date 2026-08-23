@@ -19,3 +19,7 @@ frontend/dist/
 # Semantic Vision persisted repo state (written into whatever repo you inspect,
 # including test fixtures if you load one through a locally running app)
 .visualiser/
+
+# Local runtime logs, and Docker's local env overrides
+*.log
+.env

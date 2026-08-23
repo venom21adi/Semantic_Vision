@@ -153,6 +153,13 @@ def test_graph_is_served_from_cache_after_parse(monkeypatch):
     assert calls == [repo_path]
 
 
+def test_health_check():
+    resp = client.get("/api/health")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}
+
+
 def test_function_source_returns_snippet():
     repo_path = str(FIXTURES / "simple_repo")
     client.post("/api/parse-repo", json={"path": repo_path})

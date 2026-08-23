@@ -17,14 +17,18 @@ import litellm
 from semantic_vision.ai.context import DocContext
 
 _MODELS = {
-    "ollama": os.environ.get("SEMANTIC_VISION_OLLAMA_MODEL", "ollama_chat/llama3"),
-    "openai": os.environ.get("SEMANTIC_VISION_OPENAI_MODEL", "gpt-4o-mini"),
-    "anthropic": os.environ.get(
-        "SEMANTIC_VISION_ANTHROPIC_MODEL", "anthropic/claude-haiku-4-5-20251001"
-    ),
+    # `or default` rather than `.get(key, default)`: an env var that's
+    # *set but empty* (e.g. a blank optional field in a `.env` file, which
+    # both `uv run` and Docker Compose happily pass through as `KEY=`)
+    # must fall back the same as an unset one -- `.get`'s default only
+    # kicks in when the key is absent entirely.
+    "ollama": os.environ.get("SEMANTIC_VISION_OLLAMA_MODEL") or "ollama_chat/llama3",
+    "openai": os.environ.get("SEMANTIC_VISION_OPENAI_MODEL") or "gpt-4o-mini",
+    "anthropic": os.environ.get("SEMANTIC_VISION_ANTHROPIC_MODEL")
+    or "anthropic/claude-haiku-4-5-20251001",
 }
 
-_OLLAMA_BASE_URL = os.environ.get("OLLAMA_API_BASE", "http://localhost:11434")
+_OLLAMA_BASE_URL = os.environ.get("OLLAMA_API_BASE") or "http://localhost:11434"
 
 
 def list_ollama_models() -> list[str]:

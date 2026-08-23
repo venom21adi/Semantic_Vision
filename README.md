@@ -75,7 +75,7 @@ and what's still ahead:
 | Impact analysis (upstream callers, cycle detection) | ✅ Available |
 | AI-generated function documentation | ✅ Available |
 | Function-level execution flowcharts | ✅ Available |
-| Docker packaging / one-command setup | 🚧 Planned |
+| Docker packaging / one-command setup | ✅ Available |
 | Multi-language support (beyond Python) | 🚧 Planned |
 
 The parsing layer targets Python today; the graph, API, and persistence
@@ -111,6 +111,46 @@ next to the repository path shows and lets you override this before or
 after loading; the first time anything is saved, a notice names exactly
 where it went, with an inline **Change** control to relocate future
 saves without re-parsing.
+
+## 🐳 Run with Docker
+
+Requires Docker and Docker Compose.
+
+```bash
+git clone https://github.com/venom21adi/Semantic_Vision.git
+cd Semantic_Vision
+cp .env.example .env
+docker compose up --build
+```
+
+Then open `http://localhost:5173` and type `/workspace/repo` as the
+repository path — that's the fixed, in-container path a host repository
+gets mounted at (see below), not a real path on your machine. With no
+further setup, `docker compose up` mounts this project's own repo as a
+ready-to-explore demo.
+
+To inspect a different repository, set `REPO_PATH` in `.env` to its
+absolute path on your host machine before starting, then keep typing
+`/workspace/repo` (or a subfolder of it, e.g. `/workspace/repo/src`) into
+the app — never your real host path, which the container can't see.
+`.env` is also where you'd set `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or
+`OLLAMA_API_BASE` (an Ollama server running on your host is reachable
+from the backend container at `http://host.docker.internal:11434` by
+default — see `.env.example` for the full list).
+
+The mounted repository is read-only, with one deliberate exception: a
+separate writable mount at `/workspace/repo/.visualiser` (landing at
+`.visualiser/` in the repo on your host, exactly where it would locally)
+so saves still work without making the rest of your source writable
+inside the container. Two things follow from that:
+
+- The **Save location** "Change" control only works if pointed back at
+  `/workspace/repo/.visualiser` — anywhere else fails with a permission
+  error, since that's the only writable path inside the container.
+- The default auto-detected save location only lands there if the
+  mounted repository has its own `.git` at `/workspace/repo` itself
+  (true for `REPO_PATH` pointing at a repo root, not a path with no
+  `.git` anywhere in its own tree).
 
 ## 🧭 Execution flowcharts
 

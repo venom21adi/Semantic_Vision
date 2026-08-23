@@ -100,3 +100,7 @@ class FlowchartResponse(BaseModel):
     entry: str
     nodes: list[FlowNode]
     edges: list[FlowEdge]
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"]
