@@ -19,6 +19,12 @@ interface RepoLoaderProps {
    * field reflects reality rather than staying stuck on stale input. */
   resolvedDocRoot?: string | null
   stats: RepoLoadStats | null
+  /** Whether a repository is currently loaded -- this is the single place
+   * the save location can be edited, so once a repo is loaded, committing
+   * a change here applies it live instead of only taking effect on the
+   * next Load. */
+  hasLoadedRepo?: boolean
+  onChangeDocRoot?: (newDocRoot: string) => void
 }
 
 export function RepoLoader({
@@ -29,6 +35,8 @@ export function RepoLoader({
   initialDocRoot,
   resolvedDocRoot,
   stats,
+  hasLoadedRepo = false,
+  onChangeDocRoot,
 }: RepoLoaderProps) {
   const [path, setPath] = useState(initialPath ?? '')
   const [docRoot, setDocRoot] = useState(initialDocRoot ?? '')
@@ -49,6 +57,23 @@ export function RepoLoader({
     event.preventDefault()
     const trimmed = path.trim()
     if (trimmed) onLoad(trimmed, docRoot.trim())
+  }
+
+  // Committing this field is the single place the save location changes:
+  // before a repo is loaded, it just seeds the next Load call; once one
+  // is loaded, blurring (or pressing Enter) applies the change live via
+  // `onChangeDocRoot` instead of waiting for a reload.
+  function commitDocRoot() {
+    if (!hasLoadedRepo || !onChangeDocRoot) return
+    const trimmed = docRoot.trim()
+    if (trimmed && trimmed !== resolvedDocRoot) {
+      onChangeDocRoot(trimmed)
+    } else if (resolvedDocRoot) {
+      // Blank, whitespace-only, or unchanged: nothing to apply -- snap the
+      // field back to what's actually in effect rather than leaving it
+      // (e.g. blank) permanently desynced from the real save location.
+      setDocRoot(resolvedDocRoot)
+    }
   }
 
   return (
@@ -108,6 +133,13 @@ export function RepoLoader({
             type="text"
             value={docRoot}
             onChange={(event) => setDocRoot(event.target.value)}
+            onBlur={commitDocRoot}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                event.currentTarget.blur()
+              }
+            }}
             placeholder="Defaults to the nearest .git root"
             aria-label="Save location"
             style={{

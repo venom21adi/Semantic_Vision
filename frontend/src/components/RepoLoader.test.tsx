@@ -61,6 +61,95 @@ describe('RepoLoader', () => {
     expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/root')
   })
 
+  it('commits a save-location change live on blur once a repo is loaded', async () => {
+    const onChangeDocRoot = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={null}
+        resolvedDocRoot="/repo/.visualiser"
+        hasLoadedRepo={true}
+        onChangeDocRoot={onChangeDocRoot}
+      />,
+    )
+
+    const input = screen.getByLabelText('Save location')
+    await user.clear(input)
+    await user.type(input, '/new/save/spot')
+    await user.tab()
+
+    expect(onChangeDocRoot).toHaveBeenCalledWith('/new/save/spot')
+  })
+
+  it('commits a save-location change on Enter without submitting the load form', async () => {
+    const onChangeDocRoot = vi.fn()
+    const onLoad = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <RepoLoader
+        onLoad={onLoad}
+        loading={false}
+        error={null}
+        stats={null}
+        resolvedDocRoot="/repo/.visualiser"
+        hasLoadedRepo={true}
+        onChangeDocRoot={onChangeDocRoot}
+      />,
+    )
+
+    const input = screen.getByLabelText('Save location')
+    await user.clear(input)
+    await user.type(input, '/new/save/spot{Enter}')
+
+    expect(onChangeDocRoot).toHaveBeenCalledWith('/new/save/spot')
+    expect(onLoad).not.toHaveBeenCalled()
+  })
+
+  it('snaps a cleared save-location field back to the resolved value instead of leaving it blank', async () => {
+    const onChangeDocRoot = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={null}
+        resolvedDocRoot="/repo/.visualiser"
+        hasLoadedRepo={true}
+        onChangeDocRoot={onChangeDocRoot}
+      />,
+    )
+
+    const input = screen.getByLabelText('Save location')
+    await user.clear(input)
+    await user.tab()
+
+    expect(onChangeDocRoot).not.toHaveBeenCalled()
+    expect(input).toHaveValue('/repo/.visualiser')
+  })
+
+  it('does not commit a save-location change live before any repo is loaded', async () => {
+    const onChangeDocRoot = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={null}
+        onChangeDocRoot={onChangeDocRoot}
+      />,
+    )
+
+    await user.type(screen.getByLabelText('Save location'), '/new/save/spot')
+    await user.tab()
+
+    expect(onChangeDocRoot).not.toHaveBeenCalled()
+  })
+
   it('disables the button for a blank path', () => {
     render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
 

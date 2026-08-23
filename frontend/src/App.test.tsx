@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as client from './api/client'
 import type { GraphResponse, GraphStateResponse } from './api/types'
 import App from './App'
-import { getLastRepoPath } from './utils/localStorage'
+import {
+  getDetailsCollapsed,
+  getLastRepoPath,
+  getSidebarCollapsed,
+  setDetailsCollapsed,
+  setSidebarCollapsed,
+} from './utils/localStorage'
 import { AUTO_SAVE_POSITIONS_INTERVAL_MS } from './graph/GraphCanvas'
 
 vi.mock('./api/client', async (importOriginal) => {
@@ -338,6 +344,30 @@ describe('App', () => {
     expect(screen.getAllByLabelText('Repository path')[1]).toHaveValue('/repo')
   })
 
+  it('persists sidebar and details-panel collapsed state to localStorage, independently', async () => {
+    expect(getSidebarCollapsed()).toBe(false)
+    expect(getDetailsCollapsed()).toBe(false)
+
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
+    expect(getSidebarCollapsed()).toBe(true)
+    expect(getDetailsCollapsed()).toBe(false)
+
+    await user.click(screen.getByRole('button', { name: 'Collapse details panel' }))
+    expect(getDetailsCollapsed()).toBe(true)
+  })
+
+  it('starts collapsed on mount when localStorage already remembers a collapsed state', async () => {
+    setSidebarCollapsed(true)
+    setDetailsCollapsed(true)
+
+    await loadSampleRepo()
+
+    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Expand details panel' })).toBeInTheDocument()
+  })
+
   it('shows the resolved save location after loading, and remembers it for next time', async () => {
     mockedClient.parseRepo.mockResolvedValue({
       path: '/repo',
@@ -394,7 +424,7 @@ describe('App', () => {
     expect(screen.queryByText(/the\/save\/root/)).not.toBeInTheDocument()
   })
 
-  it('changes the save location from the notice without re-parsing the repo', async () => {
+  it('changes the save location from the top field without re-parsing the repo', async () => {
     mockedClient.parseRepo.mockResolvedValue({
       path: '/repo',
       doc_root: '/original/root',
@@ -414,10 +444,10 @@ describe('App', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Document' }))
     await waitFor(() => expect(screen.getByText(/original\/root/)).toBeInTheDocument())
 
-    await user.click(screen.getByRole('button', { name: 'Change' }))
-    await user.clear(screen.getByLabelText('New save location'))
-    await user.type(screen.getByLabelText('New save location'), '/new/root')
-    await user.click(screen.getByRole('button', { name: 'Update' }))
+    const saveLocationInput = screen.getByLabelText('Save location')
+    await user.clear(saveLocationInput)
+    await user.type(saveLocationInput, '/new/root')
+    await user.tab()
 
     await waitFor(() => expect(mockedClient.updateDocRoot).toHaveBeenCalledWith('/repo', '/new/root'))
     expect(mockedClient.parseRepo).toHaveBeenCalledTimes(1)

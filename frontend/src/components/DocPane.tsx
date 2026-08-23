@@ -18,8 +18,9 @@ interface DocPaneProps {
   onRefreshOllamaModels: () => void
   onGenerate: () => void
   onSave: () => void
+  onEditMarkdown: (markdown: string) => void
   docRoot: string
-  onChangeDocRoot: (newDocRoot: string) => void
+  fileName: string
   noticeDismissed: boolean
   onDismissNotice: () => void
 }
@@ -51,14 +52,38 @@ export function DocPane({
   onRefreshOllamaModels,
   onGenerate,
   onSave,
+  onEditMarkdown,
   docRoot,
-  onChangeDocRoot,
+  fileName,
   noticeDismissed,
   onDismissNotice,
 }: DocPaneProps) {
   const busy = pane.status === 'generating'
   const hasContent = pane.status === 'generating' || pane.status === 'loaded'
   const generateLabel = pane.status === 'loaded' ? 'Regenerate' : 'Generate'
+
+  const [isEditing, setIsEditing] = useState(false)
+
+  // Mirrors RepoLoader's "adjust state when a prop changes" pattern: a
+  // fresh generation replaces whatever was being edited, so drop back to
+  // the streaming preview during render rather than leaving a stale
+  // textarea open over content that's about to change out from under it.
+  const [lastPaneStatus, setLastPaneStatus] = useState(pane.status)
+  if (pane.status !== lastPaneStatus) {
+    setLastPaneStatus(pane.status)
+    if (pane.status === 'generating') setIsEditing(false)
+  }
+
+  function handleExport() {
+    if (pane.status !== 'loaded') return
+    const blob = new Blob([pane.markdown], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${fileName}.md`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div>
@@ -150,46 +175,70 @@ export function DocPane({
 
       {hasContent && (
         <>
-          <div
-            className="doc-markdown"
-            style={{
-              background: '#0f172a',
-              border: '1px solid #1e293b',
-              borderRadius: 6,
-              padding: 10,
-              fontSize: 12,
-              overflowX: 'auto',
-            }}
-          >
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-              {pane.markdown}
-            </ReactMarkdown>
-          </div>
-          {pane.status === 'loaded' && !noticeDismissed && (
-            <SaveLocationNotice
-              docRoot={docRoot}
-              onChangeDocRoot={onChangeDocRoot}
-              onDismiss={onDismissNotice}
-            />
-          )}
-          {pane.status === 'loaded' && (
-            <button
-              type="button"
-              onClick={onSave}
-              disabled={pane.saved}
+          {isEditing && pane.status === 'loaded' ? (
+            <textarea
+              aria-label="Edit documentation"
+              value={pane.markdown}
+              onChange={(event) => onEditMarkdown(event.target.value)}
               style={{
-                marginTop: 8,
-                background: pane.saved ? '#1e293b' : '#15803d',
-                color: '#f8fafc',
-                border: 'none',
+                width: '100%',
+                minHeight: 220,
+                boxSizing: 'border-box',
+                background: '#0f172a',
+                border: '1px solid #1e293b',
                 borderRadius: 6,
-                padding: '4px 10px',
+                padding: 10,
                 fontSize: 12,
-                cursor: pane.saved ? 'default' : 'pointer',
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                color: '#f8fafc',
+                resize: 'vertical',
+              }}
+            />
+          ) : (
+            <div
+              className="doc-markdown"
+              style={{
+                background: '#0f172a',
+                border: '1px solid #1e293b',
+                borderRadius: 6,
+                padding: 10,
+                fontSize: 12,
+                overflowX: 'auto',
               }}
             >
-              {pane.saved ? 'Saved' : 'Save'}
-            </button>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                {pane.markdown}
+              </ReactMarkdown>
+            </div>
+          )}
+          {pane.status === 'loaded' && !noticeDismissed && (
+            <SaveLocationNotice docRoot={docRoot} onDismiss={onDismissNotice} />
+          )}
+          {pane.status === 'loaded' && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={pane.saved}
+                style={{
+                  background: pane.saved ? '#1e293b' : '#15803d',
+                  color: '#f8fafc',
+                  border: 'none',
+                  borderRadius: 6,
+                  padding: '4px 10px',
+                  fontSize: 12,
+                  cursor: pane.saved ? 'default' : 'pointer',
+                }}
+              >
+                {pane.saved ? 'Saved' : 'Save'}
+              </button>
+              <button type="button" onClick={() => setIsEditing((prev) => !prev)} style={secondaryButtonStyle}>
+                {isEditing ? 'Preview' : 'Edit'}
+              </button>
+              <button type="button" onClick={handleExport} style={secondaryButtonStyle}>
+                Export
+              </button>
+            </div>
           )}
         </>
       )}
@@ -197,24 +246,17 @@ export function DocPane({
   )
 }
 
-function SaveLocationNotice({
-  docRoot,
-  onChangeDocRoot,
-  onDismiss,
-}: {
-  docRoot: string
-  onChangeDocRoot: (newDocRoot: string) => void
-  onDismiss: () => void
-}) {
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState(docRoot)
+const secondaryButtonStyle = {
+  background: 'transparent',
+  color: '#f8fafc',
+  border: '1px solid #334155',
+  borderRadius: 6,
+  padding: '4px 10px',
+  fontSize: 12,
+  cursor: 'pointer',
+} as const
 
-  function submit() {
-    const trimmed = value.trim()
-    if (trimmed && trimmed !== docRoot) onChangeDocRoot(trimmed)
-    setEditing(false)
-  }
-
+function SaveLocationNotice({ docRoot, onDismiss }: { docRoot: string; onDismiss: () => void }) {
   return (
     <div
       role="status"
@@ -228,51 +270,13 @@ function SaveLocationNotice({
         color: '#94a3b8',
       }}
     >
-      {!editing && (
-        <>
-          <p style={{ margin: '0 0 4px' }}>
-            Documentation is saved to <code>{docRoot}</code>.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setValue(docRoot)
-              setEditing(true)
-            }}
-            style={linkButtonStyle}
-          >
-            Change
-          </button>{' '}
-          <button type="button" onClick={onDismiss} style={linkButtonStyle}>
-            Don't show again
-          </button>
-        </>
-      )}
-      {editing && (
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <input
-            type="text"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            aria-label="New save location"
-            style={{
-              flex: 1,
-              padding: '4px 6px',
-              borderRadius: 4,
-              border: '1px solid #334155',
-              background: '#0b1220',
-              color: '#f8fafc',
-              fontSize: 11,
-            }}
-          />
-          <button type="button" onClick={submit} style={linkButtonStyle}>
-            Update
-          </button>
-          <button type="button" onClick={() => setEditing(false)} style={linkButtonStyle}>
-            Cancel
-          </button>
-        </div>
-      )}
+      <p style={{ margin: '0 0 4px' }}>
+        Documentation is saved to <code>{docRoot}</code>. Change this in the Save location field
+        at the top of the page.
+      </p>
+      <button type="button" onClick={onDismiss} style={linkButtonStyle}>
+        Don't show again
+      </button>
     </div>
   )
 }

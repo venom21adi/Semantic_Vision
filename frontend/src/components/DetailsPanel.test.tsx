@@ -24,8 +24,8 @@ const docProps = {
   onRefreshOllamaModels: noop,
   onGenerateDoc: noop,
   onSaveDoc: noop,
+  onEditDoc: noop,
   docRoot: '/repo',
-  onChangeDocRoot: noop,
   docSaveNoticeDismissed: true,
   onDismissDocSaveNotice: noop,
 }
@@ -229,5 +229,40 @@ describe('DetailsPanel', () => {
     )
 
     expect(screen.getByRole('alert')).toHaveTextContent('boom')
+  })
+
+  it('calls onToggleCollapsed when the collapse button is clicked', async () => {
+    const onToggleCollapsed = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        onToggleCollapsed={onToggleCollapsed}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Collapse details panel' }))
+
+    expect(onToggleCollapsed).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows only the expand toggle, and hides node details, when collapsed', () => {
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        collapsed={true}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'Expand details panel' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'greet' })).not.toBeInTheDocument()
   })
 })

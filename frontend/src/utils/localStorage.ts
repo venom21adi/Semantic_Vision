@@ -61,3 +61,38 @@ export function dismissDocSaveNotice(): void {
     // Best-effort only.
   }
 }
+
+const SIDEBAR_COLLAPSED_KEY = 'semantic-vision:sidebar-collapsed'
+const DETAILS_COLLAPSED_KEY = 'semantic-vision:details-collapsed'
+
+export function getSidebarCollapsed(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setSidebarCollapsed(collapsed: boolean): void {
+  try {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0')
+  } catch {
+    // Best-effort only.
+  }
+}
+
+export function getDetailsCollapsed(): boolean {
+  try {
+    return localStorage.getItem(DETAILS_COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setDetailsCollapsed(collapsed: boolean): void {
+  try {
+    localStorage.setItem(DETAILS_COLLAPSED_KEY, collapsed ? '1' : '0')
+  } catch {
+    // Best-effort only.
+  }
+}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GraphEdge, GraphNode } from '../api/types'
+import { CollapseToggle } from './CollapseToggle'
 import { Tree } from './Tree'
 import { buildTree, collectMatchIds, collectVisiblePath } from '../tree/buildTree'
 
@@ -12,6 +13,8 @@ interface SidebarProps {
   onSelectNode: (nodeId: string) => void
   view: GraphView
   onViewChange: (view: GraphView) => void
+  collapsed?: boolean
+  onToggleCollapsed?: () => void
 }
 
 export function Sidebar({
@@ -21,6 +24,8 @@ export function Sidebar({
   onSelectNode,
   view,
   onViewChange,
+  collapsed = false,
+  onToggleCollapsed = () => {},
 }: SidebarProps) {
   const [query, setQuery] = useState('')
 
@@ -28,6 +33,21 @@ export function Sidebar({
   const matchIds = useMemo(() => collectMatchIds(tree, query), [tree, query])
   const visibleIds = useMemo(() => collectVisiblePath(tree, matchIds), [tree, matchIds])
   const isFiltering = query.trim().length > 0
+
+  if (collapsed) {
+    return (
+      <aside
+        style={{
+          width: 28,
+          flexShrink: 0,
+          borderRight: '1px solid #1e293b',
+          padding: '8px 4px',
+        }}
+      >
+        <CollapseToggle collapsed onClick={onToggleCollapsed} edge="left" paneName="sidebar" />
+      </aside>
+    )
+  }
 
   return (
     <aside
@@ -40,7 +60,8 @@ export function Sidebar({
         minHeight: 0,
       }}
     >
-      <div style={{ display: 'flex', padding: 8, gap: 4 }}>
+      <div style={{ display: 'flex', padding: 8, gap: 4, alignItems: 'center' }}>
+        <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="left" paneName="sidebar" />
         {(['codebase', 'file'] as const).map((option) => (
           <button
             key={option}

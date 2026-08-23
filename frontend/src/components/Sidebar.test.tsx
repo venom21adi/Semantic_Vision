@@ -52,6 +52,8 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onSelectNode: vi.fn(),
     view: 'codebase',
     onViewChange: vi.fn(),
+    collapsed: false,
+    onToggleCollapsed: vi.fn(),
     ...overrides,
   }
   return { ...render(<Sidebar {...props} />), props }
@@ -117,5 +119,22 @@ describe('Sidebar', () => {
 
     expect(screen.getByRole('button', { name: 'file' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'codebase' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('calls onToggleCollapsed when the collapse button is clicked', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar()
+
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
+
+    expect(props.onToggleCollapsed).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows only the expand toggle, and hides the tree, when collapsed', () => {
+    renderSidebar({ collapsed: true })
+
+    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument()
+    expect(screen.queryByText('app.py')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Filter tree')).not.toBeInTheDocument()
   })
 })

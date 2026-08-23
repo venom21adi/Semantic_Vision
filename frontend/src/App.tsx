@@ -31,11 +31,15 @@ import { GraphCanvas, type GraphHighlight } from './graph/GraphCanvas'
 import { buildFlowGraph, scopeToFile } from './graph/transform'
 import {
   dismissDocSaveNotice,
+  getDetailsCollapsed,
   getLastRepoPath,
   getRememberedDocRoot,
+  getSidebarCollapsed,
   isDocSaveNoticeDismissed,
+  setDetailsCollapsed,
   setLastRepoPath,
   setRememberedDocRoot,
+  setSidebarCollapsed,
 } from './utils/localStorage'
 
 const EMPTY_GRAPH: { nodes: GraphNode[]; edges: GraphEdge[] } = { nodes: [], edges: [] }
@@ -77,6 +81,24 @@ export default function App() {
     isDocSaveNoticeDismissed(),
   )
   const [flowchartState, setFlowchartState] = useState<FlowchartState | null>(null)
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => getSidebarCollapsed())
+  const [detailsCollapsed, setDetailsCollapsedState] = useState(() => getDetailsCollapsed())
+
+  const toggleSidebarCollapsed = useCallback(() => {
+    setSidebarCollapsedState((prev) => {
+      const next = !prev
+      setSidebarCollapsed(next)
+      return next
+    })
+  }, [])
+
+  const toggleDetailsCollapsed = useCallback(() => {
+    setDetailsCollapsedState((prev) => {
+      const next = !prev
+      setDetailsCollapsed(next)
+      return next
+    })
+  }, [])
 
   const repoRef = useRef(repo)
   useEffect(() => {
@@ -295,6 +317,14 @@ export default function App() {
     }
   }, [repo, selectedNodeId])
 
+  const handleEditDoc = useCallback((markdown: string) => {
+    setPane((prev) =>
+      prev?.kind === 'doc' && prev.status === 'loaded'
+        ? { kind: 'doc', status: 'loaded', markdown, saved: false }
+        : prev,
+    )
+  }, [])
+
   const handleExecutionFlowchart = useCallback(
     async (nodeId: string) => {
       if (!repo) return
@@ -408,6 +438,8 @@ export default function App() {
           initialPath={lastRepoPath ?? undefined}
           initialDocRoot={rememberedDocRoot ?? undefined}
           resolvedDocRoot={repo?.docRoot ?? null}
+          hasLoadedRepo={repo !== null}
+          onChangeDocRoot={handleChangeDocRoot}
           stats={
             repo
               ? {
@@ -429,6 +461,8 @@ export default function App() {
             onSelectNode={handleSelectNode}
             view={view}
             onViewChange={setView}
+            collapsed={sidebarCollapsed}
+            onToggleCollapsed={toggleSidebarCollapsed}
           />
         )}
         <main style={{ flex: 1, minWidth: 0 }}>
@@ -506,10 +540,12 @@ export default function App() {
           onRefreshOllamaModels={refreshOllamaModels}
           onGenerateDoc={handleGenerateDoc}
           onSaveDoc={handleSaveDoc}
+          onEditDoc={handleEditDoc}
           docRoot={repo?.docRoot ?? ''}
-          onChangeDocRoot={handleChangeDocRoot}
           docSaveNoticeDismissed={docSaveNoticeDismissed}
           onDismissDocSaveNotice={handleDismissDocSaveNotice}
+          collapsed={detailsCollapsed}
+          onToggleCollapsed={toggleDetailsCollapsed}
         />
       </div>
     </div>

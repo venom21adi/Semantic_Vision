@@ -1,4 +1,5 @@
 import type { Caller, DocProvider, GraphNode, ImpactResponse } from '../api/types'
+import { CollapseToggle } from './CollapseToggle'
 import { DocPane } from './DocPane'
 
 export type ActivePane =
@@ -29,10 +30,12 @@ interface DetailsPanelProps {
   onRefreshOllamaModels: () => void
   onGenerateDoc: () => void
   onSaveDoc: () => void
+  onEditDoc: (markdown: string) => void
   docRoot: string
-  onChangeDocRoot: (newDocRoot: string) => void
   docSaveNoticeDismissed: boolean
   onDismissDocSaveNotice: () => void
+  collapsed?: boolean
+  onToggleCollapsed?: () => void
 }
 
 export function DetailsPanel({
@@ -49,11 +52,28 @@ export function DetailsPanel({
   onRefreshOllamaModels,
   onGenerateDoc,
   onSaveDoc,
+  onEditDoc,
   docRoot,
-  onChangeDocRoot,
   docSaveNoticeDismissed,
   onDismissDocSaveNotice,
+  collapsed = false,
+  onToggleCollapsed = () => {},
 }: DetailsPanelProps) {
+  if (collapsed) {
+    return (
+      <aside
+        style={{
+          width: 28,
+          flexShrink: 0,
+          borderLeft: '1px solid #1e293b',
+          padding: '8px 4px',
+        }}
+      >
+        <CollapseToggle collapsed onClick={onToggleCollapsed} edge="right" paneName="details panel" />
+      </aside>
+    )
+  }
+
   return (
     <aside
       style={{
@@ -66,6 +86,9 @@ export function DetailsPanel({
         fontSize: 13,
       }}
     >
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="right" paneName="details panel" />
+      </div>
       {!selectedNode && <p style={{ color: '#94a3b8' }}>Select a node to see details.</p>}
 
       {selectedNode && (
@@ -127,8 +150,13 @@ export function DetailsPanel({
               onRefreshOllamaModels={onRefreshOllamaModels}
               onGenerate={onGenerateDoc}
               onSave={onSaveDoc}
+              onEditMarkdown={onEditDoc}
               docRoot={docRoot}
-              onChangeDocRoot={onChangeDocRoot}
+              fileName={
+                selectedNode?.label
+                  ? selectedNode.label.replace(/[^a-zA-Z0-9._-]+/g, '_')
+                  : 'documentation'
+              }
               noticeDismissed={docSaveNoticeDismissed}
               onDismissNotice={onDismissDocSaveNotice}
             />

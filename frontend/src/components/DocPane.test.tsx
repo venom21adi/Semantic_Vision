@@ -13,8 +13,9 @@ const baseProps = {
   onRefreshOllamaModels: vi.fn(),
   onGenerate: vi.fn(),
   onSave: vi.fn(),
+  onEditMarkdown: vi.fn(),
   docRoot: '/repo',
-  onChangeDocRoot: vi.fn(),
+  fileName: 'greet',
   noticeDismissed: false,
   onDismissNotice: vi.fn(),
 }
@@ -178,5 +179,67 @@ describe('DocPane', () => {
 
     await user.click(screen.getByRole('button', { name: /don't show again/i }))
     expect(onDismissNotice).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not offer an inline "Change" control on the save-location notice', () => {
+    render(
+      <DocPane
+        {...baseProps}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: false }}
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
+    expect(screen.getByText(/save location field at the top/i)).toBeInTheDocument()
+  })
+
+  it('switches to a plain-text editor and calls onEditMarkdown as the user types', async () => {
+    const onEditMarkdown = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <DocPane
+        {...baseProps}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: true }}
+        onEditMarkdown={onEditMarkdown}
+      />,
+    )
+
+    expect(screen.queryByLabelText('Edit documentation')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
+
+    const textarea = screen.getByLabelText('Edit documentation')
+    expect(textarea).toHaveValue('# greet')
+
+    await user.type(textarea, '!')
+    expect(onEditMarkdown).toHaveBeenCalledWith('# greet!')
+
+    await user.click(screen.getByRole('button', { name: 'Preview' }))
+    expect(screen.queryByLabelText('Edit documentation')).not.toBeInTheDocument()
+  })
+
+  it('exports the current markdown as a downloadable .md file', async () => {
+    const user = userEvent.setup()
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const createObjectURL = vi.fn(() => 'blob:mock-url')
+    const revokeObjectURL = vi.fn()
+    // jsdom doesn't implement these -- stub them for the duration of this test.
+    Object.assign(URL, { createObjectURL, revokeObjectURL })
+
+    render(
+      <DocPane
+        {...baseProps}
+        pane={{ kind: 'doc', status: 'loaded', markdown: '# greet', saved: true }}
+        fileName="app_py__Greeter_greet"
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Export' }))
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    expect(clickSpy).toHaveBeenCalledTimes(1)
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
+
+    clickSpy.mockRestore()
   })
 })
