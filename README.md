@@ -149,35 +149,26 @@ and what's still ahead:
 | Docker packaging / one-command setup | ✅ Available |
 | Multi-language support — Python, JavaScript, TypeScript | ✅ Available |
 
-The graph, API, and persistence layers are language-neutral, and the
-parsing layer plugs a language in behind that: Python via its own `ast`
-module, JavaScript/TypeScript via
-[`tree-sitter`](https://tree-sitter.github.io/tree-sitter/) rather than
-a real compiler, which is a deliberate trade worth stating honestly:
-tree-sitter parses syntax only — no type checking, no built-in import or
-symbol resolution — so, same as Python's own resolver does today,
-Semantic Vision hand-resolves every import and call itself, and flags
-genuinely ambiguous ones rather than guess. Expect that to happen
-somewhat more often for JS/TS than for Python: dynamic patterns like
-`require()` with a computed path or reassigning `module.exports` are
-inherently harder to resolve statically than Python's more explicit
-imports, a default import (`import Foo from "./thing"`) can't be traced
-to the exact declaration it binds to (flagged ambiguous rather than
-guessed), and TypeScript loses the precision a real type checker could
-give (e.g. resolving a call through an interface or a generic). JSX/TSX
-parse cleanly under the same grammar, with no extra handling needed. A
-`static {}` class-initialization block, CommonJS-style
-`const { x } = require(...)` destructuring, and `tsconfig.json` path
-aliases (`"@/utils/x"`) are known, deliberately deferred gaps, not
-silent bugs. A repo is parsed as one language at a time — pick which in
-the language selector next to the repository path field; there's no
-mixed-language parsing within a single load. The call graph, search,
-impact analysis, complexity report, and AI documentation are all fully
-JS/TS-aware today. Execution flowcharts are the one feature still
-Python-only under the hood — it degrades gracefully rather than erroring
-for a JS/TS repo (a minimal placeholder instead of the real flowchart);
-sized and planned, not yet built, in
-[`docs/JS-TS-FLOWCHART-PLAN.md`](docs/JS-TS-FLOWCHART-PLAN.md).
+### Feature support by language
+
+| Feature | Python | JavaScript / TypeScript |
+|---|:---:|:---:|
+| Call graph — imports, classes, functions, calls | ✅ | ✅ |
+| Search | ✅ | ✅ |
+| Impact analysis | ✅ | ✅ |
+| Complexity report | ✅ | ✅ |
+| AI documentation | ✅ | ✅ |
+| Execution flowcharts | ✅ | ❌ |
+
+A repo is parsed as one language at a time — pick which in the selector
+next to the repository path field. JS/TS parses via
+[`tree-sitter`](https://tree-sitter.github.io/tree-sitter/); imports and
+calls are hand-resolved the same way Python's are, flagging genuinely
+ambiguous cases (a computed `require()` path, a default import, anything
+needing real type info) rather than guessing — expect that flag somewhat
+more often than with Python. `static {}` blocks, CommonJS
+`const { x } = require(...)`, and `tsconfig.json` path aliases
+(`"@/utils/x"`) aren't parsed yet; JSX/TSX works fine.
 
 ## 🚀 Quick start
 
