@@ -29,6 +29,7 @@ from semantic_vision.api.schemas import (
     UpdateDocRootRequest,
 )
 from semantic_vision.flowchart.cfg import build_flowchart
+from semantic_vision.languages import UnknownLanguageError
 from semantic_vision.models import NodeKind, ParseResult
 from semantic_vision.persistence import store as persistence
 from semantic_vision.repo_parser import parse_repository
@@ -45,7 +46,7 @@ def get_health() -> HealthResponse:
 def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
     try:
         result = parse_repository(request.path, language=request.language)
-    except (NotADirectoryError, PermissionError, ValueError) as exc:
+    except (NotADirectoryError, PermissionError, UnknownLanguageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     doc_root = persistence.resolve_doc_root(Path(result.root), request.doc_root)

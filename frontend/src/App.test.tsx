@@ -92,6 +92,22 @@ describe('App', () => {
     expect(screen.getByTestId('repo-status')).toHaveTextContent('/repo — 2 nodes, 1 edges')
   })
 
+  it('loads a repository with the selected language and remembers it per repo path', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.selectOptions(screen.getByLabelText('Language'), 'javascript')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
+
+    expect(mockedClient.parseRepo).toHaveBeenCalledWith('/repo', undefined, 'javascript')
+
+    unmount()
+    render(<App />)
+
+    expect(screen.getByLabelText('Language')).toHaveValue('javascript')
+  })
+
   it('shows a load error from the API', async () => {
     mockedClient.parseRepo.mockRejectedValue(new client.ApiError(400, 'Not a directory'))
     const user = userEvent.setup()
