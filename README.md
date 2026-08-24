@@ -150,7 +150,22 @@ and what's still ahead:
 
 The parsing layer targets Python today; the graph, API, and persistence
 layers are built to stay language-neutral so other languages can plug
-in later.
+in later. JavaScript/TypeScript is next, planned via
+[`tree-sitter`](https://tree-sitter.github.io/tree-sitter/) rather than
+a real compiler, which is a deliberate trade worth stating honestly:
+tree-sitter parses syntax only — no type checking, no built-in import or
+symbol resolution — so, same as Python's own resolver does today,
+Semantic Vision will still hand-resolve every import and call itself, and
+flag genuinely ambiguous ones rather than guess. Expect that to happen
+somewhat more often for JS/TS than for Python: dynamic patterns like
+`require()` with a computed path or reassigning `module.exports` are
+inherently harder to resolve statically than Python's more explicit
+imports, and TypeScript loses the precision a real type checker could
+give (e.g. resolving a call through an interface or a generic). JSX/TSX
+parse cleanly under the same grammar, with no extra handling needed.
+Extraction is still in progress; a `static {}` class-initialization
+block and CommonJS-style `const { x } = require(...)` destructuring are
+known, deliberately deferred gaps, not silent bugs.
 
 ## 🚀 Quick start
 
