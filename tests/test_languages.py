@@ -2,6 +2,8 @@ import pytest
 
 from semantic_vision.languages import LanguageAdapter, ParseSyntaxError, get_adapter, register
 from semantic_vision.languages import registry as registry_module
+from semantic_vision.languages.javascript import JAVASCRIPT_ADAPTER
+from semantic_vision.languages.javascript import parse_file as js_parse_file
 from semantic_vision.languages.python import PYTHON_ADAPTER, dotted_module_path, parse_file
 from semantic_vision.parser.extractor import RawModule
 
@@ -59,3 +61,29 @@ def test_parse_file_raises_parse_syntax_error_with_line_and_message():
 
     assert exc_info.value.line == 1
     assert exc_info.value.message == str(exc_info.value)
+
+
+def test_get_adapter_resolves_the_registered_javascript_adapter():
+    assert get_adapter("javascript") is JAVASCRIPT_ADAPTER
+
+
+def test_javascript_adapter_file_extensions_and_language_id():
+    assert JAVASCRIPT_ADAPTER.language_id == "javascript"
+    assert JAVASCRIPT_ADAPTER.file_extensions == frozenset(
+        {".js", ".jsx", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".tsx"}
+    )
+
+
+def test_js_parse_file_extracts_a_raw_module_from_valid_source():
+    raw = js_parse_file("function f() {}\n", "a.ts")
+
+    assert raw.rel_path == "a.ts"
+    assert [func.name for func in raw.functions] == ["f"]
+
+
+def test_js_parse_file_raises_parse_syntax_error_with_line_on_broken_source():
+    with pytest.raises(ParseSyntaxError) as exc_info:
+        js_parse_file("function f() {}\n\nclass C {\n", "bad.ts")
+
+    assert exc_info.value.line == 3
+    assert "bad.ts" in exc_info.value.message

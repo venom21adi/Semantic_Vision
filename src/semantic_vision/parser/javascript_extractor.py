@@ -449,20 +449,53 @@ def _extract_import(stmt: Node) -> list[RawImport]:
     return imports
 
 
+def parse_tree(
+    source: str, rel_path: str, grammar: tree_sitter.Language | None = None
+) -> tree_sitter.Tree:
+    """Parse `source` with the grammar selected from `rel_path`'s
+    extension (or an explicit override, for tests). tree-sitter never
+    raises on malformed input -- check the returned tree's
+    `root_node.has_error` (see `first_error_line`) if that matters to
+    the caller."""
+    lang = grammar if grammar is not None else _grammar_for(rel_path)
+    return tree_sitter.Parser(lang).parse(source.encode("utf-8"))
+
+
+def first_error_line(tree: tree_sitter.Tree) -> int | None:
+    """Best-effort location of the first syntax error in `tree`, for a
+    caller that wants to report *something* -- not a full diagnostic.
+    Walks only the path flagged by `has_error`, not the whole tree."""
+
+    def _search(node: Node) -> int | None:
+        if node.type == "ERROR" or node.is_missing:
+            return _line(node)
+        for child in node.children:
+            if child.has_error:
+                found = _search(child)
+                if found is not None:
+                    return found
+        return None
+
+    if not tree.root_node.has_error:
+        return None
+    return _search(tree.root_node)
+
+
 def extract_javascript_module(
     source: str, rel_path: str, grammar: tree_sitter.Language | None = None
 ) -> RawModule:
     """Parse `source` with the grammar selected from `rel_path`'s
-    extension (or an explicit override, for tests), and extract it.
-    Signature mirrors `LanguageAdapter.parse_file`'s `(source, rel_path)`
-    exactly, so a future JS adapter can assign this directly with no
-    wrapper."""
-    lang = grammar if grammar is not None else _grammar_for(rel_path)
-    tree = tree_sitter.Parser(lang).parse(source.encode("utf-8"))
-    return _extract_module(tree, rel_path)
+    extension (or an explicit override, for tests), and extract it in one
+    step -- a convenience for tests and other direct callers that don't
+    need syntax-error reporting. `languages/javascript.py`'s adapter does
+    *not* use this: it needs the intermediate `Tree` to check
+    `has_error` before extracting, so it calls `parse_tree`/
+    `extract_module` separately instead."""
+    tree = parse_tree(source, rel_path, grammar)
+    return extract_module(tree, rel_path)
 
 
-def _extract_module(tree: tree_sitter.Tree, rel_path: str) -> RawModule:
+def extract_module(tree: tree_sitter.Tree, rel_path: str) -> RawModule:
     module = RawModule(rel_path=rel_path)
     for stmt in _iter_scoped_defs(tree.root_node):
         if stmt.type == "import_statement":

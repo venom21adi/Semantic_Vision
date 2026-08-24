@@ -103,6 +103,112 @@ def test_circular_imports_resolve_without_crashing():
     assert all(not e.ambiguous and not e.external for e in imports_edges)
 
 
+def test_javascript_repo_symbols_and_edges_match_exactly():
+    """The JS/TS counterpart to `test_simple_repo_symbols_and_edges_match_exactly`:
+    a relative import resolving to a real symbol, a bare/external namespace
+    import, and a `this.method()` call -- exact node/edge assertions."""
+    result = parse_repository(FIXTURES / "js_repo", language="javascript")
+
+    assert result.root == (FIXTURES / "js_repo").resolve().as_posix()
+    assert result.parse_errors == []
+    assert result.variables == []
+
+    expected_nodes = [
+        Node(id="src", kind=NodeKind.DIRECTORY, label="src", file="src", line_start=0, line_end=0),
+        Node(
+            id="src/greeter.ts",
+            kind=NodeKind.FILE,
+            label="greeter.ts",
+            file="src/greeter.ts",
+            line_start=1,
+            line_end=13,
+        ),
+        Node(
+            id="src/greeter.ts::Greeter",
+            kind=NodeKind.CLASS,
+            label="Greeter",
+            file="src/greeter.ts",
+            line_start=4,
+            line_end=13,
+        ),
+        Node(
+            id="src/greeter.ts::Greeter.clean",
+            kind=NodeKind.FUNCTION,
+            label="clean",
+            file="src/greeter.ts",
+            line_start=10,
+            line_end=12,
+        ),
+        Node(
+            id="src/greeter.ts::Greeter.greet",
+            kind=NodeKind.FUNCTION,
+            label="greet",
+            file="src/greeter.ts",
+            line_start=5,
+            line_end=8,
+        ),
+        Node(
+            id="src/helper.ts",
+            kind=NodeKind.FILE,
+            label="helper.ts",
+            file="src/helper.ts",
+            line_start=1,
+            line_end=3,
+        ),
+        Node(
+            id="src/helper.ts::formatName",
+            kind=NodeKind.FUNCTION,
+            label="formatName",
+            file="src/helper.ts",
+            line_start=1,
+            line_end=3,
+        ),
+    ]
+    assert result.nodes == expected_nodes
+
+    expected_edges = [
+        Edge(source="src", target="src/greeter.ts", kind=EdgeKind.DEFINES),
+        Edge(source="src", target="src/helper.ts", kind=EdgeKind.DEFINES),
+        Edge(
+            source="src/greeter.ts", target="external::path", kind=EdgeKind.IMPORTS, external=True
+        ),
+        Edge(source="src/greeter.ts", target="src/greeter.ts::Greeter", kind=EdgeKind.DEFINES),
+        Edge(
+            source="src/greeter.ts",
+            target="src/helper.ts::formatName",
+            kind=EdgeKind.IMPORTS,
+        ),
+        Edge(
+            source="src/greeter.ts::Greeter",
+            target="src/greeter.ts::Greeter.clean",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/greeter.ts::Greeter",
+            target="src/greeter.ts::Greeter.greet",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/greeter.ts::Greeter.clean",
+            target="src/helper.ts::formatName",
+            kind=EdgeKind.CALLS,
+        ),
+        Edge(
+            source="src/greeter.ts::Greeter.greet",
+            target="external::path.join",
+            kind=EdgeKind.CALLS,
+            external=True,
+        ),
+        Edge(
+            source="src/greeter.ts::Greeter.greet",
+            target="src/greeter.ts::Greeter.clean",
+            kind=EdgeKind.CALLS,
+        ),
+        Edge(source="src/helper.ts", target="src/helper.ts::formatName", kind=EdgeKind.DEFINES),
+    ]
+    assert result.edges == expected_edges
+
+
 def test_star_import_and_unresolved_call_are_ambiguous():
     result = parse_repository(FIXTURES / "star_repo")
 

@@ -12,6 +12,7 @@ from semantic_vision.resolver.imports import ImportBinding
 from semantic_vision.resolver.symbol_table import ModuleIndex
 
 BUILTIN_NAMES = frozenset(vars(builtins))
+DEFAULT_SELF_NAMES = frozenset({"self", "cls"})
 
 
 def resolve_calls(
@@ -21,7 +22,20 @@ def resolve_calls(
     bindings: dict[str, ImportBinding],
     modules: dict[str, ModuleIndex],
     module_by_dotted: dict[str, str],
+    *,
+    self_names: frozenset[str] = DEFAULT_SELF_NAMES,
+    builtin_names: frozenset[str] = BUILTIN_NAMES,
+    builtin_namespace: str = "builtins",
 ) -> list[Edge]:
+    """`self_names`/`builtin_names`/`builtin_namespace` are the only
+    language-specific bits of call resolution -- everything else (the
+    module walk, nested-class recursion, decorator attribution,
+    binding-based dotted-chain resolution) operates purely on the shared
+    `Raw*`/`ImportBinding`/`ModuleIndex` types. Python's own call sites
+    rely on the defaults (`self`/`cls`, `builtins`); a language with a
+    different receiver keyword (e.g. JS's `this`) and global namespace
+    passes its own via `functools.partial`, reusing this whole
+    implementation unchanged."""
     edges: list[Edge] = []
 
     def resolve(function_id: str, call: RawCall, class_name: str | None) -> Edge:
@@ -34,6 +48,9 @@ def resolve_calls(
             modules,
             module_by_dotted,
             class_name,
+            self_names,
+            builtin_names,
+            builtin_namespace,
         )
 
     def resolve_class(cls: RawClass, class_id: str, defining_source_id: str) -> None:
@@ -95,6 +112,9 @@ def _resolve_call(
     modules: dict[str, ModuleIndex],
     module_by_dotted: dict[str, str],
     class_name: str | None,
+    self_names: frozenset[str],
+    builtin_names: frozenset[str],
+    builtin_namespace: str,
 ) -> Edge:
     if call.dotted is None:
         return _unresolved(function_id, f"dynamic@{rel_path}:{call.lineno}")
@@ -102,7 +122,7 @@ def _resolve_call(
     dotted = call.dotted
     root, _, rest = dotted.partition(".")
 
-    if root in ("self", "cls") and class_name is not None and rest and "." not in rest:
+    if root in self_names and class_name is not None and rest and "." not in rest:
         method_id = module_index.methods.get((class_name, rest))
         if method_id:
             return Edge(source=function_id, target=method_id, kind=EdgeKind.CALLS)
@@ -122,8 +142,8 @@ def _resolve_call(
             return Edge(
                 source=function_id, target=module_index.classes[root], kind=EdgeKind.CALLS
             )
-        if root in BUILTIN_NAMES:
-            return _external(function_id, f"builtins.{root}")
+        if root in builtin_names:
+            return _external(function_id, f"{builtin_namespace}.{root}")
     elif "." not in rest and root in module_index.classes:
         method_id = module_index.methods.get((root, rest))
         if method_id:

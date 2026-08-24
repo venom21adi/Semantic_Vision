@@ -4,6 +4,9 @@ from semantic_vision.parser.javascript_extractor import (
     TSX,
     TYPESCRIPT,
     extract_javascript_module,
+    extract_module,
+    first_error_line,
+    parse_tree,
 )
 
 
@@ -321,6 +324,32 @@ def test_class_nested_inside_arrow_function_closure_is_found():
     nested = raw.functions[0].nested_classes[0]
     assert nested.name == "Deep"
     assert nested.methods[0].calls == [RawCall(dotted="helper", lineno=2)]
+
+
+def test_parse_tree_then_extract_module_matches_extract_javascript_module():
+    source = "function f() { return helper(); }\n"
+    tree = parse_tree(source, "a.ts")
+    assert extract_module(tree, "a.ts") == extract_javascript_module(source, "a.ts")
+
+
+def test_parse_tree_has_no_error_for_valid_source():
+    tree = parse_tree("function f() {}\n", "a.ts")
+    assert tree.root_node.has_error is False
+
+
+def test_parse_tree_has_error_for_broken_source():
+    tree = parse_tree("function f( {\n", "a.ts")
+    assert tree.root_node.has_error is True
+
+
+def test_first_error_line_returns_none_for_valid_source():
+    tree = parse_tree("function f() {}\n", "a.ts")
+    assert first_error_line(tree) is None
+
+
+def test_first_error_line_finds_the_line_of_a_syntax_error():
+    tree = parse_tree("function f() {}\n\nclass C {\n", "a.ts")
+    assert first_error_line(tree) == 3
 
 
 def test_class_nested_inside_doubly_nested_arrow_closure_is_found():
