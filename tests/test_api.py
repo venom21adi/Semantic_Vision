@@ -420,9 +420,8 @@ def test_complexity_returns_a_score_per_function_end_to_end():
     assert isinstance(score["has_nested_loops"], bool)
 
 
-def test_complexity_is_served_from_the_cache_not_recomputed(monkeypatch):
+def test_complexity_is_built_lazily_on_first_request_then_served_from_cache(monkeypatch):
     repo_path = str(FIXTURES / "simple_repo")
-    client.post("/api/parse-repo", json={"path": repo_path})
 
     calls = {"count": 0}
     real_build = cache_module.build_complexity_index
@@ -433,10 +432,111 @@ def test_complexity_is_served_from_the_cache_not_recomputed(monkeypatch):
 
     monkeypatch.setattr(cache_module, "build_complexity_index", counting_build)
 
-    client.get("/api/complexity", params={"path": repo_path})
-    client.get("/api/complexity", params={"path": repo_path})
-
+    # Parsing alone must not build the complexity index -- that's the
+    # whole point of laziness.
+    client.post("/api/parse-repo", json={"path": repo_path})
     assert calls["count"] == 0
+
+    # First GET builds it once...
+    client.get("/api/complexity", params={"path": repo_path})
+    assert calls["count"] == 1
+
+    # ...and a second GET is served from the cache, not rebuilt.
+    client.get("/api/complexity", params={"path": repo_path})
+    assert calls["count"] == 1
+
+
+def test_complexity_index_is_invalidated_by_a_reparse(monkeypatch):
+    repo_path = str(FIXTURES / "simple_repo")
+
+    calls = {"count": 0}
+    real_build = cache_module.build_complexity_index
+
+    def counting_build(*args, **kwargs):
+        calls["count"] += 1
+        return real_build(*args, **kwargs)
+
+    monkeypatch.setattr(cache_module, "build_complexity_index", counting_build)
+
+    client.post("/api/parse-repo", json={"path": repo_path})
+    client.get("/api/complexity", params={"path": repo_path})
+    assert calls["count"] == 1
+
+    # A reparse must drop the previously cached complexity index rather
+    # than leaving it in place -- otherwise a stale index (computed from
+    # the prior ParseResult) would keep being served forever, since the
+    # cache would never see a reason to rebuild it.
+    client.post("/api/parse-repo", json={"path": repo_path})
+    resp = client.get("/api/complexity", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    assert calls["count"] == 2
+
+
+def test_complexity_index_is_not_resurrected_by_a_reparse_racing_a_build(monkeypatch):
+    """Regression test for a real race: `set()`'s invalidation and
+    `get_or_build_complexity_index`'s build both touch `_complexity_indexes`
+    for the same key. If they aren't ordered by the same lock, a build that
+    read the *old* `ParseResult` before a concurrent reparse can finish and
+    write its (now-stale) index *after* the reparse's own pop -- resurrecting
+    exactly the staleness the pop exists to prevent. This forces that
+    interleaving directly (two background threads: one holds the complexity
+    lock mid-build, the other attempts a reparse against the same lock) so
+    it doesn't depend on hoping a real race reproduces it."""
+    import threading
+    import time
+
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    real_build = cache_module.build_complexity_index
+    build_started = threading.Event()
+    proceed_with_build = threading.Event()
+    calls = {"count": 0}
+
+    def slow_build(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            # Simulate a build that's already read the old ParseResult and
+            # is mid-computation (still holding the lock) when a reparse
+            # comes in on another thread.
+            build_started.set()
+            assert proceed_with_build.wait(timeout=5), "never told to proceed"
+        return real_build(*args, **kwargs)
+
+    monkeypatch.setattr(cache_module, "build_complexity_index", slow_build)
+
+    builder = threading.Thread(target=lambda: cache.get_or_build_complexity_index(repo_path))
+    builder.start()
+    assert build_started.wait(timeout=5), "background build never started"
+
+    reparse_response: dict[str, object] = {}
+    reparser = threading.Thread(
+        target=lambda: reparse_response.update(
+            status_code=client.post("/api/parse-repo", json={"path": repo_path}).status_code
+        )
+    )
+    reparser.start()
+    # Give the reparser a moment to reach `set()`'s lock acquisition --
+    # everything before it (re-parsing the tiny fixture repo, rebuilding
+    # the reverse-caller index) is fast, so this margin is generous, not
+    # load-bearing precision.
+    time.sleep(0.3)
+
+    proceed_with_build.set()
+    builder.join(timeout=5)
+    reparser.join(timeout=5)
+    assert not builder.is_alive()
+    assert not reparser.is_alive()
+    assert reparse_response.get("status_code") == 200
+
+    # If the reparse's pop ran *before* the lock ordering fixed things, the
+    # background build's stale write would land after it and never get
+    # cleared -- the next access would be served from cache (count stays 1)
+    # instead of rebuilding.
+    assert calls["count"] == 1
+    cache.get_or_build_complexity_index(repo_path)
+    assert calls["count"] == 2
 
 
 def test_impact_requires_prior_parse():

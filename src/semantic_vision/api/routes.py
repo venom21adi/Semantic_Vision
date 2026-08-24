@@ -162,12 +162,11 @@ def get_impact(
 def get_complexity(path: str = Query(...)) -> ComplexityResponse:
     """Repo-wide, not per-node: the heatmap overlay and the ranked report
     pane both need the whole score set at once, and it's cheap to send in
-    one call since it's already computed and cached at parse time."""
+    one call since it's built lazily on first request and cached from then
+    on -- not every parse-repo call pays this cost, only the first repo
+    whose complexity is actually looked at."""
     _get_cached(path)
-    complexity_index = cache.get_complexity_index(path)
-    assert complexity_index is not None, (
-        "complexity index is built alongside the cached parse result"
-    )
+    complexity_index = cache.get_or_build_complexity_index(path)
     return ComplexityResponse(scores=list(complexity_index.values()))
 
 

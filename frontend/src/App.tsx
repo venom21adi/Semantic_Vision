@@ -30,7 +30,8 @@ import { Sidebar, type GraphView } from './components/Sidebar'
 import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
 import { buildFlowchartGraph } from './flowchart/transform'
 import { GraphCanvas, type GraphHighlight } from './graph/GraphCanvas'
-import { buildFlowGraph, scopeToFile } from './graph/transform'
+import { scopeToFile } from './graph/transform'
+import { useLayoutWorker } from './graph/useLayoutWorker'
 import {
   dismissDocSaveNotice,
   getDetailsCollapsed,
@@ -212,10 +213,18 @@ export default function App() {
   // which in turn resets GraphCanvas's own node/edge state (see its
   // `initialNodes` resync effect) -- discarding any live drag position
   // and any highlight/selection styling until the next render catches up.
+  // Keyed on `repo.nodes`/`repo.edges` specifically, not `repo` itself --
+  // `handleAutoSavePositions` replaces `repo` wholesale every 60s
+  // (spreading `positions` into a new object) but always keeps the same
+  // `nodes`/`edges` array references, so this stays stable across an
+  // autosave tick instead of recomputing (and, via `useLayoutWorker`
+  // below, re-running a full off-thread relayout) for a change that never
+  // touched graph content.
   const codebaseGraph = useMemo(() => {
     if (!repo) return EMPTY_GRAPH
     return { nodes: repo.nodes, edges: repo.edges }
-  }, [repo])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repo?.nodes, repo?.edges])
 
   const fileScopedGraph = useMemo(() => {
     if (!repo || !selectedNode || selectedNode.kind === 'directory') return null
@@ -224,23 +233,27 @@ export default function App() {
     // selecting a different symbol within the same already-scoped file
     // doesn't recompute this (and doesn't need to -- the scoped node/edge
     // set is identical either way). Deliberately not exhaustive: adding
-    // `selectedNode` itself back in would defeat the point.
+    // `selectedNode` itself back in would defeat the point. Same
+    // nodes/edges-not-repo reasoning as `codebaseGraph` above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repo, selectedNode?.file, selectedNode?.kind])
+  }, [repo?.nodes, repo?.edges, selectedNode?.file, selectedNode?.kind])
 
   const scopedGraph = view === 'file' && fileScopedGraph ? fileScopedGraph : codebaseGraph
 
+  const layout = useLayoutWorker(scopedGraph)
+
   const flowGraph = useMemo(() => {
-    const built = buildFlowGraph(scopedGraph.nodes, scopedGraph.edges)
-    if (!repo || Object.keys(repo.positions).length === 0) return built
+    if (!repo || Object.keys(repo.positions).length === 0) {
+      return { nodes: layout.nodes, edges: layout.edges }
+    }
     return {
-      ...built,
-      nodes: built.nodes.map((node) => {
+      nodes: layout.nodes.map((node) => {
         const saved = repo.positions[node.id]
         return saved ? { ...node, position: { x: saved.x, y: saved.y } } : node
       }),
+      edges: layout.edges,
     }
-  }, [scopedGraph, repo])
+  }, [layout, repo])
 
   const handleViewSource = useCallback(
     async (nodeId: string) => {
@@ -512,7 +525,22 @@ export default function App() {
               Select a file, class, or function to see its file view.
             </div>
           )}
-          {repo && !flowchartState && !showFileViewPlaceholder && (
+          {repo &&
+            !flowchartState &&
+            !showFileViewPlaceholder &&
+            (layout.status === 'idle' || layout.status === 'laying-out') && (
+              <div style={{ padding: 24, color: '#94a3b8' }}>
+                Laying out {scopedGraph.nodes.length} nodes…
+              </div>
+            )}
+          {repo && !flowchartState && !showFileViewPlaceholder && layout.status === 'error' && (
+            <div style={{ padding: 24 }}>
+              <span role="alert" style={{ color: '#fca5a5' }}>
+                Failed to lay out the graph. Try switching views or reloading the repository.
+              </span>
+            </div>
+          )}
+          {repo && !flowchartState && !showFileViewPlaceholder && layout.status === 'ready' && (
             <GraphCanvas
               key={`${repo.path}:${view}:${view === 'file' ? selectedNode?.file : ''}`}
               nodes={flowGraph.nodes}

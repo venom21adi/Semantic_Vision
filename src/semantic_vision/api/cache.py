@@ -4,6 +4,7 @@ path, so repeat requests for the same repo don't re-walk and re-parse it.
 
 from __future__ import annotations
 
+import threading
 from pathlib import Path
 
 from semantic_vision.analysis.complexity import ComplexityScore, build_complexity_index
@@ -17,6 +18,12 @@ class RepoCache:
         self._reverse_indexes: dict[str, dict[str, list[str]]] = {}
         self._complexity_indexes: dict[str, dict[str, ComplexityScore]] = {}
         self._doc_roots: dict[str, Path] = {}
+        # Guards building a repo's complexity index: `set()` no longer
+        # builds it eagerly (see below), so concurrent `/api/complexity`
+        # requests for the same just-parsed repo (e.g. two panels, two
+        # tabs) could otherwise both miss the cache and both pay the
+        # AST-walk cost.
+        self._complexity_lock = threading.Lock()
 
     @staticmethod
     def _key(path: str) -> str:
@@ -28,16 +35,44 @@ class RepoCache:
     def get_reverse_caller_index(self, path: str) -> dict[str, list[str]] | None:
         return self._reverse_indexes.get(self._key(path))
 
-    def get_complexity_index(self, path: str) -> dict[str, ComplexityScore] | None:
-        return self._complexity_indexes.get(self._key(path))
+    def get_or_build_complexity_index(self, path: str) -> dict[str, ComplexityScore]:
+        key = self._key(path)
+        existing = self._complexity_indexes.get(key)
+        if existing is not None:
+            return existing
+        with self._complexity_lock:
+            existing = self._complexity_indexes.get(key)
+            if existing is not None:
+                return existing
+            index = build_complexity_index(self._results[key])
+            self._complexity_indexes[key] = index
+            return index
 
     def set(self, path: str, result: ParseResult) -> None:
         key = self._key(path)
         self._results[key] = result
-        # Built once here, at parse time, rather than per impact/complexity
-        # query.
+        # Built once here, at parse time, rather than per impact query.
         self._reverse_indexes[key] = build_reverse_caller_index(result.edges)
-        self._complexity_indexes[key] = build_complexity_index(result)
+        # Complexity index is built lazily instead (see
+        # `get_or_build_complexity_index`) -- it costs nearly as much as
+        # parsing itself, so paying it on every parse-repo call regardless
+        # of whether the complexity report is ever opened is wasted work.
+        # Drop any index from a previous parse of this path so a stale one
+        # is never served after a reparse. Guarded by the same lock as the
+        # build itself: Starlette runs sync route handlers in a thread
+        # pool, so a reparse can genuinely race a concurrent lazy build for
+        # the same path. Without sharing the lock, a build already holding
+        # it could read the *old* `self._results[key]` before this method's
+        # unguarded assignment above is visible to it, finish after this
+        # pop has already run, and re-populate `_complexity_indexes[key]`
+        # with an index computed from the stale result -- resurrecting
+        # exactly the staleness this pop exists to prevent. Sharing the
+        # lock forces the two operations to fully precede or follow each
+        # other, so a build that starts after this point is guaranteed to
+        # see the new result, and a build already in flight has its result
+        # correctly popped once it finishes.
+        with self._complexity_lock:
+            self._complexity_indexes.pop(key, None)
 
     def get_doc_root(self, path: str) -> Path | None:
         return self._doc_roots.get(self._key(path))
