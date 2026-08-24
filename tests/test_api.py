@@ -50,6 +50,29 @@ def test_parse_repo_success():
     assert body["path"] == (FIXTURES / "simple_repo").resolve().as_posix()
 
 
+def test_parse_repo_javascript_success():
+    resp = client.post(
+        "/api/parse-repo",
+        json={"path": str(FIXTURES / "js_repo"), "language": "javascript"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["node_count"] == 7
+    assert body["edge_count"] == 11
+    assert body["parse_errors"] == []
+    assert body["path"] == (FIXTURES / "js_repo").resolve().as_posix()
+
+
+def test_parse_repo_unknown_language_returns_400():
+    resp = client.post(
+        "/api/parse-repo",
+        json={"path": str(FIXTURES / "simple_repo"), "language": "cobol"},
+    )
+
+    assert resp.status_code == 400
+
+
 def test_parse_repo_doc_root_defaults_to_the_parsed_path():
     repo_path = str(FIXTURES / "simple_repo")
     resp = client.post("/api/parse-repo", json={"path": repo_path})
@@ -131,9 +154,9 @@ def test_graph_is_served_from_cache_after_parse(monkeypatch):
     calls: list[str] = []
     original = routes_module.parse_repository
 
-    def counting_parse(path):
+    def counting_parse(path, **kwargs):
         calls.append(path)
-        return original(path)
+        return original(path, **kwargs)
 
     monkeypatch.setattr(routes_module, "parse_repository", counting_parse)
 

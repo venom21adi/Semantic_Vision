@@ -38,11 +38,13 @@ import {
   getDetailsCollapsed,
   getLastRepoPath,
   getRememberedDocRoot,
+  getRememberedLanguage,
   getSidebarCollapsed,
   isDocSaveNoticeDismissed,
   setDetailsCollapsed,
   setLastRepoPath,
   setRememberedDocRoot,
+  setRememberedLanguage,
   setSidebarCollapsed,
 } from './utils/localStorage'
 
@@ -167,11 +169,11 @@ export default function App() {
     void refreshOllamaModels()
   }, [refreshOllamaModels])
 
-  const handleLoad = useCallback(async (path: string, docRoot: string) => {
+  const handleLoad = useCallback(async (path: string, docRoot: string, language: string) => {
     setLoading(true)
     setLoadError(null)
     try {
-      const parseResult = await parseRepo(path, docRoot || undefined)
+      const parseResult = await parseRepo(path, docRoot || undefined, language || undefined)
       const [graph, graphState] = await Promise.all([
         getGraph(parseResult.path),
         getGraphState(parseResult.path),
@@ -188,6 +190,7 @@ export default function App() {
       })
       setLastRepoPath(path)
       setRememberedDocRoot(path, parseResult.doc_root)
+      setRememberedLanguage(path, language)
       setSelectedNodeId(null)
       setPane(null)
       setView('codebase')
@@ -601,6 +604,7 @@ export default function App() {
 
   const lastRepoPath = getLastRepoPath()
   const rememberedDocRoot = lastRepoPath ? getRememberedDocRoot(lastRepoPath) : null
+  const rememberedLanguage = lastRepoPath ? getRememberedLanguage(lastRepoPath) : null
 
   return (
     <div
@@ -620,6 +624,7 @@ export default function App() {
           error={loadError}
           initialPath={lastRepoPath ?? undefined}
           initialDocRoot={rememberedDocRoot ?? undefined}
+          initialLanguage={rememberedLanguage ?? undefined}
           resolvedDocRoot={repo?.docRoot ?? null}
           hasLoadedRepo={repo !== null}
           onChangeDocRoot={handleChangeDocRoot}

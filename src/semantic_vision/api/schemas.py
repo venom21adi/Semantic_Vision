@@ -22,6 +22,10 @@ class ParseRepoRequest(BaseModel):
     """Where `.visualiser/` should be written. Defaults (server-side) to
     the nearest ancestor `.git` root of `path` -- see
     `persistence.store.resolve_doc_root`."""
+    language: str = "python"
+    """A registered `LanguageAdapter.language_id` (see
+    `languages.registry`). A repo is parsed as one language at a time --
+    there's no mixed-language discovery."""
 
 
 class ParseRepoResponse(BaseModel):

@@ -9,11 +9,12 @@ export interface RepoLoadStats {
 }
 
 interface RepoLoaderProps {
-  onLoad: (path: string, docRoot: string) => void
+  onLoad: (path: string, docRoot: string, language: string) => void
   loading: boolean
   error: string | null
   initialPath?: string
   initialDocRoot?: string
+  initialLanguage?: string
   /** The save location actually in effect after the last successful
    * load -- may differ from what was typed (e.g. auto-detected), so the
    * field reflects reality rather than staying stuck on stale input. */
@@ -33,6 +34,7 @@ export function RepoLoader({
   error,
   initialPath,
   initialDocRoot,
+  initialLanguage,
   resolvedDocRoot,
   stats,
   hasLoadedRepo = false,
@@ -40,6 +42,7 @@ export function RepoLoader({
 }: RepoLoaderProps) {
   const [path, setPath] = useState(initialPath ?? '')
   const [docRoot, setDocRoot] = useState(initialDocRoot ?? '')
+  const [language, setLanguage] = useState(initialLanguage ?? 'python')
 
   // Adjusts `docRoot` when `resolvedDocRoot` changes (a fresh load
   // resolved to a new save location -- possibly auto-detected, so it
@@ -56,7 +59,7 @@ export function RepoLoader({
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     const trimmed = path.trim()
-    if (trimmed) onLoad(trimmed, docRoot.trim())
+    if (trimmed) onLoad(trimmed, docRoot.trim(), language)
   }
 
   // Committing this field is the single place the save location changes:
@@ -84,7 +87,7 @@ export function RepoLoader({
             type="text"
             value={path}
             onChange={(event) => setPath(event.target.value)}
-            placeholder="Absolute path to a Python repository"
+            placeholder="Absolute path to a repository"
             aria-label="Repository path"
             style={{
               flex: 1,
@@ -96,6 +99,22 @@ export function RepoLoader({
               fontSize: 13,
             }}
           />
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value)}
+            aria-label="Language"
+            style={{
+              padding: '6px 10px',
+              borderRadius: 4,
+              border: '1px solid #334155',
+              background: '#0f172a',
+              color: '#f8fafc',
+              fontSize: 13,
+            }}
+          >
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript / TypeScript</option>
+          </select>
           <button
             type="submit"
             disabled={loading || path.trim().length === 0}

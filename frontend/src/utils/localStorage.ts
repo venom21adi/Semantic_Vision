@@ -46,6 +46,33 @@ export function setRememberedDocRoot(repoPath: string, docRoot: string): void {
   }
 }
 
+const LANGUAGES_KEY = 'semantic-vision:languages'
+
+function readLanguages(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(LANGUAGES_KEY)
+    if (!raw) return {}
+    const parsed: unknown = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, string>) : {}
+  } catch {
+    return {}
+  }
+}
+
+export function getRememberedLanguage(repoPath: string): string | null {
+  return readLanguages()[repoPath] ?? null
+}
+
+export function setRememberedLanguage(repoPath: string, language: string): void {
+  try {
+    const languages = readLanguages()
+    languages[repoPath] = language
+    localStorage.setItem(LANGUAGES_KEY, JSON.stringify(languages))
+  } catch {
+    // Best-effort only.
+  }
+}
+
 export function isDocSaveNoticeDismissed(): boolean {
   try {
     return localStorage.getItem(DOC_SAVE_NOTICE_DISMISSED_KEY) === '1'

@@ -44,8 +44,8 @@ def get_health() -> HealthResponse:
 @router.post("/parse-repo", response_model=ParseRepoResponse)
 def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
     try:
-        result = parse_repository(request.path)
-    except (NotADirectoryError, PermissionError) as exc:
+        result = parse_repository(request.path, language=request.language)
+    except (NotADirectoryError, PermissionError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     doc_root = persistence.resolve_doc_root(Path(result.root), request.doc_root)

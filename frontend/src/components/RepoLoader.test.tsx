@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { RepoLoader } from './RepoLoader'
 
 describe('RepoLoader', () => {
-  it('calls onLoad with the trimmed path and an empty doc root by default', async () => {
+  it('calls onLoad with the trimmed path, an empty doc root, and python by default', async () => {
     const onLoad = vi.fn()
     const user = userEvent.setup()
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
@@ -12,7 +12,7 @@ describe('RepoLoader', () => {
     await user.type(screen.getByLabelText('Repository path'), '  /some/repo  ')
     await user.click(screen.getByRole('button', { name: /load/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '')
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', 'python')
   })
 
   it('calls onLoad with a manually typed save location', async () => {
@@ -24,7 +24,33 @@ describe('RepoLoader', () => {
     await user.type(screen.getByLabelText('Save location'), '  /my/save/spot  ')
     await user.click(screen.getByRole('button', { name: /load/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/my/save/spot')
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/my/save/spot', 'python')
+  })
+
+  it('calls onLoad with the selected language', async () => {
+    const onLoad = vi.fn()
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
+
+    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
+    await user.selectOptions(screen.getByLabelText('Language'), 'javascript')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', 'javascript')
+  })
+
+  it('pre-fills the language from initialLanguage', () => {
+    render(
+      <RepoLoader
+        onLoad={vi.fn()}
+        loading={false}
+        error={null}
+        stats={null}
+        initialLanguage="javascript"
+      />,
+    )
+
+    expect(screen.getByLabelText('Language')).toHaveValue('javascript')
   })
 
   it('pre-fills the save location from initialDocRoot', () => {

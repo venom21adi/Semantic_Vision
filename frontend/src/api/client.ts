@@ -42,10 +42,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function parseRepo(path: string, docRoot?: string): Promise<ParseRepoResponse> {
+export function parseRepo(
+  path: string,
+  docRoot?: string,
+  language?: string,
+): Promise<ParseRepoResponse> {
   return request<ParseRepoResponse>('/api/parse-repo', {
     method: 'POST',
-    body: JSON.stringify({ path, doc_root: docRoot || undefined }),
+    body: JSON.stringify({ path, doc_root: docRoot || undefined, language: language || undefined }),
   })
 }
 
