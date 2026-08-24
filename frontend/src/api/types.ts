@@ -118,3 +118,14 @@ export interface FlowchartResponse {
   nodes: FlowNode[]
   edges: FlowEdge[]
 }
+
+export interface ComplexityScore {
+  node_id: string
+  cyclomatic_complexity: number
+  call_chain_depth: number
+  has_nested_loops: boolean
+}
+
+export interface ComplexityResponse {
+  scores: ComplexityScore[]
+}

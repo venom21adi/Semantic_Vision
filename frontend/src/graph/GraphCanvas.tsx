@@ -14,8 +14,9 @@ import {
   type NodeMouseHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { NodePosition } from '../api/types'
+import type { ComplexityScore, NodePosition } from '../api/types'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
+import { complexityToColor } from './heatmap'
 import { nodeTypes, type GraphNodeData } from './nodeTypes'
 import { neighborNodeIds } from './transform'
 
@@ -49,6 +50,12 @@ export interface GraphCanvasProps {
    * analysis caller chain) instead of resetting the canvas to just that
    * subset -- so the rest of the graph stays visible for context. */
   highlight?: GraphHighlight | null
+  /** When set (the complexity heatmap is on), tints each function node's
+   * background by its complexity score instead of the normal kind color.
+   * Applied the same way `highlight` is -- as a derived overlay on the
+   * already-laid-out nodes, not by feeding back into the layout pipeline,
+   * so toggling it doesn't trigger a relayout or reset dragged positions. */
+  complexityByNodeId?: ReadonlyMap<string, ComplexityScore> | null
 }
 
 function GraphCanvasInner({
@@ -62,6 +69,7 @@ function GraphCanvasInner({
   onExecutionFlowchart,
   onAutoSavePositions,
   highlight,
+  complexityByNodeId,
 }: GraphCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, , onEdgesChange] = useEdgesState(initialEdges)
@@ -118,10 +126,24 @@ function GraphCanvasInner({
       nodes.map((node) => {
         const selected = node.id === selectedNodeId
         const opacity = !highlight ? 1 : highlight.nodeIds.has(node.id) ? 1 : DIMMED_NODE_OPACITY
-        if (node.selected === selected && node.style?.opacity === opacity) return node
-        return { ...node, selected, style: { ...node.style, opacity } }
+        const score = complexityByNodeId?.get(node.id)
+        const heatmapColor = score ? complexityToColor(score.cyclomatic_complexity) : undefined
+        const data = node.data as GraphNodeData
+        if (
+          node.selected === selected &&
+          node.style?.opacity === opacity &&
+          data.heatmapColor === heatmapColor
+        ) {
+          return node
+        }
+        return {
+          ...node,
+          selected,
+          style: { ...node.style, opacity },
+          data: { ...data, heatmapColor },
+        }
       }),
-    [nodes, selectedNodeId, highlight],
+    [nodes, selectedNodeId, highlight, complexityByNodeId],
   )
 
   const displayEdges = useMemo(

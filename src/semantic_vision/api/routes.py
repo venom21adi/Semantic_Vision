@@ -10,6 +10,7 @@ from semantic_vision.ai.providers import ProviderError, list_ollama_models, stre
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.schemas import (
+    ComplexityResponse,
     DocIndexResponse,
     DocResponse,
     DocRootResponse,
@@ -155,6 +156,19 @@ def get_impact(
     return ImpactResponse(
         target=impact.target, callers=impact.callers, edges=impact.edges, cycles=impact.cycles
     )
+
+
+@router.get("/complexity", response_model=ComplexityResponse)
+def get_complexity(path: str = Query(...)) -> ComplexityResponse:
+    """Repo-wide, not per-node: the heatmap overlay and the ranked report
+    pane both need the whole score set at once, and it's cheap to send in
+    one call since it's already computed and cached at parse time."""
+    _get_cached(path)
+    complexity_index = cache.get_complexity_index(path)
+    assert complexity_index is not None, (
+        "complexity index is built alongside the cached parse result"
+    )
+    return ComplexityResponse(scores=list(complexity_index.values()))
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)

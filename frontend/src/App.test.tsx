@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as client from './api/client'
-import type { GraphResponse, GraphStateResponse } from './api/types'
+import type { ComplexityResponse, GraphResponse, GraphStateResponse } from './api/types'
 import App from './App'
 import {
   getDetailsCollapsed,
@@ -29,6 +29,7 @@ vi.mock('./api/client', async (importOriginal) => {
     getOllamaModels: vi.fn(),
     getImpact: vi.fn(),
     getFlowchart: vi.fn(),
+    getComplexity: vi.fn(),
   }
 })
 
@@ -559,5 +560,95 @@ describe('App', () => {
     await user.click(within(screen.getByRole('tree')).getByText('greet'))
     expect(screen.queryByText(/select a file, class, or function/i)).not.toBeInTheDocument()
     expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument()
+  })
+
+  it('fetches and shows the performance report when Show complexity is toggled on', async () => {
+    mockedClient.getComplexity.mockResolvedValue({
+      scores: [
+        {
+          node_id: 'app.py::Greeter.greet',
+          cyclomatic_complexity: 4,
+          call_chain_depth: 0,
+          has_nested_loops: false,
+        },
+      ],
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
+
+    expect(mockedClient.getComplexity).toHaveBeenCalledWith('/repo')
+    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
+    expect(screen.getByText(/app\.py::Greeter\.greet/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Hide complexity' })).toBeInTheDocument()
+  })
+
+  it('closes the performance report and reverts the toggle when clicked again', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
+    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Hide complexity' }))
+
+    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Show complexity' })).toBeInTheDocument()
+  })
+
+  it('does not resurrect the performance report if it is closed before the fetch resolves', async () => {
+    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
+    mockedClient.getComplexity.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveComplexity = resolve
+        }),
+    )
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
+    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
+
+    // Close it before the (still in-flight) fetch has a chance to resolve.
+    await user.click(screen.getByRole('button', { name: 'Hide complexity' }))
+    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
+
+    resolveComplexity({ scores: [] })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
+  })
+
+  it('does not attach a stale repo\'s complexity scores after switching repos mid-fetch', async () => {
+    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
+    mockedClient.getComplexity.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveComplexity = resolve
+        }),
+    )
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
+    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
+
+    // Load a different repo while the first repo's complexity fetch is
+    // still in flight -- App.tsx's `handleLoad` resets `pane` to null.
+    mockedClient.parseRepo.mockResolvedValueOnce({
+      path: '/other-repo',
+      doc_root: '/other-repo',
+      node_count: 2,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    await user.clear(screen.getByLabelText('Repository path'))
+    await user.type(screen.getByLabelText('Repository path'), '/other-repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() => expect(screen.queryByText('Performance Report')).not.toBeInTheDocument())
+
+    resolveComplexity({ scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }] })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
   })
 })

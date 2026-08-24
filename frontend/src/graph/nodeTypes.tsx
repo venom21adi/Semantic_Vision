@@ -7,6 +7,11 @@ export interface GraphNodeData extends Record<string, unknown> {
   file: string
   lineStart: number
   lineEnd: number
+  /** Set only while the complexity heatmap is on, and only for `function`
+   * nodes (the only kind with a complexity score) -- overrides the
+   * kind-based background below rather than replacing it, so turning the
+   * heatmap off just means this stops being set. */
+  heatmapColor?: string
 }
 
 export const KIND_COLORS: Record<NodeKind, { background: string; border: string }> = {
@@ -24,7 +29,7 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
     <div
       title={nodeData.label}
       style={{
-        background: colors.background,
+        background: nodeData.heatmapColor ?? colors.background,
         border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
         borderRadius: 6,
         padding: '6px 12px',

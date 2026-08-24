@@ -52,6 +52,8 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onSelectNode: vi.fn(),
     view: 'codebase',
     onViewChange: vi.fn(),
+    complexityActive: false,
+    onToggleComplexity: vi.fn(),
     collapsed: false,
     onToggleCollapsed: vi.fn(),
     ...overrides,
@@ -119,6 +121,22 @@ describe('Sidebar', () => {
 
     expect(screen.getByRole('button', { name: 'file' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'codebase' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('calls onToggleComplexity when the complexity toggle is clicked', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar()
+
+    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
+
+    expect(props.onToggleComplexity).toHaveBeenCalledTimes(1)
+  })
+
+  it('reflects the active complexity state via aria-pressed and label', () => {
+    renderSidebar({ complexityActive: true })
+
+    const button = screen.getByRole('button', { name: 'Hide complexity' })
+    expect(button).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('calls onToggleCollapsed when the collapse button is clicked', async () => {

@@ -13,6 +13,8 @@ interface SidebarProps {
   onSelectNode: (nodeId: string) => void
   view: GraphView
   onViewChange: (view: GraphView) => void
+  complexityActive: boolean
+  onToggleComplexity: () => void
   collapsed?: boolean
   onToggleCollapsed?: () => void
 }
@@ -24,6 +26,8 @@ export function Sidebar({
   onSelectNode,
   view,
   onViewChange,
+  complexityActive,
+  onToggleComplexity,
   collapsed = false,
   onToggleCollapsed = () => {},
 }: SidebarProps) {
@@ -83,6 +87,26 @@ export function Sidebar({
             {option}
           </button>
         ))}
+      </div>
+
+      <div style={{ padding: '0 8px 8px' }}>
+        <button
+          type="button"
+          aria-pressed={complexityActive}
+          onClick={onToggleComplexity}
+          style={{
+            width: '100%',
+            padding: '4px 8px',
+            borderRadius: 4,
+            border: '1px solid #334155',
+            background: complexityActive ? '#b45309' : 'transparent',
+            color: '#f8fafc',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          {complexityActive ? 'Hide complexity' : 'Show complexity'}
+        </button>
       </div>
 
       <div style={{ padding: '0 8px 8px', position: 'relative' }}>

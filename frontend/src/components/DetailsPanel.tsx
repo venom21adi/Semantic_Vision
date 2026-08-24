@@ -1,6 +1,7 @@
-import type { Caller, DocProvider, GraphNode, ImpactResponse } from '../api/types'
+import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { CollapseToggle } from './CollapseToggle'
 import { DocPane } from './DocPane'
+import { PerformanceReportPane } from './PerformanceReportPane'
 
 export type ActivePane =
   | { kind: 'source'; status: 'loading' }
@@ -14,6 +15,9 @@ export type ActivePane =
   | { kind: 'impact'; status: 'loading' }
   | { kind: 'impact'; status: 'loaded'; result: ImpactResponse }
   | { kind: 'impact'; status: 'error'; message: string }
+  | { kind: 'complexity'; status: 'loading' }
+  | { kind: 'complexity'; status: 'loaded'; scores: ComplexityScore[] }
+  | { kind: 'complexity'; status: 'error'; message: string }
   | null
 
 interface DetailsPanelProps {
@@ -34,6 +38,8 @@ interface DetailsPanelProps {
   docRoot: string
   docSaveNoticeDismissed: boolean
   onDismissDocSaveNotice: () => void
+  /** Repo path, needed by the performance report pane's caller drill-down. */
+  repoPath: string
   collapsed?: boolean
   onToggleCollapsed?: () => void
 }
@@ -56,6 +62,7 @@ export function DetailsPanel({
   docRoot,
   docSaveNoticeDismissed,
   onDismissDocSaveNotice,
+  repoPath,
   collapsed = false,
   onToggleCollapsed = () => {},
 }: DetailsPanelProps) {
@@ -175,6 +182,25 @@ export function DetailsPanel({
           )}
           {pane.status === 'loaded' && (
             <ImpactCallers result={pane.result} onSelectCaller={onSelectCaller} />
+          )}
+        </div>
+      )}
+
+      {pane?.kind === 'complexity' && (
+        <div style={{ marginTop: 16 }}>
+          <PaneHeader title="Performance Report" onClose={onClosePane} />
+          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'error' && (
+            <p role="alert" style={{ color: '#fca5a5' }}>
+              {pane.message}
+            </p>
+          )}
+          {pane.status === 'loaded' && (
+            <PerformanceReportPane
+              path={repoPath}
+              scores={pane.scores}
+              onSelectNode={onSelectCaller}
+            />
           )}
         </div>
       )}

@@ -2,8 +2,10 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Node } from '@xyflow/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { ComplexityScore } from '../api/types'
 import { AUTO_SAVE_POSITIONS_INTERVAL_MS, GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD } from './GraphCanvas'
-import type { GraphNodeData } from './nodeTypes'
+import { COMPLEX_COLOR } from './heatmap'
+import { KIND_COLORS, type GraphNodeData } from './nodeTypes'
 
 function makeNode(id: string, kind: GraphNodeData['kind'] = 'function'): Node<GraphNodeData> {
   return {
@@ -73,6 +75,44 @@ describe('GraphCanvas', () => {
     render(<GraphCanvas nodes={nodes} edges={[]} selectedNodeId={null} {...noop} />)
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('tints a node by its complexity score when complexityByNodeId is set', () => {
+    const complexityByNodeId = new Map<string, ComplexityScore>([
+      ['a', { node_id: 'a', cyclomatic_complexity: 12, call_chain_depth: 0, has_nested_loops: false }],
+    ])
+    render(
+      <GraphCanvas
+        nodes={[makeNode('a')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        complexityByNodeId={complexityByNodeId}
+      />,
+    )
+
+    expect(screen.getByText('a')).toHaveStyle({ background: COMPLEX_COLOR })
+  })
+
+  it('falls back to the normal kind color for a node with no complexity score', () => {
+    const complexityByNodeId = new Map<string, ComplexityScore>()
+    render(
+      <GraphCanvas
+        nodes={[makeNode('a')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        complexityByNodeId={complexityByNodeId}
+      />,
+    )
+
+    expect(screen.getByText('a')).toHaveStyle({ background: KIND_COLORS.function.background })
+  })
+
+  it('does not tint anything when complexityByNodeId is not set', () => {
+    render(<GraphCanvas nodes={[makeNode('a')]} edges={[]} selectedNodeId={null} {...noop} />)
+
+    expect(screen.getByText('a')).toHaveStyle({ background: KIND_COLORS.function.background })
   })
 
   it('auto-saves positions on an interval', () => {

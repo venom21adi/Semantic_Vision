@@ -15,11 +15,10 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from semantic_vision.ast_locate import DefNode, locate
 from semantic_vision.models import EdgeKind, Node, NodeKind, ParseResult
 
 MAX_CONTEXT_TOKENS = 2000
-
-_DefNode = ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
 
 
 class DocContext(BaseModel):
@@ -34,33 +33,7 @@ def _approx_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
-def _get_tree(root: Path, file: str, trees: dict[str, ast.Module | None]) -> ast.Module | None:
-    if file not in trees:
-        try:
-            source = (root / file).read_text(encoding="utf-8")
-            trees[file] = ast.parse(source, filename=file)
-        except (OSError, SyntaxError):
-            trees[file] = None
-    return trees[file]
-
-
-def _find_def_node(tree: ast.Module, node: Node) -> _DefNode | None:
-    for candidate in ast.walk(tree):
-        if not isinstance(candidate, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
-            continue
-        if candidate.lineno == node.line_start and candidate.name == node.label:
-            return candidate
-    return None
-
-
-def _locate(root: Path, node: Node, trees: dict[str, ast.Module | None]) -> _DefNode | None:
-    tree = _get_tree(root, node.file, trees)
-    if tree is None:
-        return None
-    return _find_def_node(tree, node)
-
-
-def _decorator_inclusive_start(def_node: _DefNode, fallback_start: int) -> int:
+def _decorator_inclusive_start(def_node: DefNode, fallback_start: int) -> int:
     """`FunctionDef.lineno`/`ClassDef.lineno` (and hence `Node.line_start`,
     which is derived from it) point at the `def`/`class` keyword line, not
     the first decorator -- so slicing source by `line_start` alone silently
@@ -72,7 +45,7 @@ def _decorator_inclusive_start(def_node: _DefNode, fallback_start: int) -> int:
     return min(fallback_start, min(d.lineno for d in def_node.decorator_list))
 
 
-def _read_source(root: Path, node: Node, def_node: _DefNode | None) -> str | None:
+def _read_source(root: Path, node: Node, def_node: DefNode | None) -> str | None:
     try:
         lines = (root / node.file).read_text(encoding="utf-8").splitlines()
     except OSError:
@@ -83,7 +56,7 @@ def _read_source(root: Path, node: Node, def_node: _DefNode | None) -> str | Non
     return "\n".join(lines[start - 1 : node.line_end])
 
 
-def _render_signature(def_node: _DefNode, *, strip_decorators: bool) -> str | None:
+def _render_signature(def_node: DefNode, *, strip_decorators: bool) -> str | None:
     """Reconstructs an exact `def foo(...) -> ...:` / `class Foo(...):`
     header from the AST -- a shallow-copied def/class node with its body
     replaced by `pass`, unparsed and reduced to its first line -- rather
@@ -114,7 +87,7 @@ def _render_signature(def_node: _DefNode, *, strip_decorators: bool) -> str | No
 def _signature(
     root: Path, node: Node, trees: dict[str, ast.Module | None], *, strip_decorators: bool = True
 ) -> str | None:
-    def_node = _locate(root, node, trees)
+    def_node = locate(root, node, trees)
     if def_node is None:
         return None
     return _render_signature(def_node, strip_decorators=strip_decorators)
@@ -176,7 +149,7 @@ def assemble_context(
     sections: list[str] = []
     omitted: list[str] = []
 
-    target_def_node = _locate(root, node, trees)
+    target_def_node = locate(root, node, trees)
     source = _read_source(root, node, target_def_node) or ""
     signature = (
         (target_def_node and _render_signature(target_def_node, strip_decorators=False))

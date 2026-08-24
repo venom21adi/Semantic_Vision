@@ -9,6 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from semantic_vision.analysis.complexity import ComplexityScore
 from semantic_vision.analysis.impact import Caller
 from semantic_vision.flowchart.cfg import FlowEdge, FlowNode
 from semantic_vision.models import Edge, Node, ParseError
@@ -104,3 +105,7 @@ class FlowchartResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     status: Literal["ok"]
+
+
+class ComplexityResponse(BaseModel):
+    scores: list[ComplexityScore]

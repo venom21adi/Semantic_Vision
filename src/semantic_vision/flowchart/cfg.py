@@ -19,7 +19,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from semantic_vision.models import Node, NodeKind, ParseResult
+from semantic_vision.ast_locate import DefNode, locate
+from semantic_vision.models import NodeKind, ParseResult
 
 
 class FlowNodeKind(StrEnum):
@@ -61,46 +62,11 @@ class FlowchartResult(BaseModel):
     edges: list[FlowEdge]
 
 
-_DefNode = ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
-
 _IO_BUILTIN_NAMES = {"print", "input", "open"}
 _IO_METHOD_NAMES = {"read", "write", "readline", "readlines", "close"}
 
-# `_get_tree`/`_find_def_node`/`_locate`/`_render_signature` below
-# intentionally duplicate the same-named helpers in `ai/context.py`
-# rather than importing them or extracting a shared module. `ai/context.py`
-# is a tested Milestone 6 module; the project's convention is to extract a
-# shared helper once a technique has proven stable across two real call
-# sites, not preemptively for a single reuse.
 
-
-def _get_tree(root: Path, file: str, trees: dict[str, ast.Module | None]) -> ast.Module | None:
-    if file not in trees:
-        try:
-            source = (root / file).read_text(encoding="utf-8")
-            trees[file] = ast.parse(source, filename=file)
-        except (OSError, SyntaxError):
-            trees[file] = None
-    return trees[file]
-
-
-def _find_def_node(tree: ast.Module, node: Node) -> _DefNode | None:
-    for candidate in ast.walk(tree):
-        if not isinstance(candidate, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
-            continue
-        if candidate.lineno == node.line_start and candidate.name == node.label:
-            return candidate
-    return None
-
-
-def _locate(root: Path, node: Node, trees: dict[str, ast.Module | None]) -> _DefNode | None:
-    tree = _get_tree(root, node.file, trees)
-    if tree is None:
-        return None
-    return _find_def_node(tree, node)
-
-
-def _render_signature(def_node: _DefNode) -> str:
+def _render_signature(def_node: DefNode) -> str:
     stripped = copy.copy(def_node)
     stripped.body = [ast.Pass()]
     stripped.decorator_list = []
@@ -352,7 +318,7 @@ def build_flowchart(result: ParseResult, node_id: str) -> FlowchartResult:
     trees: dict[str, ast.Module | None] = {}
 
     builder = _Builder(node_id)
-    def_node = _locate(root, node, trees)
+    def_node = locate(root, node, trees)
 
     if def_node is None:
         # Source unavailable or unparseable -- degrade to a minimal,

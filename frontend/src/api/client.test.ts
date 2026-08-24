@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ApiError,
+  getComplexity,
   getFlowchart,
   getFunctionSource,
   getGraph,
@@ -84,6 +85,23 @@ describe('api client', () => {
     expect(String(url)).toContain(encodeURIComponent('/repo'))
     expect(init?.method).toBe('PUT')
     expect(JSON.parse(init?.body as string)).toEqual({ doc_root: '/new-location' })
+  })
+
+  it('getComplexity GETs with the path query-encoded and returns the scores', async () => {
+    const scores = [
+      { node_id: 'app.py::f', cyclomatic_complexity: 3, call_chain_depth: 1, has_nested_loops: false },
+    ]
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ scores }), { status: 200 }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await getComplexity('/some path/with spaces')
+
+    expect(result.scores).toEqual(scores)
+    const [url] = fetchMock.mock.calls[0]
+    expect(String(url)).toContain('/api/complexity')
+    expect(String(url)).toContain(encodeURIComponent('/some path/with spaces'))
   })
 
   it('getGraph GETs with the path query-encoded', async () => {

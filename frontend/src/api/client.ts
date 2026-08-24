@@ -1,4 +1,5 @@
 import type {
+  ComplexityResponse,
   DocIndexResponse,
   DocProvider,
   DocResponse,
@@ -100,6 +101,10 @@ export function saveDoc(path: string, id: string, markdown: string): Promise<Doc
     `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
     { method: 'POST', body: JSON.stringify({ markdown }) },
   )
+}
+
+export function getComplexity(path: string): Promise<ComplexityResponse> {
+  return request<ComplexityResponse>(`/api/complexity?path=${encodeURIComponent(path)}`)
 }
 
 export function getFlowchart(path: string, id: string): Promise<FlowchartResponse> {

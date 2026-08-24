@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+import semantic_vision.api.cache as cache_module
 import semantic_vision.api.routes as routes_module
 from semantic_vision.api.app import app
 from semantic_vision.api.cache import cache
@@ -396,6 +397,46 @@ def test_doc_returns_saved_markdown(temp_repo: Path):
     body = resp.json()
     assert body["node_id"] == "app.py::greet"
     assert body["markdown"] == "# greet\n\nReturns 1."
+
+
+def test_complexity_requires_prior_parse():
+    resp = client.get("/api/complexity", params={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 404
+
+
+def test_complexity_returns_a_score_per_function_end_to_end():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    scores_by_id = {s["node_id"]: s for s in resp.json()["scores"]}
+    assert "app.py::Greeter.greet" in scores_by_id
+    score = scores_by_id["app.py::Greeter.greet"]
+    assert score["cyclomatic_complexity"] >= 1
+    assert score["call_chain_depth"] >= 0
+    assert isinstance(score["has_nested_loops"], bool)
+
+
+def test_complexity_is_served_from_the_cache_not_recomputed(monkeypatch):
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    calls = {"count": 0}
+    real_build = cache_module.build_complexity_index
+
+    def counting_build(*args, **kwargs):
+        calls["count"] += 1
+        return real_build(*args, **kwargs)
+
+    monkeypatch.setattr(cache_module, "build_complexity_index", counting_build)
+
+    client.get("/api/complexity", params={"path": repo_path})
+    client.get("/api/complexity", params={"path": repo_path})
+
+    assert calls["count"] == 0
 
 
 def test_impact_requires_prior_parse():

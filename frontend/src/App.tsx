@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
+  getComplexity,
   getDoc,
   getFlowchart,
   getFunctionSource,
@@ -15,6 +16,7 @@ import {
   updateDocRoot,
 } from './api/client'
 import type {
+  ComplexityScore,
   DocProvider,
   FlowchartResponse,
   GraphEdge,
@@ -364,6 +366,38 @@ export default function App() {
     [repo],
   )
 
+  // Toggling this off is just clearing the pane -- `complexityByNodeId`
+  // below is derived from `pane`, so the heatmap and this pane always
+  // stay in sync with no separate on/off state to fall out of sync with.
+  const handleToggleComplexity = useCallback(async () => {
+    if (!repo) return
+    if (pane?.kind === 'complexity') {
+      setPane(null)
+      return
+    }
+    cancelGeneration()
+    setPane({ kind: 'complexity', status: 'loading' })
+    try {
+      const result = await getComplexity(repo.path)
+      // Bail if something else -- closing this pane, opening a different
+      // one, loading a different repo -- has moved on since this fetch
+      // started. Applying a stale response here could resurrect a pane
+      // the user already dismissed, or worse, attach one repo's scores to
+      // a graph that's since switched to a different repo (`paneRef`
+      // reflects the latest `pane`, not the one this closure captured).
+      if (paneRef.current?.kind !== 'complexity' || paneRef.current.status !== 'loading') return
+      setPane({ kind: 'complexity', status: 'loaded', scores: result.scores })
+    } catch (error) {
+      if (paneRef.current?.kind !== 'complexity' || paneRef.current.status !== 'loading') return
+      setPane({ kind: 'complexity', status: 'error', message: errorMessage(error) })
+    }
+  }, [repo, pane, cancelGeneration])
+
+  const complexityByNodeId = useMemo(() => {
+    if (pane?.kind !== 'complexity' || pane.status !== 'loaded') return null
+    return new Map<string, ComplexityScore>(pane.scores.map((score) => [score.node_id, score]))
+  }, [pane])
+
   // Clicking empty canvas space already deselects (calls this with
   // `null`); it also clears the active pane, so an Impact
   // Analysis/Document/Source pane -- and the graph highlighting that
@@ -461,6 +495,8 @@ export default function App() {
             onSelectNode={handleSelectNode}
             view={view}
             onViewChange={setView}
+            complexityActive={pane?.kind === 'complexity'}
+            onToggleComplexity={handleToggleComplexity}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={toggleSidebarCollapsed}
           />
@@ -489,6 +525,7 @@ export default function App() {
               onExecutionFlowchart={handleExecutionFlowchart}
               onAutoSavePositions={handleAutoSavePositions}
               highlight={impactHighlight}
+              complexityByNodeId={complexityByNodeId}
             />
           )}
           {flowchartState?.status === 'loading' && (
@@ -544,6 +581,7 @@ export default function App() {
           docRoot={repo?.docRoot ?? ''}
           docSaveNoticeDismissed={docSaveNoticeDismissed}
           onDismissDocSaveNotice={handleDismissDocSaveNotice}
+          repoPath={repo?.path ?? ''}
           collapsed={detailsCollapsed}
           onToggleCollapsed={toggleDetailsCollapsed}
         />
