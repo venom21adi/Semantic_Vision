@@ -21,7 +21,7 @@ to begin with.
 
 ### At a glance
 
-🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 📝 AI-generated docs · ⚡ 100% local & private
+🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 🌡️ Complexity report · 📝 AI-generated docs · ⚡ 100% local & private
 
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
@@ -71,6 +71,21 @@ functions in the repo — each in its own conventional flowchart shape.
 The flowchart replaces the graph canvas while open; **Back to graph**
 returns you to the normal call graph.
 
+## 🌡️ Complexity report
+
+Toggle **Show complexity** in the sidebar to see a cyclomatic-complexity
+heatmap over the whole graph and a ranked report of every function,
+computed from a real AST walk — decisions, boolean-operator chains,
+comprehension filters, `match` cases, and nested-loop hotspots all
+count, not just a line-count guess.
+
+![A complexity heatmap tinting graph nodes, with a ranked performance report and legend in the side panel](assets/complexity-report.png)
+
+Click any entry to jump to it on the graph; the ▸ drill-down shows its
+direct callers (cross-referenced with their own scores), so you can
+tell a complex-but-unused function apart from a complex one half the
+codebase actually depends on.
+
 ## ✨ Features
 
 🕸️ **See the whole call graph at a glance** — every directory, file,
@@ -92,6 +107,10 @@ for its execution flowchart: branches, loops with visible back-edges,
 I/O, and calls out to other functions in the repo, rendered with
 conventional flowchart shapes instead of you stepping through the code
 by hand.
+
+🌡️ **See which functions are worth worrying about** — a complexity
+heatmap and ranked report across the whole repo, with a one-click
+drill-down into who actually depends on each risky function.
 
 📝 **Never write another docstring by hand** — right-click any function
 to generate real Markdown documentation (Purpose, Parameters, Returns,
@@ -125,6 +144,7 @@ and what's still ahead:
 | Impact analysis (upstream callers, cycle detection) | ✅ Available |
 | AI-generated function documentation | ✅ Available |
 | Function-level execution flowcharts | ✅ Available |
+| Complexity heatmap & ranked performance report | ✅ Available |
 | Docker packaging / one-command setup | ✅ Available |
 | Multi-language support (beyond Python) | 🚧 Planned |
 
