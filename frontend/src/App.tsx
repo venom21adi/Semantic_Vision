@@ -29,7 +29,7 @@ import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
 import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
 import { buildFlowchartGraph } from './flowchart/transform'
-import { ancestorContainerIds, collapseGraph } from './graph/collapseDirectories'
+import { ancestorContainerIds, collapseGraph, subgraphForSelection } from './graph/collapseDirectories'
 import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './graph/GraphCanvas'
 import { scopeToFile } from './graph/transform'
 import { useLayoutWorker } from './graph/useLayoutWorker'
@@ -94,6 +94,15 @@ export default function App() {
   // unchanged), otherwise empty (so a large repo starts showing only its
   // top-level structure).
   const [expandedContainerIds, setExpandedContainerIds] = useState<ReadonlySet<string>>(new Set())
+  // Which top-level directories/files the user has explicitly chosen to
+  // show on the codebase-view canvas at all -- independent of
+  // `expandedContainerIds`, which only controls whether an already-shown
+  // container's contents are rolled up or not. The canvas starts empty
+  // (see handleLoad) rather than auto-populating with every top-level
+  // node, so a large repo never renders as one wide row of directories the
+  // user never asked to see; a repo at/below the large-graph threshold
+  // still starts fully selected, matching today's zero-click behavior.
+  const [selectedRootIds, setSelectedRootIds] = useState<ReadonlySet<string>>(new Set())
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => getSidebarCollapsed())
   const [detailsCollapsed, setDetailsCollapsedState] = useState(() => getDetailsCollapsed())
 
@@ -183,20 +192,21 @@ export default function App() {
       setPane(null)
       setView('codebase')
       setFlowchartState(null)
-      // At or below the threshold: everything expanded, identical to this
-      // app's pre-collapse behavior. Above it: start with only top-level
-      // structure visible -- an empty set already means exactly that (a
-      // node with no parent is always its own representative in
-      // `collapseGraph`), no need to compute "top-level ids" here.
-      setExpandedContainerIds(
+      // At or below the threshold: everything expanded and selected,
+      // identical to this app's pre-collapse, pre-selection behavior.
+      // Above it: nothing expanded and nothing selected -- the canvas
+      // starts empty (see showEmptySelectionPlaceholder below) rather than
+      // rendering every top-level directory/file the user never asked for.
+      const defaultContainerIds =
         parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
           ? new Set(
               graph.nodes
                 .filter((node) => node.kind === 'directory' || node.kind === 'file')
                 .map((node) => node.id),
             )
-          : new Set(),
-      )
+          : new Set<string>()
+      setExpandedContainerIds(defaultContainerIds)
+      setSelectedRootIds(new Set(defaultContainerIds))
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {
@@ -261,9 +271,22 @@ export default function App() {
   // collapse-all, or selecting a node buried inside a collapsed
   // container -- see handleSelectNode), never on unrelated re-renders, so
   // it doesn't spuriously re-trigger `useLayoutWorker`.
+  // Restricts `codebaseGraph` down to exactly what the user has checked in
+  // the sidebar (plus everything defined inside it) before `collapseGraph`
+  // ever runs -- see `subgraphForSelection`'s own doc comment for why a
+  // selected id whose parent wasn't also selected still surfaces as a
+  // canvas root with no extra logic needed in `collapseGraph` itself.
+  // Same referential-stability discipline as `collapsedCodebaseGraph`
+  // below: only changes identity when `codebaseGraph`/`selectedRootIds`
+  // themselves change, never on an unrelated re-render or autosave tick.
+  const selectionFilteredGraph = useMemo(
+    () => subgraphForSelection(codebaseGraph.nodes, codebaseGraph.edges, selectedRootIds),
+    [codebaseGraph, selectedRootIds],
+  )
+
   const collapsedCodebaseGraph = useMemo(
-    () => collapseGraph(codebaseGraph.nodes, codebaseGraph.edges, expandedContainerIds),
-    [codebaseGraph, expandedContainerIds],
+    () => collapseGraph(selectionFilteredGraph.nodes, selectionFilteredGraph.edges, expandedContainerIds),
+    [selectionFilteredGraph, expandedContainerIds],
   )
 
   const handleToggleContainer = useCallback((containerId: string) => {
@@ -274,6 +297,17 @@ export default function App() {
       return next
     })
   }, [])
+
+  const handleToggleRootSelection = useCallback((rootId: string) => {
+    setSelectedRootIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(rootId)) next.delete(rootId)
+      else next.add(rootId)
+      return next
+    })
+  }, [])
+
+  const handleResetSelection = useCallback(() => setSelectedRootIds(new Set()), [])
 
   const handleExpandAll = useCallback(() => {
     if (!repo) return
@@ -496,6 +530,19 @@ export default function App() {
       const current = repoRef.current
       if (!current) return
       const ancestors = ancestorContainerIds(nodeId, current.nodes, current.edges)
+
+      // Even with every ancestor expanded, the node still won't render
+      // unless its outermost root is also in `selectedRootIds` -- the
+      // second, independent gate `subgraphForSelection` adds. The
+      // outermost root is the last (furthest) entry in `ancestors`
+      // (nearest-first), or `nodeId` itself when `ancestors` is empty,
+      // meaning the node is already top-level. No-op when already
+      // selected. This is what makes "clicking a node, from the canvas or
+      // the sidebar, makes it appear" hold regardless of which gate was
+      // blocking it.
+      const rootId = ancestors.length > 0 ? ancestors[ancestors.length - 1] : nodeId
+      setSelectedRootIds((prev) => (prev.has(rootId) ? prev : new Set(prev).add(rootId)))
+
       if (ancestors.length === 0) return
       setExpandedContainerIds((prev) => {
         let changed = false
@@ -550,6 +597,8 @@ export default function App() {
   const showFileViewPlaceholder =
     repo !== null && view === 'file' && (!selectedNode || selectedNode.kind === 'directory')
 
+  const showEmptySelectionPlaceholder = repo !== null && view === 'codebase' && selectedRootIds.size === 0
+
   const lastRepoPath = getLastRepoPath()
   const rememberedDocRoot = lastRepoPath ? getRememberedDocRoot(lastRepoPath) : null
 
@@ -599,6 +648,9 @@ export default function App() {
             onToggleComplexity={handleToggleComplexity}
             onExpandAll={handleExpandAll}
             onCollapseAll={handleCollapseAll}
+            selectedRootIds={selectedRootIds}
+            onToggleRootSelection={handleToggleRootSelection}
+            onResetSelection={handleResetSelection}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={toggleSidebarCollapsed}
           />
@@ -614,39 +666,53 @@ export default function App() {
               Select a file, class, or function to see its file view.
             </div>
           )}
+          {repo && !flowchartState && !showFileViewPlaceholder && showEmptySelectionPlaceholder && (
+            <div style={{ padding: 24, color: '#94a3b8' }}>
+              Select a directory or file in the sidebar to add it to the canvas.
+            </div>
+          )}
           {repo &&
             !flowchartState &&
             !showFileViewPlaceholder &&
+            !showEmptySelectionPlaceholder &&
             (layout.status === 'idle' || layout.status === 'laying-out') && (
               <div style={{ padding: 24, color: '#94a3b8' }}>
                 Laying out {scopedGraph.nodes.length} nodes…
               </div>
             )}
-          {repo && !flowchartState && !showFileViewPlaceholder && layout.status === 'error' && (
-            <div style={{ padding: 24 }}>
-              <span role="alert" style={{ color: '#fca5a5' }}>
-                Failed to lay out the graph. Try switching views or reloading the repository.
-              </span>
-            </div>
-          )}
-          {repo && !flowchartState && !showFileViewPlaceholder && layout.status === 'ready' && (
-            <GraphCanvas
-              key={`${repo.path}:${view}:${view === 'file' ? selectedNode?.file : ''}`}
-              nodes={flowGraph.nodes}
-              edges={flowGraph.edges}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={handleSelectNode}
-              onDocument={handleDocument}
-              onImpactAnalysis={handleImpactAnalysis}
-              onViewSource={handleViewSource}
-              onExecutionFlowchart={handleExecutionFlowchart}
-              onToggleContainer={handleToggleContainer}
-              containerState={view === 'codebase' ? collapsedCodebaseGraph.containerState : undefined}
-              onAutoSavePositions={handleAutoSavePositions}
-              highlight={impactHighlight}
-              complexityByNodeId={complexityByNodeId}
-            />
-          )}
+          {repo &&
+            !flowchartState &&
+            !showFileViewPlaceholder &&
+            !showEmptySelectionPlaceholder &&
+            layout.status === 'error' && (
+              <div style={{ padding: 24 }}>
+                <span role="alert" style={{ color: '#fca5a5' }}>
+                  Failed to lay out the graph. Try switching views or reloading the repository.
+                </span>
+              </div>
+            )}
+          {repo &&
+            !flowchartState &&
+            !showFileViewPlaceholder &&
+            !showEmptySelectionPlaceholder &&
+            layout.status === 'ready' && (
+              <GraphCanvas
+                key={`${repo.path}:${view}:${view === 'file' ? selectedNode?.file : ''}`}
+                nodes={flowGraph.nodes}
+                edges={flowGraph.edges}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={handleSelectNode}
+                onDocument={handleDocument}
+                onImpactAnalysis={handleImpactAnalysis}
+                onViewSource={handleViewSource}
+                onExecutionFlowchart={handleExecutionFlowchart}
+                onToggleContainer={handleToggleContainer}
+                containerState={view === 'codebase' ? collapsedCodebaseGraph.containerState : undefined}
+                onAutoSavePositions={handleAutoSavePositions}
+                highlight={impactHighlight}
+                complexityByNodeId={complexityByNodeId}
+              />
+            )}
           {flowchartState?.status === 'loading' && (
             <div style={{ padding: 24, color: '#94a3b8' }}>Loading flowchart…</div>
           )}

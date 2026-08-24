@@ -56,6 +56,9 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onToggleComplexity: vi.fn(),
     onExpandAll: vi.fn(),
     onCollapseAll: vi.fn(),
+    selectedRootIds: new Set(),
+    onToggleRootSelection: vi.fn(),
+    onResetSelection: vi.fn(),
     collapsed: false,
     onToggleCollapsed: vi.fn(),
     ...overrides,
@@ -174,5 +177,43 @@ describe('Sidebar', () => {
     expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument()
     expect(screen.queryByText('app.py')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Filter tree')).not.toBeInTheDocument()
+  })
+
+  it('shows the selected-root count', () => {
+    renderSidebar({ selectedRootIds: new Set(['app.py']) })
+
+    expect(screen.getByText('1 selected')).toBeInTheDocument()
+  })
+
+  it('calls onResetSelection when Reset selection is clicked', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar({ selectedRootIds: new Set(['app.py']) })
+
+    await user.click(screen.getByRole('button', { name: 'Reset selection' }))
+
+    expect(props.onResetSelection).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables Reset selection when nothing is selected', () => {
+    renderSidebar({ selectedRootIds: new Set() })
+
+    expect(screen.getByRole('button', { name: 'Reset selection' })).toBeDisabled()
+  })
+
+  it('hides the selection controls in the file view', () => {
+    renderSidebar({ view: 'file' })
+
+    expect(screen.queryByRole('button', { name: 'Reset selection' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/selected/)).not.toBeInTheDocument()
+  })
+
+  it('calls onToggleRootSelection when a directory/file checkbox is toggled', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar()
+
+    await user.click(screen.getByLabelText('Show app.py on canvas'))
+
+    expect(props.onToggleRootSelection).toHaveBeenCalledWith('app.py')
+    expect(props.onSelectNode).not.toHaveBeenCalled()
   })
 })

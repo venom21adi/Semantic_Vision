@@ -7,7 +7,7 @@ import type { GraphEdge, GraphNode } from '../api/types'
  * collapsed, same as if there were no class in between. Splitting this out
  * once, here, rather than inlining it, is what keeps that decision a
  * single source of truth. */
-const CONTAINER_KINDS = new Set<GraphNode['kind']>(['directory', 'file'])
+export const CONTAINER_KINDS = new Set<GraphNode['kind']>(['directory', 'file'])
 
 export interface ContainerVisibility {
   expanded: boolean
@@ -26,6 +26,52 @@ export interface CollapsedGraph {
   nodes: GraphNode[]
   edges: CollapsedEdge[]
   containerState: ReadonlyMap<string, ContainerVisibility>
+}
+
+export interface SelectionSubgraph {
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+}
+
+/** Restricts `nodes`/`edges` down to exactly the directories/files in
+ * `selectedRootIds`, plus everything (transitively) defined inside each of
+ * them. Feed the result into `collapseGraph` -- a selected id whose real
+ * parent wasn't also selected has no surviving `defines`-parent in the
+ * filtered edge set, so `collapseGraph`'s own "no parent -> always a
+ * visible root" rule makes it a canvas root automatically; selecting both a
+ * directory and one of its own descendants is a harmless no-op for the
+ * descendant, since its subtree is already a subset of the ancestor's.
+ *
+ * An edge of any kind survives iff *both* endpoints survived -- this is
+ * what keeps a real `calls`/`imports` edge between two independently
+ * selected directories, and drops anything pointing outside the selection,
+ * rather than needing separate handling for cross-selection edges. */
+export function subgraphForSelection(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  selectedRootIds: ReadonlySet<string>,
+): SelectionSubgraph {
+  const nodeById = new Map(nodes.map((node) => [node.id, node]))
+  const childIdsByParent = new Map<string, string[]>()
+  for (const edge of edges) {
+    if (edge.kind !== 'defines') continue
+    const siblings = childIdsByParent.get(edge.source) ?? []
+    siblings.push(edge.target)
+    childIdsByParent.set(edge.source, siblings)
+  }
+
+  const includedIds = new Set<string>()
+  function includeSubtree(id: string) {
+    if (includedIds.has(id) || !nodeById.has(id)) return
+    includedIds.add(id)
+    for (const childId of childIdsByParent.get(id) ?? []) includeSubtree(childId)
+  }
+  for (const rootId of selectedRootIds) includeSubtree(rootId)
+
+  return {
+    nodes: nodes.filter((node) => includedIds.has(node.id)),
+    edges: edges.filter((edge) => includedIds.has(edge.source) && includedIds.has(edge.target)),
+  }
 }
 
 /** Collapses every directory or file not in `expandedContainerIds` down to

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { GraphEdge, GraphNode } from '../api/types'
-import { ancestorContainerIds, collapseGraph } from './collapseDirectories'
+import { ancestorContainerIds, collapseGraph, subgraphForSelection } from './collapseDirectories'
 
 function node(id: string, kind: GraphNode['kind'], label = id): GraphNode {
   return { id, kind, label, file: 'app.py', line_start: 1, line_end: 1 }
@@ -213,5 +213,71 @@ describe('ancestorContainerIds', () => {
   it('returns an empty array for a top-level node', () => {
     const nodes = [node('a.py', 'file')]
     expect(ancestorContainerIds('a.py', nodes, [])).toEqual([])
+  })
+})
+
+describe('subgraphForSelection', () => {
+  const nodes = [
+    node('pkg', 'directory'),
+    node('pkg/a.py', 'file', 'a.py'),
+    node('pkg/a.py::f', 'function', 'f'),
+    node('other', 'directory'),
+    node('other/b.py', 'file', 'b.py'),
+    node('other/b.py::g', 'function', 'g'),
+    node('unselected', 'directory'),
+    node('unselected/c.py', 'file', 'c.py'),
+  ]
+  const edges = [
+    defines('pkg', 'pkg/a.py'),
+    defines('pkg/a.py', 'pkg/a.py::f'),
+    defines('other', 'other/b.py'),
+    defines('other/b.py', 'other/b.py::g'),
+    defines('unselected', 'unselected/c.py'),
+    calls('pkg/a.py::f', 'other/b.py::g'), // real edge between two selected subtrees
+    calls('pkg/a.py::f', 'unselected/c.py'), // edge reaching outside the selection
+  ]
+
+  it('returns an empty graph when nothing is selected', () => {
+    const result = subgraphForSelection(nodes, edges, new Set())
+    expect(result).toEqual({ nodes: [], edges: [] })
+  })
+
+  it('includes a selected root plus its full transitive subtree, and drops the rest', () => {
+    const result = subgraphForSelection(nodes, edges, new Set(['pkg']))
+
+    expect(result.nodes.map((n) => n.id).sort()).toEqual(['pkg', 'pkg/a.py', 'pkg/a.py::f'])
+    expect(result.edges).toEqual([defines('pkg', 'pkg/a.py'), defines('pkg/a.py', 'pkg/a.py::f')])
+  })
+
+  it('keeps a real edge between two independently selected subtrees', () => {
+    const result = subgraphForSelection(nodes, edges, new Set(['pkg', 'other']))
+
+    expect(result.edges).toContainEqual(calls('pkg/a.py::f', 'other/b.py::g'))
+  })
+
+  it('drops an edge whose target falls outside the selection', () => {
+    const result = subgraphForSelection(nodes, edges, new Set(['pkg']))
+
+    expect(result.edges.some((e) => e.target === 'unselected/c.py')).toBe(false)
+  })
+
+  it('selecting a directory and its own descendant is the same as selecting just the ancestor', () => {
+    const ancestorOnly = subgraphForSelection(nodes, edges, new Set(['pkg']))
+    const both = subgraphForSelection(nodes, edges, new Set(['pkg', 'pkg/a.py']))
+
+    expect(both.nodes.map((n) => n.id).sort()).toEqual(ancestorOnly.nodes.map((n) => n.id).sort())
+  })
+
+  it('lets a nested directory selected without its parent surface as its own root once collapsed', () => {
+    const filtered = subgraphForSelection(nodes, edges, new Set(['pkg/a.py']))
+    const collapsed = collapseGraph(filtered.nodes, filtered.edges, new Set())
+
+    expect(collapsed.nodes.map((n) => n.id)).toEqual(['pkg/a.py'])
+    expect(collapsed.containerState.get('pkg/a.py')).toEqual({ expanded: false, hiddenDescendantCount: 1 })
+  })
+
+  it('ignores a stale or nonexistent id without crashing', () => {
+    const result = subgraphForSelection(nodes, edges, new Set(['does-not-exist']))
+    expect(result).toEqual({ nodes: [], edges: [] })
   })
 })

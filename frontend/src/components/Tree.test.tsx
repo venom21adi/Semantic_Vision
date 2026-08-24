@@ -23,7 +23,15 @@ const roots: TreeNode[] = [
 describe('Tree', () => {
   it('renders root and expanded child labels', () => {
     render(
-      <Tree roots={roots} selectedNodeId={null} onSelectNode={vi.fn()} visibleIds={null} matchIds={new Set()} />,
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={vi.fn()}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
+      />,
     )
 
     expect(screen.getByText('app.py')).toBeInTheDocument()
@@ -40,6 +48,8 @@ describe('Tree', () => {
         onSelectNode={onSelectNode}
         visibleIds={null}
         matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
       />,
     )
 
@@ -56,6 +66,8 @@ describe('Tree', () => {
         onSelectNode={vi.fn()}
         visibleIds={null}
         matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
       />,
     )
 
@@ -80,6 +92,8 @@ describe('Tree', () => {
         onSelectNode={vi.fn()}
         visibleIds={null}
         matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
       />,
     )
 
@@ -115,6 +129,8 @@ describe('Tree', () => {
         onSelectNode={vi.fn()}
         visibleIds={visibleIds}
         matchIds={matchIds}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
       />,
     )
 
@@ -132,10 +148,129 @@ describe('Tree', () => {
         onSelectNode={vi.fn()}
         visibleIds={null}
         matchIds={matchIds}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
       />,
     )
 
     expect(screen.getByText('greet').closest('[role="treeitem"]')).toHaveAttribute('data-match', 'true')
     expect(screen.getByText('Greeter').closest('[role="treeitem"]')).not.toHaveAttribute('data-match')
+  })
+
+  it('renders a checkbox only for directory/file rows, not class/function rows', () => {
+    render(
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={vi.fn()}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Show app.py on canvas')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Show Greeter on canvas')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Show greet on canvas')).not.toBeInTheDocument()
+  })
+
+  it('reflects selectedRootIds via the checkbox checked state', () => {
+    render(
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={vi.fn()}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set(['app.py'])}
+        onToggleRootSelection={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Show app.py on canvas')).toBeChecked()
+  })
+
+  it('clicking the checkbox toggles selection without selecting the node', async () => {
+    const onSelectNode = vi.fn()
+    const onToggleRootSelection = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={onSelectNode}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={onToggleRootSelection}
+      />,
+    )
+
+    await user.click(screen.getByLabelText('Show app.py on canvas'))
+
+    expect(onToggleRootSelection).toHaveBeenCalledWith('app.py')
+    expect(onSelectNode).not.toHaveBeenCalled()
+  })
+
+  it('clicking the row label selects the node without toggling its checkbox', async () => {
+    const onSelectNode = vi.fn()
+    const onToggleRootSelection = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={onSelectNode}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={onToggleRootSelection}
+      />,
+    )
+
+    await user.click(screen.getByText('app.py'))
+
+    expect(onSelectNode).toHaveBeenCalledWith('app.py')
+    expect(onToggleRootSelection).not.toHaveBeenCalled()
+  })
+
+  it('toggles selection via keyboard (Space) without also selecting the row', async () => {
+    const onSelectNode = vi.fn()
+    const onToggleRootSelection = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={onSelectNode}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={onToggleRootSelection}
+      />,
+    )
+
+    screen.getByLabelText('Show app.py on canvas').focus()
+    await user.keyboard(' ')
+
+    expect(onToggleRootSelection).toHaveBeenCalledWith('app.py')
+    expect(onSelectNode).not.toHaveBeenCalled()
+  })
+
+  it('renders no checkboxes when selectedRootIds is null', () => {
+    render(
+      <Tree
+        roots={roots}
+        selectedNodeId={null}
+        onSelectNode={vi.fn()}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={null}
+        onToggleRootSelection={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByLabelText('Show app.py on canvas')).not.toBeInTheDocument()
   })
 })

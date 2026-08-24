@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CONTAINER_KINDS } from '../graph/collapseDirectories'
 import { KIND_COLORS } from '../graph/nodeTypes'
 import { isExpandedByDefault, type TreeNode } from '../tree/buildTree'
 
@@ -10,9 +11,23 @@ interface TreeProps {
    * `null` means no filter -- fall back to each item's own expand state. */
   visibleIds: Set<string> | null
   matchIds: Set<string>
+  /** Ids currently checked to appear on the canvas (directory/file rows
+   * only -- see `CONTAINER_KINDS`). `null` means the selection feature is
+   * off for this render (the File view's tree, whose canvas doesn't derive
+   * from a selection at all) -- no checkbox column renders in that case. */
+  selectedRootIds: ReadonlySet<string> | null
+  onToggleRootSelection: (id: string) => void
 }
 
-export function Tree({ roots, selectedNodeId, onSelectNode, visibleIds, matchIds }: TreeProps) {
+export function Tree({
+  roots,
+  selectedNodeId,
+  onSelectNode,
+  visibleIds,
+  matchIds,
+  selectedRootIds,
+  onToggleRootSelection,
+}: TreeProps) {
   const [manualExpanded, setManualExpanded] = useState<Record<string, boolean>>({})
 
   function toggle(id: string, defaultExpanded: boolean) {
@@ -83,6 +98,28 @@ export function Tree({ roots, selectedNodeId, onSelectNode, visibleIds, matchIds
           ) : (
             <span style={{ width: 14 }} />
           )}
+          {selectedRootIds !== null &&
+            (CONTAINER_KINDS.has(item.node.kind) ? (
+              <input
+                type="checkbox"
+                aria-label={`Show ${item.node.label} on canvas`}
+                checked={selectedRootIds.has(item.node.id)}
+                onClick={(event) => event.stopPropagation()}
+                // The row wrapper's own `onKeyDown` (Space/Enter -> select)
+                // would otherwise still fire on the bubbled keydown -- and
+                // its `preventDefault()` would cancel the checkbox's native
+                // space-activation too, since `defaultPrevented` is shared
+                // across the whole bubble path -- silently blocking keyboard
+                // toggling entirely while mis-selecting the row instead.
+                // Stopping propagation here, before it reaches the row,
+                // keeps the checkbox's native Space/Enter handling intact.
+                onKeyDown={(event) => event.stopPropagation()}
+                onChange={() => onToggleRootSelection(item.node.id)}
+                style={{ margin: 0, flexShrink: 0, cursor: 'pointer' }}
+              />
+            ) : (
+              <span style={{ width: 13, flexShrink: 0 }} />
+            ))}
           <span
             style={{
               width: 8,

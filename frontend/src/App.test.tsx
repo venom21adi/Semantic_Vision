@@ -11,7 +11,7 @@ import {
   setDetailsCollapsed,
   setSidebarCollapsed,
 } from './utils/localStorage'
-import { AUTO_SAVE_POSITIONS_INTERVAL_MS } from './graph/GraphCanvas'
+import { AUTO_SAVE_POSITIONS_INTERVAL_MS, LARGE_GRAPH_NODE_THRESHOLD } from './graph/GraphCanvas'
 
 vi.mock('./api/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./api/client')>()
@@ -507,6 +507,92 @@ describe('App', () => {
     // force-expand `app.py` so the selected node actually becomes visible
     // on the canvas again, instead of leaving `selectedNodeId` pointing at
     // something collapseGraph never renders.
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByText('greet'))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument(),
+    )
+  })
+
+  it('starts the canvas empty with a placeholder for a large repo, until a directory/file is selected', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: LARGE_GRAPH_NODE_THRESHOLD + 1,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+    expect(screen.queryByTestId('rf__node-app.py')).not.toBeInTheDocument()
+
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByLabelText('Show app.py on canvas'))
+
+    await waitFor(() => expect(screen.getByTestId('rf__node-app.py')).toBeInTheDocument())
+  })
+
+  it('Reset selection returns a large repo to the empty-state placeholder', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: LARGE_GRAPH_NODE_THRESHOLD + 1,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByLabelText('Show app.py on canvas'))
+    await waitFor(() => expect(screen.getByTestId('rf__node-app.py')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Reset selection' }))
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+  })
+
+  it('selecting a node from the sidebar tree on a large repo adds its root to the canvas, not just expanding it', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: LARGE_GRAPH_NODE_THRESHOLD + 1,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+
+    // Clicking the row label (not its checkbox) selects the node -- nothing
+    // was ever checked, so without the fix `app.py` would stay outside
+    // `selectedRootIds` and never render, even though it'd be "expanded."
     const tree = screen.getByRole('tree')
     await user.click(within(tree).getByText('greet'))
 

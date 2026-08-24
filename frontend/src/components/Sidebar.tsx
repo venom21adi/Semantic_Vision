@@ -20,6 +20,11 @@ interface SidebarProps {
    * repo that starts mostly collapsed by default. */
   onExpandAll: () => void
   onCollapseAll: () => void
+  /** Ids of directories/files currently checked to appear on the
+   * codebase-view canvas. */
+  selectedRootIds: ReadonlySet<string>
+  onToggleRootSelection: (id: string) => void
+  onResetSelection: () => void
   collapsed?: boolean
   onToggleCollapsed?: () => void
 }
@@ -35,6 +40,9 @@ export function Sidebar({
   onToggleComplexity,
   onExpandAll,
   onCollapseAll,
+  selectedRootIds,
+  onToggleRootSelection,
+  onResetSelection,
   collapsed = false,
   onToggleCollapsed = () => {},
 }: SidebarProps) {
@@ -115,6 +123,31 @@ export function Sidebar({
           {complexityActive ? 'Hide complexity' : 'Show complexity'}
         </button>
       </div>
+
+      {view === 'codebase' && (
+        <div style={{ display: 'flex', padding: '0 8px 8px', gap: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>
+            {selectedRootIds.size} selected
+          </span>
+          <button
+            type="button"
+            onClick={onResetSelection}
+            disabled={selectedRootIds.size === 0}
+            style={{
+              marginLeft: 'auto',
+              padding: '4px 8px',
+              borderRadius: 4,
+              border: '1px solid #334155',
+              background: 'transparent',
+              color: selectedRootIds.size === 0 ? '#475569' : '#f8fafc',
+              fontSize: 12,
+              cursor: selectedRootIds.size === 0 ? 'default' : 'pointer',
+            }}
+          >
+            Reset selection
+          </button>
+        </div>
+      )}
 
       {view === 'codebase' && (
         <div style={{ display: 'flex', padding: '0 8px 8px', gap: 4 }}>
@@ -209,6 +242,8 @@ export function Sidebar({
           onSelectNode={onSelectNode}
           visibleIds={visibleIds}
           matchIds={matchIds}
+          selectedRootIds={view === 'codebase' ? selectedRootIds : null}
+          onToggleRootSelection={onToggleRootSelection}
         />
       </div>
     </aside>
