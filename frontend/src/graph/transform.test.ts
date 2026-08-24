@@ -68,6 +68,20 @@ describe('toFlowEdges', () => {
       expect(edge.markerEnd).toBeDefined()
     }
   })
+
+  it('appends a ×N suffix to the label when an edge carries an aggregated count', () => {
+    const [flowEdge] = toFlowEdges([{ ...edges[2], count: 5 }])
+
+    expect(flowEdge.label).toBe('calls ×5')
+  })
+
+  it('does not append a suffix for an edge with no count, or a count of 1', () => {
+    const [withoutCount] = toFlowEdges([edges[2]])
+    const [countOne] = toFlowEdges([{ ...edges[2], count: 1 }])
+
+    expect(withoutCount.label).toBe('calls')
+    expect(countOne.label).toBe('calls')
+  })
 })
 
 describe('buildFlowGraph', () => {

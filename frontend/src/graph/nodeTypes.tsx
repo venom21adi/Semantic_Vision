@@ -12,6 +12,15 @@ export interface GraphNodeData extends Record<string, unknown> {
    * kind-based background below rather than replacing it, so turning the
    * heatmap off just means this stops being set. */
   heatmapColor?: string
+  /** Directory/file nodes only -- whether this container's own children
+   * are currently shown as separate nodes (`true`) or rolled up into this
+   * one (`false`). Undefined for non-container kinds and for a container
+   * with no `defines` children at all (nothing to expand). */
+  isExpanded?: boolean
+  /** Directory/file nodes only -- how many descendants (at any depth) are
+   * currently rolled up into this node. 0 or undefined when expanded or
+   * when there's nothing hidden. */
+  hiddenDescendantCount?: number
 }
 
 export const KIND_COLORS: Record<NodeKind, { background: string; border: string }> = {
@@ -24,6 +33,17 @@ export const KIND_COLORS: Record<NodeKind, { background: string; border: string 
 function GraphNodeComponent({ data, selected }: NodeProps) {
   const nodeData = data as GraphNodeData
   const colors = KIND_COLORS[nodeData.kind]
+  // A directory/file with nothing rolled up shows no chevron at all --
+  // there's nothing to expand/collapse, whether or not it's nominally
+  // "expanded".
+  const chevron =
+    nodeData.kind !== 'directory' && nodeData.kind !== 'file'
+      ? null
+      : nodeData.hiddenDescendantCount
+        ? '▸ '
+        : nodeData.isExpanded
+          ? '▾ '
+          : null
 
   return (
     <div
@@ -46,7 +66,19 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
       }}
     >
       <Handle type="target" position={Position.Top} />
+      {chevron && (
+        // The only click target that toggles expand/collapse -- see
+        // `GraphCanvas.tsx`'s `handleNodeClick`, which inspects the click
+        // event's target for this attribute. Everywhere else on the node
+        // still selects it, same as any other kind (a file has real
+        // click behavior -- View Source, Document, etc. -- worth keeping
+        // on a plain click).
+        <span data-node-toggle="true" style={{ cursor: 'pointer' }}>
+          {chevron}
+        </span>
+      )}
       {nodeData.label}
+      {nodeData.hiddenDescendantCount ? ` (${nodeData.hiddenDescendantCount})` : ''}
       <Handle type="source" position={Position.Bottom} />
     </div>
   )

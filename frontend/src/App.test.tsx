@@ -492,6 +492,29 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'greet' })).toBeInTheDocument()
   })
 
+  it('re-expands a container collapsed via Collapse All when its hidden child is selected from the sidebar tree', async () => {
+    const user = await loadSampleRepo()
+
+    // Force-collapse everything -- `greet` (inside `app.py`) is no longer
+    // rendered on the canvas, only its containing file is.
+    await user.click(screen.getByRole('button', { name: 'Collapse all' }))
+    await waitFor(() =>
+      expect(screen.queryByTestId('rf__node-app.py::Greeter.greet')).not.toBeInTheDocument(),
+    )
+    expect(screen.getByTestId('rf__node-app.py')).toBeInTheDocument()
+
+    // Selecting it from the sidebar tree (which isn't collapse-aware) must
+    // force-expand `app.py` so the selected node actually becomes visible
+    // on the canvas again, instead of leaving `selectedNodeId` pointing at
+    // something collapseGraph never renders.
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByText('greet'))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument(),
+    )
+  })
+
   it('fetches and renders the execution flowchart via the context menu, then returns to the graph', async () => {
     mockedClient.getFlowchart.mockResolvedValue({
       target: 'app.py::Greeter.greet',

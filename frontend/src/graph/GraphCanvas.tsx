@@ -15,6 +15,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { ComplexityScore, NodePosition } from '../api/types'
+import type { ContainerVisibility } from './collapseDirectories'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
 import { complexityToColor } from './heatmap'
 import { nodeTypes, type GraphNodeData } from './nodeTypes'
@@ -42,6 +43,15 @@ export interface GraphCanvasProps {
   onImpactAnalysis: (nodeId: string) => void
   onViewSource: (nodeId: string) => void
   onExecutionFlowchart: (nodeId: string) => void
+  /** Called instead of `onSelectNode` when a directory or file node is
+   * clicked -- toggles that container's expand/collapse state one level. */
+  onToggleContainer: (containerId: string) => void
+  /** Expand/collapse state and hidden-descendant count for every currently
+   * visible directory/file node, from `collapseGraph`. Only meaningful in
+   * the codebase view (a file-scoped graph never contains directory
+   * nodes, and its one file node is always the scope root); omit or leave
+   * undefined otherwise. */
+  containerState?: ReadonlyMap<string, ContainerVisibility>
   /** Called every `AUTO_SAVE_POSITIONS_INTERVAL_MS` with the current node
    * positions (including any the user has dragged), so a moved layout
    * survives a reload. Omit to disable auto-save. */
@@ -67,6 +77,8 @@ function GraphCanvasInner({
   onImpactAnalysis,
   onViewSource,
   onExecutionFlowchart,
+  onToggleContainer,
+  containerState,
   onAutoSavePositions,
   highlight,
   complexityByNodeId,
@@ -128,11 +140,14 @@ function GraphCanvasInner({
         const opacity = !highlight ? 1 : highlight.nodeIds.has(node.id) ? 1 : DIMMED_NODE_OPACITY
         const score = complexityByNodeId?.get(node.id)
         const heatmapColor = score ? complexityToColor(score.cyclomatic_complexity) : undefined
+        const visibility = containerState?.get(node.id)
         const data = node.data as GraphNodeData
         if (
           node.selected === selected &&
           node.style?.opacity === opacity &&
-          data.heatmapColor === heatmapColor
+          data.heatmapColor === heatmapColor &&
+          data.isExpanded === visibility?.expanded &&
+          data.hiddenDescendantCount === visibility?.hiddenDescendantCount
         ) {
           return node
         }
@@ -140,10 +155,15 @@ function GraphCanvasInner({
           ...node,
           selected,
           style: { ...node.style, opacity },
-          data: { ...data, heatmapColor },
+          data: {
+            ...data,
+            heatmapColor,
+            isExpanded: visibility?.expanded,
+            hiddenDescendantCount: visibility?.hiddenDescendantCount,
+          },
         }
       }),
-    [nodes, selectedNodeId, highlight, complexityByNodeId],
+    [nodes, selectedNodeId, highlight, complexityByNodeId, containerState],
   )
 
   const displayEdges = useMemo(
@@ -163,10 +183,37 @@ function GraphCanvasInner({
   )
 
   const handleNodeClick: NodeMouseHandler = useCallback(
-    (_event, node) => {
+    (event, node) => {
+      // Only the chevron itself toggles expand/collapse (see
+      // `nodeTypes.tsx`'s `data-node-toggle` span) -- clicking anywhere
+      // else on a directory/file node still selects it, same as any other
+      // kind, since a file has real click behavior worth keeping (View
+      // Source, Document, etc. via the context menu; a left-click
+      // selecting it is the existing, expected gesture). Directories have
+      // no such behavior today, but are treated the same way for
+      // consistency -- both use the chevron, not the whole node body, as
+      // the toggle target.
+      // `event.target` isn't guaranteed to be an `Element` in a raw DOM
+      // click (it can be a `Text` node, which has no `.closest()`) --
+      // confirmed via a direct diagnostic that React Flow's own
+      // `onNodeClick` always normalizes it to the node's wrapper element
+      // regardless of exactly where within the node the click landed, so
+      // this fallback is unreachable through this API as currently used.
+      // Kept anyway as cheap defense-in-depth against that normalization
+      // changing in a future `@xyflow/react` version, not because it's
+      // known to fire today.
+      const rawTarget = event.target
+      const target =
+        rawTarget instanceof Element
+          ? rawTarget
+          : (rawTarget as unknown as globalThis.Node).parentElement
+      if (target?.closest('[data-node-toggle]')) {
+        onToggleContainer(node.id)
+        return
+      }
       onSelectNode(node.id)
     },
-    [onSelectNode],
+    [onSelectNode, onToggleContainer],
   )
 
   const closeContextMenu = useCallback(() => setContextMenu(null), [])

@@ -1,4 +1,4 @@
-import dagre from 'dagre'
+import dagre from '@dagrejs/dagre'
 import type { Edge, Node } from '@xyflow/react'
 
 export const NODE_WIDTH = 172
@@ -13,10 +13,22 @@ export function layoutGraph<T extends Record<string, unknown>>(
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({ rankdir: direction })
 
+  const nodeIds = new Set(nodes.map((node) => node.id))
   for (const node of nodes) {
     dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT })
   }
   for (const edge of edges) {
+    // graphlib's `setEdge` silently auto-creates any endpoint it hasn't
+    // seen via `setNode` yet -- an edge to a call/import target with no
+    // corresponding node (e.g. a stdlib/third-party symbol like
+    // `external::numpy`, never rendered as an actual graph node) would
+    // otherwise implicitly hand dagre an extra node to lay out per
+    // distinct external symbol, unbounded by the graph's real node count
+    // and invisible to any node-count-based sizing. Confirmed as a real,
+    // large cost on a large repo: thousands of distinct external targets
+    // turned a nominally ~12-node collapsed graph into one dagre actually
+    // laid out as if it had thousands.
+    if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) continue
     dagreGraph.setEdge(edge.source, edge.target)
   }
 

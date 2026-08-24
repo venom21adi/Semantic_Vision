@@ -29,7 +29,8 @@ import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
 import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
 import { buildFlowchartGraph } from './flowchart/transform'
-import { GraphCanvas, type GraphHighlight } from './graph/GraphCanvas'
+import { ancestorContainerIds, collapseGraph } from './graph/collapseDirectories'
+import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './graph/GraphCanvas'
 import { scopeToFile } from './graph/transform'
 import { useLayoutWorker } from './graph/useLayoutWorker'
 import {
@@ -84,6 +85,15 @@ export default function App() {
     isDocSaveNoticeDismissed(),
   )
   const [flowchartState, setFlowchartState] = useState<FlowchartState | null>(null)
+  // Which directories/files currently show their children as separate
+  // nodes, rather than rolled up into the container node itself. Both
+  // kinds are collapse boundaries (see collapseDirectories.ts) -- a
+  // single large file needs collapsing just as much as a directory does.
+  // Defaulted on load (see handleLoad): every directory/file for a repo
+  // at or below the large-graph threshold (today's exact behavior,
+  // unchanged), otherwise empty (so a large repo starts showing only its
+  // top-level structure).
+  const [expandedContainerIds, setExpandedContainerIds] = useState<ReadonlySet<string>>(new Set())
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => getSidebarCollapsed())
   const [detailsCollapsed, setDetailsCollapsedState] = useState(() => getDetailsCollapsed())
 
@@ -173,6 +183,20 @@ export default function App() {
       setPane(null)
       setView('codebase')
       setFlowchartState(null)
+      // At or below the threshold: everything expanded, identical to this
+      // app's pre-collapse behavior. Above it: start with only top-level
+      // structure visible -- an empty set already means exactly that (a
+      // node with no parent is always its own representative in
+      // `collapseGraph`), no need to compute "top-level ids" here.
+      setExpandedContainerIds(
+        parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
+          ? new Set(
+              graph.nodes
+                .filter((node) => node.kind === 'directory' || node.kind === 'file')
+                .map((node) => node.id),
+            )
+          : new Set(),
+      )
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {
@@ -226,6 +250,42 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repo?.nodes, repo?.edges])
 
+  // Rolls up any directory/file not in `expandedContainerIds` into a
+  // single node, so a large repo's worker-side `dagre.layout()` call only
+  // ever has to lay out what's actually visible -- see
+  // docs/PERFORMANCE-REPORT.md's Iteration 2 for why this is the fix for
+  // "large repos stay slow to actually render" (Iteration 1 only fixed
+  // the tab-freezing symptom). Referentially stable for the same reason
+  // `codebaseGraph` is: this only changes identity when `codebaseGraph`
+  // or `expandedContainerIds` themselves do (load, toggle, expand-all/
+  // collapse-all, or selecting a node buried inside a collapsed
+  // container -- see handleSelectNode), never on unrelated re-renders, so
+  // it doesn't spuriously re-trigger `useLayoutWorker`.
+  const collapsedCodebaseGraph = useMemo(
+    () => collapseGraph(codebaseGraph.nodes, codebaseGraph.edges, expandedContainerIds),
+    [codebaseGraph, expandedContainerIds],
+  )
+
+  const handleToggleContainer = useCallback((containerId: string) => {
+    setExpandedContainerIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(containerId)) next.delete(containerId)
+      else next.add(containerId)
+      return next
+    })
+  }, [])
+
+  const handleExpandAll = useCallback(() => {
+    if (!repo) return
+    setExpandedContainerIds(
+      new Set(
+        repo.nodes.filter((node) => node.kind === 'directory' || node.kind === 'file').map((node) => node.id),
+      ),
+    )
+  }, [repo])
+
+  const handleCollapseAll = useCallback(() => setExpandedContainerIds(new Set()), [])
+
   const fileScopedGraph = useMemo(() => {
     if (!repo || !selectedNode || selectedNode.kind === 'directory') return null
     return scopeToFile(repo.nodes, repo.edges, selectedNode.file)
@@ -238,7 +298,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repo?.nodes, repo?.edges, selectedNode?.file, selectedNode?.kind])
 
-  const scopedGraph = view === 'file' && fileScopedGraph ? fileScopedGraph : codebaseGraph
+  const scopedGraph = view === 'file' && fileScopedGraph ? fileScopedGraph : collapsedCodebaseGraph
 
   const layout = useLayoutWorker(scopedGraph)
 
@@ -420,7 +480,34 @@ export default function App() {
     (nodeId: string | null) => {
       cancelGeneration()
       setSelectedNodeId(nodeId)
-      if (nodeId === null) setPane(null)
+      if (nodeId === null) {
+        setPane(null)
+        return
+      }
+      // A selection can come from somewhere that isn't collapse-aware --
+      // the sidebar's file/symbol tree (`Tree.tsx`), or jumping to a
+      // caller from the Impact Analysis pane -- and the target could be
+      // rolled up inside a currently-collapsed directory/file. Force-expand
+      // every container above it so it's actually visible on the canvas;
+      // without this, `selectedNodeId` would point at a node
+      // `collapseGraph` never renders, with no highlight/pan and a
+      // details panel open for something invisible. A no-op (returns the
+      // same `Set`, no re-render) when everything's already expanded.
+      const current = repoRef.current
+      if (!current) return
+      const ancestors = ancestorContainerIds(nodeId, current.nodes, current.edges)
+      if (ancestors.length === 0) return
+      setExpandedContainerIds((prev) => {
+        let changed = false
+        const next = new Set(prev)
+        for (const id of ancestors) {
+          if (!next.has(id)) {
+            next.add(id)
+            changed = true
+          }
+        }
+        return changed ? next : prev
+      })
     },
     [cancelGeneration],
   )
@@ -510,6 +597,8 @@ export default function App() {
             onViewChange={setView}
             complexityActive={pane?.kind === 'complexity'}
             onToggleComplexity={handleToggleComplexity}
+            onExpandAll={handleExpandAll}
+            onCollapseAll={handleCollapseAll}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={toggleSidebarCollapsed}
           />
@@ -551,6 +640,8 @@ export default function App() {
               onImpactAnalysis={handleImpactAnalysis}
               onViewSource={handleViewSource}
               onExecutionFlowchart={handleExecutionFlowchart}
+              onToggleContainer={handleToggleContainer}
+              containerState={view === 'codebase' ? collapsedCodebaseGraph.containerState : undefined}
               onAutoSavePositions={handleAutoSavePositions}
               highlight={impactHighlight}
               complexityByNodeId={complexityByNodeId}
@@ -594,7 +685,7 @@ export default function App() {
         <DetailsPanel
           selectedNode={selectedNode}
           pane={pane}
-          onSelectCaller={setSelectedNodeId}
+          onSelectCaller={handleSelectNode}
           onClosePane={handleClosePane}
           docProvider={docProvider}
           onDocProviderChange={setDocProvider}

@@ -22,6 +22,7 @@ const noop = {
   onImpactAnalysis: vi.fn(),
   onViewSource: vi.fn(),
   onExecutionFlowchart: vi.fn(),
+  onToggleContainer: vi.fn(),
 }
 
 describe('GraphCanvas', () => {
@@ -42,6 +43,105 @@ describe('GraphCanvas', () => {
     await user.click(screen.getByText('a'))
 
     expect(onSelectNode).toHaveBeenCalledWith('a')
+  })
+
+  it('calls onToggleContainer, not onSelectNode, when the chevron on a collapse-managed node is clicked', async () => {
+    const onSelectNode = vi.fn()
+    const onToggleContainer = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <GraphCanvas
+        nodes={[makeNode('pkg', 'directory')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        onSelectNode={onSelectNode}
+        onToggleContainer={onToggleContainer}
+        containerState={new Map([['pkg', { expanded: false, hiddenDescendantCount: 3 }]])}
+      />,
+    )
+
+    const chevron = screen.getByTitle('pkg').querySelector('[data-node-toggle]')
+    expect(chevron).not.toBeNull()
+    await user.click(chevron as Element)
+
+    expect(onToggleContainer).toHaveBeenCalledWith('pkg')
+    expect(onSelectNode).not.toHaveBeenCalled()
+  })
+
+  it('still calls onSelectNode when clicking a collapse-managed node anywhere other than its chevron', async () => {
+    // Regression check: a directory/file node has a real click behavior
+    // worth keeping (selecting it -- e.g. to View Source/Document a
+    // whole file via the context menu), so only the chevron itself should
+    // toggle, not the entire node body.
+    const onSelectNode = vi.fn()
+    const onToggleContainer = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <GraphCanvas
+        nodes={[makeNode('app.py', 'file')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        onSelectNode={onSelectNode}
+        onToggleContainer={onToggleContainer}
+        containerState={new Map([['app.py', { expanded: false, hiddenDescendantCount: 2 }]])}
+      />,
+    )
+
+    await user.click(screen.getByTitle('app.py'))
+
+    expect(onSelectNode).toHaveBeenCalledWith('app.py')
+    expect(onToggleContainer).not.toHaveBeenCalled()
+  })
+
+  it('falls back to onSelectNode for a directory/file node with no containerState entry (e.g. file view)', async () => {
+    const onSelectNode = vi.fn()
+    const onToggleContainer = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <GraphCanvas
+        nodes={[makeNode('app.py', 'file')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        onSelectNode={onSelectNode}
+        onToggleContainer={onToggleContainer}
+      />,
+    )
+
+    await user.click(screen.getByTitle('app.py'))
+
+    expect(onSelectNode).toHaveBeenCalledWith('app.py')
+    expect(onToggleContainer).not.toHaveBeenCalled()
+  })
+
+  it('renders a chevron and hidden-descendant count for a collapsed container node', () => {
+    render(
+      <GraphCanvas
+        nodes={[makeNode('pkg', 'directory')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        containerState={new Map([['pkg', { expanded: false, hiddenDescendantCount: 3 }]])}
+      />,
+    )
+
+    expect(screen.getByTitle('pkg').textContent).toBe('▸ pkg (3)')
+  })
+
+  it('renders an expanded chevron with no count for an expanded container node', () => {
+    render(
+      <GraphCanvas
+        nodes={[makeNode('pkg', 'directory')]}
+        edges={[]}
+        selectedNodeId={null}
+        {...noop}
+        containerState={new Map([['pkg', { expanded: true, hiddenDescendantCount: 0 }]])}
+      />,
+    )
+
+    expect(screen.getByTitle('pkg').textContent).toBe('▾ pkg')
   })
 
   it('calls onSelectNode(null) when clicking empty canvas space', () => {

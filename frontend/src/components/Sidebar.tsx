@@ -15,6 +15,11 @@ interface SidebarProps {
   onViewChange: (view: GraphView) => void
   complexityActive: boolean
   onToggleComplexity: () => void
+  /** Expands/collapses every directory and file in the codebase-view
+   * graph at once -- the escape hatch back to full detail for a large
+   * repo that starts mostly collapsed by default. */
+  onExpandAll: () => void
+  onCollapseAll: () => void
   collapsed?: boolean
   onToggleCollapsed?: () => void
 }
@@ -28,6 +33,8 @@ export function Sidebar({
   onViewChange,
   complexityActive,
   onToggleComplexity,
+  onExpandAll,
+  onCollapseAll,
   collapsed = false,
   onToggleCollapsed = () => {},
 }: SidebarProps) {
@@ -108,6 +115,43 @@ export function Sidebar({
           {complexityActive ? 'Hide complexity' : 'Show complexity'}
         </button>
       </div>
+
+      {view === 'codebase' && (
+        <div style={{ display: 'flex', padding: '0 8px 8px', gap: 4 }}>
+          <button
+            type="button"
+            onClick={onExpandAll}
+            style={{
+              flex: 1,
+              padding: '4px 8px',
+              borderRadius: 4,
+              border: '1px solid #334155',
+              background: 'transparent',
+              color: '#f8fafc',
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            Expand all
+          </button>
+          <button
+            type="button"
+            onClick={onCollapseAll}
+            style={{
+              flex: 1,
+              padding: '4px 8px',
+              borderRadius: 4,
+              border: '1px solid #334155',
+              background: 'transparent',
+              color: '#f8fafc',
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            Collapse all
+          </button>
+        </div>
+      )}
 
       <div style={{ padding: '0 8px 8px', position: 'relative' }}>
         <input

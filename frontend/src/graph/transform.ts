@@ -24,7 +24,7 @@ export function toFlowNodes(nodes: GraphNode[]): Node<GraphNodeData>[] {
   }))
 }
 
-export function toFlowEdges(edges: GraphEdge[]): Edge[] {
+export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge[] {
   const occurrences = new Map<string, number>()
 
   return edges.map((edge) => {
@@ -37,7 +37,10 @@ export function toFlowEdges(edges: GraphEdge[]): Edge[] {
       id: `${base}:${index}`,
       source: edge.source,
       target: edge.target,
-      label: edge.kind,
+      // `count` is set by `collapseGraph` when multiple underlying edges
+      // rolled up into this one after remapping both endpoints to their
+      // visible directory representative.
+      label: edge.count && edge.count > 1 ? `${edge.kind} ×${edge.count}` : edge.kind,
       style: {
         stroke: color,
         strokeDasharray: edge.kind === 'imports' ? '4 3' : edge.ambiguous ? '2 2' : undefined,

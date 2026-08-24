@@ -54,6 +54,8 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onViewChange: vi.fn(),
     complexityActive: false,
     onToggleComplexity: vi.fn(),
+    onExpandAll: vi.fn(),
+    onCollapseAll: vi.fn(),
     collapsed: false,
     onToggleCollapsed: vi.fn(),
     ...overrides,
@@ -137,6 +139,24 @@ describe('Sidebar', () => {
 
     const button = screen.getByRole('button', { name: 'Hide complexity' })
     expect(button).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('calls onExpandAll and onCollapseAll when their buttons are clicked, in the codebase view', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar({ view: 'codebase' })
+
+    await user.click(screen.getByRole('button', { name: 'Expand all' }))
+    await user.click(screen.getByRole('button', { name: 'Collapse all' }))
+
+    expect(props.onExpandAll).toHaveBeenCalledTimes(1)
+    expect(props.onCollapseAll).toHaveBeenCalledTimes(1)
+  })
+
+  it('hides the expand-all/collapse-all controls in the file view', () => {
+    renderSidebar({ view: 'file' })
+
+    expect(screen.queryByRole('button', { name: 'Expand all' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Collapse all' })).not.toBeInTheDocument()
   })
 
   it('calls onToggleCollapsed when the collapse button is clicked', async () => {
