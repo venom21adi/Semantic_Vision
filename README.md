@@ -144,7 +144,7 @@ What works today, per language:
 | Impact analysis (upstream callers, cycle detection) | ✅ | ✅ |
 | Complexity report | ✅ | ✅ |
 | AI-generated documentation | ✅ | ✅ |
-| Execution flowcharts | ✅ | ❌ |
+| Execution flowcharts | ✅ | Coming Soon |
 | Docker packaging / one-command setup | ✅ | ✅ |
 
 A repo is parsed as one language at a time — pick which in the selector
