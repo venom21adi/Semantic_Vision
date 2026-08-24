@@ -43,6 +43,22 @@ describe('PerformanceReportPane', () => {
     expect(screen.getByText(/nested loops/i)).toBeInTheDocument()
   })
 
+  it('shows call chain depth on the ranked entry only when it is nonzero', () => {
+    render(<PerformanceReportPane path="/repo" scores={scores} onSelectNode={vi.fn()} />)
+
+    // "complex" has call_chain_depth: 2, "simple" has call_chain_depth: 0.
+    expect(screen.getByText(/call depth 2/)).toBeInTheDocument()
+    expect(screen.queryByText(/call depth 0/)).not.toBeInTheDocument()
+  })
+
+  it('shows a legend explaining the complexity bands', () => {
+    render(<PerformanceReportPane path="/repo" scores={scores} onSelectNode={vi.fn()} />)
+
+    expect(screen.getByText(/simple \(1–3\)/i)).toBeInTheDocument()
+    expect(screen.getByText(/moderate \(4–7\)/i)).toBeInTheDocument()
+    expect(screen.getByText(/complex \(8\+\)/i)).toBeInTheDocument()
+  })
+
   it('calls onSelectNode when a ranked entry is clicked', async () => {
     const onSelectNode = vi.fn()
     const user = userEvent.setup()
@@ -75,6 +91,9 @@ describe('PerformanceReportPane', () => {
     )
     // Transitive caller is excluded -- drill-down is direct callers only.
     expect(screen.queryByText(/transitive/)).not.toBeInTheDocument()
+    // Labeled explicitly as callers, not callees, since that's a real
+    // point of confusion (the build plan originally called for callees).
+    expect(screen.getByText(/direct callers/i)).toBeInTheDocument()
   })
 
   it('shows a message when a function has no direct callers', async () => {
