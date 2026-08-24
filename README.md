@@ -171,12 +171,13 @@ parse cleanly under the same grammar, with no extra handling needed. A
 aliases (`"@/utils/x"`) are known, deliberately deferred gaps, not
 silent bugs. A repo is parsed as one language at a time — pick which in
 the language selector next to the repository path field; there's no
-mixed-language parsing within a single load. The execution-flowchart,
-complexity-report, and AI-documentation features remain Python-only
-under the hood for now (they degrade gracefully rather than erroring
-for a JS/TS repo — you'll see a minimal placeholder instead of the real
-analysis); the call graph, search, and impact analysis are fully
-JS/TS-aware today.
+mixed-language parsing within a single load. The call graph, search,
+impact analysis, complexity report, and AI documentation are all fully
+JS/TS-aware today. Execution flowcharts are the one feature still
+Python-only under the hood — it degrades gracefully rather than erroring
+for a JS/TS repo (a minimal placeholder instead of the real flowchart);
+sized and planned, not yet built, in
+[`docs/JS-TS-FLOWCHART-PLAN.md`](docs/JS-TS-FLOWCHART-PLAN.md).
 
 ## 🚀 Quick start
 

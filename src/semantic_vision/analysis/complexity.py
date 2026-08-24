@@ -15,10 +15,23 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+import tree_sitter
 from pydantic import BaseModel
 
+from semantic_vision import ts_locate
 from semantic_vision.ast_locate import locate
 from semantic_vision.models import Edge, EdgeKind, NodeKind, ParseResult
+from semantic_vision.parser import javascript_extractor
+from semantic_vision.parser.javascript_extractor import (
+    _CLASS_DECLARATION_TYPES,
+)
+
+_JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
+
+
+def _is_js_file(file: str) -> bool:
+    return file.endswith(tuple(_JS_EXTENSIONS))
+
 
 # Matches `analysis.impact.DEFAULT_MAX_DEPTH`, for consistency across the
 # two traversals -- not imported from there, since the two constants are
@@ -146,6 +159,103 @@ def _cyclomatic_complexity(def_node: ast.FunctionDef | ast.AsyncFunctionDef) -> 
     return complexity, max_loop_depth >= 2
 
 
+_TS_DECISION_TYPES = frozenset(
+    {
+        "if_statement",
+        "ternary_expression",
+        "for_statement",
+        "for_in_statement",  # covers both `for...in` and `for...of` -- confirmed
+        # live: this grammar uses one node type for both, distinguished
+        # internally, not by a separate node type.
+        "while_statement",
+        "do_statement",
+        "catch_clause",
+    }
+)
+_TS_LOOP_TYPES = frozenset({"for_statement", "for_in_statement", "while_statement", "do_statement"})
+# `??` (nullish coalescing) is a real short-circuiting branch, same as
+# `&&`/`||` -- confirmed live it's also a `binary_expression` with this
+# grammar's overloaded operator field. `??=`/`||=`/`&&=` (logical
+# assignment) are short-circuiting too, but parse as a *different* node
+# type (`augmented_assignment_expression`), handled separately below.
+_LOGICAL_OPERATORS = frozenset({"&&", "||", "??"})
+_LOGICAL_ASSIGNMENT_OPERATORS = frozenset({"&&=", "||=", "??="})
+# A stop set deliberately narrower than a literal port of Python's
+# `_NESTED_SCOPE_TYPES` -- see this module's docstring-level reasoning in
+# `_ts_cyclomatic_complexity` below.
+_TS_NESTED_SCOPE_TYPES = _CLASS_DECLARATION_TYPES | {
+    "class",
+    "function_declaration",
+    "generator_function_declaration",
+}
+
+
+def _ts_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
+    """The tree-sitter analogue of `_cyclomatic_complexity`, for a JS/TS
+    function/method/arrow body. Same +1-per-decision-point scheme --
+    `if`/ternary/`for`/`for...in`/`for...of`/`while`/`do...while`/`catch`,
+    `&&`/`||`/`??` (via `binary_expression`'s overloaded use for both
+    comparison and logical/nullish operators -- only the latter count,
+    checked by operator text), `&&=`/`||=`/`??=` (logical assignment --
+    a distinct node type, `augmented_assignment_expression`), and a
+    non-default `switch_case`.
+
+    The nested-scope stop set deliberately diverges from a literal port
+    of Python's (which stops at *any* nested `FunctionDef`/`ClassDef`,
+    while a `lambda` -- a different node type -- is walked into normally,
+    flattening its complexity into the enclosing function). JS/TS has no
+    separate lambda node type: `arrow_function` is used both for a
+    genuine inline callback (`array.map(x => ...)`, the common JS
+    analogue of Python's `lambda`) and for a locally-bound named helper
+    (`const validate = (x) => {...}`, the rarer analogue of a nested
+    `def`). Neither shape gets its own graph node in either language
+    (only nested *classes* are separately extracted), so stopping at
+    every arrow/function-expression would make the dominant real-world
+    JS pattern -- a callback with real branching -- invisible to
+    complexity scoring entirely. So only class declarations and named
+    `function` statements are opaque here; arrow/function-expression/
+    generator-function bodies are walked through.
+    """
+    complexity = 1
+    loop_depth = 0
+    max_loop_depth = 0
+
+    def visit(node: tree_sitter.Node) -> None:
+        nonlocal complexity, loop_depth, max_loop_depth
+        is_loop = node.type in _TS_LOOP_TYPES
+
+        if node.type in _TS_DECISION_TYPES:
+            complexity += 1
+        elif node.type == "binary_expression":
+            operator = node.child_by_field_name("operator")
+            if operator is not None and operator.text.decode("utf-8") in _LOGICAL_OPERATORS:
+                complexity += 1
+        elif node.type == "augmented_assignment_expression":
+            operator = node.child_by_field_name("operator")
+            op_text = operator.text.decode("utf-8") if operator is not None else None
+            if op_text in _LOGICAL_ASSIGNMENT_OPERATORS:
+                complexity += 1
+        elif node.type == "switch_case":
+            complexity += 1
+
+        if is_loop:
+            loop_depth += 1
+            max_loop_depth = max(max_loop_depth, loop_depth)
+
+        for child in node.children:
+            if child.type not in _TS_NESTED_SCOPE_TYPES:
+                visit(child)
+
+        if is_loop:
+            loop_depth -= 1
+
+    for child in def_node.children:
+        if child.type not in _TS_NESTED_SCOPE_TYPES:
+            visit(child)
+
+    return complexity, max_loop_depth >= 2
+
+
 def build_complexity_index(
     result: ParseResult, max_call_chain_depth: int = DEFAULT_MAX_CALL_CHAIN_DEPTH
 ) -> dict[str, ComplexityScore]:
@@ -154,7 +264,8 @@ def build_complexity_index(
     recomputed per request.
     """
     root = Path(result.root)
-    trees: dict[str, ast.Module | None] = {}
+    ast_trees: dict[str, ast.Module | None] = {}
+    ts_trees: dict[str, tree_sitter.Tree | None] = {}
     forward_index = build_forward_call_index(result.edges)
 
     scores: dict[str, ComplexityScore] = {}
@@ -163,25 +274,38 @@ def build_complexity_index(
             continue
 
         depth = _call_chain_depth(node.id, forward_index, max_call_chain_depth)
-        def_node = locate(root, node, trees)
-        if not isinstance(def_node, ast.FunctionDef | ast.AsyncFunctionDef):
-            # Source unavailable or unparseable -- degrade to a minimal
-            # score rather than skipping the node or erroring the whole
-            # index, matching `flowchart.build_flowchart`'s own fallback
-            # for the same condition.
-            scores[node.id] = ComplexityScore(
-                node_id=node.id,
-                cyclomatic_complexity=1,
-                call_chain_depth=depth,
-                has_nested_loops=False,
-            )
-            continue
 
-        complexity, has_nested_loops = _cyclomatic_complexity(def_node)
+        if _is_js_file(node.file):
+            ts_def_node = ts_locate.locate(root, node, ts_trees)
+            if ts_def_node is not None:
+                complexity, has_nested_loops = _ts_cyclomatic_complexity(ts_def_node)
+                scores[node.id] = ComplexityScore(
+                    node_id=node.id,
+                    cyclomatic_complexity=complexity,
+                    call_chain_depth=depth,
+                    has_nested_loops=has_nested_loops,
+                )
+                continue
+        else:
+            def_node = locate(root, node, ast_trees)
+            if isinstance(def_node, ast.FunctionDef | ast.AsyncFunctionDef):
+                complexity, has_nested_loops = _cyclomatic_complexity(def_node)
+                scores[node.id] = ComplexityScore(
+                    node_id=node.id,
+                    cyclomatic_complexity=complexity,
+                    call_chain_depth=depth,
+                    has_nested_loops=has_nested_loops,
+                )
+                continue
+
+        # Source unavailable or unparseable -- degrade to a minimal score
+        # rather than skipping the node or erroring the whole index,
+        # matching `flowchart.build_flowchart`'s own fallback for the
+        # same condition.
         scores[node.id] = ComplexityScore(
             node_id=node.id,
-            cyclomatic_complexity=complexity,
+            cyclomatic_complexity=1,
             call_chain_depth=depth,
-            has_nested_loops=has_nested_loops,
+            has_nested_loops=False,
         )
     return scores
