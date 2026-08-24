@@ -2,7 +2,7 @@
 
 # Semantic Vision
 
-**Understand any Python codebase in minutes, not days.**
+**Understand any Python, JavaScript, or TypeScript codebase in minutes, not days.**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -126,9 +126,10 @@ root — auto-detected even if you've scoped the graph down to a
 subfolder for performance — and can be changed at any time.
 
 ⚡ **Fast, local, and private** — a FastAPI backend statically parses
-your code with Python's own `ast` module, a React frontend renders it.
-No account, no cloud, no telemetry, nothing installed beyond a Python
-and a Node toolchain you already have.
+your code (Python's own `ast` module for Python, [`tree-sitter`](https://tree-sitter.github.io/tree-sitter/)
+for JavaScript/TypeScript), a React frontend renders it. No account, no
+cloud, no telemetry, nothing installed beyond a Python and a Node
+toolchain you already have.
 
 ## 📊 Status
 
@@ -146,26 +147,36 @@ and what's still ahead:
 | Function-level execution flowcharts | ✅ Available |
 | Complexity heatmap & ranked performance report | ✅ Available |
 | Docker packaging / one-command setup | ✅ Available |
-| Multi-language support (beyond Python) | 🚧 Planned |
+| Multi-language support — Python, JavaScript, TypeScript | ✅ Available |
 
-The parsing layer targets Python today; the graph, API, and persistence
-layers are built to stay language-neutral so other languages can plug
-in later. JavaScript/TypeScript is next, planned via
+The graph, API, and persistence layers are language-neutral, and the
+parsing layer plugs a language in behind that: Python via its own `ast`
+module, JavaScript/TypeScript via
 [`tree-sitter`](https://tree-sitter.github.io/tree-sitter/) rather than
 a real compiler, which is a deliberate trade worth stating honestly:
 tree-sitter parses syntax only — no type checking, no built-in import or
 symbol resolution — so, same as Python's own resolver does today,
-Semantic Vision will still hand-resolve every import and call itself, and
-flag genuinely ambiguous ones rather than guess. Expect that to happen
+Semantic Vision hand-resolves every import and call itself, and flags
+genuinely ambiguous ones rather than guess. Expect that to happen
 somewhat more often for JS/TS than for Python: dynamic patterns like
 `require()` with a computed path or reassigning `module.exports` are
 inherently harder to resolve statically than Python's more explicit
-imports, and TypeScript loses the precision a real type checker could
+imports, a default import (`import Foo from "./thing"`) can't be traced
+to the exact declaration it binds to (flagged ambiguous rather than
+guessed), and TypeScript loses the precision a real type checker could
 give (e.g. resolving a call through an interface or a generic). JSX/TSX
-parse cleanly under the same grammar, with no extra handling needed.
-Extraction is still in progress; a `static {}` class-initialization
-block and CommonJS-style `const { x } = require(...)` destructuring are
-known, deliberately deferred gaps, not silent bugs.
+parse cleanly under the same grammar, with no extra handling needed. A
+`static {}` class-initialization block, CommonJS-style
+`const { x } = require(...)` destructuring, and `tsconfig.json` path
+aliases (`"@/utils/x"`) are known, deliberately deferred gaps, not
+silent bugs. A repo is parsed as one language at a time — pick which in
+the language selector next to the repository path field; there's no
+mixed-language parsing within a single load. The execution-flowchart,
+complexity-report, and AI-documentation features remain Python-only
+under the hood for now (they degrade gracefully rather than erroring
+for a JS/TS repo — you'll see a minimal placeholder instead of the real
+analysis); the call graph, search, and impact analysis are fully
+JS/TS-aware today.
 
 ## 🚀 Quick start
 
@@ -186,7 +197,8 @@ npm run dev
 ```
 
 Then open `http://localhost:5173`, enter the absolute path to any local
-Python repository, and click **Load**.
+repository, pick **Python** or **JavaScript / TypeScript** from the
+language selector, and click **Load**.
 
 By default, everything Semantic Vision saves (layout, impact analysis
 state, generated docs) is written to a `.visualiser/` folder at the
@@ -242,9 +254,10 @@ inside the container. Two things follow from that:
 Semantic Vision has two parts:
 
 - **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
-  repository with Python's `ast` module, resolves imports and call sites
-  into a graph of nodes and edges, and serves it over a small REST API.
-  Parsing is purely static: your code is never executed. AI
+  repository (Python's `ast` module, or `tree-sitter` for
+  JavaScript/TypeScript, chosen per load), resolves imports and call
+  sites into a graph of nodes and edges, and serves it over a small REST
+  API. Parsing is purely static: your code is never executed. AI
   documentation is generated separately, on demand, via
   [LiteLLM](https://docs.litellm.ai/) against whichever provider you
   pick — only the target function's source, its direct callers/callees'
