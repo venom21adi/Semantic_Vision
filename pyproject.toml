@@ -1,6 +1,6 @@
 [project]
 name = "semantic-vision"
-version = "0.1.0"
+version = "0.2.0"
 description = "Parses a codebase and visualises its structure, dependencies, call graph, and impact radius through a local web app."
 readme = "README.md"
 license = "MIT"
