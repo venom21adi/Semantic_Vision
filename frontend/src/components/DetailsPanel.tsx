@@ -1,5 +1,6 @@
 import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { CollapseToggle } from './CollapseToggle'
+import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
 import { PerformanceReportPane } from './PerformanceReportPane'
 
@@ -18,6 +19,7 @@ export type ActivePane =
   | { kind: 'complexity'; status: 'loading' }
   | { kind: 'complexity'; status: 'loaded'; scores: ComplexityScore[] }
   | { kind: 'complexity'; status: 'error'; message: string }
+  | { kind: 'dataSource' }
   | null
 
 interface DetailsPanelProps {
@@ -38,8 +40,10 @@ interface DetailsPanelProps {
   docRoot: string
   docSaveNoticeDismissed: boolean
   onDismissDocSaveNotice: () => void
-  /** Repo path, needed by the performance report pane's caller drill-down. */
+  /** Repo path, needed by the performance report pane's caller drill-down
+   * and the data-source pane's ingest calls. */
   repoPath: string
+  onDataSourceIngestComplete: () => void
   collapsed?: boolean
   onToggleCollapsed?: () => void
 }
@@ -63,6 +67,7 @@ export function DetailsPanel({
   docSaveNoticeDismissed,
   onDismissDocSaveNotice,
   repoPath,
+  onDataSourceIngestComplete,
   collapsed = false,
   onToggleCollapsed = () => {},
 }: DetailsPanelProps) {
@@ -110,6 +115,12 @@ export function DetailsPanel({
             <dd style={{ margin: 0 }}>
               {selectedNode.line_start}-{selectedNode.line_end}
             </dd>
+            {selectedNode.source && (
+              <>
+                <dt style={{ color: '#94a3b8' }}>source</dt>
+                <dd style={{ margin: 0 }}>{selectedNode.source}</dd>
+              </>
+            )}
           </dl>
         </div>
       )}
@@ -202,6 +213,13 @@ export function DetailsPanel({
               onSelectNode={onSelectCaller}
             />
           )}
+        </div>
+      )}
+
+      {pane?.kind === 'dataSource' && (
+        <div style={{ marginTop: 16 }}>
+          <PaneHeader title="Connect data source" onClose={onClosePane} />
+          <DataSourcePane path={repoPath} onIngestComplete={onDataSourceIngestComplete} />
         </div>
       )}
     </aside>

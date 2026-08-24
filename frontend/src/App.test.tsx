@@ -30,6 +30,8 @@ vi.mock('./api/client', async (importOriginal) => {
     getImpact: vi.fn(),
     getFlowchart: vi.fn(),
     getComplexity: vi.fn(),
+    ingestDbtManifest: vi.fn(),
+    ingestDbConnection: vi.fn(),
   }
 })
 
@@ -775,5 +777,96 @@ describe('App', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
+  })
+
+  it('opens and closes the Connect data source panel via the sidebar toggle', async () => {
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    expect(screen.getByRole('heading', { name: 'Connect data source' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    expect(screen.queryByRole('heading', { name: 'Connect data source' })).not.toBeInTheDocument()
+  })
+
+  it('re-fetches the graph after a successful dbt manifest ingest, showing the new node', async () => {
+    mockedClient.ingestDbtManifest.mockResolvedValue({
+      models_ingested: 1,
+      tables_reconciled: 0,
+      tables_created: 1,
+    })
+    mockedClient.getGraph.mockResolvedValueOnce(sampleGraph).mockResolvedValueOnce({
+      nodes: [
+        ...sampleGraph.nodes,
+        { id: 'table::orders', kind: 'table', label: 'orders', file: 'manifest.json', line_start: 1, line_end: 1, source: 'dbt' },
+      ],
+      edges: sampleGraph.edges,
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
+    await user.click(screen.getByRole('button', { name: /^ingest$/i }))
+
+    await waitFor(() => expect(screen.getByText(/1 model ingested/i)).toBeInTheDocument())
+    expect(mockedClient.getGraph).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(screen.getByTestId('rf__node-table::orders')).toBeInTheDocument())
+  })
+
+  it('does not refresh the graph when the dbt manifest ingest fails', async () => {
+    mockedClient.ingestDbtManifest.mockRejectedValue(new Error('Not valid JSON'))
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/bad.json')
+    await user.click(screen.getByRole('button', { name: /^ingest$/i }))
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Not valid JSON'))
+    expect(mockedClient.getGraph).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not resurrect a table node the user explicitly deselected after a reconciling re-ingest', async () => {
+    const graphWithTable: GraphResponse = {
+      nodes: [
+        ...sampleGraph.nodes,
+        {
+          id: 'table::users',
+          kind: 'table',
+          label: 'users',
+          file: 'models.py',
+          line_start: 1,
+          line_end: 1,
+          source: 'orm_model',
+        },
+      ],
+      edges: sampleGraph.edges,
+    }
+    mockedClient.getGraph.mockResolvedValue(graphWithTable)
+    mockedClient.ingestDbtManifest.mockResolvedValue({
+      models_ingested: 1,
+      tables_reconciled: 1,
+      tables_created: 0,
+    })
+    const user = await loadSampleRepo()
+
+    // `table::users` is root-level (no `defines` parent) and the repo is
+    // well under the large-graph threshold, so it starts selected/shown.
+    await waitFor(() => expect(screen.getByTestId('rf__node-table::users')).toBeInTheDocument())
+
+    // The user explicitly hides it via its sidebar checkbox.
+    await user.click(screen.getByLabelText('Show users on canvas'))
+    expect(screen.queryByTestId('rf__node-table::users')).not.toBeInTheDocument()
+
+    // A dbt ingest reconciles onto the SAME table (no new root) -- the
+    // graph refetch keeps returning the identical node set.
+    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
+    await user.click(screen.getByRole('button', { name: /^ingest$/i }))
+    await waitFor(() => expect(screen.getByText(/1 model ingested/i)).toBeInTheDocument())
+
+    // Reconciling onto an already-known node is not "newly ingested" --
+    // the user's deselection must survive, not be silently overridden.
+    expect(screen.queryByTestId('rf__node-table::users')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Show users on canvas')).not.toBeChecked()
   })
 })

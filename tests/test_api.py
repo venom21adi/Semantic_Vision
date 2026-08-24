@@ -997,6 +997,65 @@ def test_db_connection_ingest_retracts_a_removed_table_and_its_edge_on_re_ingest
     assert "table::parent" in {n["id"] for n in second_graph["nodes"]}
 
 
+def test_db_connection_ingest_removed_table_does_not_leave_a_dangling_edge_from_an_orm_table(
+    tmp_path: Path,
+):
+    """Regression: a first implementation only retracted a `FOREIGN_KEY`
+    edge *sourced from* a removed live-db-tagged table -- it missed an
+    edge merely *targeting* one. Here `orders` is an `orm_model`-tagged
+    table (from 17a's SQLAlchemy parsing of the fixture repo) with a
+    live-DB-only FK to `shipments`, a table that exists only via this
+    ingest. Dropping `shipments` from the live schema and re-ingesting
+    must retract that edge too, even though its source (`orders`) is
+    untouched -- otherwise it dangles at a node that no longer exists."""
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    db_path = tmp_path / "app.db"
+    _exec_sql(
+        db_path,
+        "CREATE TABLE shipments (id INTEGER PRIMARY KEY)",
+        "CREATE TABLE orders (id INTEGER PRIMARY KEY, shipment_id INTEGER, "
+        "FOREIGN KEY (shipment_id) REFERENCES shipments (id))",
+    )
+    client.post(
+        "/api/dataflow/db-connection",
+        params={"path": repo_path},
+        json={"connection_string": _sqlite_url(db_path)},
+    )
+    first_graph = client.get("/api/graph", params={"path": repo_path}).json()
+    assert any(
+        e["source"] == "table::orders" and e["target"] == "table::shipments"
+        for e in first_graph["edges"]
+    )
+    orders_node = next(n for n in first_graph["nodes"] if n["id"] == "table::orders")
+    assert orders_node["source"] == "orm_model"
+
+    # Schema change: `shipments` is dropped, and `orders` no longer FKs to it.
+    _exec_sql(
+        db_path,
+        "DROP TABLE orders",
+        "DROP TABLE shipments",
+        "CREATE TABLE orders (id INTEGER PRIMARY KEY)",
+    )
+
+    client.post(
+        "/api/dataflow/db-connection",
+        params={"path": repo_path},
+        json={"connection_string": _sqlite_url(db_path)},
+    )
+    second_graph = client.get("/api/graph", params={"path": repo_path}).json()
+
+    assert "table::shipments" not in {n["id"] for n in second_graph["nodes"]}
+    assert not any(e["target"] == "table::shipments" for e in second_graph["edges"])
+    # 17a's own edges for `orders` (its ORM-declared FK to `users`) must
+    # survive untouched -- this retraction must not have collateral damage.
+    assert any(
+        e["source"] == "table::orders" and e["target"] == "table::users"
+        for e in second_graph["edges"]
+    )
+
+
 def test_db_connection_ingest_invalid_connection_string_returns_400():
     repo_path = str(FIXTURES / "dataflow_repo")
     client.post("/api/parse-repo", json={"path": repo_path})

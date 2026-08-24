@@ -258,18 +258,22 @@ def _strip_previous_live_db_ingest(result: ParseResult) -> ParseResult:
     scoped to what a live-db introspection can unambiguously attribute
     to itself: every `Table` node tagged `source="live_db"` (nothing
     else ever creates that tag -- see `db_introspect.py`'s "first source
-    wins" rule) and every `FOREIGN_KEY` edge sourced *from* one of those
-    nodes. A `FOREIGN_KEY` edge sourced from a table that instead
-    reconciled onto a pre-existing `orm_model`-tagged node (its `source`
-    tag never changed, by the same "first source wins" rule) is NOT
-    retracted here -- there is no way to attribute that specific edge to
-    a *previous* introspection versus 17a's own FK detection without
-    edge-level provenance this data model doesn't carry, and blanket-
-    stripping every `FOREIGN_KEY` edge the way `REFERENCES`/
-    `MATERIALIZES` are stripped above would also destroy 17a's own,
-    unrelated ORM-derived FK edges, which is worse. A stale edge in that
-    narrow case (an ORM-declared table's live-DB-only FK relationship
-    changes between two introspections) can persist until a fresh
+    wins" rule). Every edge touching one of those node ids -- as source
+    *or* target, of any kind, not just `FOREIGN_KEY` sourced from one --
+    is retracted too: once a node is gone, any edge still pointing at it
+    would dangle at a nonexistent node, which is worse than the edge
+    just being stale (review caught this concretely -- a `FOREIGN_KEY`
+    edge from an unrelated `orm_model`-tagged table to a live-db table
+    that got dropped from the schema left a broken reference the first
+    version of this function only retracted from the *source* side).
+    This does NOT retract a `FOREIGN_KEY` edge sourced from a table that
+    reconciled onto a pre-existing `orm_model`-tagged node and STILL
+    targets a node that still exists -- e.g. an ORM-declared table's own
+    live-DB-only FK to another still-present table can go stale between
+    two introspections without the target node disappearing, and there
+    is no edge-level provenance in this data model to attribute that
+    specific edge to a previous introspection versus 17a's own FK
+    detection. That specific, narrower case can persist until a fresh
     parse -- a known, documented gap, not a silent one."""
     live_db_table_ids = {
         n.id for n in result.nodes if n.kind == NodeKind.TABLE and n.source == "live_db"
@@ -278,7 +282,7 @@ def _strip_previous_live_db_ingest(result: ParseResult) -> ParseResult:
     kept_edges = [
         e
         for e in result.edges
-        if not (e.kind == EdgeKind.FOREIGN_KEY and e.source in live_db_table_ids)
+        if e.source not in live_db_table_ids and e.target not in live_db_table_ids
     ]
     return result.model_copy(update={"nodes": kept_nodes, "edges": kept_edges})
 

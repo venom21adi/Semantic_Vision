@@ -54,6 +54,8 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onViewChange: vi.fn(),
     complexityActive: false,
     onToggleComplexity: vi.fn(),
+    dataSourceActive: false,
+    onToggleDataSource: vi.fn(),
     onExpandAll: vi.fn(),
     onCollapseAll: vi.fn(),
     selectedRootIds: new Set(),
@@ -141,6 +143,22 @@ describe('Sidebar', () => {
     renderSidebar({ complexityActive: true })
 
     const button = screen.getByRole('button', { name: 'Hide complexity' })
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('calls onToggleDataSource when the data source toggle is clicked', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar()
+
+    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+
+    expect(props.onToggleDataSource).toHaveBeenCalledTimes(1)
+  })
+
+  it('reflects the active data source state via aria-pressed', () => {
+    renderSidebar({ dataSourceActive: true })
+
+    const button = screen.getByRole('button', { name: 'Connect data source' })
     expect(button).toHaveAttribute('aria-pressed', 'true')
   })
 

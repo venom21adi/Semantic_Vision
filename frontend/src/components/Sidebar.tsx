@@ -15,6 +15,8 @@ interface SidebarProps {
   onViewChange: (view: GraphView) => void
   complexityActive: boolean
   onToggleComplexity: () => void
+  dataSourceActive: boolean
+  onToggleDataSource: () => void
   /** Expands/collapses every directory and file in the codebase-view
    * graph at once -- the escape hatch back to full detail for a large
    * repo that starts mostly collapsed by default. */
@@ -38,6 +40,8 @@ export function Sidebar({
   onViewChange,
   complexityActive,
   onToggleComplexity,
+  dataSourceActive,
+  onToggleDataSource,
   onExpandAll,
   onCollapseAll,
   selectedRootIds,
@@ -121,6 +125,26 @@ export function Sidebar({
           }}
         >
           {complexityActive ? 'Hide complexity' : 'Show complexity'}
+        </button>
+      </div>
+
+      <div style={{ padding: '0 8px 8px' }}>
+        <button
+          type="button"
+          aria-pressed={dataSourceActive}
+          onClick={onToggleDataSource}
+          style={{
+            width: '100%',
+            padding: '4px 8px',
+            borderRadius: 4,
+            border: '1px solid #334155',
+            background: dataSourceActive ? '#0e7490' : 'transparent',
+            color: '#f8fafc',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          Connect data source
         </button>
       </div>
 

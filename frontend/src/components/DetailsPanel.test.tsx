@@ -29,6 +29,7 @@ const docProps = {
   repoPath: '/repo',
   docSaveNoticeDismissed: true,
   onDismissDocSaveNotice: noop,
+  onDataSourceIngestComplete: noop,
 }
 
 describe('DetailsPanel', () => {
@@ -306,5 +307,39 @@ describe('DetailsPanel', () => {
 
     expect(screen.getByRole('button', { name: 'Expand details panel' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'greet' })).not.toBeInTheDocument()
+  })
+
+  it('renders the data source pane when the pane kind is dataSource', () => {
+    render(
+      <DetailsPanel
+        selectedNode={null}
+        pane={{ kind: 'dataSource' }}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Connect data source' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/dbt manifest.json path/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/database connection string/i)).toBeInTheDocument()
+  })
+
+  it('calls onClosePane from the data source pane header', async () => {
+    const onClosePane = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <DetailsPanel
+        selectedNode={null}
+        pane={{ kind: 'dataSource' }}
+        onSelectCaller={noop}
+        onClosePane={onClosePane}
+        {...docProps}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Close Connect data source panel' }))
+
+    expect(onClosePane).toHaveBeenCalledTimes(1)
   })
 })

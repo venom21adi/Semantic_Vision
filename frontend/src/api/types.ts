@@ -1,5 +1,14 @@
-export type NodeKind = 'directory' | 'file' | 'class' | 'function'
-export type EdgeKind = 'calls' | 'imports' | 'defines'
+export type NodeKind = 'directory' | 'file' | 'class' | 'function' | 'table' | 'dbt_model'
+export type EdgeKind =
+  | 'calls'
+  | 'imports'
+  | 'defines'
+  | 'maps_to'
+  | 'foreign_key'
+  | 'references'
+  | 'materializes'
+  | 'reads'
+  | 'writes'
 
 export interface GraphNode {
   id: string
@@ -8,6 +17,10 @@ export interface GraphNode {
   file: string
   line_start: number
   line_end: number
+  /** Provenance tag for a `table` node -- `"orm_model"`, `"dbt"`, or
+   * `"live_db"` depending on which data-source ingest created it.
+   * `null`/absent for every other node kind. */
+  source?: string | null
 }
 
 export interface GraphEdge {
@@ -128,4 +141,16 @@ export interface ComplexityScore {
 
 export interface ComplexityResponse {
   scores: ComplexityScore[]
+}
+
+export interface DbtManifestIngestResponse {
+  models_ingested: number
+  tables_reconciled: number
+  tables_created: number
+}
+
+export interface DbConnectionIngestResponse {
+  tables_ingested: number
+  tables_reconciled: number
+  tables_created: number
 }

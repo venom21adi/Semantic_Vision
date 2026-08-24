@@ -7,6 +7,12 @@ const EDGE_COLORS: Record<GraphEdge['kind'], string> = {
   defines: '#94a3b8',
   imports: '#38bdf8',
   calls: '#fb923c',
+  maps_to: '#22d3ee',
+  foreign_key: '#0e7490',
+  references: '#facc15',
+  materializes: '#a16207',
+  reads: '#4ade80',
+  writes: '#f87171',
 }
 
 export function toFlowNodes(nodes: GraphNode[]): Node<GraphNodeData>[] {

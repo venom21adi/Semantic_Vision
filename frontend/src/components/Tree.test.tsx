@@ -157,7 +157,7 @@ describe('Tree', () => {
     expect(screen.getByText('Greeter').closest('[role="treeitem"]')).not.toHaveAttribute('data-match')
   })
 
-  it('renders a checkbox only for directory/file rows, not class/function rows', () => {
+  it('renders a checkbox for directory/file rows, not class/function rows', () => {
     render(
       <Tree
         roots={roots}
@@ -173,6 +173,36 @@ describe('Tree', () => {
     expect(screen.getByLabelText('Show app.py on canvas')).toBeInTheDocument()
     expect(screen.queryByLabelText('Show Greeter on canvas')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Show greet on canvas')).not.toBeInTheDocument()
+  })
+
+  it('also renders a checkbox for table/dbt_model rows, which are always standalone roots', async () => {
+    const tableNode = node('table::orders', 'table', 'orders')
+    const dbtModelNode = node('dbt::model.p.fct_orders', 'dbt_model', 'fct_orders')
+    const dataSourceRoots: TreeNode[] = [
+      ...roots,
+      { node: tableNode, children: [] },
+      { node: dbtModelNode, children: [] },
+    ]
+    const onToggleRootSelection = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <Tree
+        roots={dataSourceRoots}
+        selectedNodeId={null}
+        onSelectNode={vi.fn()}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set(['table::orders'])}
+        onToggleRootSelection={onToggleRootSelection}
+      />,
+    )
+
+    expect(screen.getByLabelText('Show orders on canvas')).toBeChecked()
+    expect(screen.getByLabelText('Show fct_orders on canvas')).not.toBeChecked()
+
+    await user.click(screen.getByLabelText('Show fct_orders on canvas'))
+    expect(onToggleRootSelection).toHaveBeenCalledWith('dbt::model.p.fct_orders')
   })
 
   it('reflects selectedRootIds via the checkbox checked state', () => {

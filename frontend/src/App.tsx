@@ -33,6 +33,7 @@ import { ancestorContainerIds, collapseGraph, subgraphForSelection } from './gra
 import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './graph/GraphCanvas'
 import { scopeToFile } from './graph/transform'
 import { useLayoutWorker } from './graph/useLayoutWorker'
+import { rootNodeIds } from './tree/buildTree'
 import {
   dismissDocSaveNotice,
   getDetailsCollapsed,
@@ -200,16 +201,26 @@ export default function App() {
       // Above it: nothing expanded and nothing selected -- the canvas
       // starts empty (see showEmptySelectionPlaceholder below) rather than
       // rendering every top-level directory/file the user never asked for.
-      const defaultContainerIds =
-        parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
-          ? new Set(
-              graph.nodes
-                .filter((node) => node.kind === 'directory' || node.kind === 'file')
-                .map((node) => node.id),
-            )
-          : new Set<string>()
-      setExpandedContainerIds(defaultContainerIds)
-      setSelectedRootIds(new Set(defaultContainerIds))
+      // Two different sets, not one: only directory/file nodes are real
+      // "containers" with children to roll up (collapseDirectories.ts's
+      // own concept), but every root-level node -- including a `table`/
+      // `dbt_model` node, which has no `defines` parent either -- needs
+      // to start selected, or Milestone 17's own data would silently
+      // never appear on a freshly-loaded repo without the user manually
+      // finding and checking it in the sidebar.
+      const underThreshold = parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
+      const defaultExpandedContainerIds = underThreshold
+        ? new Set(
+            graph.nodes
+              .filter((node) => node.kind === 'directory' || node.kind === 'file')
+              .map((node) => node.id),
+          )
+        : new Set<string>()
+      const defaultSelectedRootIds = underThreshold
+        ? rootNodeIds(graph.nodes, graph.edges)
+        : new Set<string>()
+      setExpandedContainerIds(defaultExpandedContainerIds)
+      setSelectedRootIds(defaultSelectedRootIds)
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {
@@ -508,6 +519,51 @@ export default function App() {
     return new Map<string, ComplexityScore>(pane.scores.map((score) => [score.node_id, score]))
   }, [pane])
 
+  const handleToggleDataSource = useCallback(() => {
+    if (!repo) return
+    if (pane?.kind === 'dataSource') {
+      setPane(null)
+      return
+    }
+    cancelGeneration()
+    setPane({ kind: 'dataSource' })
+  }, [repo, pane, cancelGeneration])
+
+  // Ingesting a dbt manifest or a live DB connection merges new
+  // nodes/edges into the backend's cached `ParseResult`, not into this
+  // app's own `repo` state -- re-fetching the graph is the only way the
+  // new `Table`/`DBT_MODEL` nodes actually show up on the canvas.
+  // Positions/node/edge counts elsewhere in `repo` are left as-is; only
+  // `nodes`/`edges` are replaced, same as everywhere else in this file
+  // that updates `repo` incrementally rather than reloading from scratch.
+  const handleDataSourceIngestComplete = useCallback(async () => {
+    const current = repoRef.current
+    if (!current) return
+    try {
+      const graph = await getGraph(current.path)
+      // A `Table`/`DBT_MODEL` node has no `defines` edge pointing at it
+      // (nothing "contains" it the way a file contains a function), so
+      // it's root-level by `rootNodeIds`'s definition -- without this, a
+      // newly-ingested node would silently need the user to go find and
+      // check it in the sidebar before it ever renders, unlike
+      // everything else this app auto-reveals on selection (see
+      // handleSelectNode's own ancestor/root-selection logic below).
+      const previousIds = new Set(current.nodes.map((node) => node.id))
+      const newlyIngestedRootIds = Array.from(rootNodeIds(graph.nodes, graph.edges)).filter(
+        (id) => !previousIds.has(id),
+      )
+
+      setRepo((prev) => (prev ? { ...prev, nodes: graph.nodes, edges: graph.edges } : prev))
+      if (newlyIngestedRootIds.length > 0) {
+        setSelectedRootIds((prev) => new Set([...prev, ...newlyIngestedRootIds]))
+      }
+    } catch {
+      // Best-effort: the pane already showed its own success/error
+      // confirmation for the ingest itself -- a failed refresh just means
+      // the canvas catches up on the next reload instead of live.
+    }
+  }, [])
+
   // Clicking empty canvas space already deselects (calls this with
   // `null`); it also clears the active pane, so an Impact
   // Analysis/Document/Source pane -- and the graph highlighting that
@@ -651,6 +707,8 @@ export default function App() {
             onViewChange={setView}
             complexityActive={pane?.kind === 'complexity'}
             onToggleComplexity={handleToggleComplexity}
+            dataSourceActive={pane?.kind === 'dataSource'}
+            onToggleDataSource={handleToggleDataSource}
             onExpandAll={handleExpandAll}
             onCollapseAll={handleCollapseAll}
             selectedRootIds={selectedRootIds}
@@ -772,6 +830,7 @@ export default function App() {
           docSaveNoticeDismissed={docSaveNoticeDismissed}
           onDismissDocSaveNotice={handleDismissDocSaveNotice}
           repoPath={repo?.path ?? ''}
+          onDataSourceIngestComplete={handleDataSourceIngestComplete}
           collapsed={detailsCollapsed}
           onToggleCollapsed={toggleDetailsCollapsed}
         />

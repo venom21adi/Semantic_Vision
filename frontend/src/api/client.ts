@@ -1,5 +1,7 @@
 import type {
   ComplexityResponse,
+  DbConnectionIngestResponse,
+  DbtManifestIngestResponse,
   DocIndexResponse,
   DocProvider,
   DocResponse,
@@ -119,6 +121,26 @@ export function getFlowchart(path: string, id: string): Promise<FlowchartRespons
 
 export function getOllamaModels(): Promise<OllamaModelsResponse> {
   return request<OllamaModelsResponse>('/api/ollama-models')
+}
+
+export function ingestDbtManifest(
+  path: string,
+  manifestPath: string,
+): Promise<DbtManifestIngestResponse> {
+  return request<DbtManifestIngestResponse>(
+    `/api/dataflow/dbt-manifest?path=${encodeURIComponent(path)}`,
+    { method: 'POST', body: JSON.stringify({ path: manifestPath }) },
+  )
+}
+
+export function ingestDbConnection(
+  path: string,
+  connectionString: string,
+): Promise<DbConnectionIngestResponse> {
+  return request<DbConnectionIngestResponse>(
+    `/api/dataflow/db-connection?path=${encodeURIComponent(path)}`,
+    { method: 'POST', body: JSON.stringify({ connection_string: connectionString }) },
+  )
 }
 
 export async function* streamDoc(

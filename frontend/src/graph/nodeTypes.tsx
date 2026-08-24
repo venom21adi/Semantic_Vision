@@ -28,6 +28,8 @@ export const KIND_COLORS: Record<NodeKind, { background: string; border: string 
   file: { background: '#15803d', border: '#86efac' },
   class: { background: '#7e22ce', border: '#d8b4fe' },
   function: { background: '#c2410c', border: '#fdba74' },
+  table: { background: '#0e7490', border: '#67e8f9' },
+  dbt_model: { background: '#a16207', border: '#fde047' },
 }
 
 function GraphNodeComponent({ data, selected }: NodeProps) {
@@ -89,4 +91,6 @@ export const nodeTypes = {
   file: GraphNodeComponent,
   class: GraphNodeComponent,
   function: GraphNodeComponent,
+  table: GraphNodeComponent,
+  dbt_model: GraphNodeComponent,
 }

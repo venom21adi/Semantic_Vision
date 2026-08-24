@@ -6,6 +6,28 @@ export interface TreeNode {
 }
 
 /**
+ * Ids of every node with no incoming `defines` edge -- the same
+ * root-detection rule `buildTree` uses internally, exposed standalone
+ * for callers that only need the id set (e.g. deciding which top-level
+ * items start selected/visible on the canvas) without building a full
+ * tree. Historically this was equivalent to "kind is directory or
+ * file", since every class/function always has a `defines` parent --
+ * that stopped holding once `table`/`dbt_model` nodes (Milestone 17)
+ * introduced a second kind of parentless node, so callers that still
+ * filtered by kind silently dropped them from default selection.
+ */
+export function rootNodeIds(nodes: GraphNode[], edges: GraphEdge[]): Set<string> {
+  const ids = new Set(nodes.map((node) => node.id))
+  const hasParent = new Set<string>()
+  for (const edge of edges) {
+    if (edge.kind !== 'defines') continue
+    if (!ids.has(edge.source) || !ids.has(edge.target)) continue
+    hasParent.add(edge.target)
+  }
+  return new Set(nodes.filter((node) => !hasParent.has(node.id)).map((node) => node.id))
+}
+
+/**
  * Builds a directory/file/class/function tree from the graph's `defines`
  * edges, which already encode exactly this hierarchy (dir -> subdir/file,
  * file -> class/function, class -> method). Root items are nodes with no

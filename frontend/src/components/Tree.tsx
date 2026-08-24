@@ -1,7 +1,17 @@
 import { useState } from 'react'
+import type { NodeKind } from '../api/types'
 import { CONTAINER_KINDS } from '../graph/collapseDirectories'
 import { KIND_COLORS } from '../graph/nodeTypes'
 import { isExpandedByDefault, type TreeNode } from '../tree/buildTree'
+
+/** Kinds that get their own "show on canvas" checkbox in addition to
+ * `CONTAINER_KINDS` (directory/file, which can appear at any depth). A
+ * `table`/`dbt_model` node has no `defines` parent and no children of
+ * its own (see `rootNodeIds` in `tree/buildTree.ts`) -- it's always a
+ * standalone root item, never nested -- but without a checkbox here it
+ * could never be individually hidden from the canvas except via "Reset
+ * selection", which clears every selected root at once. */
+const ADDITIONAL_SELECTABLE_KINDS = new Set<NodeKind>(['table', 'dbt_model'])
 
 interface TreeProps {
   roots: TreeNode[]
@@ -11,8 +21,9 @@ interface TreeProps {
    * `null` means no filter -- fall back to each item's own expand state. */
   visibleIds: Set<string> | null
   matchIds: Set<string>
-  /** Ids currently checked to appear on the canvas (directory/file rows
-   * only -- see `CONTAINER_KINDS`). `null` means the selection feature is
+  /** Ids currently checked to appear on the canvas (directory/file rows,
+   * plus `table`/`dbt_model` rows -- see `CONTAINER_KINDS` and
+   * `ADDITIONAL_SELECTABLE_KINDS`). `null` means the selection feature is
    * off for this render (the File view's tree, whose canvas doesn't derive
    * from a selection at all) -- no checkbox column renders in that case. */
   selectedRootIds: ReadonlySet<string> | null
@@ -99,7 +110,8 @@ export function Tree({
             <span style={{ width: 14 }} />
           )}
           {selectedRootIds !== null &&
-            (CONTAINER_KINDS.has(item.node.kind) ? (
+            (CONTAINER_KINDS.has(item.node.kind) ||
+            ADDITIONAL_SELECTABLE_KINDS.has(item.node.kind) ? (
               <input
                 type="checkbox"
                 aria-label={`Show ${item.node.label} on canvas`}

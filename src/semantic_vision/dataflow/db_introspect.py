@@ -21,7 +21,12 @@ existing node without changing its `source` tag -- only a genuinely new
 table gets a freshly created node tagged `source="live_db"`. This keeps
 the two provenances visibly distinct (an ORM-declared table introspected
 against a live DB stays tagged `"orm_model"`, not silently relabeled)
-rather than the most recent ingest always winning.
+rather than the most recent ingest always winning. Table names here are
+bare (no schema/database qualification), matching `sqlalchemy_parser.py`'s
+own convention -- two same-named tables in different schemas collide
+onto one node, an accepted limitation consistent with the rest of this
+milestone (17a's `Table` nodes carry the same limitation) rather than a
+regression specific to this slice.
 
 The connection string itself is never logged, never written to disk, and
 held only for the duration of a single request -- the same trust

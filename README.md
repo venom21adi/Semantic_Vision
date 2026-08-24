@@ -21,7 +21,7 @@ to begin with.
 
 ### At a glance
 
-🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 🌡️ Complexity report · 📝 AI-generated docs · ⚡ 100% local & private
+🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 🌡️ Complexity report · 📝 AI-generated docs · 🔗 Code-to-data lineage · ⚡ 100% local & private
 
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
@@ -86,6 +86,28 @@ direct callers (cross-referenced with their own scores), so you can
 tell a complex-but-unused function apart from a complex one half the
 codebase actually depends on.
 
+## 🔗 Code-to-data lineage
+
+Click **Connect data source** in the sidebar to extend the graph past
+your code and into the data it reads and writes. Three sources feed the
+same graph, reconciled by table name so the same table only ever shows
+up once no matter how many of them see it:
+
+- **SQLAlchemy models** — declarative model classes are detected
+  automatically on every parse, no setup needed: each becomes a table
+  node, with foreign keys drawn as edges between tables and every
+  function that queries or writes one connected to it.
+- **dbt** — paste the path to a `manifest.json` your own `dbt compile`
+  already produced (Semantic Vision never invokes dbt itself) to pull in
+  every model, its `ref()` dependencies, and the table it materializes.
+- **A live database** — paste a read-only connection string to
+  introspect a real schema directly, so you can see where your ORM
+  models have drifted from what's actually deployed.
+
+Impact analysis works on a table node exactly like it does on a
+function: right-click it to see every function, model, and table
+upstream of it, code and data lineage in one traversal.
+
 ## ✨ Features
 
 🕸️ **See the whole call graph at a glance** — every directory, file,
@@ -119,6 +141,11 @@ parent class, streamed live from your choice of a local
 [Ollama](https://ollama.com) model, OpenAI, or Anthropic, and saved
 straight into the repo.
 
+🔗 **See where your code touches your data** — SQLAlchemy models are
+detected automatically; connect a dbt manifest and/or a live database to
+add their tables and models to the same graph, reconciled by table
+name, with impact analysis spanning code and data in one traversal.
+
 💾 **Pick up exactly where you left off** — dragged layout, saved docs,
 and analysis state persist locally and restore instantly next time you
 open the same repo. The save location defaults to the repo's `.git`
@@ -145,6 +172,7 @@ What works today, per language:
 | Complexity report | ✅ | ✅ |
 | AI-generated documentation | ✅ | ✅ |
 | Execution flowcharts | ✅ | Coming Soon |
+| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — |
 | Docker packaging / one-command setup | ✅ | ✅ |
 
 A repo is parsed as one language at a time — pick which in the selector
@@ -156,6 +184,10 @@ needing real type info) rather than guessing — expect that flag somewhat
 more often than with Python. `static {}` blocks, CommonJS
 `const { x } = require(...)`, and `tsconfig.json` path aliases
 (`"@/utils/x"`) aren't parsed yet; JSX/TSX works fine.
+
+Code-to-data lineage is Python-specific by nature (it detects SQLAlchemy
+models in your code) rather than a JS/TS gap on the roadmap the way
+flowcharts are — hence "—" instead of "Coming Soon".
 
 ## 🚀 Quick start
 
@@ -241,7 +273,11 @@ Semantic Vision has two parts:
   [LiteLLM](https://docs.litellm.ai/) against whichever provider you
   pick — only the target function's source, its direct callers/callees'
   signatures, and its parent class header are sent, never the whole
-  repository.
+  repository. Code-to-data lineage extends the same graph with table and
+  dbt-model nodes, from SQLAlchemy models detected in your code, a dbt
+  `manifest.json` you point it at, and/or a live database connection
+  string — held in memory for that one request only, never logged or
+  written to disk.
 - **Frontend** (`frontend/`) — a React + TypeScript app that renders the
   graph with [`@xyflow/react`](https://reactflow.dev/) and `dagre`
   auto-layout, and persists your layout and saved analysis state in a
