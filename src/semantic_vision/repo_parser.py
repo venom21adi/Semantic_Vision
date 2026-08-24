@@ -7,9 +7,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from semantic_vision.dataflow import sqlalchemy_parser, table_usage
 from semantic_vision.languages.base import LanguageAdapter, ParseSyntaxError
 from semantic_vision.languages.registry import get_adapter
-from semantic_vision.models import ParseError, ParseResult
+from semantic_vision.models import Node, ParseError, ParseResult
 from semantic_vision.parser.discovery import discover_files
 from semantic_vision.parser.extractor import RawModule
 from semantic_vision.resolver.symbol_table import build_symbol_table
@@ -32,6 +33,7 @@ def parse_repository(
 
     raw_modules: dict[str, RawModule] = {}
     line_counts: dict[str, int] = {}
+    sources: dict[str, str] = {}
     parse_errors: list[ParseError] = []
 
     for path, rel_path in zip(files, all_rel_paths, strict=True):
@@ -41,6 +43,7 @@ def parse_repository(
             parse_errors.append(ParseError(file=rel_path, message=str(exc)))
             continue
 
+        sources[rel_path] = source
         line_counts[rel_path] = source.count("\n") + (0 if source.endswith("\n") else 1)
 
         try:
@@ -71,7 +74,20 @@ def parse_repository(
             )
         )
 
-    nodes = sorted(symbol_table.nodes, key=lambda n: n.id)
+    dataflow_nodes: list[Node] = []
+    if adapter.language_id == "python":
+        # Code-to-data lineage (Milestone 17a): an additive pass over the
+        # same Python sources, independent of the main class/function
+        # walk above -- SQLAlchemy models aren't tied to any one
+        # language adapter's resolution pipeline.
+        dataflow_result = sqlalchemy_parser.extract(sources)
+        dataflow_nodes = dataflow_result.nodes
+        all_edges.extend(dataflow_result.edges)
+        # Milestone 17b: function-to-table READS/WRITES, run after model
+        # detection so it can recognize calls touching a known model.
+        all_edges.extend(table_usage.detect(sources, dataflow_result.model_tables))
+
+    nodes = sorted([*symbol_table.nodes, *dataflow_nodes], key=lambda n: n.id)
     edges = sorted(all_edges, key=lambda e: (e.source, e.target, e.kind))
     variables = sorted(symbol_table.variables, key=lambda v: v.id)
     parse_errors.sort(key=lambda e: (e.file, e.line or 0))

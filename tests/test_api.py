@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -765,3 +766,245 @@ def test_cors_configured_for_vite_dev_server():
     )
 
     assert resp.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_dbt_manifest_ingest_requires_prior_parse():
+    resp = client.post(
+        "/api/dataflow/dbt-manifest",
+        params={"path": str(FIXTURES / "dataflow_repo")},
+        json={"path": str(FIXTURES / "dbt_manifest.json")},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_dbt_manifest_ingest_reconciles_and_creates_and_merges_into_the_graph():
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/dataflow/dbt-manifest",
+        params={"path": repo_path},
+        json={"path": str(FIXTURES / "dbt_manifest.json")},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body == {"models_ingested": 2, "tables_reconciled": 1, "tables_created": 1}
+
+    graph_resp = client.get("/api/graph", params={"path": repo_path})
+    graph = graph_resp.json()
+    node_ids = {n["id"] for n in graph["nodes"]}
+    assert "dbt::model.my_project.stg_users" in node_ids
+    assert "dbt::model.my_project.fct_orders" in node_ids
+    assert "table::fct_orders" in node_ids
+    # The pre-existing `table::users` node (from 17a's SQLAlchemy parsing
+    # of the fixture repo) is reconciled onto, not duplicated.
+    assert sum(1 for n in graph["nodes"] if n["id"] == "table::users") == 1
+
+
+def test_dbt_manifest_ingest_is_idempotent_on_repeated_ingest():
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+    manifest_body = {"path": str(FIXTURES / "dbt_manifest.json")}
+
+    client.post("/api/dataflow/dbt-manifest", params={"path": repo_path}, json=manifest_body)
+    first_graph = client.get("/api/graph", params={"path": repo_path}).json()
+
+    resp = client.post("/api/dataflow/dbt-manifest", params={"path": repo_path}, json=manifest_body)
+    second_graph = client.get("/api/graph", params={"path": repo_path}).json()
+
+    # A second ingest of the identical manifest reconciles onto
+    # everything the first ingest already created -- nothing new.
+    assert resp.json() == {"models_ingested": 2, "tables_reconciled": 2, "tables_created": 0}
+    assert len(second_graph["nodes"]) == len(first_graph["nodes"])
+    assert len(second_graph["edges"]) == len(first_graph["edges"])
+
+
+def test_dbt_manifest_ingest_retracts_a_stale_materializes_edge_on_re_ingest(tmp_path: Path):
+    """Regression: a first implementation merged ingests additively
+    forever, so re-ingesting the SAME model after its `alias` changed
+    (the realistic workflow -- edit the dbt project, regenerate the
+    manifest, re-ingest to refresh lineage) left both the old and the
+    new `MATERIALIZES` edge in the graph simultaneously, falsely
+    claiming the model still wrote to a table it no longer touches. A
+    re-ingest must retract the model's stale edge, not just add the new
+    one alongside it."""
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def _manifest_with_alias(alias: str) -> dict:
+        return {
+            "nodes": {
+                "model.p.x": {
+                    "resource_type": "model",
+                    "name": "x",
+                    "unique_id": "model.p.x",
+                    "alias": alias,
+                }
+            }
+        }
+
+    manifest_a = tmp_path / "manifest_a.json"
+    manifest_a.write_text(json.dumps(_manifest_with_alias("table_a")), encoding="utf-8")
+    manifest_b = tmp_path / "manifest_b.json"
+    manifest_b.write_text(json.dumps(_manifest_with_alias("table_b")), encoding="utf-8")
+
+    client.post(
+        "/api/dataflow/dbt-manifest", params={"path": repo_path}, json={"path": str(manifest_a)}
+    )
+    first_edges = client.get("/api/graph", params={"path": repo_path}).json()["edges"]
+    assert any(
+        e["source"] == "dbt::model.p.x" and e["target"] == "table::table_a"
+        for e in first_edges
+    )
+
+    client.post(
+        "/api/dataflow/dbt-manifest", params={"path": repo_path}, json={"path": str(manifest_b)}
+    )
+    second_edges = client.get("/api/graph", params={"path": repo_path}).json()["edges"]
+
+    assert any(
+        e["source"] == "dbt::model.p.x" and e["target"] == "table::table_b"
+        for e in second_edges
+    )
+    assert not any(
+        e["source"] == "dbt::model.p.x" and e["target"] == "table::table_a"
+        for e in second_edges
+    )
+    # Exactly one DBT_MODEL node for `model.p.x`, not a duplicate.
+    second_nodes = client.get("/api/graph", params={"path": repo_path}).json()["nodes"]
+    assert sum(1 for n in second_nodes if n["id"] == "dbt::model.p.x") == 1
+
+
+def test_dbt_manifest_ingest_invalid_path_returns_400():
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/dataflow/dbt-manifest",
+        params={"path": repo_path},
+        json={"path": str(FIXTURES / "does_not_exist_manifest.json")},
+    )
+
+    assert resp.status_code == 400
+
+
+def _sqlite_url(db_path: Path) -> str:
+    return f"sqlite:///{db_path.as_posix()}"
+
+
+def _exec_sql(db_path: Path, *statements: str) -> None:
+    import sqlalchemy
+
+    engine = sqlalchemy.create_engine(_sqlite_url(db_path))
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(sqlalchemy.text(stmt))
+    engine.dispose()
+
+
+def test_db_connection_ingest_requires_prior_parse(tmp_path: Path):
+    db_path = tmp_path / "app.db"
+    _exec_sql(db_path, "CREATE TABLE things (id INTEGER PRIMARY KEY)")
+
+    resp = client.post(
+        "/api/dataflow/db-connection",
+        params={"path": str(FIXTURES / "dataflow_repo")},
+        json={"connection_string": _sqlite_url(db_path)},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_db_connection_ingest_reconciles_and_creates_and_merges_into_the_graph(tmp_path: Path):
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    db_path = tmp_path / "app.db"
+    _exec_sql(
+        db_path,
+        "CREATE TABLE users (id INTEGER PRIMARY KEY)",
+        "CREATE TABLE legacy_orders (id INTEGER PRIMARY KEY, user_id INTEGER, "
+        "FOREIGN KEY (user_id) REFERENCES users (id))",
+    )
+
+    resp = client.post(
+        "/api/dataflow/db-connection",
+        params={"path": repo_path},
+        json={"connection_string": _sqlite_url(db_path)},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body == {"tables_ingested": 2, "tables_reconciled": 1, "tables_created": 1}
+
+    graph = client.get("/api/graph", params={"path": repo_path}).json()
+    node_ids = {n["id"] for n in graph["nodes"]}
+    assert "table::legacy_orders" in node_ids
+    # `table::users` was already an ORM-sourced node from 17a -- reconciled
+    # onto, not duplicated, and its `source` tag must stay "orm_model".
+    users_node = next(n for n in graph["nodes"] if n["id"] == "table::users")
+    assert users_node["source"] == "orm_model"
+    legacy_orders_node = next(n for n in graph["nodes"] if n["id"] == "table::legacy_orders")
+    assert legacy_orders_node["source"] == "live_db"
+
+
+def test_db_connection_ingest_retracts_a_removed_table_and_its_edge_on_re_ingest(
+    tmp_path: Path,
+):
+    """Regression, applying the same lesson learned from the dbt-ingest
+    blocker: re-introspecting after the schema changed (a table dropped)
+    must retract that table's node and any edge sourced from it, not
+    just keep adding to an ever-growing graph."""
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    db_path = tmp_path / "app.db"
+    _exec_sql(
+        db_path,
+        "CREATE TABLE parent (id INTEGER PRIMARY KEY)",
+        "CREATE TABLE child (id INTEGER PRIMARY KEY, parent_id INTEGER, "
+        "FOREIGN KEY (parent_id) REFERENCES parent (id))",
+    )
+    client.post(
+        "/api/dataflow/db-connection",
+        params={"path": repo_path},
+        json={"connection_string": _sqlite_url(db_path)},
+    )
+    first_graph = client.get("/api/graph", params={"path": repo_path}).json()
+    assert "table::child" in {n["id"] for n in first_graph["nodes"]}
+    assert any(
+        e["source"] == "table::child" and e["target"] == "table::parent"
+        for e in first_graph["edges"]
+    )
+
+    # Schema change: `child` is dropped entirely.
+    _exec_sql(db_path, "DROP TABLE child")
+
+    client.post(
+        "/api/dataflow/db-connection",
+        params={"path": repo_path},
+        json={"connection_string": _sqlite_url(db_path)},
+    )
+    second_graph = client.get("/api/graph", params={"path": repo_path}).json()
+
+    assert "table::child" not in {n["id"] for n in second_graph["nodes"]}
+    assert not any(
+        e["source"] == "table::child" or e["target"] == "table::child"
+        for e in second_graph["edges"]
+    )
+    assert "table::parent" in {n["id"] for n in second_graph["nodes"]}
+
+
+def test_db_connection_ingest_invalid_connection_string_returns_400():
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/dataflow/db-connection",
+        params={"path": repo_path},
+        json={"connection_string": "not-a-valid-url"},
+    )
+
+    assert resp.status_code == 400

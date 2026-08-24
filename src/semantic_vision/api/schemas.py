@@ -113,3 +113,29 @@ class HealthResponse(BaseModel):
 
 class ComplexityResponse(BaseModel):
     scores: list[ComplexityScore]
+
+
+class DbtManifestIngestRequest(BaseModel):
+    path: str
+    """Absolute path to a `manifest.json` the user produced themselves
+    via `dbt compile`/`dbt docs generate` -- Semantic Vision never
+    invokes dbt itself."""
+
+
+class DbtManifestIngestResponse(BaseModel):
+    models_ingested: int
+    tables_reconciled: int
+    tables_created: int
+
+
+class DbConnectionIngestRequest(BaseModel):
+    connection_string: str
+    """A read-only DB connection string (e.g.
+    `postgresql://readonly@host/db`). Held in memory for this request
+    only -- never written to disk or logged."""
+
+
+class DbConnectionIngestResponse(BaseModel):
+    tables_ingested: int
+    tables_reconciled: int
+    tables_created: int

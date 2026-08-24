@@ -1,0 +1,27 @@
+{
+  "nodes": {
+    "model.my_project.stg_users": {
+      "resource_type": "model",
+      "name": "stg_users",
+      "unique_id": "model.my_project.stg_users",
+      "alias": "users",
+      "original_file_path": "models/staging/stg_users.sql",
+      "depends_on": { "nodes": ["source.my_project.raw.raw_users"] },
+      "config": { "materialized": "view" }
+    },
+    "model.my_project.fct_orders": {
+      "resource_type": "model",
+      "name": "fct_orders",
+      "unique_id": "model.my_project.fct_orders",
+      "original_file_path": "models/marts/fct_orders.sql",
+      "depends_on": { "nodes": ["model.my_project.stg_users"] },
+      "config": { "materialized": "table" }
+    },
+    "test.my_project.not_null_fct_orders_id": {
+      "resource_type": "test",
+      "name": "not_null_fct_orders_id",
+      "unique_id": "test.my_project.not_null_fct_orders_id",
+      "depends_on": { "nodes": ["model.my_project.fct_orders"] }
+    }
+  }
+}

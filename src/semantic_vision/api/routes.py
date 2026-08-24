@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
@@ -11,6 +12,10 @@ from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_cal
 from semantic_vision.api.cache import cache
 from semantic_vision.api.schemas import (
     ComplexityResponse,
+    DbConnectionIngestRequest,
+    DbConnectionIngestResponse,
+    DbtManifestIngestRequest,
+    DbtManifestIngestResponse,
     DocIndexResponse,
     DocResponse,
     DocRootResponse,
@@ -28,9 +33,10 @@ from semantic_vision.api.schemas import (
     SaveGraphStateRequest,
     UpdateDocRootRequest,
 )
+from semantic_vision.dataflow import db_introspect, dbt_ingest
 from semantic_vision.flowchart.cfg import build_flowchart
 from semantic_vision.languages import UnknownLanguageError
-from semantic_vision.models import NodeKind, ParseResult
+from semantic_vision.models import Edge, EdgeKind, Node, NodeKind, ParseResult
 from semantic_vision.persistence import store as persistence
 from semantic_vision.repo_parser import parse_repository
 
@@ -156,6 +162,151 @@ def get_impact(
     impact = find_upstream_callers(id, reverse_index, max_depth=max_depth)
     return ImpactResponse(
         target=impact.target, callers=impact.callers, edges=impact.edges, cycles=impact.cycles
+    )
+
+
+def _merge_into_cache(
+    path: str, result: ParseResult, new_nodes: list[Node], new_edges: list[Edge]
+) -> None:
+    """Merges freshly-ingested nodes/edges into the already-cached
+    `ParseResult` for `path` and re-stores it -- re-running `cache.set`
+    also rebuilds the reverse-caller index and drops any stale
+    complexity index, the same as a genuine reparse would. Idempotent
+    against re-ingesting the same manifest twice: a node id or
+    `(source, target, kind)` edge already present is not duplicated."""
+    existing_node_ids = {n.id for n in result.nodes}
+    existing_edge_keys = {(e.source, e.target, e.kind) for e in result.edges}
+
+    merged_nodes = list(result.nodes)
+    for node in new_nodes:
+        if node.id not in existing_node_ids:
+            merged_nodes.append(node)
+            existing_node_ids.add(node.id)
+
+    merged_edges = list(result.edges)
+    for edge in new_edges:
+        key = (edge.source, edge.target, edge.kind)
+        if key not in existing_edge_keys:
+            merged_edges.append(edge)
+            existing_edge_keys.add(key)
+
+    merged = result.model_copy(
+        update={
+            "nodes": sorted(merged_nodes, key=lambda n: n.id),
+            "edges": sorted(merged_edges, key=lambda e: (e.source, e.target, e.kind)),
+        }
+    )
+    cache.set(path, merged)
+
+
+def _strip_previous_dbt_ingest(result: ParseResult) -> ParseResult:
+    """A dbt-manifest ingest fully re-syncs its own contribution to the
+    graph on every call, rather than merging additively forever: every
+    `DBT_MODEL` node and every `REFERENCES`/`MATERIALIZES` edge is
+    produced exclusively by this pipeline (nothing else in the codebase
+    emits either edge kind), so a stale one from a previous ingest -- a
+    model renamed, an upstream `ref()` removed, a model deleted from the
+    dbt project -- must be retracted before the fresh ingest's own set
+    is added back in, or the graph would keep asserting a lineage
+    relationship that no longer exists. `Table` nodes are deliberately
+    left in place even if now unreferenced by the fresh manifest: they
+    may still be real (from 17a's SQLAlchemy parsing, or simply a table
+    the fresh manifest still names under the same alias, which should
+    reconcile onto the same node rather than needing re-creation)."""
+    kept_nodes = [n for n in result.nodes if n.kind != NodeKind.DBT_MODEL]
+    kept_edges = [
+        e for e in result.edges if e.kind not in (EdgeKind.REFERENCES, EdgeKind.MATERIALIZES)
+    ]
+    return result.model_copy(update={"nodes": kept_nodes, "edges": kept_edges})
+
+
+_dbt_ingest_lock = threading.Lock()
+"""Guards the read-strip-merge-write critical section below against a
+lost update from two concurrent `POST /api/dataflow/dbt-manifest` calls
+for the same repo path -- `RepoCache` already guards its own lazily-built
+complexity index against an analogous race (`_complexity_lock`); this is
+the same class of concern for this route's own read-modify-write. Does
+not protect against a concurrent `POST /api/parse-repo` racing an ingest
+for the same path -- a larger, pre-existing gap across every
+cache-mutating route, out of scope for this one fix."""
+
+
+@router.post("/dataflow/dbt-manifest", response_model=DbtManifestIngestResponse)
+def ingest_dbt_manifest(
+    request: DbtManifestIngestRequest, path: str = Query(...)
+) -> DbtManifestIngestResponse:
+    with _dbt_ingest_lock:
+        result = _strip_previous_dbt_ingest(_get_cached(path))
+        existing_table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
+
+        try:
+            ingested = dbt_ingest.ingest(request.path, existing_table_ids)
+        except dbt_ingest.DbtManifestError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        _merge_into_cache(path, result, ingested.nodes, ingested.edges)
+
+    return DbtManifestIngestResponse(
+        models_ingested=ingested.models_ingested,
+        tables_reconciled=ingested.tables_reconciled,
+        tables_created=ingested.tables_created,
+    )
+
+
+def _strip_previous_live_db_ingest(result: ParseResult) -> ParseResult:
+    """Mirrors `_strip_previous_dbt_ingest`'s full-re-sync approach,
+    scoped to what a live-db introspection can unambiguously attribute
+    to itself: every `Table` node tagged `source="live_db"` (nothing
+    else ever creates that tag -- see `db_introspect.py`'s "first source
+    wins" rule) and every `FOREIGN_KEY` edge sourced *from* one of those
+    nodes. A `FOREIGN_KEY` edge sourced from a table that instead
+    reconciled onto a pre-existing `orm_model`-tagged node (its `source`
+    tag never changed, by the same "first source wins" rule) is NOT
+    retracted here -- there is no way to attribute that specific edge to
+    a *previous* introspection versus 17a's own FK detection without
+    edge-level provenance this data model doesn't carry, and blanket-
+    stripping every `FOREIGN_KEY` edge the way `REFERENCES`/
+    `MATERIALIZES` are stripped above would also destroy 17a's own,
+    unrelated ORM-derived FK edges, which is worse. A stale edge in that
+    narrow case (an ORM-declared table's live-DB-only FK relationship
+    changes between two introspections) can persist until a fresh
+    parse -- a known, documented gap, not a silent one."""
+    live_db_table_ids = {
+        n.id for n in result.nodes if n.kind == NodeKind.TABLE and n.source == "live_db"
+    }
+    kept_nodes = [n for n in result.nodes if n.id not in live_db_table_ids]
+    kept_edges = [
+        e
+        for e in result.edges
+        if not (e.kind == EdgeKind.FOREIGN_KEY and e.source in live_db_table_ids)
+    ]
+    return result.model_copy(update={"nodes": kept_nodes, "edges": kept_edges})
+
+
+_db_introspect_lock = threading.Lock()
+"""Same read-strip-merge-write race concern as `_dbt_ingest_lock`, for
+`POST /api/dataflow/db-connection` calls against the same repo path."""
+
+
+@router.post("/dataflow/db-connection", response_model=DbConnectionIngestResponse)
+def ingest_db_connection(
+    request: DbConnectionIngestRequest, path: str = Query(...)
+) -> DbConnectionIngestResponse:
+    with _db_introspect_lock:
+        result = _strip_previous_live_db_ingest(_get_cached(path))
+        existing_table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
+
+        try:
+            introspected = db_introspect.introspect(request.connection_string, existing_table_ids)
+        except db_introspect.DbIntrospectError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        _merge_into_cache(path, result, introspected.nodes, introspected.edges)
+
+    return DbConnectionIngestResponse(
+        tables_ingested=introspected.tables_ingested,
+        tables_reconciled=introspected.tables_reconciled,
+        tables_created=introspected.tables_created,
     )
 
 
