@@ -7,6 +7,7 @@ Canonical ids follow the convention from the build plan:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from semantic_vision.models import Edge, EdgeKind, Node, NodeKind, Variable
@@ -37,14 +38,6 @@ class SymbolTable:
     so import resolution can still point at their file node)."""
     module_by_dotted: dict[str, str]
     """dotted module path (e.g. "pkg.sub.mod") -> rel_path."""
-
-
-def _dotted_module_path(rel_path: str) -> str:
-    parts = rel_path.split("/")
-    if parts[-1] == "__init__.py":
-        return ".".join(parts[:-1])
-    parts[-1] = parts[-1].removesuffix(".py")
-    return ".".join(parts)
 
 
 def _register_class(
@@ -140,6 +133,8 @@ def build_symbol_table(
     all_rel_paths: list[str],
     raw_modules: dict[str, RawModule],
     line_counts: dict[str, int],
+    *,
+    dotted_module_path: Callable[[str], str],
 ) -> SymbolTable:
     nodes: list[Node] = []
     defines_edges: list[Edge] = []
@@ -186,7 +181,7 @@ def build_symbol_table(
         if parent_dir is not None:
             defines_edges.append(Edge(source=parent_dir, target=rel_path, kind=EdgeKind.DEFINES))
 
-        dotted = _dotted_module_path(rel_path)
+        dotted = dotted_module_path(rel_path)
         if dotted:
             module_by_dotted[dotted] = rel_path
 

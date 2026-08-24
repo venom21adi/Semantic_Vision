@@ -4,19 +4,22 @@ a deterministic `ParseResult`.
 
 from __future__ import annotations
 
-import ast
 import os
 from pathlib import Path
 
+from semantic_vision.languages.base import LanguageAdapter, ParseSyntaxError
+from semantic_vision.languages.registry import get_adapter
 from semantic_vision.models import ParseError, ParseResult
-from semantic_vision.parser.discovery import discover_python_files
-from semantic_vision.parser.extractor import RawModule, extract_module
-from semantic_vision.resolver.calls import resolve_calls
-from semantic_vision.resolver.imports import resolve_imports
+from semantic_vision.parser.discovery import discover_files
+from semantic_vision.parser.extractor import RawModule
 from semantic_vision.resolver.symbol_table import build_symbol_table
 
 
-def parse_repository(root: str | Path) -> ParseResult:
+def parse_repository(
+    root: str | Path, *, language: str | LanguageAdapter = "python"
+) -> ParseResult:
+    adapter = language if isinstance(language, LanguageAdapter) else get_adapter(language)
+
     root_path = Path(root)
     if not root_path.is_dir():
         raise NotADirectoryError(f"Not a directory: {root_path}")
@@ -24,7 +27,7 @@ def parse_repository(root: str | Path) -> ParseResult:
         raise PermissionError(f"Directory is not readable: {root_path}")
     root_path = root_path.resolve()
 
-    files = discover_python_files(root_path)
+    files = discover_files(root_path, adapter.file_extensions)
     all_rel_paths = [f.relative_to(root_path).as_posix() for f in files]
 
     raw_modules: dict[str, RawModule] = {}
@@ -41,24 +44,24 @@ def parse_repository(root: str | Path) -> ParseResult:
         line_counts[rel_path] = source.count("\n") + (0 if source.endswith("\n") else 1)
 
         try:
-            tree = ast.parse(source, filename=rel_path)
-        except SyntaxError as exc:
-            parse_errors.append(ParseError(file=rel_path, line=exc.lineno, message=str(exc)))
+            raw_modules[rel_path] = adapter.parse_file(source, rel_path)
+        except ParseSyntaxError as exc:
+            parse_errors.append(ParseError(file=rel_path, line=exc.line, message=exc.message))
             continue
 
-        raw_modules[rel_path] = extract_module(tree, rel_path)
-
-    symbol_table = build_symbol_table(all_rel_paths, raw_modules, line_counts)
+    symbol_table = build_symbol_table(
+        all_rel_paths, raw_modules, line_counts, dotted_module_path=adapter.dotted_module_path
+    )
 
     all_edges = list(symbol_table.defines_edges)
     for rel_path, raw in raw_modules.items():
         module_index = symbol_table.modules[rel_path]
-        resolution = resolve_imports(
+        resolution = adapter.resolve_imports(
             rel_path, raw, symbol_table.module_by_dotted, symbol_table.modules
         )
         all_edges.extend(resolution.edges)
         all_edges.extend(
-            resolve_calls(
+            adapter.resolve_calls(
                 rel_path,
                 raw,
                 module_index,
