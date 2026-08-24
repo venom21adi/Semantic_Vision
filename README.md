@@ -133,32 +133,19 @@ toolchain you already have.
 
 ## 📊 Status
 
-Semantic Vision is under active development. Here's what works today
-and what's still ahead:
-
-| Feature | Status |
-|---|---|
-| Codebase parsing — imports, classes, functions, call graph | ✅ Available |
-| Interactive graph visualization | ✅ Available |
-| Searchable file/function tree | ✅ Available |
-| Persisted layout & view state | ✅ Available |
-| Impact analysis (upstream callers, cycle detection) | ✅ Available |
-| AI-generated function documentation | ✅ Available |
-| Function-level execution flowcharts | ✅ Available |
-| Complexity heatmap & ranked performance report | ✅ Available |
-| Docker packaging / one-command setup | ✅ Available |
-| Multi-language support — Python, JavaScript, TypeScript | ✅ Available |
-
-### Feature support by language
+What works today, per language:
 
 | Feature | Python | JavaScript / TypeScript |
 |---|:---:|:---:|
 | Call graph — imports, classes, functions, calls | ✅ | ✅ |
+| Interactive graph visualization | ✅ | ✅ |
 | Search | ✅ | ✅ |
-| Impact analysis | ✅ | ✅ |
+| Persisted layout & view state | ✅ | ✅ |
+| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ |
 | Complexity report | ✅ | ✅ |
-| AI documentation | ✅ | ✅ |
+| AI-generated documentation | ✅ | ✅ |
 | Execution flowcharts | ✅ | ❌ |
+| Docker packaging / one-command setup | ✅ | ✅ |
 
 A repo is parsed as one language at a time — pick which in the selector
 next to the repository path field. JS/TS parses via
