@@ -182,19 +182,10 @@ What works today, per language:
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — |
 | Docker packaging / one-command setup | ✅ | ✅ |
 
-A repo is parsed as one language at a time — pick which in the selector
-next to the repository path field. JS/TS parses via
-[`tree-sitter`](https://tree-sitter.github.io/tree-sitter/); imports and
-calls are hand-resolved the same way Python's are, flagging genuinely
-ambiguous cases (a computed `require()` path, a default import, anything
-needing real type info) rather than guessing — expect that flag somewhat
-more often than with Python. `static {}` blocks, CommonJS
-`const { x } = require(...)`, and `tsconfig.json` path aliases
-(`"@/utils/x"`) aren't parsed yet; JSX/TSX works fine.
 
-Code-to-data lineage is Python-specific by nature (it detects SQLAlchemy
-models in your code), not a JS/TS gap on the roadmap — hence "—" rather
-than a checkmark.
+Select Python or JavaScript / TypeScript in the language selector to set the parsing scope. 
+
+JS/TS uses tree-sitter for static AST resolution—including full support for JSX/TSX. To preserve precision without execution, dynamic patterns (like computed require() calls) are flagged directly in the UI rather than inferred.
 
 ## 🚀 Quick start
 
