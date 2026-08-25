@@ -303,6 +303,14 @@ export default function App() {
     [selectionFilteredGraph, expandedContainerIds],
   )
 
+  // Ids currently rendered as their own box on the codebase canvas --
+  // read (not written) inside `handleSelectNode`, via a ref for the same
+  // stable-identity reason as `repoRef`/`paneRef` above.
+  const visibleNodeIdsRef = useRef<ReadonlySet<string>>(new Set())
+  useEffect(() => {
+    visibleNodeIdsRef.current = new Set(collapsedCodebaseGraph.nodes.map((node) => node.id))
+  }, [collapsedCodebaseGraph])
+
   const handleToggleContainer = useCallback((containerId: string) => {
     setExpandedContainerIds((prev) => {
       const next = new Set(prev)
@@ -580,33 +588,62 @@ export default function App() {
       // A selection can come from somewhere that isn't collapse-aware --
       // the sidebar's file/symbol tree (`Tree.tsx`), or jumping to a
       // caller from the Impact Analysis pane -- and the target could be
-      // rolled up inside a currently-collapsed directory/file. Force-expand
-      // every container above it so it's actually visible on the canvas;
-      // without this, `selectedNodeId` would point at a node
-      // `collapseGraph` never renders, with no highlight/pan and a
-      // details panel open for something invisible. A no-op (returns the
-      // same `Set`, no re-render) when everything's already expanded.
+      // rolled up inside a currently-collapsed directory/file, or not
+      // selected as a canvas root at all.
+      //
+      // This used to unconditionally force-expand *every* container
+      // ancestor (`ancestorContainerIds`, nearest to outermost) so the
+      // node bubbled up into view. That was wrong: `expandedContainerIds`
+      // is a per-container all-or-nothing toggle -- expanding one reveals
+      // *every* immediate child, not just the one on the path to the
+      // selected node. Confirmed live against a real large repo: selecting
+      // one small nested directory force-expanded its parent and dumped
+      // all ~30 of its siblings onto the canvas, and selecting a single
+      // file did the same to every other file in the same directory --
+      // there was no way to look at just the thing you clicked, even
+      // though nothing about that outer directory was ever selected.
+      //
+      // The fix distinguishes two cases, walking `nodeId`'s container
+      // ancestors nearest-first:
+      //
+      //  1. Already visible as its own box right now (in
+      //     `visibleNodeIdsRef`, which mirrors `collapsedCodebaseGraph`) --
+      //     a true no-op, so a plain click on an already-shown node (by
+      //     far the most common case: opening its context menu, jumping
+      //     to a caller already on screen) never triggers a selection
+      //     recompute/relayout.
+      //  2. Not visible, but some ancestor already IS visible as its own
+      //     box (the user deliberately made *that* container visible,
+      //     however it got there) -- expand only the containers from
+      //     `nodeId` up to (and including) that nearest visible ancestor.
+      //     This reveals exactly the path down from a box the user
+      //     already has on screen, same as clicking its chevron would,
+      //     with no unrelated siblings further out ever touched.
+      //  3. No ancestor is visible at all -- nothing on the path to
+      //     `nodeId` was ever selected, so don't expand anything. Add
+      //     `nodeId` itself directly to `selectedRootIds` instead:
+      //     `subgraphForSelection` already handles a selected id whose
+      //     real parent isn't also selected (no surviving parent edge in
+      //     the filtered graph), so `collapseGraph`'s own "no parent ->
+      //     always a visible root" rule renders it as its own standalone
+      //     box -- one new box, nothing swept in around it.
+      const visibleIds = visibleNodeIdsRef.current
+      if (visibleIds.has(nodeId)) return
+
       const current = repoRef.current
       if (!current) return
       const ancestors = ancestorContainerIds(nodeId, current.nodes, current.edges)
+      const visibleAncestorIndex = ancestors.findIndex((id) => visibleIds.has(id))
 
-      // Even with every ancestor expanded, the node still won't render
-      // unless its outermost root is also in `selectedRootIds` -- the
-      // second, independent gate `subgraphForSelection` adds. The
-      // outermost root is the last (furthest) entry in `ancestors`
-      // (nearest-first), or `nodeId` itself when `ancestors` is empty,
-      // meaning the node is already top-level. No-op when already
-      // selected. This is what makes "clicking a node, from the canvas or
-      // the sidebar, makes it appear" hold regardless of which gate was
-      // blocking it.
-      const rootId = ancestors.length > 0 ? ancestors[ancestors.length - 1] : nodeId
-      setSelectedRootIds((prev) => (prev.has(rootId) ? prev : new Set(prev).add(rootId)))
-
-      if (ancestors.length === 0) return
+      if (visibleAncestorIndex === -1) {
+        setSelectedRootIds((prev) => new Set(prev).add(nodeId))
+        return
+      }
+      const toExpand = ancestors.slice(0, visibleAncestorIndex + 1)
       setExpandedContainerIds((prev) => {
         let changed = false
         const next = new Set(prev)
-        for (const id of ancestors) {
+        for (const id of toExpand) {
           if (!next.has(id)) {
             next.add(id)
             changed = true
