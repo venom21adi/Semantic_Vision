@@ -26,7 +26,7 @@ to begin with.
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
 
-![Semantic Vision showing its own persistence module: a sidebar tree, the call graph, and a selected function's details](assets/screenshot.png)
+![Exploring Semantic Vision's own flowchart module: selecting a function, dragging it, then running impact analysis to highlight its real callers on the graph](assets/interactive-call-graph.gif)
 
 ## 🤖 AI documentation setup
 
@@ -61,10 +61,12 @@ the **Save location** (see Quick start below).
 ## 🧭 Execution flowcharts
 
 Right-click any function and choose **Execution Flowchart** to see
-exactly how it behaves, built from its real AST rather than a rough
+exactly how it behaves, built from its real AST/CST rather than a rough
 summary: entry and return points, decisions with **Yes**/**No** edges,
 loops with a visible back-edge, I/O calls, and calls out to other
 functions in the repo — each in its own conventional flowchart shape.
+Works for both Python and JS/TS, including `switch` fallthrough,
+`do...while`'s bottom-condition check, and labeled `break`/`continue`.
 
 ![An execution flowchart for a function with a loop, branches, break/continue, and an I/O call](assets/execution-flowchart.png)
 
@@ -103,6 +105,8 @@ up once no matter how many of them see it:
 - **A live database** — paste a read-only connection string to
   introspect a real schema directly, so you can see where your ORM
   models have drifted from what's actually deployed.
+
+![Connecting a dbt manifest and a live database to a repo with SQLAlchemy models already detected, watching new table and model nodes join the same graph](assets/code-to-data-lineage.gif)
 
 Impact analysis works on a table node exactly like it does on a
 function: right-click it to see every function, model, and table
@@ -171,7 +175,7 @@ What works today, per language:
 | Impact analysis (upstream callers, cycle detection) | ✅ | ✅ |
 | Complexity report | ✅ | ✅ |
 | AI-generated documentation | ✅ | ✅ |
-| Execution flowcharts | ✅ | Coming Soon |
+| Execution flowcharts | ✅ | ✅ |
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — |
 | Docker packaging / one-command setup | ✅ | ✅ |
 
@@ -186,8 +190,8 @@ more often than with Python. `static {}` blocks, CommonJS
 (`"@/utils/x"`) aren't parsed yet; JSX/TSX works fine.
 
 Code-to-data lineage is Python-specific by nature (it detects SQLAlchemy
-models in your code) rather than a JS/TS gap on the roadmap the way
-flowcharts are — hence "—" instead of "Coming Soon".
+models in your code), not a JS/TS gap on the roadmap — hence "—" rather
+than a checkmark.
 
 ## 🚀 Quick start
 

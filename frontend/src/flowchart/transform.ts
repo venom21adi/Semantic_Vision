@@ -24,23 +24,52 @@ export function toFlowchartNodes(nodes: FlowNode[]): Node<FlowNodeData>[] {
   }))
 }
 
+/**
+ * Merges edges sharing the same (source, target, kind) into one, joining
+ * their labels with a comma -- `switch` fallthrough (Milestone
+ * JS-TS-FLOWCHART-PLAN) is the first real producer of this shape: two
+ * different `case` values landing on the identical next node get two
+ * distinct `FlowEdge`s with different labels ("2", "3") but the same
+ * source/target/kind. Rendered as genuinely separate React Flow edges
+ * (each with its own id, the previous behavior here), they lay out on
+ * top of each other -- dagre has no reason to separate two edges
+ * between the same pair of nodes -- so only one label ever ends up
+ * visible, silently hiding that two cases fall through to the same
+ * place. One combined edge labeled "2, 3" is both accurate and
+ * actually legible. Verified live in a real browser against the
+ * `switchWithFallthrough` fixture, not assumed.
+ */
 export function toFlowchartEdges(edges: FlowEdge[]): Edge[] {
-  const occurrences = new Map<string, number>()
+  const groups = new Map<
+    string,
+    { source: string; target: string; kind: FlowEdge['kind']; labels: string[] }
+  >()
 
-  return edges.map((edge) => {
-    const base = `${edge.source}->${edge.target}:${edge.kind}`
-    const index = occurrences.get(base) ?? 0
-    occurrences.set(base, index + 1)
-    const color = FLOW_EDGE_COLORS[edge.kind]
+  for (const edge of edges) {
+    const key = `${edge.source}->${edge.target}:${edge.kind}`
+    const existing = groups.get(key)
+    if (existing) {
+      if (edge.label) existing.labels.push(edge.label)
+    } else {
+      groups.set(key, {
+        source: edge.source,
+        target: edge.target,
+        kind: edge.kind,
+        labels: edge.label ? [edge.label] : [],
+      })
+    }
+  }
 
+  return Array.from(groups.entries()).map(([key, group]) => {
+    const color = FLOW_EDGE_COLORS[group.kind]
     return {
-      id: `${base}:${index}`,
-      source: edge.source,
-      target: edge.target,
-      label: edge.label ?? undefined,
+      id: key,
+      source: group.source,
+      target: group.target,
+      label: group.labels.length > 0 ? group.labels.join(', ') : undefined,
       style: {
         stroke: color,
-        strokeDasharray: edge.kind === 'loop_back' ? '4 3' : undefined,
+        strokeDasharray: group.kind === 'loop_back' ? '4 3' : undefined,
       },
       markerEnd: { type: MarkerType.ArrowClosed, color },
     }

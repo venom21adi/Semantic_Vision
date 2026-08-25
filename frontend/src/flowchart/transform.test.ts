@@ -27,10 +27,22 @@ describe('toFlowchartNodes', () => {
 })
 
 describe('toFlowchartEdges', () => {
-  it('generates unique ids even for repeated source/target/kind pairs', () => {
-    const duplicate: FlowEdge[] = [edges[1], edges[1]]
+  it('merges edges sharing the same source/target/kind into one, joining their labels', () => {
+    // Two `switch` cases (labels "2" and "3") falling through to the
+    // same next node -- the first real producer of this shape.
+    const fallthrough: FlowEdge[] = [
+      { source: 'app.ts::f::n1', target: 'app.ts::f::n2', kind: 'flow', label: '2' },
+      { source: 'app.ts::f::n1', target: 'app.ts::f::n2', kind: 'flow', label: '3' },
+    ]
 
-    const flowEdges = toFlowchartEdges(duplicate)
+    const flowEdges = toFlowchartEdges(fallthrough)
+
+    expect(flowEdges).toHaveLength(1)
+    expect(flowEdges[0].label).toBe('2, 3')
+  })
+
+  it('keeps edges with different kinds between the same nodes separate', () => {
+    const flowEdges = toFlowchartEdges([edges[1], edges[2]])
 
     expect(new Set(flowEdges.map((edge) => edge.id)).size).toBe(2)
   })
