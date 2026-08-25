@@ -82,6 +82,14 @@ describe('toFlowEdges', () => {
     expect(withoutCount.label).toBe('calls')
     expect(countOne.label).toBe('calls')
   })
+
+  it('renders no label at all for a defines edge, even with an aggregated count', () => {
+    const [plain] = toFlowEdges([edges[0]])
+    const [merged] = toFlowEdges([{ ...edges[0], count: 3 }])
+
+    expect(plain.label).toBeUndefined()
+    expect(merged.label).toBeUndefined()
+  })
 })
 
 describe('buildFlowGraph', () => {

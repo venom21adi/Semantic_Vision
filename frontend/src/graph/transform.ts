@@ -46,7 +46,17 @@ export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge[] {
       // `count` is set by `collapseGraph` when multiple underlying edges
       // rolled up into this one after remapping both endpoints to their
       // visible directory representative.
-      label: edge.count && edge.count > 1 ? `${edge.kind} ×${edge.count}` : edge.kind,
+      //
+      // `defines` gets no label at all -- it's the containment hierarchy
+      // itself (already implied by the tree/nesting, and by the grey
+      // color below), so a "defines" caption on every single one of them
+      // is pure clutter once a container actually has several children on
+      // screen at once -- confirmed as the exact complaint after the
+      // collapse/expand redesign made that a common sight instead of a
+      // rare one. Every other kind keeps its label -- "calls ×N" and
+      // friends are real information a `defines` edge never carries.
+      label:
+        edge.kind === 'defines' ? undefined : edge.count && edge.count > 1 ? `${edge.kind} ×${edge.count}` : edge.kind,
       style: {
         stroke: color,
         strokeDasharray: edge.kind === 'imports' ? '4 3' : edge.ambiguous ? '2 2' : undefined,
