@@ -89,6 +89,33 @@ type FlowchartState =
   | { status: 'loaded'; label: string; data: FlowchartResponse }
   | { status: 'error'; label: string; message: string }
 
+interface VsCodeApi {
+  postMessage: (message: unknown) => void
+}
+
+declare global {
+  interface Window {
+    __SEMANTIC_VISION_VSCODE__?: boolean
+  }
+  function acquireVsCodeApi(): VsCodeApi
+}
+
+// `acquireVsCodeApi()` may only be called once per webview session (it
+// throws on a second call) -- resolved once at module scope, not inside
+// the component, so remounts/Fast Refresh during dev never call it twice.
+// Undefined for every load outside the VS Code extension's webview (a
+// plain browser tab, the Vite dev server, tests), which is what every
+// `vscodeApi &&`/`if (vscodeApi)` branch below relies on to stay inert
+// there.
+const vscodeApi: VsCodeApi | null =
+  typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null
+
+/** Messages the extension host posts into this webview -- mirrors
+ * `vscode-extension/src/extension.ts`'s `postMessage` calls. */
+type HostMessage =
+  | { command: 'activeFileChanged'; file: string }
+  | { command: 'runImpactAnalysis'; nodeId: string }
+
 export default function App() {
   const [repo, setRepo] = useState<LoadedRepo | null>(null)
   const [loading, setLoading] = useState(false)
@@ -440,6 +467,18 @@ export default function App() {
   const handleViewSource = useCallback(
     async (nodeId: string) => {
       if (!repo) return
+      // Inside the VS Code extension's webview, jump straight to the real
+      // file/line in the actual editor instead of fetching a read-only
+      // inline snippet -- strictly better when the editor is right there,
+      // and the extension host owns opening/revealing it (`openSource`,
+      // handled in `vscode-extension/src/extension.ts`).
+      if (vscodeApi) {
+        const node = repo.nodes.find((candidate) => candidate.id === nodeId)
+        if (node) {
+          vscodeApi.postMessage({ command: 'openSource', file: node.file, line: node.line_start })
+        }
+        return
+      }
       setPane({ kind: 'source', status: 'loading' })
       try {
         const result = await getFunctionSource(repo.path, nodeId)
@@ -680,6 +719,55 @@ export default function App() {
     },
     [cancelGeneration],
   )
+
+  // `onMessage` below needs the *latest* `handleSelectNode`/
+  // `handleImpactAnalysis` on every call, but re-registering the
+  // `window` listener every time either identity changes (they're
+  // `useCallback`'d on `repo`/`pane`, not stable) would mean churn on
+  // most graph interactions -- a plain ref updated every render (same
+  // pattern as `repoRef` above) keeps the listener itself mounted once.
+  const messageHandlersRef = useRef({ handleSelectNode, handleImpactAnalysis })
+  messageHandlersRef.current = { handleSelectNode, handleImpactAnalysis }
+
+  // Bridges messages from the VS Code extension host (see
+  // `vscode-extension/src/extension.ts`) into the same handlers a normal
+  // user interaction already drives, rather than a separate code path:
+  // `activeFileChanged` mirrors clicking a file then switching to the
+  // File view; `runImpactAnalysis` mirrors right-clicking a node on the
+  // canvas and choosing Impact Analysis (which also selects the node
+  // first -- see `GraphCanvas.tsx`'s `handleNodeContextMenu` -- so this
+  // does the same). A no-op outside the extension's webview, since
+  // `vscodeApi` is null there and no listener is ever attached.
+  useEffect(() => {
+    if (!vscodeApi) return
+    function onMessage(event: MessageEvent<unknown>) {
+      const data = event.data
+      // A same-window `postMessage` can in principle come from anywhere
+      // (not just the extension host) -- shape-checked before acting on
+      // it, rather than trusting `command` to be one of `HostMessage`'s
+      // literal values just because TypeScript says so.
+      if (typeof data !== 'object' || data === null || !('command' in data)) return
+      const message = data as HostMessage
+      const { handleSelectNode: selectNode, handleImpactAnalysis: runImpact } =
+        messageHandlersRef.current
+      if (message.command === 'activeFileChanged') {
+        const fileNode = repoRef.current?.nodes.find(
+          (node) => node.id === message.file && node.kind === 'file',
+        )
+        if (!fileNode) return
+        selectNode(fileNode.id)
+        setView('file')
+      } else if (message.command === 'runImpactAnalysis') {
+        selectNode(message.nodeId)
+        runImpact(message.nodeId)
+      }
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+    // Mount-once: `onMessage` always reads the latest handlers via
+    // `messageHandlersRef`, so it never needs to be torn down/re-added.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleClosePane = useCallback(() => {
     cancelGeneration()

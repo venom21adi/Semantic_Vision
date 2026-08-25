@@ -824,6 +824,32 @@ def test_cors_configured_for_vite_dev_server():
     assert resp.headers.get("access-control-allow-origin") == "http://localhost:5173"
 
 
+def test_cors_configured_for_vscode_webview_origin():
+    origin = "vscode-webview://1a2b3c4d5e6f"
+
+    resp = client.options(
+        "/api/graph",
+        headers={
+            "Origin": origin,
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert resp.headers.get("access-control-allow-origin") == origin
+
+
+def test_cors_rejects_an_unrelated_origin():
+    resp = client.options(
+        "/api/graph",
+        headers={
+            "Origin": "http://evil.example.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert resp.headers.get("access-control-allow-origin") is None
+
+
 def test_dbt_manifest_ingest_requires_prior_parse():
     resp = client.post(
         "/api/dataflow/dbt-manifest",

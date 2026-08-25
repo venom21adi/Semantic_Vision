@@ -41,8 +41,9 @@ function edge(source: string, target: string): GraphEdge {
 describe('useLayoutWorker', () => {
   let useLayoutWorker: typeof import('./useLayoutWorker').useLayoutWorker
 
-  // `hasWorker` in useLayoutWorker.ts is a module-level const read once at
-  // import time -- the global `Worker` must be stubbed, and the module
+  // `hasWorker` in useLayoutWorker.ts is a module-level variable set at
+  // import time (and possibly flipped at runtime -- see the dedicated
+  // test below) -- the global `Worker` must be stubbed, and the module
   // freshly imported, before each test.
   beforeEach(async () => {
     spawnedWorkers = []
@@ -175,4 +176,40 @@ describe('useLayoutWorker', () => {
     rerender({ graph: graphB })
     await waitFor(() => expect(result.current.status).not.toBe('error'))
   })
+})
+
+describe('useLayoutWorker when Worker construction itself throws', () => {
+  // A dedicated Worker whose script lives on a different origin than the
+  // page (confirmed for real: a VS Code webview's `webview.asWebviewUri`
+  // resources, served from `vscode-resource.vscode-cdn.net`, versus the
+  // webview document's own `vscode-webview://...` origin) makes `new
+  // Worker(url)` throw synchronously -- `typeof Worker !== 'undefined'`
+  // can't catch this, since `Worker` genuinely exists there. This class
+  // stands in for that: `Worker` global exists, but constructing one
+  // throws, exactly like the real cross-origin failure.
+  class ThrowingWorker {
+    constructor() {
+      throw new DOMException('cross-origin construction blocked', 'SecurityError')
+    }
+  }
+
+  it('falls back to synchronous main-thread layout instead of crashing the render', async () => {
+    vi.stubGlobal('Worker', ThrowingWorker)
+    vi.resetModules()
+    vi.doMock('./layout.worker?worker', () => ({ default: ThrowingWorker }))
+    const { useLayoutWorker: useLayoutWorkerWithThrowingWorker } = await import('./useLayoutWorker')
+
+    const graphA = { nodes: [node('a'), node('b')], edges: [edge('a', 'b')] }
+    const { result } = renderHook(() => useLayoutWorkerWithThrowingWorker(graphA))
+
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    expect(result.current.nodes.map((n) => n.id).sort()).toEqual(['a', 'b'])
+
+    vi.doUnmock('./layout.worker?worker')
+    vi.unstubAllGlobals()
+    vi.resetModules()
+    // A cold `vi.resetModules()` + dynamic import is a genuinely more
+    // expensive import than a normal static one -- same reasoning as the
+    // raised timeout in `App.vscode.test.tsx` for the same pattern.
+  }, 20000)
 })

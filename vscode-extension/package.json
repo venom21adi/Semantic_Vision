@@ -1,0 +1,66 @@
+{
+  "name": "semantic-vision",
+  "displayName": "Semantic Vision",
+  "description": "Interactive call graph, impact analysis, and AI-generated docs for your codebase, right inside the editor.",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "semanticVision.openGraph",
+        "title": "Semantic Vision: Open Graph"
+      },
+      {
+        "command": "semanticVision.impactAnalysisAtCursor",
+        "title": "Semantic Vision: Impact Analysis at Cursor"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "semanticVision.impactAnalysisAtCursor",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Semantic Vision",
+      "properties": {
+        "semanticVision.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Base URL of the Semantic Vision backend."
+        },
+        "semanticVision.backendPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to a Semantic Vision checkout (the directory containing pyproject.toml). When set, the extension runs 'uv run uvicorn semantic_vision.api.app:app' from this directory to start the backend automatically if it isn't already reachable at semanticVision.backendUrl. Leave empty to start the backend yourself."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "copy-frontend": "node ./scripts/copy-frontend.mjs",
+    "compile": "npm run copy-frontend && tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "test": "vitest run",
+    "package": "npm run compile && vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.11"
+  }
+}

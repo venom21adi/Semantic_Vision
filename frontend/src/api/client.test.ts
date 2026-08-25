@@ -223,4 +223,27 @@ describe('api client', () => {
     expect(init?.method).toBe('POST')
     expect(JSON.parse(init?.body as string)).toEqual({ markdown: '# greet' })
   })
+
+  // `API_BASE_URL` is a module-level const, resolved once at import time --
+  // the runtime override global must be set, and the module freshly
+  // (re)imported, before this one test, mirroring the pattern
+  // `useLayoutWorker.test.ts` uses for its own module-level constant.
+  it('prefers window.__SEMANTIC_VISION_API_BASE__ over the built-in default, for the VS Code extension webview', async () => {
+    vi.stubGlobal('__SEMANTIC_VISION_API_BASE__', 'http://localhost:59321')
+    vi.resetModules()
+    const { getGraph: freshGetGraph } = await import('./client')
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ nodes: [], edges: [] }), { status: 200 }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    await freshGetGraph('/repo')
+
+    const [url] = fetchMock.mock.calls[0]
+    expect(String(url)).toMatch(/^http:\/\/localhost:59321\/api\/graph/)
+
+    vi.unstubAllGlobals()
+    vi.resetModules()
+  })
 })

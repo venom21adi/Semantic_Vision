@@ -51,21 +51,43 @@ interface ErroredResult {
   forDirection: 'TB' | 'LR'
 }
 
-/** No `Worker` global (any environment without Worker support, or jsdom
- * under vitest, which never implements it) -- run layout synchronously on
- * the main thread instead, identical to this app's pre-worker behavior.
- * This is also this file's entire test seam: it needs no mocks, since
- * `vitest run` always takes this branch. */
-const hasWorker = typeof Worker !== 'undefined'
+/** No `Worker` global at all (an environment without Worker support, or
+ * jsdom under vitest, which never implements it), OR the environment has
+ * `Worker` but constructing one throws synchronously -- confirmed to
+ * happen for real inside a VS Code webview, where a dedicated Worker's
+ * script URL (from `webview.asWebviewUri`) lives on a different
+ * sub-origin (`vscode-resource.vscode-cdn.net`) than the webview
+ * document itself (`vscode-webview://...`), and the browser's built-in
+ * same-origin check on `new Worker(url)` throws a `SecurityError` no
+ * CSP directive can override (CSP only ever narrows what's already
+ * allowed, never widens past this). Either way, run layout synchronously
+ * on the main thread instead, identical to this app's pre-worker
+ * behavior. Mutable, not a one-time `const`: the *first* failed
+ * construction attempt flips this for the rest of the session, since a
+ * cross-origin failure like the webview one isn't transient and retrying
+ * would just fail the same way on every subsequent graph load. This is
+ * also this file's entire test seam for the "no worker" path: it needs
+ * no mocks, since `vitest run` always ends up here (`Worker` undefined in
+ * jsdom by default). */
+let hasWorker = typeof Worker !== 'undefined'
 
-function spawnWorker(
+function trySpawnWorker(
   onMessage: (event: MessageEvent<LayoutResponse>) => void,
   onError: (event: ErrorEvent) => void,
-): Worker {
-  const worker = new LayoutWorkerCtor()
-  worker.onmessage = onMessage
-  worker.onerror = onError
-  return worker
+): Worker | null {
+  try {
+    const worker = new LayoutWorkerCtor()
+    worker.onmessage = onMessage
+    worker.onerror = onError
+    return worker
+  } catch (error) {
+    console.error(
+      'Graph layout worker could not be created, falling back to main-thread layout:',
+      error,
+    )
+    hasWorker = false
+    return null
+  }
 }
 
 /** Runs `dagre.layout()` (via `layoutGraph`) off the main thread, so a
@@ -132,7 +154,7 @@ export function useLayoutWorker(
 
   useEffect(() => {
     if (!hasWorker) return
-    workerRef.current = spawnWorker(
+    workerRef.current = trySpawnWorker(
       (event) => onMessageRef.current(event),
       (event) => onErrorRef.current(event),
     )
@@ -170,7 +192,7 @@ export function useLayoutWorker(
     // to what it's cutting off.
     if (inFlightRef.current) {
       workerRef.current?.terminate()
-      workerRef.current = spawnWorker(
+      workerRef.current = trySpawnWorker(
         (event) => onMessageRef.current(event),
         (event) => onErrorRef.current(event),
       )

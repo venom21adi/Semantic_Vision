@@ -16,7 +16,19 @@ import type {
   ParseRepoResponse,
 } from './types'
 
-const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+declare global {
+  interface Window {
+    /** Set by the VS Code extension host, before this bundle's own script
+     * tag, so one built `dist/` output can point at whatever backend port
+     * the user has configured without a rebuild -- `VITE_API_BASE_URL` is
+     * baked in at build time and can't serve that. Undefined for every
+     * other load (plain browser, dev server), so this is a pure addition. */
+    __SEMANTIC_VISION_API_BASE__?: string
+  }
+}
+
+const API_BASE_URL: string =
+  window.__SEMANTIC_VISION_API_BASE__ ?? import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 
 export class ApiError extends Error {
   status: number
