@@ -35,7 +35,10 @@ about it leaves your computer unless you explicitly ask for AI docs.
 
 Right-click any function and choose **Document** to generate Markdown
 docs for it, assembled from its real source, callers, callees, and
-parent class — not just the function in isolation:
+parent class — not just the function in isolation. Right-click a file
+instead and the same action generates a module-level summary from its
+imports and the signatures of everything it defines, without ever
+sending a function body:
 
 ![Documentation streaming live for a function, shown alongside its call graph](assets/doc-generation.gif)
 
@@ -269,9 +272,10 @@ Semantic Vision has two parts:
   API. Parsing is purely static: your code is never executed. AI
   documentation is generated separately, on demand, via
   [LiteLLM](https://docs.litellm.ai/) against whichever provider you
-  pick — only the target function's source, its direct callers/callees'
-  signatures, and its parent class header are sent, never the whole
-  repository. Code-to-data lineage extends the same graph with table and
+  pick. For a function, only its own source, its direct callers/callees'
+  signatures, and its parent class header are sent; for a file, only its
+  path, imports, and the signatures of what it defines — never a
+  function body or the whole repository. Code-to-data lineage extends the same graph with table and
   dbt-model nodes, from SQLAlchemy models detected in your code, a dbt
   `manifest.json` you point it at, and/or a live database connection
   string — held in memory for that one request only, never logged or
