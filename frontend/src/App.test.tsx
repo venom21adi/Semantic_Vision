@@ -619,6 +619,98 @@ describe('App', () => {
     )
   })
 
+  it('unchecking a file whose parent directory is already visible removes just that file from the canvas', async () => {
+    // The core fix for the sidebar/canvas desync: previously, once a
+    // directory was selected (pulling in its whole subtree), unchecking
+    // one of its children had *no effect at all* -- the old two-set model
+    // could only add a subtree, never toggle one specific descendant
+    // within it regardless of the ancestor's own state.
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: 3,
+      edge_count: 2,
+      parse_errors: [],
+    })
+    mockedClient.getGraph.mockResolvedValue({
+      nodes: [
+        { id: 'pkg', kind: 'directory', label: 'pkg', file: 'pkg', line_start: 0, line_end: 0 },
+        { id: 'pkg/a.py', kind: 'file', label: 'a.py', file: 'pkg/a.py', line_start: 1, line_end: 1 },
+        { id: 'pkg/b.py', kind: 'file', label: 'b.py', file: 'pkg/b.py', line_start: 1, line_end: 1 },
+      ],
+      edges: [
+        { source: 'pkg', target: 'pkg/a.py', kind: 'defines', external: false, ambiguous: false },
+        { source: 'pkg', target: 'pkg/b.py', kind: 'defines', external: false, ambiguous: false },
+      ],
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+
+    await waitFor(() => expect(screen.getByTestId('rf__node-pkg/a.py')).toBeInTheDocument())
+    expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
+
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByLabelText('Show a.py on canvas'))
+
+    await waitFor(() => expect(screen.queryByTestId('rf__node-pkg/a.py')).not.toBeInTheDocument())
+    // `b.py` and the directory itself are untouched by unchecking its sibling.
+    expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
+    expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument()
+  })
+
+  it('blocks expanding a container with too many children on the canvas and points the user at the sidebar', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: LARGE_GRAPH_NODE_THRESHOLD + 1,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    const manyFiles = Array.from({ length: 13 }, (_, i) => ({
+      id: `pkg/file${i}.py`,
+      kind: 'file' as const,
+      label: `file${i}.py`,
+      file: `pkg/file${i}.py`,
+      line_start: 1,
+      line_end: 1,
+    }))
+    mockedClient.getGraph.mockResolvedValue({
+      nodes: [
+        { id: 'pkg', kind: 'directory', label: 'pkg', file: 'pkg', line_start: 0, line_end: 0 },
+        ...manyFiles,
+      ],
+      edges: manyFiles.map((file) => ({
+        source: 'pkg',
+        target: file.id,
+        kind: 'defines' as const,
+        external: false,
+        ambiguous: false,
+      })),
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByLabelText('Show pkg on canvas'))
+    await waitFor(() => expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument())
+
+    await user.click(screen.getByTestId('rf__node-pkg').querySelector('[data-node-toggle]')!)
+
+    await waitFor(() => expect(screen.getByText(/has 13 items/)).toBeInTheDocument())
+    expect(screen.getByText(/Use the sidebar checkboxes/)).toBeInTheDocument()
+    // Nothing was actually expanded -- still just the one collapsed box.
+    expect(screen.getAllByTestId(/^rf__node-/)).toHaveLength(1)
+  })
+
   it('fetches and renders the execution flowchart via the context menu, then returns to the graph', async () => {
     mockedClient.getFlowchart.mockResolvedValue({
       target: 'app.py::Greeter.greet',

@@ -52,6 +52,12 @@ export interface GraphCanvasProps {
    * nodes, and its one file node is always the scope root); omit or leave
    * undefined otherwise. */
   containerState?: ReadonlyMap<string, ContainerVisibility>
+  /** Set when the chevron was just clicked on a container with too many
+   * direct children to expand onto the canvas at once -- rendered as a
+   * dismissible-by-time banner telling the user the count and pointing
+   * them at the sidebar checkboxes instead. `null`/omitted renders
+   * nothing. */
+  expandBlockedNotice?: { label: string; count: number } | null
   /** Called every `AUTO_SAVE_POSITIONS_INTERVAL_MS` with the current node
    * positions (including any the user has dragged), so a moved layout
    * survives a reload. Omit to disable auto-save. */
@@ -79,6 +85,7 @@ function GraphCanvasInner({
   onExecutionFlowchart,
   onToggleContainer,
   containerState,
+  expandBlockedNotice,
   onAutoSavePositions,
   highlight,
   complexityByNodeId,
@@ -266,6 +273,28 @@ function GraphCanvasInner({
           }}
         >
           Large graph: {displayNodes.length} nodes. Rendering may be slow.
+        </div>
+      )}
+      {expandBlockedNotice && (
+        <div
+          role="alert"
+          style={{
+            position: 'absolute',
+            top: isLargeGraph ? 44 : 8,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            background: '#1e3a5f',
+            color: '#bfdbfe',
+            padding: '6px 14px',
+            borderRadius: 6,
+            fontSize: 13,
+            textAlign: 'center',
+            maxWidth: 480,
+          }}
+        >
+          "{expandBlockedNotice.label}" has {expandBlockedNotice.count} items -- too many to show at once.
+          Use the sidebar checkboxes to pick specific files or subdirectories instead.
         </div>
       )}
       <ReactFlow

@@ -1,18 +1,19 @@
 import type { GraphEdge, GraphNode } from '../api/types'
 
-/** Kinds that act as a collapse boundary -- a `directory` or `file` not in
- * `expandedContainerIds` rolls up everything it (transitively) contains.
- * `class` is deliberately not one: it has no separate collapse toggle, so
- * a class's methods fold up to whatever `file`/`directory` ancestor is
- * collapsed, same as if there were no class in between. Splitting this out
- * once, here, rather than inlining it, is what keeps that decision a
- * single source of truth. */
+/** Kinds that get a canvas expand/collapse chevron -- a `directory` or
+ * `file` not independently visible rolls up into whichever visible
+ * ancestor contains it. `class` is deliberately not one: it has no
+ * separate collapse toggle, so a class's methods fold up to whatever
+ * `file`/`directory` ancestor is visible, same as if there were no class
+ * in between. */
 export const CONTAINER_KINDS = new Set<GraphNode['kind']>(['directory', 'file'])
 
 export interface ContainerVisibility {
+  /** True once this container has nothing left rolled up into it (every
+   * `defines` child is itself independently visible, or rolled up further
+   * into something else -- not this node). */
   expanded: boolean
-  /** Descendants (at any depth) rolled up into this node -- 0 when
-   * expanded or when this isn't a directory/file. */
+  /** Descendants (at any depth) currently rolled up into this node. */
   hiddenDescendantCount: number
 }
 
@@ -22,117 +23,55 @@ export interface CollapsedEdge extends GraphEdge {
   count?: number
 }
 
-export interface CollapsedGraph {
+export interface VisibleGraph {
   nodes: GraphNode[]
   edges: CollapsedEdge[]
   containerState: ReadonlyMap<string, ContainerVisibility>
 }
 
-export interface SelectionSubgraph {
-  nodes: GraphNode[]
-  edges: GraphEdge[]
-}
-
-/** Restricts `nodes`/`edges` down to exactly the directories/files in
- * `selectedRootIds`, plus everything (transitively) defined inside each of
- * them. Feed the result into `collapseGraph` -- a selected id whose real
- * parent wasn't also selected has no surviving `defines`-parent in the
- * filtered edge set, so `collapseGraph`'s own "no parent -> always a
- * visible root" rule makes it a canvas root automatically; selecting both a
- * directory and one of its own descendants is a harmless no-op for the
- * descendant, since its subtree is already a subset of the ancestor's.
+/**
+ * Single source of truth for the codebase canvas: a node id X renders as
+ * its own box iff X itself is in `visibleIds`. Otherwise X rolls up into
+ * whichever ancestor (walking up `defines` edges) is the *nearest* one
+ * that's in `visibleIds`. A node with no ancestor in `visibleIds` at all,
+ * and not itself in `visibleIds`, doesn't render -- this is what makes an
+ * empty `visibleIds` the correct "nothing selected yet" starting state
+ * for a large repo, with no separate inclusion gate needed.
  *
- * An edge of any kind survives iff *both* endpoints survived -- this is
- * what keeps a real `calls`/`imports` edge between two independently
- * selected directories, and drops anything pointing outside the selection,
- * rather than needing separate handling for cross-selection edges. */
-export function subgraphForSelection(
+ * This replaces two previously-separate mechanisms -- a "selected roots"
+ * subtree-inclusion gate (`subgraphForSelection`) and a per-container
+ * "expanded" boolean (`collapseGraph`) -- that didn't compose: checking a
+ * child in the sidebar while an ancestor directory was already selected
+ * had no effect, since the old model only knew how to add a whole
+ * subtree, never toggle one specific descendant regardless of its
+ * ancestors' state. Here, checking or unchecking any id, at any depth,
+ * always does exactly what it says: `visibleIds.has(id)` is checked
+ * *first*, unconditionally, before ever consulting a parent.
+ */
+export function buildVisibleGraph(
   nodes: GraphNode[],
   edges: GraphEdge[],
-  selectedRootIds: ReadonlySet<string>,
-): SelectionSubgraph {
-  const nodeById = new Map(nodes.map((node) => [node.id, node]))
-  const childIdsByParent = new Map<string, string[]>()
-  for (const edge of edges) {
-    if (edge.kind !== 'defines') continue
-    const siblings = childIdsByParent.get(edge.source) ?? []
-    siblings.push(edge.target)
-    childIdsByParent.set(edge.source, siblings)
-  }
-
-  const includedIds = new Set<string>()
-  function includeSubtree(id: string) {
-    if (includedIds.has(id) || !nodeById.has(id)) return
-    includedIds.add(id)
-    for (const childId of childIdsByParent.get(id) ?? []) includeSubtree(childId)
-  }
-  for (const rootId of selectedRootIds) includeSubtree(rootId)
-
-  return {
-    nodes: nodes.filter((node) => includedIds.has(node.id)),
-    edges: edges.filter((edge) => includedIds.has(edge.source) && includedIds.has(edge.target)),
-  }
-}
-
-/** Collapses every directory or file not in `expandedContainerIds` down to
- * its own node, rolling up everything inside it (subdirectories, files,
- * classes, functions, at any depth) into that one node -- so a large
- * repo's graph only has to lay out as many nodes as are actually visible,
- * not the whole repo.
- *
- * Both `directory` and `file` are collapse boundaries, not just
- * `directory`: a single root-level file can define far more nodes (and,
- * critically, far more edges once they all fan out to the same handful of
- * collapsed directories) than an entire small subdirectory -- confirmed on
- * a real large repo, where directory-only collapse left two root-level
- * files' ~25 methods fully expanded, producing a 37-node graph with 6,958
- * edges among them and a ~56s layout, because `dagre`'s cost tracks edge
- * density, not node count. Collapsing files too cuts that at the source.
- *
- * `defines` edges are kept (remapped/aggregated like any other kind):
- * they're the only visual cue tying a freshly-expanded child back to the
- * container that revealed it, since no node-kind here renders with any
- * other containment cue. A fully-expanded `expandedContainerIds` (every
- * directory and file id) reproduces the input node/edge set unchanged. */
-export function collapseGraph(
-  nodes: GraphNode[],
-  edges: GraphEdge[],
-  expandedContainerIds: ReadonlySet<string>,
-): CollapsedGraph {
+  visibleIds: ReadonlySet<string>,
+): VisibleGraph {
   const nodeById = new Map(nodes.map((node) => [node.id, node]))
   const parentOf = new Map<string, string>()
+  const childCountByParent = new Map<string, number>()
   for (const edge of edges) {
-    if (edge.kind === 'defines') parentOf.set(edge.target, edge.source)
+    if (edge.kind !== 'defines') continue
+    parentOf.set(edge.target, edge.source)
+    childCountByParent.set(edge.source, (childCountByParent.get(edge.source) ?? 0) + 1)
   }
 
-  const representativeCache = new Map<string, string>()
-  function representativeOf(id: string): string {
+  const representativeCache = new Map<string, string | undefined>()
+  function representativeOf(id: string): string | undefined {
     const cached = representativeCache.get(id)
-    if (cached !== undefined) return cached
-    const parent = parentOf.get(id)
-    let representative: string
-    if (parent === undefined) {
-      // No parent -- always visible as itself, regardless of
-      // `expandedContainerIds`. This is what makes an empty
-      // `expandedContainerIds` already correct for "show top-level
-      // structure only": every top-level node has no parent, so it's
-      // always its own representative here.
+    if (cached !== undefined || representativeCache.has(id)) return cached
+    let representative: string | undefined
+    if (visibleIds.has(id)) {
       representative = id
     } else {
-      const parentRepresentative = representativeOf(parent)
-      if (parentRepresentative !== parent) {
-        // The parent itself already rolled up into some ancestor -- fold
-        // into that same outermost collapsed ancestor, not the immediate
-        // parent, so nested collapse doesn't produce a chain of bubbles.
-        representative = parentRepresentative
-      } else if (
-        CONTAINER_KINDS.has(nodeById.get(parent)?.kind as GraphNode['kind']) &&
-        !expandedContainerIds.has(parent)
-      ) {
-        representative = parent
-      } else {
-        representative = id
-      }
+      const parent = parentOf.get(id)
+      representative = parent === undefined ? undefined : representativeOf(parent)
     }
     representativeCache.set(id, representative)
     return representative
@@ -143,6 +82,7 @@ export function collapseGraph(
   const seenRepresentatives = new Set<string>()
   for (const node of nodes) {
     const representative = representativeOf(node.id)
+    if (representative === undefined) continue // no visible ancestor anywhere -- not rendered
     if (representative !== node.id) {
       hiddenDescendantCount.set(representative, (hiddenDescendantCount.get(representative) ?? 0) + 1)
     }
@@ -156,10 +96,9 @@ export function collapseGraph(
   const containerState = new Map<string, ContainerVisibility>()
   for (const node of visibleNodes) {
     if (!CONTAINER_KINDS.has(node.kind)) continue
-    containerState.set(node.id, {
-      expanded: expandedContainerIds.has(node.id),
-      hiddenDescendantCount: hiddenDescendantCount.get(node.id) ?? 0,
-    })
+    if ((childCountByParent.get(node.id) ?? 0) === 0) continue // nothing to expand/collapse
+    const hidden = hiddenDescendantCount.get(node.id) ?? 0
+    containerState.set(node.id, { expanded: hidden === 0, hiddenDescendantCount: hidden })
   }
 
   const edgeByKey = new Map<string, CollapsedEdge>()
@@ -167,6 +106,7 @@ export function collapseGraph(
   for (const edge of edges) {
     const source = representativeOf(edge.source)
     const target = representativeOf(edge.target)
+    if (source === undefined || target === undefined) continue
     if (source === target) continue // self-loop from full collapse -- drop
     const key = `${source}->${target}:${edge.kind}`
     const existing = edgeByKey.get(key)
@@ -190,27 +130,66 @@ export function collapseGraph(
   return { nodes: visibleNodes, edges: collapsedEdges, containerState }
 }
 
-/** The chain of container (directory/file) ids strictly above `nodeId` in
- * the containment tree, nearest first. Used to force-expand whatever's
- * currently collapsing a node that got selected some other way than
- * clicking through the graph itself -- the sidebar's file/symbol tree
- * (`tree/buildTree.ts`) isn't collapse-aware, so without this, selecting
- * a node buried inside a collapsed container would set `selectedNodeId`
- * to something `collapseGraph` never renders: no highlight, no pan/zoom,
- * a details panel open for a node invisible on the canvas. */
-export function ancestorContainerIds(nodeId: string, nodes: GraphNode[], edges: GraphEdge[]): string[] {
-  const nodeById = new Map(nodes.map((node) => [node.id, node]))
+/** Every descendant of `id` (at any depth) via `defines` edges. Used by
+ * the canvas chevron's collapse action to clear out however many levels
+ * were drilled into under a container -- not just its immediate
+ * children -- so re-collapsing it always folds everything back into one
+ * box, regardless of how deep the user had gone. */
+export function subtreeIds(id: string, edges: GraphEdge[]): Set<string> {
+  const childIdsByParent = new Map<string, string[]>()
+  for (const edge of edges) {
+    if (edge.kind !== 'defines') continue
+    const siblings = childIdsByParent.get(edge.source) ?? []
+    siblings.push(edge.target)
+    childIdsByParent.set(edge.source, siblings)
+  }
+  const result = new Set<string>()
+  const stack = [...(childIdsByParent.get(id) ?? [])]
+  while (stack.length > 0) {
+    const next = stack.pop() as string
+    if (result.has(next)) continue
+    result.add(next)
+    for (const child of childIdsByParent.get(next) ?? []) stack.push(child)
+  }
+  return result
+}
+
+/** Immediate `defines` children of `id`. Used by the canvas expand action
+ * to decide whether a container is small enough to expand directly, or
+ * has too many children and should route the user to the sidebar
+ * instead (see `EXPAND_CHILD_THRESHOLD` in `App.tsx`). */
+export function directChildIds(id: string, edges: GraphEdge[]): string[] {
+  const children: string[] = []
+  for (const edge of edges) {
+    if (edge.kind === 'defines' && edge.source === id) children.push(edge.target)
+  }
+  return children
+}
+
+/**
+ * Every id in `visibleIds` whose entire chain of `defines` ancestors also
+ * contains no other member of `visibleIds` -- i.e. folds every
+ * drilled-into descendant back up into whichever ancestor made it
+ * reachable, dropping the descendant's own explicit visibility. Used by
+ * "Collapse All" to undo drill-down without discarding the user's
+ * original top-level selections (each of which has no visible ancestor
+ * of its own, so it's kept as-is).
+ */
+export function collapseToOutermost(visibleIds: ReadonlySet<string>, edges: GraphEdge[]): Set<string> {
   const parentOf = new Map<string, string>()
   for (const edge of edges) {
     if (edge.kind === 'defines') parentOf.set(edge.target, edge.source)
   }
-  const ancestors: string[] = []
-  let current = parentOf.get(nodeId)
-  while (current !== undefined) {
-    if (CONTAINER_KINDS.has(nodeById.get(current)?.kind as GraphNode['kind'])) {
-      ancestors.push(current)
+  const result = new Set<string>()
+  for (const id of visibleIds) {
+    let hasVisibleAncestor = false
+    for (let current = parentOf.get(id); current !== undefined; current = parentOf.get(current)) {
+      if (visibleIds.has(current)) {
+        hasVisibleAncestor = true
+        break
+      }
     }
-    current = parentOf.get(current)
+    if (!hasVisibleAncestor) result.add(id)
   }
-  return ancestors
+  return result
 }

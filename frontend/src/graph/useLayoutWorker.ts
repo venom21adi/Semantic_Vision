@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Edge, Node } from '@xyflow/react'
 import type { GraphEdge, GraphNode } from '../api/types'
-import { layoutGraph } from './layout'
+import { layoutGraph, NODE_HEIGHT, NODE_WIDTH } from './layout'
 import type { GraphNodeData } from './nodeTypes'
 import { toFlowEdges, toFlowNodes } from './transform'
 import type { LayoutRequest, LayoutResponse } from './layoutProtocol'
@@ -94,9 +94,20 @@ export function useLayoutWorker(
     const posById = new Map(event.data.positions.map((position) => [position.id, position]))
     const positioned = job.flowNodes.map((node) => {
       const pos = posById.get(node.id)
+      if (!pos) return node
       // `layoutGraph` (run inside the worker) already returns final,
-      // node-size-adjusted positions -- no further offset here.
-      return pos ? { ...node, position: { x: pos.x, y: pos.y } } : node
+      // node-size-adjusted positions -- no further offset here. The
+      // worker's own `LayoutResponse` only carries `{id, x, y}`, not full
+      // nodes, so `measured` has to be set again here -- otherwise this
+      // reassembly step (using `job.flowNodes`, the *pre*-layout nodes)
+      // silently drops it, and `fitView()` -- which strictly requires
+      // `measured.width`/`measured.height` on a node before including it
+      // in its bounds -- computes an empty bounding box and does nothing,
+      // for every node, every time (the actual cause of the "Fit view"
+      // control button never doing anything, confirmed live: only the
+      // no-`Worker` test/fallback path below ever went through
+      // `layoutGraph`'s own `measured` directly).
+      return { ...node, position: { x: pos.x, y: pos.y }, measured: { width: NODE_WIDTH, height: NODE_HEIGHT } }
     })
     setReady({
       forScopedGraph: scopedGraph,

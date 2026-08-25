@@ -39,6 +39,19 @@ export function layoutGraph<T extends Record<string, unknown>>(
     return {
       ...node,
       position: { x: position.x - NODE_WIDTH / 2, y: position.y - NODE_HEIGHT / 2 },
+      // React Flow's `fitView()` only includes a node in its bounds
+      // calculation once `measured.width`/`measured.height` are set --
+      // normally populated asynchronously via ResizeObserver after the
+      // node paints. Since dagre already laid out every node assuming
+      // this exact fixed size (`dagreGraph.setNode` above), setting it
+      // here too means `fitView` (the Controls button, and the
+      // double-click-to-neighbors handler) works immediately, instead of
+      // silently computing an empty bounding box -- and therefore doing
+      // nothing at all -- whenever it runs before measurement catches up
+      // (which was happening on every call, since `initialNodes` gets a
+      // fresh object identity, and so a fresh unmeasured state, on every
+      // relayout).
+      measured: { width: NODE_WIDTH, height: NODE_HEIGHT },
     }
   })
 }

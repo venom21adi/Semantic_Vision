@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { GraphEdge, GraphNode } from '../api/types'
-import { ancestorContainerIds, collapseGraph, subgraphForSelection } from './collapseDirectories'
+import { buildVisibleGraph, collapseToOutermost, directChildIds, subtreeIds } from './collapseDirectories'
 
 function node(id: string, kind: GraphNode['kind'], label = id): GraphNode {
   return { id, kind, label, file: 'app.py', line_start: 1, line_end: 1 }
@@ -18,8 +18,17 @@ function calls(
   return { source, target, kind: 'calls', external: false, ambiguous: false, ...extra }
 }
 
-describe('collapseGraph', () => {
-  it('reproduces the input unchanged when every directory and file is expanded', () => {
+describe('buildVisibleGraph', () => {
+  it('renders nothing when visibleIds is empty', () => {
+    const nodes = [node('pkg', 'directory'), node('pkg/a.py', 'file', 'a.py')]
+    const edges = [defines('pkg', 'pkg/a.py')]
+
+    const result = buildVisibleGraph(nodes, edges, new Set())
+
+    expect(result).toEqual({ nodes: [], edges: [], containerState: new Map() })
+  })
+
+  it('reproduces the input unchanged when every node is independently visible', () => {
     const nodes = [
       node('pkg', 'directory'),
       node('pkg/a.py', 'file', 'a.py'),
@@ -33,13 +42,13 @@ describe('collapseGraph', () => {
       calls('pkg/a.py::f', 'pkg/b.py'),
     ]
 
-    const result = collapseGraph(nodes, edges, new Set(['pkg', 'pkg/a.py', 'pkg/b.py']))
+    const result = buildVisibleGraph(nodes, edges, new Set(nodes.map((n) => n.id)))
 
     expect(result.nodes.map((n) => n.id)).toEqual(nodes.map((n) => n.id))
     expect(result.edges).toEqual(edges)
   })
 
-  it('collapses a directory down to itself, hiding its descendants', () => {
+  it('collapses a visible directory down to itself, hiding its descendants', () => {
     const nodes = [
       node('pkg', 'directory'),
       node('pkg/a.py', 'file', 'a.py'),
@@ -52,7 +61,7 @@ describe('collapseGraph', () => {
       calls('pkg/a.py::f', 'other.py'),
     ]
 
-    const result = collapseGraph(nodes, edges, new Set())
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg', 'other.py']))
 
     expect(result.nodes.map((n) => n.id).sort()).toEqual(['other.py', 'pkg'])
     expect(result.containerState.get('pkg')).toEqual({ expanded: false, hiddenDescendantCount: 2 })
@@ -62,7 +71,7 @@ describe('collapseGraph', () => {
     expect(result.edges).toEqual([calls('pkg', 'other.py')])
   })
 
-  it('folds a nested collapsed subdirectory into the outermost collapsed ancestor', () => {
+  it('folds a nested non-visible subdirectory into the outermost visible ancestor', () => {
     const nodes = [
       node('pkg', 'directory'),
       node('pkg/sub', 'directory', 'sub'),
@@ -70,7 +79,7 @@ describe('collapseGraph', () => {
     ]
     const edges = [defines('pkg', 'pkg/sub'), defines('pkg/sub', 'pkg/sub/a.py')]
 
-    const result = collapseGraph(nodes, edges, new Set())
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg']))
 
     // Not ['pkg', 'pkg/sub'] -- `sub` itself is hidden inside `pkg`, not a
     // second visible bubble.
@@ -78,7 +87,11 @@ describe('collapseGraph', () => {
     expect(result.containerState.get('pkg')?.hiddenDescendantCount).toBe(2)
   })
 
-  it('keeps a subdirectory as its own visible node when its parent is expanded but it is not', () => {
+  it('a directory checked independently renders standalone even though its parent is not visible', () => {
+    // The core fix this module exists for: checking/unchecking any id, at
+    // any depth, must always affect the canvas regardless of what its
+    // ancestors are doing -- unlike the old two-set model, where a
+    // child's checkbox did nothing once a parent was already selected.
     const nodes = [
       node('pkg', 'directory'),
       node('pkg/sub', 'directory', 'sub'),
@@ -86,18 +99,44 @@ describe('collapseGraph', () => {
     ]
     const edges = [defines('pkg', 'pkg/sub'), defines('pkg/sub', 'pkg/sub/a.py')]
 
-    const result = collapseGraph(nodes, edges, new Set(['pkg']))
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg/sub']))
+
+    expect(result.nodes.map((n) => n.id)).toEqual(['pkg/sub'])
+    expect(result.containerState.get('pkg/sub')).toEqual({ expanded: false, hiddenDescendantCount: 1 })
+  })
+
+  it('keeps a subdirectory as its own visible node when its parent is also visible but it is separately visible too', () => {
+    const nodes = [
+      node('pkg', 'directory'),
+      node('pkg/sub', 'directory', 'sub'),
+      node('pkg/sub/a.py', 'file', 'a.py'),
+    ]
+    const edges = [defines('pkg', 'pkg/sub'), defines('pkg/sub', 'pkg/sub/a.py')]
+
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg', 'pkg/sub']))
 
     expect(result.nodes.map((n) => n.id)).toEqual(['pkg', 'pkg/sub'])
     expect(result.containerState.get('pkg')).toEqual({ expanded: true, hiddenDescendantCount: 0 })
     expect(result.containerState.get('pkg/sub')).toEqual({ expanded: false, hiddenDescendantCount: 1 })
   })
 
+  it('unchecking a child that was pulled in via an expanded parent folds it back into the parent', () => {
+    const nodes = [
+      node('pkg', 'directory'),
+      node('pkg/a.py', 'file', 'a.py'),
+      node('pkg/b.py', 'file', 'b.py'),
+    ]
+    const edges = [defines('pkg', 'pkg/a.py'), defines('pkg', 'pkg/b.py')]
+
+    // Both children were revealed (e.g. by expanding `pkg`); the user then
+    // unchecks `pkg/a.py` specifically.
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg', 'pkg/b.py']))
+
+    expect(result.nodes.map((n) => n.id).sort()).toEqual(['pkg', 'pkg/b.py'])
+    expect(result.containerState.get('pkg')?.hiddenDescendantCount).toBe(1)
+  })
+
   it('treats a file as its own collapse boundary, not just directories', () => {
-    // A root-level file (no directory parent at all) with several
-    // methods -- the case that motivated collapsing files, not just
-    // directories: this shape produced a dense, slow-to-lay-out graph on
-    // a real large repo when only directories were collapse boundaries.
     const nodes = [
       node('api.py', 'file'),
       node('api.py::TTS', 'class', 'TTS'),
@@ -113,56 +152,52 @@ describe('collapseGraph', () => {
       calls('api.py::TTS.tts_to_file', 'other.py'),
     ]
 
-    const result = collapseGraph(nodes, edges, new Set())
+    const result = buildVisibleGraph(nodes, edges, new Set(['api.py', 'other.py']))
 
     expect(result.nodes.map((n) => n.id).sort()).toEqual(['api.py', 'other.py'])
     expect(result.containerState.get('api.py')).toEqual({ expanded: false, hiddenDescendantCount: 3 })
-    // Both methods' calls to `other.py` remap to the same `api.py`->`other.py`
-    // edge and aggregate, rather than staying as two distinct method-level edges.
     expect(result.edges).toEqual([calls('api.py', 'other.py', { count: 2 })])
   })
 
-  it('keeps a file as its own visible node when its directory is expanded but the file is not', () => {
+  it('keeps a real edge between two independently visible subtrees', () => {
     const nodes = [
       node('pkg', 'directory'),
       node('pkg/a.py', 'file', 'a.py'),
       node('pkg/a.py::f', 'function', 'f'),
-    ]
-    const edges = [defines('pkg', 'pkg/a.py'), defines('pkg/a.py', 'pkg/a.py::f')]
-
-    const result = collapseGraph(nodes, edges, new Set(['pkg']))
-
-    expect(result.nodes.map((n) => n.id)).toEqual(['pkg', 'pkg/a.py'])
-    expect(result.containerState.get('pkg/a.py')).toEqual({ expanded: false, hiddenDescendantCount: 1 })
-  })
-
-  it('aggregates parallel edges created by remapping into one, with a count', () => {
-    const nodes = [
-      node('pkg', 'directory'),
-      node('pkg/a.py', 'file', 'a.py'),
-      node('pkg/a.py::f', 'function', 'f'),
-      node('pkg/a.py::g', 'function', 'g'),
-      node('other.py', 'file'),
+      node('other', 'directory'),
+      node('other/b.py', 'file', 'b.py'),
+      node('other/b.py::g', 'function', 'g'),
     ]
     const edges = [
       defines('pkg', 'pkg/a.py'),
       defines('pkg/a.py', 'pkg/a.py::f'),
-      defines('pkg/a.py', 'pkg/a.py::g'),
-      calls('pkg/a.py::f', 'other.py'),
-      calls('pkg/a.py::g', 'other.py', { ambiguous: true }),
+      defines('other', 'other/b.py'),
+      defines('other/b.py', 'other/b.py::g'),
+      calls('pkg/a.py::f', 'other/b.py::g'),
     ]
 
-    const result = collapseGraph(nodes, edges, new Set())
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg', 'other']))
 
-    const rolledUp = result.edges.find((e) => e.kind === 'calls')
-    expect(rolledUp).toEqual({
-      source: 'pkg',
-      target: 'other.py',
-      kind: 'calls',
-      external: false,
-      ambiguous: true, // OR-combined: at least one underlying edge was ambiguous
-      count: 2,
-    })
+    expect(result.edges).toContainEqual(calls('pkg', 'other'))
+  })
+
+  it('drops an edge reaching a node with no visible ancestor at all', () => {
+    const nodes = [
+      node('pkg', 'directory'),
+      node('pkg/a.py', 'file', 'a.py'),
+      node('unselected', 'directory'),
+      node('unselected/c.py', 'file', 'c.py'),
+    ]
+    const edges = [
+      defines('pkg', 'pkg/a.py'),
+      defines('unselected', 'unselected/c.py'),
+      calls('pkg/a.py', 'unselected/c.py'),
+    ]
+
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg']))
+
+    expect(result.nodes.map((n) => n.id)).toEqual(['pkg'])
+    expect(result.edges).toEqual([])
   })
 
   it('drops a self-loop created when both endpoints collapse into the same directory', () => {
@@ -178,106 +213,79 @@ describe('collapseGraph', () => {
       defines('pkg', 'pkg/b.py'),
       defines('pkg/a.py', 'pkg/a.py::f'),
       defines('pkg/b.py', 'pkg/b.py::g'),
-      calls('pkg/a.py::f', 'pkg/b.py::g'), // both inside `pkg` -- internal
+      calls('pkg/a.py::f', 'pkg/b.py::g'),
     ]
 
-    const result = collapseGraph(nodes, edges, new Set())
+    const result = buildVisibleGraph(nodes, edges, new Set(['pkg']))
 
     expect(result.edges.some((e) => e.kind === 'calls')).toBe(false)
   })
+
+  it('ignores a stale or nonexistent visible id without crashing', () => {
+    const nodes = [node('pkg', 'directory')]
+    const result = buildVisibleGraph(nodes, [], new Set(['does-not-exist']))
+    expect(result).toEqual({ nodes: [], edges: [], containerState: new Map() })
+  })
 })
 
-describe('ancestorContainerIds', () => {
-  it('returns every directory/file ancestor, nearest first, skipping non-container kinds', () => {
-    const nodes = [
-      node('pkg', 'directory'),
-      node('pkg/sub', 'directory', 'sub'),
-      node('pkg/sub/a.py', 'file', 'a.py'),
-      node('pkg/sub/a.py::C', 'class', 'C'),
-      node('pkg/sub/a.py::C.m', 'function', 'm'),
+describe('directChildIds', () => {
+  it('returns only the immediate defines-children of a node', () => {
+    const edges = [
+      defines('pkg', 'pkg/a.py'),
+      defines('pkg', 'pkg/b.py'),
+      defines('pkg/a.py', 'pkg/a.py::f'), // grandchild -- not direct
     ]
+    expect(directChildIds('pkg', edges).sort()).toEqual(['pkg/a.py', 'pkg/b.py'])
+  })
+
+  it('returns an empty array for a node with no children', () => {
+    expect(directChildIds('pkg/a.py::f', [defines('pkg', 'pkg/a.py')])).toEqual([])
+  })
+})
+
+describe('subtreeIds', () => {
+  it('returns every descendant at any depth, not just immediate children', () => {
     const edges = [
       defines('pkg', 'pkg/sub'),
       defines('pkg/sub', 'pkg/sub/a.py'),
-      defines('pkg/sub/a.py', 'pkg/sub/a.py::C'),
-      defines('pkg/sub/a.py::C', 'pkg/sub/a.py::C.m'),
+      defines('pkg/sub/a.py', 'pkg/sub/a.py::f'),
+      defines('pkg', 'pkg/other.py'),
     ]
-
-    expect(ancestorContainerIds('pkg/sub/a.py::C.m', nodes, edges)).toEqual([
-      'pkg/sub/a.py',
+    expect(subtreeIds('pkg', edges).size === 4).toBe(true)
+    expect([...subtreeIds('pkg', edges)].sort()).toEqual([
+      'pkg/other.py',
       'pkg/sub',
-      'pkg',
+      'pkg/sub/a.py',
+      'pkg/sub/a.py::f',
     ])
   })
 
-  it('returns an empty array for a top-level node', () => {
-    const nodes = [node('a.py', 'file')]
-    expect(ancestorContainerIds('a.py', nodes, [])).toEqual([])
+  it('returns an empty set for a node with no children', () => {
+    expect(subtreeIds('pkg/a.py::f', [defines('pkg', 'pkg/a.py')])).toEqual(new Set())
   })
 })
 
-describe('subgraphForSelection', () => {
-  const nodes = [
-    node('pkg', 'directory'),
-    node('pkg/a.py', 'file', 'a.py'),
-    node('pkg/a.py::f', 'function', 'f'),
-    node('other', 'directory'),
-    node('other/b.py', 'file', 'b.py'),
-    node('other/b.py::g', 'function', 'g'),
-    node('unselected', 'directory'),
-    node('unselected/c.py', 'file', 'c.py'),
-  ]
-  const edges = [
-    defines('pkg', 'pkg/a.py'),
-    defines('pkg/a.py', 'pkg/a.py::f'),
-    defines('other', 'other/b.py'),
-    defines('other/b.py', 'other/b.py::g'),
-    defines('unselected', 'unselected/c.py'),
-    calls('pkg/a.py::f', 'other/b.py::g'), // real edge between two selected subtrees
-    calls('pkg/a.py::f', 'unselected/c.py'), // edge reaching outside the selection
-  ]
-
-  it('returns an empty graph when nothing is selected', () => {
-    const result = subgraphForSelection(nodes, edges, new Set())
-    expect(result).toEqual({ nodes: [], edges: [] })
+describe('collapseToOutermost', () => {
+  it('keeps independent top-level selections untouched', () => {
+    const edges = [defines('pkg', 'pkg/a.py'), defines('other', 'other/b.py')]
+    const result = collapseToOutermost(new Set(['pkg', 'other']), edges)
+    expect(result).toEqual(new Set(['pkg', 'other']))
   })
 
-  it('includes a selected root plus its full transitive subtree, and drops the rest', () => {
-    const result = subgraphForSelection(nodes, edges, new Set(['pkg']))
-
-    expect(result.nodes.map((n) => n.id).sort()).toEqual(['pkg', 'pkg/a.py', 'pkg/a.py::f'])
-    expect(result.edges).toEqual([defines('pkg', 'pkg/a.py'), defines('pkg/a.py', 'pkg/a.py::f')])
+  it('drops a drilled-into descendant, keeping only its outermost visible ancestor', () => {
+    const edges = [
+      defines('pkg', 'pkg/sub'),
+      defines('pkg/sub', 'pkg/sub/a.py'),
+      defines('pkg/sub/a.py', 'pkg/sub/a.py::f'),
+    ]
+    // Drilled two levels deep under `pkg`.
+    const result = collapseToOutermost(new Set(['pkg', 'pkg/sub', 'pkg/sub/a.py::f']), edges)
+    expect(result).toEqual(new Set(['pkg']))
   })
 
-  it('keeps a real edge between two independently selected subtrees', () => {
-    const result = subgraphForSelection(nodes, edges, new Set(['pkg', 'other']))
-
-    expect(result.edges).toContainEqual(calls('pkg/a.py::f', 'other/b.py::g'))
-  })
-
-  it('drops an edge whose target falls outside the selection', () => {
-    const result = subgraphForSelection(nodes, edges, new Set(['pkg']))
-
-    expect(result.edges.some((e) => e.target === 'unselected/c.py')).toBe(false)
-  })
-
-  it('selecting a directory and its own descendant is the same as selecting just the ancestor', () => {
-    const ancestorOnly = subgraphForSelection(nodes, edges, new Set(['pkg']))
-    const both = subgraphForSelection(nodes, edges, new Set(['pkg', 'pkg/a.py']))
-
-    expect(both.nodes.map((n) => n.id).sort()).toEqual(ancestorOnly.nodes.map((n) => n.id).sort())
-  })
-
-  it('lets a nested directory selected without its parent surface as its own root once collapsed', () => {
-    const filtered = subgraphForSelection(nodes, edges, new Set(['pkg/a.py']))
-    const collapsed = collapseGraph(filtered.nodes, filtered.edges, new Set())
-
-    expect(collapsed.nodes.map((n) => n.id)).toEqual(['pkg/a.py'])
-    expect(collapsed.containerState.get('pkg/a.py')).toEqual({ expanded: false, hiddenDescendantCount: 1 })
-  })
-
-  it('ignores a stale or nonexistent id without crashing', () => {
-    const result = subgraphForSelection(nodes, edges, new Set(['does-not-exist']))
-    expect(result).toEqual({ nodes: [], edges: [] })
+  it('does not fold a node with no visible ancestor even if unrelated ids are also visible', () => {
+    const edges = [defines('pkg', 'pkg/a.py')]
+    const result = collapseToOutermost(new Set(['pkg', 'unrelated']), edges)
+    expect(result).toEqual(new Set(['pkg', 'unrelated']))
   })
 })
