@@ -324,14 +324,13 @@ export default function App() {
       const isExpanded = collapsedCodebaseGraph.containerState.get(containerId)?.expanded ?? false
       if (isExpanded) {
         setExpandBlockedNotice(null)
+        // Clears every level drilled into under `containerId` (not just
+        // its immediate children) -- `containerId` itself was never
+        // removed from `visibleIds` by expanding (see below), so it's
+        // already there and needs no re-adding.
         setVisibleIds((prev) => {
-          // Clears every level drilled into under `containerId` (not just
-          // its immediate children), then re-adds `containerId` itself so
-          // it renders as one collapsed box again.
           const descendants = subtreeIds(containerId, current.edges)
-          const next = new Set([...prev].filter((id) => !descendants.has(id)))
-          next.add(containerId)
-          return next
+          return new Set([...prev].filter((id) => !descendants.has(id)))
         })
         return
       }
@@ -342,22 +341,37 @@ export default function App() {
         return
       }
       setExpandBlockedNotice(null)
-      setVisibleIds((prev) => {
-        const next = new Set(prev)
-        next.delete(containerId)
-        for (const childId of children) next.add(childId)
-        return next
-      })
+      // Adds the children *alongside* `containerId`, not instead of it --
+      // removing the container used to leave its newly-revealed children
+      // as disconnected-looking orphans with no visible parent box, and
+      // its own sidebar checkbox showing unchecked even though its
+      // contents were now on screen. Keeping both visible, connected by
+      // their real `defines` edges, is what a directory expanding in any
+      // normal file tree looks like.
+      setVisibleIds((prev) => new Set([...prev, ...children]))
     },
     [collapsedCodebaseGraph],
   )
 
   const handleToggleRootSelection = useCallback((id: string) => {
+    const current = repoRef.current
     setExpandBlockedNotice(null)
     setVisibleIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(id)) {
+        // Unchecking cascades: drop `id` and everything currently visible
+        // beneath it, not just `id` itself -- otherwise a directory's
+        // already-revealed children (from an earlier expand, or from
+        // being independently checked) stayed stranded on the canvas
+        // after the directory that contained them was unchecked, instead
+        // of disappearing along with it the way closing a folder should.
+        next.delete(id)
+        if (current) {
+          for (const descendant of subtreeIds(id, current.edges)) next.delete(descendant)
+        }
+      } else {
+        next.add(id)
+      }
       return next
     })
   }, [])
@@ -382,7 +396,6 @@ export default function App() {
         if (visibility.expanded) continue
         const children = directChildIds(containerId, repo.edges)
         if (children.length > EXPAND_CHILD_THRESHOLD) continue
-        next.delete(containerId)
         for (const childId of children) next.add(childId)
       }
       return next

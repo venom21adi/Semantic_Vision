@@ -660,6 +660,99 @@ describe('App', () => {
     expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument()
   })
 
+  it('expanding a container via its canvas chevron keeps the container itself visible, not just its children', async () => {
+    // Previously the container was *replaced* by its children on expand
+    // (removed from `visibleIds`): its sidebar checkbox went back to
+    // unchecked even though its contents were now on screen, and the
+    // newly-revealed children had no visible parent box connecting
+    // them -- they looked like disconnected orphans.
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: LARGE_GRAPH_NODE_THRESHOLD + 1,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    mockedClient.getGraph.mockResolvedValue({
+      nodes: [
+        { id: 'pkg', kind: 'directory', label: 'pkg', file: 'pkg', line_start: 0, line_end: 0 },
+        { id: 'pkg/a.py', kind: 'file', label: 'a.py', file: 'pkg/a.py', line_start: 1, line_end: 1 },
+        { id: 'pkg/b.py', kind: 'file', label: 'b.py', file: 'pkg/b.py', line_start: 1, line_end: 1 },
+      ],
+      edges: [
+        { source: 'pkg', target: 'pkg/a.py', kind: 'defines', external: false, ambiguous: false },
+        { source: 'pkg', target: 'pkg/b.py', kind: 'defines', external: false, ambiguous: false },
+      ],
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByLabelText('Show pkg on canvas'))
+    await waitFor(() => expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument())
+
+    await user.click(screen.getByTestId('rf__node-pkg').querySelector('[data-node-toggle]')!)
+
+    await waitFor(() => expect(screen.getByTestId('rf__node-pkg/a.py')).toBeInTheDocument())
+    expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
+    // The container itself is still there, and its checkbox still checked.
+    expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument()
+    expect(within(tree).getByLabelText('Show pkg on canvas')).toBeChecked()
+  })
+
+  it('unchecking a directory in the sidebar hides its already-revealed children too', async () => {
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: LARGE_GRAPH_NODE_THRESHOLD + 1,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    mockedClient.getGraph.mockResolvedValue({
+      nodes: [
+        { id: 'pkg', kind: 'directory', label: 'pkg', file: 'pkg', line_start: 0, line_end: 0 },
+        { id: 'pkg/a.py', kind: 'file', label: 'a.py', file: 'pkg/a.py', line_start: 1, line_end: 1 },
+        { id: 'pkg/b.py', kind: 'file', label: 'b.py', file: 'pkg/b.py', line_start: 1, line_end: 1 },
+      ],
+      edges: [
+        { source: 'pkg', target: 'pkg/a.py', kind: 'defines', external: false, ambiguous: false },
+        { source: 'pkg', target: 'pkg/b.py', kind: 'defines', external: false, ambiguous: false },
+      ],
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+
+    const tree = screen.getByRole('tree')
+    await user.click(within(tree).getByLabelText('Show pkg on canvas'))
+    await waitFor(() => expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument())
+    await user.click(screen.getByTestId('rf__node-pkg').querySelector('[data-node-toggle]')!)
+    await waitFor(() => expect(screen.getByTestId('rf__node-pkg/a.py')).toBeInTheDocument())
+
+    await user.click(within(tree).getByLabelText('Show pkg on canvas'))
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
+      ).toBeInTheDocument(),
+    )
+    expect(screen.queryByTestId('rf__node-pkg/a.py')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('rf__node-pkg/b.py')).not.toBeInTheDocument()
+  })
+
   it('blocks expanding a container with too many children on the canvas and points the user at the sidebar', async () => {
     mockedClient.parseRepo.mockResolvedValue({
       path: '/repo',
