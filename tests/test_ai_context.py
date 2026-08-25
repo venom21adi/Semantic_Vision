@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from semantic_vision.ai.context import _decorators_of, _render_ts_signature, assemble_context
+from semantic_vision.ai.context import (
+    _decorators_of,
+    _render_ts_signature,
+    assemble_context,
+    assemble_file_context,
+)
 from semantic_vision.parser.javascript_extractor import parse_tree
 from semantic_vision.repo_parser import parse_repository
 from semantic_vision.ts_locate import find_def_node
@@ -106,6 +111,156 @@ def test_decorators_are_included_in_the_target_source_and_signature():
     # The decorator appears both in the header signature and in the
     # fenced source block, not just incidentally once.
     assert target_block.count("@logged") == 2
+
+
+# --- File-level docs (`assemble_file_context`) -- a different context
+# shape entirely: no function body is ever inlined, only the file's path,
+# its imports, and a rendered signature per top-level class/function (with
+# class methods nested underneath), so a file's prompt size stays roughly
+# constant regardless of the file's length.
+
+
+def test_file_context_kind_is_file():
+    result = _parse("doc_context_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    assert context.kind == "file"
+
+
+def test_file_context_includes_file_path():
+    result = _parse("doc_context_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    assert "## File" in context.prompt
+    assert "`app.py`" in context.prompt
+
+
+def test_file_context_includes_imports():
+    result = _parse("doc_context_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    assert "## Imports" in context.prompt
+    imports_section = context.prompt.split("## Imports")[1].split("## ")[0]
+    assert "- `os`" in imports_section
+    assert "- `helper`" in imports_section
+
+
+def test_file_context_lists_top_level_defines_with_methods_nested_under_their_class():
+    result = _parse("doc_context_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    assert "## Defines" in context.prompt
+    defines_section = context.prompt.split("## Defines")[1]
+    assert "- `class Service:`" in defines_section
+    assert "  - `def run(self, value: int) -> int:`" in defines_section
+    assert "  - `def execute(self, value: int) -> int:`" in defines_section
+    assert "- `def logged(func):`" in defines_section
+    # Decorators are stripped in this list, same as callee/caller
+    # signatures -- it's a one-liner index, not the target's own header.
+    assert "- `def standalone(value: int) -> int:`" in defines_section
+    assert "@logged" not in defines_section
+
+
+def test_file_context_never_inlines_a_function_body():
+    result = _parse("doc_context_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    assert "result = helper(value)" not in context.prompt
+    assert "os.path.abspath" not in context.prompt
+
+
+def test_file_context_budget_truncation_keeps_file_header_drops_defines():
+    result = _parse("doc_context_repo")
+
+    context = assemble_file_context(result, "app.py", max_tokens=5)
+
+    assert "`app.py`" in context.prompt
+    assert context.omitted
+    assert "## Defines" not in context.prompt
+
+
+def test_file_context_budget_truncation_can_drop_only_some_defines_entries():
+    """A budget big enough for the header and the first couple of
+    entries, but not all of them, must keep the ones that fit and report
+    the rest as omitted -- not an all-or-nothing drop of the whole
+    section (that's the (looser) case `max_tokens=5` above exercises).
+    Rather than hand-deriving the exact token budget for that middle
+    state (fragile against `_approx_tokens`'s own formula), walk the
+    budget up from clearly-too-small until it's reached -- deterministic
+    for a fixed fixture, and decoupled from the token-counting internals.
+    """
+    result = _parse("doc_context_repo")
+    full = assemble_file_context(result, "app.py")
+    full_defines_section = full.prompt.split("## Defines")[1]
+
+    candidates = (assemble_file_context(result, "app.py", max_tokens=n) for n in range(10, 500))
+    partial = next(
+        (
+            context
+            for context in candidates
+            if "## Defines" in context.prompt
+            and context.prompt.split("## Defines")[1] != full_defines_section
+        ),
+        None,
+    )
+
+    assert partial is not None, "expected some budget to keep only some Defines entries"
+    assert any(o.startswith("Defines (") for o in partial.omitted)
+    defines_section = partial.prompt.split("## Defines")[1]
+    assert defines_section.strip() != ""
+
+
+def test_file_context_nested_class_methods_are_not_lost():
+    """A class nested inside another class -- not a function-local one --
+    has its own `DEFINES` edge from the outer class, same shape as a
+    regular method; its methods must still show up, not vanish because
+    the recursion only used to go one level deep."""
+    result = _parse("nested_class_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    defines_section = context.prompt.split("## Defines")[1]
+    assert "- `class Outer:`" in defines_section
+    assert "  - `class Inner:`" in defines_section
+    assert "    - `def method(self):`" in defines_section
+
+
+def test_file_context_import_label_strips_extension_for_a_whole_module_import():
+    """`from helper import helper` (a named-symbol import) already
+    resolves to a bare `helper` label. A plain `import helper` resolves
+    instead to the `helper.py` FILE node -- without stripping the
+    extension here, the same module would render inconsistently
+    depending on which import form was used."""
+    result = _parse("whole_module_import_repo")
+
+    context = assemble_file_context(result, "app.py")
+
+    imports_section = context.prompt.split("## Imports")[1]
+    assert "- `helper`" in imports_section
+    assert "helper.py" not in imports_section
+
+
+def test_js_file_context_lists_top_level_defines_with_methods_nested_under_their_class():
+    result = _parse_js("doc_context_repo_js")
+
+    context = assemble_file_context(result, "app.ts")
+
+    assert context.kind == "file"
+    assert "`app.ts`" in context.prompt
+    defines_section = context.prompt.split("## Defines")[1]
+    assert "- `class Service`" in defines_section
+    assert "  - `run(value: number): number`" in defines_section
+    assert "  - `execute(value: number): number`" in defines_section
+    assert "- `class Standalone`" in defines_section
+    assert "  - `value(x: number): number`" in defines_section
+    imports_section = context.prompt.split("## Imports")[1].split("## ")[0]
+    assert "- `helper`" in imports_section
+    assert "- `path`" in imports_section
 
 
 # --- JS/TS (tree-sitter) -- mirrors the Python cases above one-for-one.

@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
-from semantic_vision.ai.context import assemble_context
+from semantic_vision.ai.context import assemble_context, assemble_file_context
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
@@ -110,10 +110,14 @@ def get_graph(path: str = Query(...)) -> GraphResponse:
 def get_function_source(
     path: str = Query(...), id: str = Query(...)
 ) -> FunctionSourceResponse:
+    """Despite the route/response names (kept for backward compatibility),
+    this also serves `FILE` nodes: a `FILE` node's `line_start`/`line_end`
+    already span the whole file (see `resolver/symbol_table.py`), so the
+    same line-slice below returns its full contents unchanged."""
     result = _get_cached(path)
     node = next((n for n in result.nodes if n.id == id), None)
-    if node is None or node.kind != NodeKind.FUNCTION:
-        raise HTTPException(status_code=404, detail=f"Function not found: {id}")
+    if node is None or node.kind not in (NodeKind.FUNCTION, NodeKind.FILE):
+        raise HTTPException(status_code=404, detail=f"Source not found: {id}")
 
     file_path = Path(result.root) / node.file
     try:
@@ -371,10 +375,14 @@ def generate_doc(
 ) -> StreamingResponse:
     result = _get_cached(path)
     node = next((n for n in result.nodes if n.id == id), None)
-    if node is None or node.kind != NodeKind.FUNCTION:
-        raise HTTPException(status_code=404, detail=f"Function not found: {id}")
+    if node is None or node.kind not in (NodeKind.FUNCTION, NodeKind.FILE):
+        raise HTTPException(status_code=404, detail=f"Node not found: {id}")
 
-    context = assemble_context(result, id)
+    context = (
+        assemble_file_context(result, id)
+        if node.kind == NodeKind.FILE
+        else assemble_context(result, id)
+    )
     try:
         stream = stream_documentation(request.provider, context, request.model)
     except ProviderError as exc:

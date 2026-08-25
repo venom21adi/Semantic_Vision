@@ -4,10 +4,20 @@ import urllib.error
 import pytest
 
 from semantic_vision.ai.context import DocContext
-from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
+from semantic_vision.ai.providers import (
+    FILE_SYSTEM_PROMPT,
+    SYSTEM_PROMPT,
+    ProviderError,
+    list_ollama_models,
+    stream_documentation,
+)
 
 CONTEXT = DocContext(
     node_id="app.py::greet", prompt="## Target function\n\ndef greet(): ...", omitted=[]
+)
+
+FILE_CONTEXT = DocContext(
+    node_id="app.py", prompt="## File\n\n`app.py`", omitted=[], kind="file"
 )
 
 
@@ -46,6 +56,35 @@ def test_stream_documentation_surfaces_provider_failure_before_yielding(monkeypa
 
     with pytest.raises(ProviderError):
         stream_documentation("ollama", CONTEXT)
+
+
+def test_stream_documentation_uses_the_function_system_prompt_by_default(monkeypatch):
+    captured = {}
+
+    def fake_completion(**kwargs):
+        captured.update(kwargs)
+        return iter([_FakeChunk("ok")])
+
+    monkeypatch.setattr("semantic_vision.ai.providers.litellm.completion", fake_completion)
+
+    list(stream_documentation("ollama", CONTEXT))
+
+    assert captured["messages"][0] == {"role": "system", "content": SYSTEM_PROMPT}
+
+
+def test_stream_documentation_uses_the_file_system_prompt_for_a_file_doc(monkeypatch):
+    captured = {}
+
+    def fake_completion(**kwargs):
+        captured.update(kwargs)
+        return iter([_FakeChunk("ok")])
+
+    monkeypatch.setattr("semantic_vision.ai.providers.litellm.completion", fake_completion)
+
+    list(stream_documentation("ollama", FILE_CONTEXT))
+
+    assert captured["messages"][0] == {"role": "system", "content": FILE_SYSTEM_PROMPT}
+    assert FILE_SYSTEM_PROMPT != SYSTEM_PROMPT
 
 
 def test_stream_documentation_rejects_unknown_provider():

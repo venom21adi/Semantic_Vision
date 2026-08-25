@@ -51,7 +51,7 @@ def _resolve_model(provider: str, model: str | None) -> str:
         return f"ollama_chat/{model}"
     return _MODELS[provider]
 
-SYSTEM_PROMPT = """You are documenting a single Python function for a codebase visualizer.
+SYSTEM_PROMPT = """You are documenting a single function for a codebase visualizer.
 You are given the target function's source, its parent class header (if it's a method), and
 the signatures of what it directly calls and what directly calls it.
 
@@ -66,6 +66,26 @@ Write concise Markdown documentation with exactly these level-2 headings, in thi
 If a section doesn't apply, write "None." under it rather than omitting the heading. Do not
 repeat the function's full source code in your response. Do not wrap the whole response in a
 code fence."""
+
+FILE_SYSTEM_PROMPT = """You are documenting a source file for a codebase visualizer. You are
+NOT given the file's full source -- only its path, what it imports, and the signatures of every
+top-level class/function it defines (with each class's own methods listed under it). Infer the
+file's role from those names and signatures the way an experienced engineer skimming a module
+would.
+
+Write concise Markdown documentation with exactly these level-2 headings, in this order:
+
+## Purpose
+## Defines
+## Key Dependencies
+## Notes
+
+"Purpose" is a short paragraph on what this file is responsible for and its role in the
+codebase. "Defines" is a one-line bullet per top-level class/function summarizing what it does
+(not a restatement of its signature). "Key Dependencies" briefly notes which of the file's
+imports its behavior actually depends on, if that's not obvious. If a section doesn't apply,
+write "None." under it rather than omitting the heading. Do not invent behavior beyond what the
+names/signatures reasonably imply, and do not wrap the whole response in a code fence."""
 
 
 class ProviderError(RuntimeError):
@@ -100,11 +120,12 @@ def stream_documentation(
     if provider not in _MODELS:
         raise ProviderError(f"Unknown provider: {provider}")
 
+    system_prompt = FILE_SYSTEM_PROMPT if context.kind == "file" else SYSTEM_PROMPT
     try:
         response = litellm.completion(
             model=_resolve_model(provider, model),
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": context.prompt},
             ],
             stream=True,

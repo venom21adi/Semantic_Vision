@@ -12,6 +12,7 @@ from __future__ import annotations
 import ast
 import copy
 from pathlib import Path
+from typing import Literal
 
 import tree_sitter
 from pydantic import BaseModel
@@ -58,6 +59,11 @@ class DocContext(BaseModel):
     """Fully assembled context text, ready to send as the user message."""
     omitted: list[str]
     """Section names dropped or truncated to stay within the token budget."""
+    kind: Literal["function", "file"] = "function"
+    """Which system prompt `ai.providers.stream_documentation` should pair
+    this with -- a function doc and a file doc ask the model for
+    differently-shaped Markdown (see `SYSTEM_PROMPT`/`FILE_SYSTEM_PROMPT`
+    there), so the context and the prompt template must stay matched."""
 
 
 def _approx_tokens(text: str) -> int:
@@ -264,6 +270,74 @@ def _parent_class(result: ParseResult, node: Node, nodes_by_id: dict[str, Node])
     return None
 
 
+def _direct_defines(
+    result: ParseResult, parent_id: str, nodes_by_id: dict[str, Node]
+) -> list[Node]:
+    """Direct `DEFINES` children of `parent_id` (a file's own top-level
+    classes/functions, or a class's own methods), in source order --
+    unlike `_direct_related`'s id-sort (call targets have no inherent
+    order), a file's members read naturally top-to-bottom the way they
+    appear in the source.
+    """
+    children = [
+        nodes_by_id[edge.target]
+        for edge in result.edges
+        if edge.kind == EdgeKind.DEFINES and edge.source == parent_id and edge.target in nodes_by_id
+    ]
+    children.sort(key=lambda n: n.line_start)
+    return children
+
+
+def _render_define_entry(
+    result: ParseResult,
+    root: Path,
+    node: Node,
+    nodes_by_id: dict[str, Node],
+    ast_trees: dict[str, ast.Module | None],
+    ts_trees: dict[str, tree_sitter.Tree | None],
+    *,
+    depth: int = 0,
+) -> str:
+    """One `Defines` bullet, recursing into a class's own members at any
+    depth -- not just one level -- so a class nested inside a class still
+    has its own methods listed instead of silently vanishing (a class
+    nested inside a *function*, e.g. a factory-local helper class, has no
+    `DEFINES` edge from the file at all and so is out of scope here, same
+    as any other function-local name)."""
+    sig = _signature(root, node, ast_trees, ts_trees) or _fallback_signature(node)
+    lines = [f"{'  ' * depth}- `{sig}`"]
+    if node.kind == NodeKind.CLASS:
+        for member in _direct_defines(result, node.id, nodes_by_id):
+            lines.append(
+                _render_define_entry(
+                    result, root, member, nodes_by_id, ast_trees, ts_trees, depth=depth + 1
+                )
+            )
+    return "\n".join(lines)
+
+
+def _import_label(target: str, nodes_by_id: dict[str, Node]) -> str:
+    """A resolved import target is a real node id (a file, or a specific
+    symbol within one) -- use its label. An external target is the
+    synthetic `external::{qualname}` id `resolver/imports.py`/
+    `resolver/js_imports.py` produce for anything outside the parsed repo
+    -- show the qualname. Anything else (an ambiguous edge whose target
+    couldn't be narrowed past the file) falls back to the id's own last
+    `::`-segment, which is always at least the file/symbol's own name.
+
+    A `FILE` node's `label` is its filename including extension (e.g.
+    `helper.py`) -- fine standing alone, but inconsistent right next to a
+    named-symbol import's bare-name label (`helper`) in the same list, so
+    it's stripped here for a whole-module import to match.
+    """
+    if target in nodes_by_id:
+        resolved = nodes_by_id[target]
+        return Path(resolved.label).stem if resolved.kind == NodeKind.FILE else resolved.label
+    if target.startswith("external::"):
+        return target.removeprefix("external::")
+    return target.rsplit("::", 1)[-1]
+
+
 def _direct_related(
     result: ParseResult, node_id: str, nodes_by_id: dict[str, Node], *, callees: bool
 ) -> list[Node]:
@@ -369,4 +443,79 @@ def assemble_context(
             omitted.append("Parent class")
 
     prompt = "\n\n".join(sections)
-    return DocContext(node_id=node_id, prompt=prompt, omitted=omitted)
+    return DocContext(node_id=node_id, prompt=prompt, omitted=omitted, kind="function")
+
+
+def assemble_file_context(
+    result: ParseResult, node_id: str, max_tokens: int = MAX_CONTEXT_TOKENS
+) -> DocContext:
+    """Assumes `node_id` refers to an existing `FILE` node -- same
+    validation split as `assemble_context` (the `/api/generate-doc` route
+    checks first).
+
+    Deliberately never inlines a function/class body -- only its rendered
+    signature, via the same `_signature` machinery `assemble_context` uses
+    for its callee/caller lists. That keeps this prompt's size roughly
+    independent of the file's length (a 2000-line file costs about the
+    same as a 20-line one here), matching a high-level module summary
+    rather than a per-function walkthrough -- the per-function walkthrough
+    is what opening each function's own doc already gives you, and
+    inlining every body here would both blow the token budget on any
+    real-sized file and duplicate that.
+    """
+    root = Path(result.root)
+    nodes_by_id = {n.id: n for n in result.nodes}
+    node = nodes_by_id[node_id]
+    ast_trees: dict[str, ast.Module | None] = {}
+    ts_trees: dict[str, tree_sitter.Tree | None] = {}
+
+    budget = max_tokens
+    sections: list[str] = []
+    omitted: list[str] = []
+
+    header_block = f"## File\n\n`{node.file}`"
+    sections.append(header_block)
+    budget -= _approx_tokens(header_block)
+
+    import_targets = sorted(
+        {
+            _import_label(edge.target, nodes_by_id)
+            for edge in result.edges
+            if edge.kind == EdgeKind.IMPORTS and edge.source == node_id
+        }
+    )
+    if import_targets:
+        block = "## Imports\n\n" + "\n".join(f"- `{target}`" for target in import_targets)
+        if _approx_tokens(block) <= budget:
+            sections.append(block)
+            budget -= _approx_tokens(block)
+        else:
+            omitted.append("Imports")
+
+    defines_header = "## Defines\n\n"
+    top_level = _direct_defines(result, node_id, nodes_by_id)
+    entries: list[str] = []
+    dropped = 0
+    header_charged = False
+    for child in top_level:
+        entry = _render_define_entry(result, root, child, nodes_by_id, ast_trees, ts_trees)
+        # The header is only charged against the budget once, the first
+        # time it would actually be included -- mirrors the `Imports`
+        # block's all-or-nothing charge instead of leaving it free, but
+        # doesn't tax a file whose `Defines` section ends up empty/fully
+        # dropped for one that never needed the header at all.
+        cost = _approx_tokens(entry) + (0 if header_charged else _approx_tokens(defines_header))
+        if cost <= budget:
+            entries.append(entry)
+            budget -= cost
+            header_charged = True
+        else:
+            dropped += 1
+    if entries:
+        block = defines_header + "\n".join(entries)
+        sections.append(block)
+    if dropped:
+        omitted.append(f"Defines ({dropped})")
+
+    prompt = "\n\n".join(sections)
+    return DocContext(node_id=node_id, prompt=prompt, omitted=omitted, kind="file")

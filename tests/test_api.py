@@ -203,6 +203,25 @@ def test_function_source_returns_snippet():
     assert "os.path.join" in body["source"]
 
 
+def test_function_source_file_node_returns_full_file():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/function-source",
+        params={"path": repo_path, "id": "app.py"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["file"] == "app.py"
+    assert body["line_start"] == 1
+    assert body["line_end"] == 8
+    assert "import os" in body["source"]
+    assert "class Greeter" in body["source"]
+    assert "def greet" in body["source"]
+
+
 def test_function_source_missing_node_returns_404():
     repo_path = str(FIXTURES / "simple_repo")
     client.post("/api/parse-repo", json={"path": repo_path})
@@ -686,6 +705,43 @@ def test_generate_doc_forwards_the_requested_model(monkeypatch):
 
     assert resp.status_code == 200
     assert captured["model"] == "qwen2.5-coder:3b"
+
+
+def test_generate_doc_streams_content_for_a_file_node(monkeypatch):
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    captured = {}
+
+    def fake_stream(provider, context, model=None):
+        captured["kind"] = context.kind
+        yield "# app.py\n\n"
+        yield "File documentation."
+
+    monkeypatch.setattr(routes_module, "stream_documentation", fake_stream)
+
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": repo_path, "id": "app.py"},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.text == "# app.py\n\nFile documentation."
+    assert captured["kind"] == "file"
+
+
+def test_generate_doc_directory_node_returns_404():
+    repo_path = str(FIXTURES / "nested_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/generate-doc",
+        params={"path": repo_path, "id": "pkg"},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 404
 
 
 def test_generate_doc_provider_failure_returns_502(monkeypatch):
