@@ -23,8 +23,11 @@ to begin with.
 
 🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 🌡️ Complexity report · 📝 AI-generated docs · 🔗 Code-to-data lineage · ⚡ 100% local & private
 
+## 🕸️ Interactive Call Graph
+
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
+
 
 ![Exploring Semantic Vision's own flowchart module: selecting a function, dragging it, then running impact analysis to highlight its real callers on the graph](assets/interactive-call-graph.gif)
 
