@@ -21,9 +21,9 @@ to begin with.
 
 ### At a glance
 
-🕸️ Interactive call graph · 💥 Impact analysis · 🧭 Execution flowcharts · 🌡️ Complexity report · 📝 AI-generated docs · 🔗 Code-to-data lineage · ⚡ 100% local & private
+<img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Complexity report · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
 
-## 🕸️ Interactive Call Graph
+## <img src="assets/icons/call-graph.svg" width="22" height="22" align="absmiddle" alt=""/> Interactive Call Graph
 
 Parsing is purely static (your code is never executed), and nothing
 about it leaves your computer unless you explicitly ask for AI docs.
@@ -31,7 +31,7 @@ about it leaves your computer unless you explicitly ask for AI docs.
 
 ![Exploring Semantic Vision's own flowchart module: selecting a function, dragging it, then running impact analysis to highlight its real callers on the graph](assets/interactive-call-graph.gif)
 
-## 🤖 AI documentation setup
+## <img src="assets/icons/ai-docs.svg" width="22" height="22" align="absmiddle" alt=""/> AI documentation setup
 
 Right-click any function and choose **Document** to generate Markdown
 docs for it, assembled from its real source, callers, callees, and
@@ -64,7 +64,7 @@ only written to disk when you click **Save** — nothing is persisted
 automatically, and they're written to wherever you've configured as
 the **Save location** (see Quick start below).
 
-## 🧭 Execution flowcharts
+## <img src="assets/icons/execution-flowchart.svg" width="22" height="22" align="absmiddle" alt=""/> Execution flowcharts
 
 Right-click any function and choose **Execution Flowchart** to see
 exactly how it behaves, built from its real AST/CST rather than a rough
@@ -79,7 +79,7 @@ Works for both Python and JS/TS, including `switch` fallthrough,
 The flowchart replaces the graph canvas while open; **Back to graph**
 returns you to the normal call graph.
 
-## 🌡️ Complexity report
+## <img src="assets/icons/complexity-report.svg" width="22" height="22" align="absmiddle" alt=""/> Complexity report
 
 Toggle **Show complexity** in the sidebar to see a cyclomatic-complexity
 heatmap over the whole graph and a ranked report of every function,
@@ -94,7 +94,7 @@ direct callers (cross-referenced with their own scores), so you can
 tell a complex-but-unused function apart from a complex one half the
 codebase actually depends on.
 
-## 🔗 Code-to-data lineage
+## <img src="assets/icons/data-lineage.svg" width="22" height="22" align="absmiddle" alt=""/> Code-to-data lineage
 
 Click **Connect data source** in the sidebar to extend the graph past
 your code and into the data it reads and writes. Three sources feed the
@@ -120,7 +120,7 @@ upstream of it, code and data lineage in one traversal.
 
 ## ✨ Features
 
-🕸️ **See the whole call graph at a glance** — every directory, file,
+<img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> **See the whole call graph at a glance** — every directory, file,
 class, and function as a zoomable, color-coded graph with
 call/import/defines edges. Structure that would take an hour of
 grepping to piece together by hand is visible on one screen.
@@ -129,29 +129,29 @@ grepping to piece together by hand is visible on one screen.
 repo, or scope the graph down to a single file's own structure when you
 only care about a slice.
 
-💥 **Know what you'll break before you break it** — right-click any
+<img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> **Know what you'll break before you break it** — right-click any
 function for impact analysis: every direct and transitive caller,
 circular call chains flagged instead of silently mishandled, and the
 whole chain highlighted live on the graph.
 
-🧭 **Trace exactly how a function behaves** — right-click any function
+<img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> **Trace exactly how a function behaves** — right-click any function
 for its execution flowchart: branches, loops with visible back-edges,
 I/O, and calls out to other functions in the repo, rendered with
 conventional flowchart shapes instead of you stepping through the code
 by hand.
 
-🌡️ **See which functions are worth worrying about** — a complexity
+<img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **See which functions are worth worrying about** — a complexity
 heatmap and ranked report across the whole repo, with a one-click
 drill-down into who actually depends on each risky function.
 
-📝 **Never write another docstring by hand** — right-click any function
+<img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> **Never write another docstring by hand** — right-click any function
 to generate real Markdown documentation (Purpose, Parameters, Returns,
 Side Effects, Notes) from its actual source, callers, callees, and
 parent class, streamed live from your choice of a local
 [Ollama](https://ollama.com) model, OpenAI, or Anthropic, and saved
 straight into the repo.
 
-🔗 **See where your code touches your data** — SQLAlchemy models are
+<img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> **See where your code touches your data** — SQLAlchemy models are
 detected automatically; connect a dbt manifest and/or a live database to
 add their tables and models to the same graph, reconciled by table
 name, with impact analysis spanning code and data in one traversal.
@@ -162,7 +162,7 @@ open the same repo. The save location defaults to the repo's `.git`
 root — auto-detected even if you've scoped the graph down to a
 subfolder for performance — and can be changed at any time.
 
-⚡ **Fast, local, and private** — a FastAPI backend statically parses
+<img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> **Fast, local, and private** — a FastAPI backend statically parses
 your code (Python's own `ast` module for Python, [`tree-sitter`](https://tree-sitter.github.io/tree-sitter/)
 for JavaScript/TypeScript), a React frontend renders it. No account, no
 cloud, no telemetry, nothing installed beyond a Python and a Node
