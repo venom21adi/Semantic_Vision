@@ -23,10 +23,59 @@ body {
   }
 }
 
+/* Hover/keyboard-focus-visible feedback, applied additively via
+   className alongside each element's existing inline `style`. Uses
+   `filter`/`outline`/`box-shadow` specifically because none of those
+   properties are ever set inline anywhere in this app -- every plain
+   `<button>`'s `background`/`border`/`boxShadow` is already inline and
+   state-driven (selected/active/disabled), so a CSS rule on any of
+   those properties would either never apply (inline always wins) or
+   silently fight the state it's meant to reflect. `.sv-row` exists
+   separately from `.sv-interactive` because Tree.tsx's row already uses
+   inline `outline` for search-match highlighting -- its focus ring uses
+   `box-shadow` instead, to not collide with that. */
+.sv-interactive:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+.sv-interactive:focus-visible {
+  outline: 2px solid #2563eb; /* mirrors theme.ts's colors.focusRing */
+  outline-offset: 2px;
+}
+.sv-interactive:disabled {
+  filter: none;
+}
+
+.sv-row:hover {
+  filter: brightness(1.15);
+}
+.sv-row:focus-visible {
+  box-shadow: 0 0 0 2px #2563eb inset; /* mirrors theme.ts's colors.focusRing */
+}
+
+/* graph/ContextMenu.tsx's items: `background` is a stable 'transparent'
+   baseline here (not state-driven like most other buttons in this app),
+   so a real background swap on hover -- replacing what used to be manual
+   onMouseEnter/onMouseLeave JS -- is both possible and a better fit than
+   `.sv-interactive`'s brightness filter, which would be invisible against
+   a transparent background. */
+.sv-menu-item {
+  background: transparent;
+}
+.sv-menu-item:hover {
+  background: #334155; /* mirrors theme.ts's colors.border */
+}
+.sv-menu-item:focus-visible {
+  outline: 2px solid #2563eb; /* mirrors theme.ts's colors.focusRing */
+  outline-offset: -2px;
+}
+
 .spinner {
   display: inline-block;
   width: 12px;
   height: 12px;
+  /* #f8fafc mirrors theme.ts's colors.textPrimary -- plain CSS can't
+     import a TS value, kept in sync by this comment rather than a build
+     step. */
   border: 2px solid rgba(248, 250, 252, 0.35);
   border-top-color: #f8fafc;
   border-radius: 50%;

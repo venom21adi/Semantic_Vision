@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { ApiError, ingestDbConnection, ingestDbtManifest } from '../api/client'
+import { colors } from '../theme'
 
 interface DataSourcePaneProps {
   path: string
@@ -72,7 +73,7 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
 
   return (
     <div>
-      <p style={{ margin: '0 0 14px', fontSize: 11, color: '#94a3b8' }}>
+      <p style={{ margin: '0 0 14px', fontSize: 11, color: colors.textMuted }}>
         Connect a dbt project or a live database to add its tables and models to this
         graph — reconciled by table name against anything already detected from your code.
       </p>
@@ -97,21 +98,22 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
               minWidth: 0,
               padding: '5px 8px',
               borderRadius: 4,
-              border: '1px solid #334155',
-              background: '#0f172a',
-              color: '#f8fafc',
+              border: `1px solid ${colors.border}`,
+              background: colors.bgPage,
+              color: colors.textPrimary,
               fontSize: 12,
             }}
           />
           <button
             type="submit"
             disabled={manifestState.status === 'submitting' || manifestPath.trim().length === 0}
+            className="sv-interactive"
             style={{
               padding: '5px 10px',
               borderRadius: 4,
               border: 'none',
-              background: manifestState.status === 'submitting' ? '#475569' : '#2563eb',
-              color: '#f8fafc',
+              background: manifestState.status === 'submitting' ? colors.disabled : colors.accent,
+              color: colors.textPrimary,
               fontSize: 12,
               cursor: manifestState.status === 'submitting' ? 'default' : 'pointer',
               flexShrink: 0,
@@ -121,12 +123,12 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
           </button>
         </div>
         {manifestState.status === 'success' && (
-          <p role="status" style={{ margin: '4px 0 0', fontSize: 11, color: '#86efac' }}>
+          <p role="status" style={{ margin: '4px 0 0', fontSize: 11, color: colors.success }}>
             {manifestState.summary}
           </p>
         )}
         {manifestState.status === 'error' && (
-          <p role="alert" style={{ margin: '4px 0 0', fontSize: 11, color: '#fca5a5' }}>
+          <p role="alert" style={{ margin: '4px 0 0', fontSize: 11, color: colors.danger }}>
             {manifestState.message}
           </p>
         )}
@@ -152,9 +154,9 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
               minWidth: 0,
               padding: '5px 8px',
               borderRadius: 4,
-              border: '1px solid #334155',
-              background: '#0f172a',
-              color: '#f8fafc',
+              border: `1px solid ${colors.border}`,
+              background: colors.bgPage,
+              color: colors.textPrimary,
               fontSize: 12,
             }}
           />
@@ -163,12 +165,13 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
             disabled={
               connectionState.status === 'submitting' || connectionString.trim().length === 0
             }
+            className="sv-interactive"
             style={{
               padding: '5px 10px',
               borderRadius: 4,
               border: 'none',
-              background: connectionState.status === 'submitting' ? '#475569' : '#2563eb',
-              color: '#f8fafc',
+              background: connectionState.status === 'submitting' ? colors.disabled : colors.accent,
+              color: colors.textPrimary,
               fontSize: 12,
               cursor: connectionState.status === 'submitting' ? 'default' : 'pointer',
               flexShrink: 0,
@@ -177,16 +180,16 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
             {connectionState.status === 'submitting' ? 'Connecting…' : 'Connect'}
           </button>
         </div>
-        <p style={{ margin: '4px 0 0', fontSize: 10, color: '#64748b' }}>
+        <p style={{ margin: '4px 0 0', fontSize: 10, color: colors.textDim }}>
           Held only for this request — never saved or sent anywhere else.
         </p>
         {connectionState.status === 'success' && (
-          <p role="status" style={{ margin: '4px 0 0', fontSize: 11, color: '#86efac' }}>
+          <p role="status" style={{ margin: '4px 0 0', fontSize: 11, color: colors.success }}>
             {connectionState.summary}
           </p>
         )}
         {connectionState.status === 'error' && (
-          <p role="alert" style={{ margin: '4px 0 0', fontSize: 11, color: '#fca5a5' }}>
+          <p role="alert" style={{ margin: '4px 0 0', fontSize: 11, color: colors.danger }}>
             {connectionState.message}
           </p>
         )}

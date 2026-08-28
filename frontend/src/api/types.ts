@@ -21,6 +21,11 @@ export interface GraphNode {
    * `"live_db"` depending on which data-source ingest created it.
    * `null`/absent for every other node kind. */
   source?: string | null
+  /** JS/TS getter/setter marker, set only on a FUNCTION node produced
+   * from one. `label` stays the bare method name regardless -- use
+   * `formatNodeLabel` (graph/accessorLabel.ts) wherever this needs to be
+   * shown to a person, rather than reading this field directly. */
+  accessor_kind?: 'get' | 'set' | null
 }
 
 export interface GraphEdge {

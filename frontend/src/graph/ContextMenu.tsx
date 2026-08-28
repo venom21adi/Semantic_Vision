@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { colors } from '../theme'
 
 export interface ContextMenuTarget {
   nodeId: string
@@ -60,8 +61,8 @@ export function ContextMenu({
         position: 'fixed',
         top: target.y,
         left: target.x,
-        background: '#1e293b',
-        border: '1px solid #334155',
+        background: colors.bgPanel,
+        border: `1px solid ${colors.border}`,
         borderRadius: 6,
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
         padding: 4,
@@ -70,7 +71,7 @@ export function ContextMenu({
         fontSize: 13,
       }}
     >
-      <div style={{ padding: '4px 8px', color: '#94a3b8', fontSize: 11 }}>{target.label}</div>
+      <div style={{ padding: '4px 8px', color: colors.textMuted, fontSize: 11 }}>{target.label}</div>
       {items.map((item) => (
         <button
           key={item.label}
@@ -79,22 +80,16 @@ export function ContextMenu({
             item.action(target.nodeId)
             onClose()
           }}
+          className="sv-menu-item"
           style={{
             display: 'block',
             width: '100%',
             textAlign: 'left',
-            background: 'transparent',
             border: 'none',
-            color: '#f8fafc',
+            color: colors.textPrimary,
             padding: '6px 8px',
             borderRadius: 4,
             cursor: 'pointer',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#334155'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
           }}
         >
           {item.label}

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import type { DocProvider } from '../api/types'
+import { colors } from '../theme'
 import type { ActivePane } from './DetailsPanel'
 
 type DocActivePane = Extract<ActivePane, { kind: 'doc' }>
@@ -33,9 +34,9 @@ const PROVIDER_OPTIONS: { value: DocProvider; label: string }[] = [
 
 const selectStyle = {
   flex: 1,
-  background: '#0f172a',
-  color: '#f8fafc',
-  border: '1px solid #1e293b',
+  background: colors.bgPage,
+  color: colors.textPrimary,
+  border: `1px solid ${colors.bgPanel}`,
   borderRadius: 6,
   padding: '4px 6px',
   fontSize: 12,
@@ -105,9 +106,10 @@ export function DocPane({
           type="button"
           onClick={onGenerate}
           disabled={busy}
+          className="sv-interactive"
           style={{
-            background: '#1d4ed8',
-            color: '#f8fafc',
+            background: colors.accentStrong,
+            color: colors.textPrimary,
             border: 'none',
             borderRadius: 6,
             padding: '4px 10px',
@@ -140,10 +142,11 @@ export function DocPane({
             aria-label="Refresh Ollama models"
             onClick={onRefreshOllamaModels}
             disabled={ollamaModelsLoading}
+            className="sv-interactive"
             style={{
               background: 'transparent',
-              border: '1px solid #1e293b',
-              color: '#94a3b8',
+              border: `1px solid ${colors.bgPanel}`,
+              color: colors.textMuted,
               borderRadius: 6,
               padding: '4px 8px',
               fontSize: 12,
@@ -155,20 +158,20 @@ export function DocPane({
         </div>
       )}
       {provider === 'ollama' && ollamaModels.length === 0 && !ollamaModelsLoading && (
-        <p style={{ color: '#94a3b8', marginTop: -4, marginBottom: 12, fontSize: 12 }}>
+        <p style={{ color: colors.textMuted, marginTop: -4, marginBottom: 12, fontSize: 12 }}>
           No local Ollama models found. Run <code>ollama serve</code> and{' '}
           <code>ollama pull &lt;model&gt;</code>, then refresh.
         </p>
       )}
 
       {pane.status === 'not-found' && (
-        <p style={{ color: '#94a3b8' }}>
+        <p style={{ color: colors.textMuted }}>
           No saved documentation yet. Choose a provider and generate one.
         </p>
       )}
 
       {pane.status === 'error' && (
-        <p role="alert" style={{ color: '#fca5a5' }}>
+        <p role="alert" style={{ color: colors.danger }}>
           {pane.message}
         </p>
       )}
@@ -184,13 +187,13 @@ export function DocPane({
                 width: '100%',
                 minHeight: 220,
                 boxSizing: 'border-box',
-                background: '#0f172a',
-                border: '1px solid #1e293b',
+                background: colors.bgPage,
+                border: `1px solid ${colors.bgPanel}`,
                 borderRadius: 6,
                 padding: 10,
                 fontSize: 12,
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                color: '#f8fafc',
+                color: colors.textPrimary,
                 resize: 'vertical',
               }}
             />
@@ -198,8 +201,8 @@ export function DocPane({
             <div
               className="doc-markdown"
               style={{
-                background: '#0f172a',
-                border: '1px solid #1e293b',
+                background: colors.bgPage,
+                border: `1px solid ${colors.bgPanel}`,
                 borderRadius: 6,
                 padding: 10,
                 fontSize: 12,
@@ -220,9 +223,10 @@ export function DocPane({
                 type="button"
                 onClick={onSave}
                 disabled={pane.saved}
+                className="sv-interactive"
                 style={{
-                  background: pane.saved ? '#1e293b' : '#15803d',
-                  color: '#f8fafc',
+                  background: pane.saved ? colors.bgPanel : colors.successBg,
+                  color: colors.textPrimary,
                   border: 'none',
                   borderRadius: 6,
                   padding: '4px 10px',
@@ -232,10 +236,20 @@ export function DocPane({
               >
                 {pane.saved ? 'Saved' : 'Save'}
               </button>
-              <button type="button" onClick={() => setIsEditing((prev) => !prev)} style={secondaryButtonStyle}>
+              <button
+                type="button"
+                onClick={() => setIsEditing((prev) => !prev)}
+                className="sv-interactive"
+                style={secondaryButtonStyle}
+              >
                 {isEditing ? 'Preview' : 'Edit'}
               </button>
-              <button type="button" onClick={handleExport} style={secondaryButtonStyle}>
+              <button
+                type="button"
+                onClick={handleExport}
+                className="sv-interactive"
+                style={secondaryButtonStyle}
+              >
                 Export
               </button>
             </div>
@@ -248,8 +262,8 @@ export function DocPane({
 
 const secondaryButtonStyle = {
   background: 'transparent',
-  color: '#f8fafc',
-  border: '1px solid #334155',
+  color: colors.textPrimary,
+  border: `1px solid ${colors.border}`,
   borderRadius: 6,
   padding: '4px 10px',
   fontSize: 12,
@@ -263,18 +277,18 @@ function SaveLocationNotice({ docRoot, onDismiss }: { docRoot: string; onDismiss
       style={{
         marginTop: 8,
         padding: '6px 8px',
-        background: '#0f172a',
-        border: '1px solid #1e293b',
+        background: colors.bgPage,
+        border: `1px solid ${colors.bgPanel}`,
         borderRadius: 6,
         fontSize: 11,
-        color: '#94a3b8',
+        color: colors.textMuted,
       }}
     >
       <p style={{ margin: '0 0 4px' }}>
         Documentation is saved to <code>{docRoot}</code>. Change this in the Save location field
         at the top of the page.
       </p>
-      <button type="button" onClick={onDismiss} style={linkButtonStyle}>
+      <button type="button" onClick={onDismiss} className="sv-interactive" style={linkButtonStyle}>
         Don't show again
       </button>
     </div>
@@ -284,7 +298,7 @@ function SaveLocationNotice({ docRoot, onDismiss }: { docRoot: string; onDismiss
 const linkButtonStyle = {
   background: 'transparent',
   border: 'none',
-  color: '#64748b',
+  color: colors.textDim,
   fontSize: 11,
   padding: 0,
   cursor: 'pointer',

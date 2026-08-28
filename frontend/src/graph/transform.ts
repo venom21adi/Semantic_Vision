@@ -26,6 +26,7 @@ export function toFlowNodes(nodes: GraphNode[]): Node<GraphNodeData>[] {
       file: node.file,
       lineStart: node.line_start,
       lineEnd: node.line_end,
+      accessorKind: node.accessor_kind,
     },
   }))
 }

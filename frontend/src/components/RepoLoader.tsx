@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { ParseErrorInfo } from '../api/types'
+import { colors } from '../theme'
 
 export interface RepoLoadStats {
   path: string
@@ -93,9 +94,9 @@ export function RepoLoader({
               flex: 1,
               padding: '6px 10px',
               borderRadius: 4,
-              border: '1px solid #334155',
-              background: '#0f172a',
-              color: '#f8fafc',
+              border: `1px solid ${colors.border}`,
+              background: colors.bgPage,
+              color: colors.textPrimary,
               fontSize: 13,
             }}
           />
@@ -106,9 +107,9 @@ export function RepoLoader({
             style={{
               padding: '6px 10px',
               borderRadius: 4,
-              border: '1px solid #334155',
-              background: '#0f172a',
-              color: '#f8fafc',
+              border: `1px solid ${colors.border}`,
+              background: colors.bgPage,
+              color: colors.textPrimary,
               fontSize: 13,
             }}
           >
@@ -118,6 +119,7 @@ export function RepoLoader({
           <button
             type="submit"
             disabled={loading || path.trim().length === 0}
+            className="sv-interactive"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -125,8 +127,8 @@ export function RepoLoader({
               padding: '6px 14px',
               borderRadius: 4,
               border: 'none',
-              background: loading ? '#475569' : '#2563eb',
-              color: '#f8fafc',
+              background: loading ? colors.disabled : colors.accent,
+              color: colors.textPrimary,
               fontSize: 13,
               cursor: loading ? 'default' : 'pointer',
             }}
@@ -135,7 +137,7 @@ export function RepoLoader({
             {loading ? 'Loading…' : 'Load'}
           </button>
           {error && (
-            <span role="alert" style={{ color: '#fca5a5', fontSize: 13 }}>
+            <span role="alert" style={{ color: colors.danger, fontSize: 13 }}>
               {error}
             </span>
           )}
@@ -143,7 +145,7 @@ export function RepoLoader({
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
           <label
             htmlFor="doc-root-input"
-            style={{ fontSize: 11, color: '#64748b', whiteSpace: 'nowrap' }}
+            style={{ fontSize: 11, color: colors.textDim, whiteSpace: 'nowrap' }}
           >
             Save location
           </label>
@@ -166,9 +168,9 @@ export function RepoLoader({
               maxWidth: 480,
               padding: '4px 8px',
               borderRadius: 4,
-              border: '1px solid #1e293b',
-              background: '#0f172a',
-              color: '#94a3b8',
+              border: `1px solid ${colors.bgPanel}`,
+              background: colors.bgPage,
+              color: colors.textMuted,
               fontSize: 11,
             }}
           />
@@ -176,11 +178,11 @@ export function RepoLoader({
       </form>
 
       {stats && (
-        <div data-testid="repo-status" style={{ margin: '8px 0 0', fontSize: 12, color: '#94a3b8' }}>
+        <div data-testid="repo-status" style={{ margin: '8px 0 0', fontSize: 12, color: colors.textMuted }}>
           {stats.path} — {stats.nodeCount} nodes, {stats.edgeCount} edges
           {stats.parseErrors.length > 0 && (
             <details>
-              <summary style={{ cursor: 'pointer', color: '#fbbf24' }}>
+              <summary style={{ cursor: 'pointer', color: colors.matchHighlight }}>
                 {stats.parseErrors.length} parse error{stats.parseErrors.length === 1 ? '' : 's'}
               </summary>
               <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>

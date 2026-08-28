@@ -37,6 +37,18 @@ def test_getter_and_setter_labels_stay_the_bare_method_name():
     assert by_id["app.ts::Box.value#set"].label == "value"
 
 
+def test_getter_and_setter_nodes_carry_their_accessor_kind():
+    # Presentational-only field for the frontend to show "get foo"/"set foo"
+    # instead of two identically-labeled boxes -- `label` itself stays bare
+    # (see the label test above), this is additive, not a replacement.
+    result = parse_repository(str(GETTER_SETTER_REPO), language="javascript")
+    by_id = {n.id: n for n in result.nodes}
+
+    assert by_id["app.ts::Box.value#get"].accessor_kind == "get"
+    assert by_id["app.ts::Box.value#set"].accessor_kind == "set"
+    assert by_id["app.ts::Box.plain"].accessor_kind is None
+
+
 def test_a_plain_method_id_has_no_accessor_suffix():
     # The non-colliding regression case: every id format outside the
     # getter/setter case is completely unchanged.

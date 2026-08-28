@@ -45,6 +45,26 @@ describe('GraphCanvas', () => {
     expect(onSelectNode).toHaveBeenCalledWith('a')
   })
 
+  it('shows a getter and setter with distinct "get "/"set " prefixes, not two identical boxes', () => {
+    const getterNode: Node<GraphNodeData> = {
+      id: 'app.ts::Box.value#get',
+      type: 'function',
+      position: { x: 0, y: 0 },
+      data: { label: 'value', kind: 'function', file: 'app.ts', lineStart: 2, lineEnd: 4, accessorKind: 'get' },
+    }
+    const setterNode: Node<GraphNodeData> = {
+      id: 'app.ts::Box.value#set',
+      type: 'function',
+      position: { x: 0, y: 0 },
+      data: { label: 'value', kind: 'function', file: 'app.ts', lineStart: 6, lineEnd: 8, accessorKind: 'set' },
+    }
+    render(<GraphCanvas nodes={[getterNode, setterNode]} edges={[]} selectedNodeId={null} {...noop} />)
+
+    expect(screen.getByText('get value')).toBeInTheDocument()
+    expect(screen.getByText('set value')).toBeInTheDocument()
+    expect(screen.queryByText('value')).not.toBeInTheDocument()
+  })
+
   it('calls onToggleContainer, not onSelectNode, when the chevron on a collapse-managed node is clicked', async () => {
     const onSelectNode = vi.fn()
     const onToggleContainer = vi.fn()

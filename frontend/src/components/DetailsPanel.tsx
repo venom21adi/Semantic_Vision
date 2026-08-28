@@ -1,4 +1,6 @@
 import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
+import { formatNodeLabel } from '../graph/accessorLabel'
+import { colors } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
@@ -77,7 +79,7 @@ export function DetailsPanel({
         style={{
           width: 28,
           flexShrink: 0,
-          borderLeft: '1px solid #1e293b',
+          borderLeft: `1px solid ${colors.bgPanel}`,
           padding: '8px 4px',
         }}
       >
@@ -91,33 +93,35 @@ export function DetailsPanel({
       style={{
         width: 320,
         flexShrink: 0,
-        borderLeft: '1px solid #1e293b',
+        borderLeft: `1px solid ${colors.bgPanel}`,
         padding: 16,
         overflowY: 'auto',
-        color: '#f8fafc',
+        color: colors.textPrimary,
         fontSize: 13,
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
         <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="right" paneName="details panel" />
       </div>
-      {!selectedNode && <p style={{ color: '#94a3b8' }}>Select a node to see details.</p>}
+      {!selectedNode && <p style={{ color: colors.textMuted }}>Select a node to see details.</p>}
 
       {selectedNode && (
         <div>
-          <h2 style={{ fontSize: 15, margin: '0 0 8px' }}>{selectedNode.label}</h2>
+          <h2 style={{ fontSize: 15, margin: '0 0 8px' }}>
+            {formatNodeLabel(selectedNode.label, selectedNode.accessor_kind)}
+          </h2>
           <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 8px' }}>
-            <dt style={{ color: '#94a3b8' }}>kind</dt>
+            <dt style={{ color: colors.textMuted }}>kind</dt>
             <dd style={{ margin: 0 }}>{selectedNode.kind}</dd>
-            <dt style={{ color: '#94a3b8' }}>file</dt>
+            <dt style={{ color: colors.textMuted }}>file</dt>
             <dd style={{ margin: 0 }}>{selectedNode.file}</dd>
-            <dt style={{ color: '#94a3b8' }}>lines</dt>
+            <dt style={{ color: colors.textMuted }}>lines</dt>
             <dd style={{ margin: 0 }}>
               {selectedNode.line_start}-{selectedNode.line_end}
             </dd>
             {selectedNode.source && (
               <>
-                <dt style={{ color: '#94a3b8' }}>source</dt>
+                <dt style={{ color: colors.textMuted }}>source</dt>
                 <dd style={{ margin: 0 }}>{selectedNode.source}</dd>
               </>
             )}
@@ -128,17 +132,17 @@ export function DetailsPanel({
       {pane?.kind === 'source' && (
         <div style={{ marginTop: 16 }}>
           <PaneHeader title="Source" onClose={onClosePane} />
-          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status === 'error' && (
-            <p role="alert" style={{ color: '#fca5a5' }}>
+            <p role="alert" style={{ color: colors.danger }}>
               {pane.message}
             </p>
           )}
           {pane.status === 'loaded' && (
             <pre
               style={{
-                background: '#0f172a',
-                border: '1px solid #1e293b',
+                background: colors.bgPage,
+                border: `1px solid ${colors.bgPanel}`,
                 borderRadius: 6,
                 padding: 10,
                 overflowX: 'auto',
@@ -155,7 +159,7 @@ export function DetailsPanel({
       {pane?.kind === 'doc' && (
         <div style={{ marginTop: 16 }}>
           <PaneHeader title="Document" onClose={onClosePane} />
-          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status !== 'loading' && (
             <DocPane
               pane={pane}
@@ -185,9 +189,9 @@ export function DetailsPanel({
       {pane?.kind === 'impact' && (
         <div style={{ marginTop: 16 }}>
           <PaneHeader title="Impact Analysis" onClose={onClosePane} />
-          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status === 'error' && (
-            <p role="alert" style={{ color: '#fca5a5' }}>
+            <p role="alert" style={{ color: colors.danger }}>
               {pane.message}
             </p>
           )}
@@ -200,9 +204,9 @@ export function DetailsPanel({
       {pane?.kind === 'complexity' && (
         <div style={{ marginTop: 16 }}>
           <PaneHeader title="Performance Report" onClose={onClosePane} />
-          {pane.status === 'loading' && <p style={{ color: '#94a3b8' }}>Loading…</p>}
+          {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status === 'error' && (
-            <p role="alert" style={{ color: '#fca5a5' }}>
+            <p role="alert" style={{ color: colors.danger }}>
               {pane.message}
             </p>
           )}
@@ -241,10 +245,11 @@ function PaneHeader({ title, onClose }: { title: string; onClose: () => void }) 
         type="button"
         aria-label={`Close ${title} panel`}
         onClick={onClose}
+        className="sv-interactive"
         style={{
           background: 'transparent',
           border: 'none',
-          color: '#94a3b8',
+          color: colors.textMuted,
           cursor: 'pointer',
           fontSize: 16,
           lineHeight: 1,
@@ -265,7 +270,7 @@ function ImpactCallers({
   onSelectCaller: (nodeId: string) => void
 }) {
   if (result.callers.length === 0) {
-    return <p style={{ color: '#94a3b8' }}>No callers found.</p>
+    return <p style={{ color: colors.textMuted }}>No callers found.</p>
   }
 
   const direct = result.callers.filter((caller) => caller.direct)
@@ -274,7 +279,7 @@ function ImpactCallers({
   return (
     <div>
       {result.cycles.length > 0 && (
-        <p role="alert" style={{ color: '#fca5a5', margin: '0 0 8px' }}>
+        <p role="alert" style={{ color: colors.danger, margin: '0 0 8px' }}>
           Circular call chain detected.
         </p>
       )}
@@ -303,7 +308,7 @@ function CallerGroup({
 }) {
   return (
     <div style={{ marginBottom: 12 }}>
-      <h4 style={{ fontSize: 11, textTransform: 'uppercase', color: '#94a3b8', margin: '0 0 4px' }}>
+      <h4 style={{ fontSize: 11, textTransform: 'uppercase', color: colors.textMuted, margin: '0 0 4px' }}>
         {title}
       </h4>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -313,19 +318,20 @@ function CallerGroup({
               type="button"
               aria-label={`View caller ${caller.id}`}
               onClick={() => onSelectCaller(caller.id)}
+              className="sv-interactive"
               style={{
                 display: 'block',
                 width: '100%',
                 textAlign: 'left',
                 background: 'transparent',
                 border: 'none',
-                color: '#f8fafc',
+                color: colors.textPrimary,
                 padding: '4px 0',
                 cursor: 'pointer',
                 fontSize: 12,
               }}
             >
-              {caller.id} <span style={{ color: '#64748b' }}>(depth {caller.depth})</span>
+              {caller.id} <span style={{ color: colors.textDim }}>(depth {caller.depth})</span>
             </button>
           </li>
         ))}

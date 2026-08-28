@@ -1,5 +1,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { NodeKind } from '../api/types'
+import { colors as themeColors } from '../theme'
+import { formatNodeLabel } from './accessorLabel'
 
 export interface GraphNodeData extends Record<string, unknown> {
   label: string
@@ -7,6 +9,9 @@ export interface GraphNodeData extends Record<string, unknown> {
   file: string
   lineStart: number
   lineEnd: number
+  /** JS/TS getter/setter marker -- see `accessorLabel.ts`. `undefined`
+   * for every node that isn't a getter/setter. */
+  accessorKind?: 'get' | 'set' | null
   /** Set only while the complexity heatmap is on, and only for `function`
    * nodes (the only kind with a complexity score) -- overrides the
    * kind-based background below rather than replacing it, so turning the
@@ -47,15 +52,17 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
           ? '▾ '
           : null
 
+  const displayLabel = formatNodeLabel(nodeData.label, nodeData.accessorKind)
+
   return (
     <div
-      title={nodeData.label}
+      title={displayLabel}
       style={{
         background: nodeData.heatmapColor ?? colors.background,
-        border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
+        border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         borderRadius: 6,
         padding: '6px 12px',
-        color: '#f8fafc',
+        color: themeColors.textPrimary,
         fontSize: 12,
         fontFamily: 'ui-sans-serif, system-ui, sans-serif',
         minWidth: 120,
@@ -64,7 +71,7 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         textAlign: 'center',
-        boxShadow: selected ? '0 0 0 2px #f8fafc' : 'none',
+        boxShadow: selected ? `0 0 0 2px ${themeColors.textPrimary}` : 'none',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -79,7 +86,7 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
           {chevron}
         </span>
       )}
-      {nodeData.label}
+      {displayLabel}
       {nodeData.hiddenDescendantCount ? ` (${nodeData.hiddenDescendantCount})` : ''}
       <Handle type="source" position={Position.Bottom} />
     </div>

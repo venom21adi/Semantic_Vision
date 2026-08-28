@@ -8,6 +8,7 @@ what Milestone 2's FastAPI layer will serialize directly.
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -53,6 +54,12 @@ class Node(BaseModel):
     see a given table name wins and no other source's node is compared
     against it. `None` for every node kind that only ever has one
     source."""
+    accessor_kind: Literal["get", "set"] | None = None
+    """JS/TS getter/setter marker (`get foo()` / `set foo(v)`), set only
+    on a FUNCTION node produced from one of those. `label` deliberately
+    stays the bare method name regardless (see `resolver/symbol_table.py`)
+    -- this field is purely presentational, for a UI that wants to show
+    "get foo"/"set foo" instead of two identically-labeled boxes."""
 
 
 class Edge(BaseModel):

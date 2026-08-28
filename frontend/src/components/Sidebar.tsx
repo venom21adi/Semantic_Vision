@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GraphEdge, GraphNode } from '../api/types'
+import { colors } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { Tree } from './Tree'
 import { buildTree, collectMatchIds, collectVisiblePath } from '../tree/buildTree'
@@ -63,7 +64,7 @@ export function Sidebar({
         style={{
           width: 28,
           flexShrink: 0,
-          borderRight: '1px solid #1e293b',
+          borderRight: `1px solid ${colors.bgPanel}`,
           padding: '8px 4px',
         }}
       >
@@ -77,7 +78,7 @@ export function Sidebar({
       style={{
         width: 260,
         flexShrink: 0,
-        borderRight: '1px solid #1e293b',
+        borderRight: `1px solid ${colors.bgPanel}`,
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
@@ -91,13 +92,14 @@ export function Sidebar({
             type="button"
             aria-pressed={view === option}
             onClick={() => onViewChange(option)}
+            className="sv-interactive"
             style={{
               flex: 1,
               padding: '4px 8px',
               borderRadius: 4,
-              border: '1px solid #334155',
-              background: view === option ? '#2563eb' : 'transparent',
-              color: '#f8fafc',
+              border: `1px solid ${colors.border}`,
+              background: view === option ? colors.accent : 'transparent',
+              color: colors.textPrimary,
               fontSize: 12,
               cursor: 'pointer',
               textTransform: 'capitalize',
@@ -113,13 +115,14 @@ export function Sidebar({
           type="button"
           aria-pressed={complexityActive}
           onClick={onToggleComplexity}
+          className="sv-interactive"
           style={{
             width: '100%',
             padding: '4px 8px',
             borderRadius: 4,
-            border: '1px solid #334155',
-            background: complexityActive ? '#b45309' : 'transparent',
-            color: '#f8fafc',
+            border: `1px solid ${colors.border}`,
+            background: complexityActive ? colors.complexityActiveBg : 'transparent',
+            color: colors.textPrimary,
             fontSize: 12,
             cursor: 'pointer',
           }}
@@ -133,13 +136,14 @@ export function Sidebar({
           type="button"
           aria-pressed={dataSourceActive}
           onClick={onToggleDataSource}
+          className="sv-interactive"
           style={{
             width: '100%',
             padding: '4px 8px',
             borderRadius: 4,
-            border: '1px solid #334155',
-            background: dataSourceActive ? '#0e7490' : 'transparent',
-            color: '#f8fafc',
+            border: `1px solid ${colors.border}`,
+            background: dataSourceActive ? colors.dataSourceActiveBg : 'transparent',
+            color: colors.textPrimary,
             fontSize: 12,
             cursor: 'pointer',
           }}
@@ -150,20 +154,21 @@ export function Sidebar({
 
       {view === 'codebase' && (
         <div style={{ display: 'flex', padding: '0 8px 8px', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>
+          <span style={{ fontSize: 11, color: colors.textMuted }}>
             {selectedRootIds.size} selected
           </span>
           <button
             type="button"
             onClick={onResetSelection}
             disabled={selectedRootIds.size === 0}
+            className="sv-interactive"
             style={{
               marginLeft: 'auto',
               padding: '4px 8px',
               borderRadius: 4,
-              border: '1px solid #334155',
+              border: `1px solid ${colors.border}`,
               background: 'transparent',
-              color: selectedRootIds.size === 0 ? '#475569' : '#f8fafc',
+              color: selectedRootIds.size === 0 ? colors.disabled : colors.textPrimary,
               fontSize: 12,
               cursor: selectedRootIds.size === 0 ? 'default' : 'pointer',
             }}
@@ -178,13 +183,14 @@ export function Sidebar({
           <button
             type="button"
             onClick={onExpandAll}
+            className="sv-interactive"
             style={{
               flex: 1,
               padding: '4px 8px',
               borderRadius: 4,
-              border: '1px solid #334155',
+              border: `1px solid ${colors.border}`,
               background: 'transparent',
-              color: '#f8fafc',
+              color: colors.textPrimary,
               fontSize: 12,
               cursor: 'pointer',
             }}
@@ -194,13 +200,14 @@ export function Sidebar({
           <button
             type="button"
             onClick={onCollapseAll}
+            className="sv-interactive"
             style={{
               flex: 1,
               padding: '4px 8px',
               borderRadius: 4,
-              border: '1px solid #334155',
+              border: `1px solid ${colors.border}`,
               background: 'transparent',
-              color: '#f8fafc',
+              color: colors.textPrimary,
               fontSize: 12,
               cursor: 'pointer',
             }}
@@ -224,9 +231,9 @@ export function Sidebar({
             width: '100%',
             padding: '5px 24px 5px 8px',
             borderRadius: 4,
-            border: '1px solid #334155',
-            background: '#0f172a',
-            color: '#f8fafc',
+            border: `1px solid ${colors.border}`,
+            background: colors.bgPage,
+            color: colors.textPrimary,
             fontSize: 12,
             boxSizing: 'border-box',
           }}
@@ -236,13 +243,14 @@ export function Sidebar({
             type="button"
             aria-label="Clear filter"
             onClick={() => setQuery('')}
+            className="sv-interactive"
             style={{
               position: 'absolute',
               right: 14,
               top: 5,
               background: 'transparent',
               border: 'none',
-              color: '#94a3b8',
+              color: colors.textMuted,
               cursor: 'pointer',
               fontSize: 14,
               lineHeight: 1,
@@ -254,7 +262,7 @@ export function Sidebar({
       </div>
 
       {isFiltering && (
-        <p role="status" style={{ margin: '0 8px 8px', fontSize: 11, color: '#94a3b8' }}>
+        <p role="status" style={{ margin: '0 8px 8px', fontSize: 11, color: colors.textMuted }}>
           {matchIds.size} match{matchIds.size === 1 ? '' : 'es'}
         </p>
       )}

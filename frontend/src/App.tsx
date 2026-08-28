@@ -29,6 +29,7 @@ import { RepoLoader } from './components/RepoLoader'
 import { Sidebar, type GraphView } from './components/Sidebar'
 import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
 import { buildFlowchartGraph } from './flowchart/transform'
+import { formatNodeLabel } from './graph/accessorLabel'
 import {
   buildVisibleGraph,
   collapseToOutermost,
@@ -38,6 +39,7 @@ import {
 import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './graph/GraphCanvas'
 import { scopeToFile } from './graph/transform'
 import { useLayoutWorker } from './graph/useLayoutWorker'
+import { colors } from './theme'
 import { rootNodeIds } from './tree/buildTree'
 import {
   dismissDocSaveNotice,
@@ -564,7 +566,8 @@ export default function App() {
   const handleExecutionFlowchart = useCallback(
     async (nodeId: string) => {
       if (!repo) return
-      const label = repo.nodes.find((node) => node.id === nodeId)?.label ?? nodeId
+      const targetNode = repo.nodes.find((node) => node.id === nodeId)
+      const label = targetNode ? formatNodeLabel(targetNode.label, targetNode.accessor_kind) : nodeId
       setSelectedNodeId(nodeId)
       setFlowchartState({ status: 'loading', label })
       try {
@@ -819,12 +822,12 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        background: '#0f172a',
-        color: '#f8fafc',
+        background: colors.bgPage,
+        color: colors.textPrimary,
         fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <header style={{ padding: 12, borderBottom: '1px solid #1e293b' }}>
+      <header style={{ padding: 12, borderBottom: `1px solid ${colors.bgPanel}` }}>
         <RepoLoader
           onLoad={handleLoad}
           loading={loading}
@@ -871,17 +874,17 @@ export default function App() {
         )}
         <main style={{ flex: 1, minWidth: 0 }}>
           {!repo && !flowchartState && (
-            <div style={{ padding: 24, color: '#94a3b8' }}>
+            <div style={{ padding: 24, color: colors.textMuted }}>
               Load a repository to see its codebase graph.
             </div>
           )}
           {repo && !flowchartState && showFileViewPlaceholder && (
-            <div style={{ padding: 24, color: '#94a3b8' }}>
+            <div style={{ padding: 24, color: colors.textMuted }}>
               Select a file, class, or function to see its file view.
             </div>
           )}
           {repo && !flowchartState && !showFileViewPlaceholder && showEmptySelectionPlaceholder && (
-            <div style={{ padding: 24, color: '#94a3b8' }}>
+            <div style={{ padding: 24, color: colors.textMuted }}>
               Select a directory or file in the sidebar to add it to the canvas.
             </div>
           )}
@@ -890,7 +893,7 @@ export default function App() {
             !showFileViewPlaceholder &&
             !showEmptySelectionPlaceholder &&
             (layout.status === 'idle' || layout.status === 'laying-out') && (
-              <div style={{ padding: 24, color: '#94a3b8' }}>
+              <div style={{ padding: 24, color: colors.textMuted }}>
                 Laying out {scopedGraph.nodes.length} nodes…
               </div>
             )}
@@ -900,7 +903,7 @@ export default function App() {
             !showEmptySelectionPlaceholder &&
             layout.status === 'error' && (
               <div style={{ padding: 24 }}>
-                <span role="alert" style={{ color: '#fca5a5' }}>
+                <span role="alert" style={{ color: colors.danger }}>
                   Failed to lay out the graph. Try switching views or reloading the repository.
                 </span>
               </div>
@@ -929,21 +932,22 @@ export default function App() {
               />
             )}
           {flowchartState?.status === 'loading' && (
-            <div style={{ padding: 24, color: '#94a3b8' }}>Loading flowchart…</div>
+            <div style={{ padding: 24, color: colors.textMuted }}>Loading flowchart…</div>
           )}
           {flowchartState?.status === 'error' && (
             <div style={{ padding: 24 }}>
-              <span role="alert" style={{ color: '#fca5a5' }}>
+              <span role="alert" style={{ color: colors.danger }}>
                 {flowchartState.message}
               </span>
               <div style={{ marginTop: 12 }}>
                 <button
                   onClick={handleBackToGraph}
+                  className="sv-interactive"
                   style={{
-                    background: '#1e293b',
-                    border: '1px solid #334155',
+                    background: colors.bgPanel,
+                    border: `1px solid ${colors.border}`,
                     borderRadius: 4,
-                    color: '#f8fafc',
+                    color: colors.textPrimary,
                     padding: '4px 10px',
                     fontSize: 12,
                     cursor: 'pointer',

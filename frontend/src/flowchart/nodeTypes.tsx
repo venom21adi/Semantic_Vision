@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { FlowNodeKind } from '../api/types'
+import { colors as themeColors } from '../theme'
 
 export interface FlowNodeData extends Record<string, unknown> {
   label: string
@@ -23,7 +24,7 @@ function tooltip(data: FlowNodeData): string {
 }
 
 const BASE_TEXT_STYLE = {
-  color: '#f8fafc',
+  color: themeColors.textPrimary,
   fontSize: 12,
   fontFamily: 'ui-sans-serif, system-ui, sans-serif',
   textAlign: 'center' as const,
@@ -41,12 +42,12 @@ function StatementNode({ data, selected }: NodeProps) {
       style={{
         ...BASE_TEXT_STYLE,
         background: colors.background,
-        border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
+        border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         borderRadius: 6,
         padding: '6px 12px',
         minWidth: 120,
         maxWidth: 220,
-        boxShadow: selected ? '0 0 0 2px #f8fafc' : 'none',
+        boxShadow: selected ? `0 0 0 2px ${themeColors.textPrimary}` : 'none',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -65,12 +66,12 @@ function StadiumNode({ data, selected }: NodeProps) {
       style={{
         ...BASE_TEXT_STYLE,
         background: colors.background,
-        border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
+        border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         borderRadius: 999,
         padding: '6px 16px',
         minWidth: 120,
         maxWidth: 220,
-        boxShadow: selected ? '0 0 0 2px #f8fafc' : 'none',
+        boxShadow: selected ? `0 0 0 2px ${themeColors.textPrimary}` : 'none',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -89,12 +90,12 @@ function DiamondNode({ data, selected }: NodeProps) {
       style={{
         ...BASE_TEXT_STYLE,
         background: colors.background,
-        border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
+        border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
         padding: '14px 28px',
         minWidth: 160,
         maxWidth: 260,
-        boxShadow: selected ? '0 0 0 2px #f8fafc' : 'none',
+        boxShadow: selected ? `0 0 0 2px ${themeColors.textPrimary}` : 'none',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -113,12 +114,12 @@ function ParallelogramNode({ data, selected }: NodeProps) {
       style={{
         ...BASE_TEXT_STYLE,
         background: colors.background,
-        border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
+        border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         clipPath: 'polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)',
         padding: '8px 24px',
         minWidth: 140,
         maxWidth: 240,
-        boxShadow: selected ? '0 0 0 2px #f8fafc' : 'none',
+        boxShadow: selected ? `0 0 0 2px ${themeColors.textPrimary}` : 'none',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -141,12 +142,12 @@ function SubprocessNode({ data, selected }: NodeProps) {
         ...BASE_TEXT_STYLE,
         position: 'relative',
         background: colors.background,
-        border: `2px solid ${selected ? '#f8fafc' : colors.border}`,
+        border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         borderRadius: 4,
         padding: '6px 18px',
         minWidth: 130,
         maxWidth: 230,
-        boxShadow: selected ? '0 0 0 2px #f8fafc' : 'none',
+        boxShadow: selected ? `0 0 0 2px ${themeColors.textPrimary}` : 'none',
       }}
     >
       <Handle type="target" position={Position.Top} />

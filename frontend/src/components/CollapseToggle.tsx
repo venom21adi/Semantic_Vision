@@ -1,3 +1,5 @@
+import { colors } from '../theme'
+
 interface CollapseToggleProps {
   collapsed: boolean
   onClick: () => void
@@ -15,11 +17,12 @@ export function CollapseToggle({ collapsed, onClick, edge, paneName }: CollapseT
       type="button"
       aria-label={`${collapsed ? 'Expand' : 'Collapse'} ${paneName}`}
       onClick={onClick}
+      className="sv-interactive"
       style={{
         background: 'transparent',
-        border: '1px solid #334155',
+        border: `1px solid ${colors.border}`,
         borderRadius: 4,
-        color: '#94a3b8',
+        color: colors.textMuted,
         cursor: 'pointer',
         fontSize: 12,
         lineHeight: 1,

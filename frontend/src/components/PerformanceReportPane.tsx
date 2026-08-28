@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getImpact } from '../api/client'
 import type { Caller, ComplexityScore } from '../api/types'
+import { colors } from '../theme'
 import {
   COMPLEX_COLOR,
   MODERATE_COLOR,
@@ -18,7 +19,7 @@ interface PerformanceReportPaneProps {
 
 function Legend() {
   return (
-    <div style={{ marginBottom: 10, fontSize: 11, color: '#94a3b8' }}>
+    <div style={{ marginBottom: 10, fontSize: 11, color: colors.textMuted }}>
       <p style={{ margin: '0 0 6px' }}>
         Ranked by cyclomatic complexity — roughly, how many independent paths through each
         function. Click a name to select it; use ▸ to see who directly calls it.
@@ -65,7 +66,7 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
   const [drillDown, setDrillDown] = useState<DrillDown | null>(null)
 
   if (scores.length === 0) {
-    return <p style={{ color: '#94a3b8' }}>No functions found.</p>
+    return <p style={{ color: colors.textMuted }}>No functions found.</p>
   }
 
   const scoresByNodeId = new Map(scores.map((score) => [score.node_id, score]))
@@ -117,13 +118,14 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
               <button
                 type="button"
                 onClick={() => onSelectNode(score.node_id)}
+                className="sv-interactive"
                 style={{
                   flex: 1,
                   minWidth: 0,
                   textAlign: 'left',
                   background: 'transparent',
                   border: 'none',
-                  color: '#f8fafc',
+                  color: colors.textPrimary,
                   padding: '2px 0',
                   cursor: 'pointer',
                   fontSize: 12,
@@ -132,7 +134,7 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
                   whiteSpace: 'nowrap',
                 }}
               >
-                {score.node_id} <span style={{ color: '#64748b' }}>({scoreDetail(score)})</span>
+                {score.node_id} <span style={{ color: colors.textDim }}>({scoreDetail(score)})</span>
               </button>
               <button
                 type="button"
@@ -145,10 +147,11 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
                   drillDown?.nodeId === score.node_id ? 'Hide direct callers' : 'Show direct callers'
                 }
                 onClick={() => void toggleDrillDown(score.node_id)}
+                className="sv-interactive"
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: '#94a3b8',
+                  color: colors.textMuted,
                   cursor: 'pointer',
                   fontSize: 12,
                   padding: '0 4px',
@@ -161,18 +164,18 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
             {drillDown?.nodeId === score.node_id && (
               <div style={{ marginLeft: 16, marginTop: 2 }}>
                 {drillDown.status === 'loading' && (
-                  <p style={{ color: '#94a3b8', fontSize: 11, margin: 0 }}>Loading…</p>
+                  <p style={{ color: colors.textMuted, fontSize: 11, margin: 0 }}>Loading…</p>
                 )}
                 {drillDown.status === 'error' && (
-                  <p role="alert" style={{ color: '#fca5a5', fontSize: 11, margin: 0 }}>
+                  <p role="alert" style={{ color: colors.danger, fontSize: 11, margin: 0 }}>
                     {drillDown.message}
                   </p>
                 )}
                 {drillDown.status === 'loaded' && drillDown.callers.length === 0 && (
-                  <p style={{ color: '#94a3b8', fontSize: 11, margin: 0 }}>No direct callers.</p>
+                  <p style={{ color: colors.textMuted, fontSize: 11, margin: 0 }}>No direct callers.</p>
                 )}
                 {drillDown.status === 'loaded' && drillDown.callers.length > 0 && (
-                  <p style={{ color: '#64748b', fontSize: 11, margin: '0 0 2px' }}>
+                  <p style={{ color: colors.textDim, fontSize: 11, margin: '0 0 2px' }}>
                     Direct callers (functions that call this one):
                   </p>
                 )}
@@ -184,13 +187,14 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
                         key={caller.id}
                         type="button"
                         onClick={() => onSelectNode(caller.id)}
+                        className="sv-interactive"
                         style={{
                           display: 'block',
                           width: '100%',
                           textAlign: 'left',
                           background: 'transparent',
                           border: 'none',
-                          color: '#cbd5e1',
+                          color: colors.textFaint,
                           padding: '2px 0',
                           cursor: 'pointer',
                           fontSize: 11,

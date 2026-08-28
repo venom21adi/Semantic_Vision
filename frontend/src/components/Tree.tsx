@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { NodeKind } from '../api/types'
+import { formatNodeLabel } from '../graph/accessorLabel'
 import { CONTAINER_KINDS } from '../graph/collapseDirectories'
 import { KIND_COLORS } from '../graph/nodeTypes'
+import { colors as themeColors } from '../theme'
 import { isExpandedByDefault, type TreeNode } from '../tree/buildTree'
 
 /** Kinds that get their own "show on canvas" checkbox in addition to
@@ -56,6 +58,7 @@ export function Tree({
     const hasChildren = item.children.length > 0
     const isMatch = matchIds.has(item.node.id)
     const colors = KIND_COLORS[item.node.kind]
+    const displayLabel = formatNodeLabel(item.node.label, item.node.accessor_kind)
 
     return (
       <li key={item.node.id}>
@@ -72,6 +75,7 @@ export function Tree({
               onSelectNode(item.node.id)
             }
           }}
+          className="sv-row"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -81,23 +85,24 @@ export function Tree({
             paddingBottom: 3,
             cursor: 'pointer',
             fontSize: 13,
-            background: item.node.id === selectedNodeId ? '#1e3a5f' : 'transparent',
-            outline: isMatch ? '1px solid #fbbf24' : 'none',
+            background: item.node.id === selectedNodeId ? themeColors.infoBg : 'transparent',
+            outline: isMatch ? `1px solid ${themeColors.matchHighlight}` : 'none',
             borderRadius: 3,
           }}
         >
           {hasChildren ? (
             <button
               type="button"
-              aria-label={expanded ? `Collapse ${item.node.label}` : `Expand ${item.node.label}`}
+              aria-label={expanded ? `Collapse ${displayLabel}` : `Expand ${displayLabel}`}
               onClick={(event) => {
                 event.stopPropagation()
                 toggle(item.node.id, defaultExpanded)
               }}
+              className="sv-interactive"
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#94a3b8',
+                color: themeColors.textMuted,
                 cursor: 'pointer',
                 width: 14,
                 padding: 0,
@@ -114,7 +119,7 @@ export function Tree({
             ADDITIONAL_SELECTABLE_KINDS.has(item.node.kind) ? (
               <input
                 type="checkbox"
-                aria-label={`Show ${item.node.label} on canvas`}
+                aria-label={`Show ${displayLabel} on canvas`}
                 checked={selectedRootIds.has(item.node.id)}
                 onClick={(event) => event.stopPropagation()}
                 // The row wrapper's own `onKeyDown` (Space/Enter -> select)
@@ -146,10 +151,10 @@ export function Tree({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              color: '#f8fafc',
+              color: themeColors.textPrimary,
             }}
           >
-            {item.node.label}
+            {displayLabel}
           </span>
         </div>
         {hasChildren && expanded && (

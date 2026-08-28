@@ -106,6 +106,7 @@ def _register_class(
                 file=rel_path,
                 line_start=method.lineno,
                 line_end=method.end_lineno,
+                accessor_kind=method.accessor_kind,
             )
         )
         defines_edges.append(Edge(source=class_id, target=method_id, kind=EdgeKind.DEFINES))

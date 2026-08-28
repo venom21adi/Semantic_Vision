@@ -15,6 +15,8 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { ComplexityScore, NodePosition } from '../api/types'
+import { colors } from '../theme'
+import { formatNodeLabel } from './accessorLabel'
 import type { ContainerVisibility } from './collapseDirectories'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
 import { complexityToColor } from './heatmap'
@@ -242,9 +244,10 @@ function GraphCanvasInner({
     (event, node) => {
       event.preventDefault()
       onSelectNode(node.id)
+      const nodeData = node.data as GraphNodeData
       setContextMenu({
         nodeId: node.id,
-        label: (node.data as GraphNodeData).label,
+        label: formatNodeLabel(nodeData.label, nodeData.accessorKind),
         x: event.clientX,
         y: event.clientY,
       })
@@ -265,8 +268,8 @@ function GraphCanvasInner({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,
-            background: '#7c2d12',
-            color: '#fed7aa',
+            background: colors.warningBg,
+            color: colors.warningText,
             padding: '6px 14px',
             borderRadius: 6,
             fontSize: 13,
@@ -284,8 +287,8 @@ function GraphCanvasInner({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,
-            background: '#1e3a5f',
-            color: '#bfdbfe',
+            background: colors.infoBg,
+            color: colors.infoText,
             padding: '6px 14px',
             borderRadius: 6,
             fontSize: 13,

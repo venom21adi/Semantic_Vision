@@ -303,4 +303,45 @@ describe('Tree', () => {
 
     expect(screen.queryByLabelText('Show app.py on canvas')).not.toBeInTheDocument()
   })
+
+  it('shows a getter and setter with distinct "get "/"set " prefixes, not two identical rows', () => {
+    const getterNode: GraphNode = {
+      id: 'app.ts::Box.value#get',
+      kind: 'function',
+      label: 'value',
+      file: 'app.ts',
+      line_start: 2,
+      line_end: 4,
+      accessor_kind: 'get',
+    }
+    const setterNode: GraphNode = {
+      id: 'app.ts::Box.value#set',
+      kind: 'function',
+      label: 'value',
+      file: 'app.ts',
+      line_start: 6,
+      line_end: 8,
+      accessor_kind: 'set',
+    }
+    const accessorRoots: TreeNode[] = [
+      { node: getterNode, children: [] },
+      { node: setterNode, children: [] },
+    ]
+
+    render(
+      <Tree
+        roots={accessorRoots}
+        selectedNodeId={null}
+        onSelectNode={vi.fn()}
+        visibleIds={null}
+        matchIds={new Set()}
+        selectedRootIds={new Set()}
+        onToggleRootSelection={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('get value')).toBeInTheDocument()
+    expect(screen.getByText('set value')).toBeInTheDocument()
+    expect(screen.queryByText('value')).not.toBeInTheDocument()
+  })
 })
