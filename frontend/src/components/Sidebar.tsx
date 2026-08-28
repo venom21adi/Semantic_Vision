@@ -93,6 +93,11 @@ export function Sidebar({
             aria-pressed={view === option}
             onClick={() => onViewChange(option)}
             className="sv-interactive"
+            title={
+              option === 'codebase'
+                ? 'Show the whole repository as one graph'
+                : "Show only the selected file's own structure"
+            }
             style={{
               flex: 1,
               padding: `${spacing.xs}px ${spacing.sm}px`,
@@ -110,12 +115,25 @@ export function Sidebar({
         ))}
       </div>
 
+      <div
+        style={{
+          padding: `${spacing.xs}px ${spacing.sm}px 2px`,
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: colors.textDim,
+        }}
+      >
+        Analysis
+      </div>
       <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
         <button
           type="button"
           aria-pressed={complexityActive}
           onClick={onToggleComplexity}
           className="sv-interactive"
+          title="Highlight every function by cyclomatic complexity and rank them in a report"
           style={{
             width: '100%',
             padding: `${spacing.xs}px ${spacing.sm}px`,
@@ -137,6 +155,7 @@ export function Sidebar({
           aria-pressed={dataSourceActive}
           onClick={onToggleDataSource}
           className="sv-interactive"
+          title="Add tables and models from SQLAlchemy, dbt, or a live database to this graph"
           style={{
             width: '100%',
             padding: `${spacing.xs}px ${spacing.sm}px`,
@@ -155,13 +174,30 @@ export function Sidebar({
       {view === 'codebase' && (
         <div
           style={{
+            padding: `${spacing.xs}px ${spacing.sm}px 2px`,
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            color: colors.textDim,
+          }}
+        >
+          Canvas
+        </div>
+      )}
+      {view === 'codebase' && (
+        <div
+          style={{
             display: 'flex',
             padding: `0 ${spacing.sm}px ${spacing.sm}px`,
             gap: spacing.sm,
             alignItems: 'center',
           }}
         >
-          <span style={{ fontSize: 11, color: colors.textMuted }}>
+          <span
+            style={{ fontSize: 11, color: colors.textMuted }}
+            title="How many directories, files, or tables are currently checked to appear on the canvas"
+          >
             {selectedRootIds.size} selected
           </span>
           <button
@@ -169,6 +205,7 @@ export function Sidebar({
             onClick={onResetSelection}
             disabled={selectedRootIds.size === 0}
             className="sv-interactive"
+            title="Clear everything from the canvas"
             style={{
               marginLeft: 'auto',
               padding: `${spacing.xs}px ${spacing.sm}px`,
@@ -193,6 +230,7 @@ export function Sidebar({
             type="button"
             onClick={onExpandAll}
             className="sv-interactive"
+            title="Expand every directory and file already on the canvas"
             style={{
               flex: 1,
               padding: `${spacing.xs}px ${spacing.sm}px`,
@@ -210,6 +248,7 @@ export function Sidebar({
             type="button"
             onClick={onCollapseAll}
             className="sv-interactive"
+            title="Collapse every directory and file back down"
             style={{
               flex: 1,
               padding: `${spacing.xs}px ${spacing.sm}px`,
@@ -236,6 +275,7 @@ export function Sidebar({
           }}
           placeholder="Filter files and functions"
           aria-label="Filter tree"
+          title="Filter the tree below by file or function name"
           style={{
             width: '100%',
             padding: `5px ${spacing.xl}px 5px ${spacing.sm}px`,
@@ -251,6 +291,7 @@ export function Sidebar({
           <button
             type="button"
             aria-label="Clear filter"
+            title="Clear filter"
             onClick={() => setQuery('')}
             className="sv-interactive"
             style={{

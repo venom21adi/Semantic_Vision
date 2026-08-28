@@ -90,6 +90,7 @@ export function RepoLoader({
             onChange={(event) => setPath(event.target.value)}
             placeholder="Absolute path to a repository"
             aria-label="Repository path"
+            title="Absolute path to a local Python or JavaScript/TypeScript repository"
             style={{
               flex: 1,
               padding: '6px 10px',
@@ -104,6 +105,7 @@ export function RepoLoader({
             value={language}
             onChange={(event) => setLanguage(event.target.value)}
             aria-label="Language"
+            title="Which language's parser to use for this repository"
             style={{
               padding: '6px 10px',
               borderRadius: radius.sm,
@@ -120,6 +122,7 @@ export function RepoLoader({
             type="submit"
             disabled={loading || path.trim().length === 0}
             className="sv-interactive"
+            title="Parse the repository and build its graph"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -145,6 +148,7 @@ export function RepoLoader({
         <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center', marginTop: 6 }}>
           <label
             htmlFor="doc-root-input"
+            title="Where dragged layout, saved docs, and analysis state are written -- defaults to the repo's .git root"
             style={{ fontSize: 11, color: colors.textDim, whiteSpace: 'nowrap' }}
           >
             Save location
@@ -163,6 +167,7 @@ export function RepoLoader({
             }}
             placeholder="Defaults to the nearest .git root"
             aria-label="Save location"
+            title="Where dragged layout, saved docs, and analysis state are written -- defaults to the repo's .git root"
             style={{
               flex: 1,
               maxWidth: 480,

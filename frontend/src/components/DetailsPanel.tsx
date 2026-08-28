@@ -251,6 +251,7 @@ function PaneHeader({ title, onClose }: { title: string; onClose: () => void }) 
       <button
         type="button"
         aria-label={`Close ${title} panel`}
+        title={`Close ${title} panel`}
         onClick={onClose}
         className="sv-interactive"
         style={{

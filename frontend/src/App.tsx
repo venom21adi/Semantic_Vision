@@ -41,6 +41,7 @@ import { scopeToFile } from './graph/transform'
 import { useLayoutWorker } from './graph/useLayoutWorker'
 import { colors, font, spacing } from './theme'
 import { LogoMark } from './components/Logo'
+import { HelpGuide } from './components/HelpGuide'
 import { rootNodeIds } from './tree/buildTree'
 import {
   dismissDocSaveNotice,
@@ -919,6 +920,7 @@ export default function App() {
             }
           />
         </div>
+        <HelpGuide />
       </header>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         {repo && (
@@ -957,6 +959,19 @@ export default function App() {
               <LogoMark size={40} bare />
               <div style={{ fontSize: 15, color: colors.textMuted }}>
                 Load a repository to see its codebase graph.
+              </div>
+              <div
+                style={{
+                  maxWidth: 360,
+                  textAlign: 'center',
+                  fontSize: 12,
+                  color: colors.textDim,
+                  lineHeight: 1.5,
+                }}
+              >
+                Paste an absolute path above and click Load. Once it's in, right-click any node for
+                docs, impact analysis, and execution flowcharts — see the <strong>?</strong> in the
+                top-right corner for a full walkthrough.
               </div>
             </div>
           )}

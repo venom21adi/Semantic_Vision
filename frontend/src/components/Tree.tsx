@@ -94,6 +94,7 @@ export function Tree({
             <button
               type="button"
               aria-label={expanded ? `Collapse ${displayLabel}` : `Expand ${displayLabel}`}
+              title={expanded ? `Collapse ${displayLabel}` : `Expand ${displayLabel}`}
               onClick={(event) => {
                 event.stopPropagation()
                 toggle(item.node.id, defaultExpanded)
@@ -120,6 +121,7 @@ export function Tree({
               <input
                 type="checkbox"
                 aria-label={`Show ${displayLabel} on canvas`}
+                title={`Show ${displayLabel} on canvas`}
                 checked={selectedRootIds.has(item.node.id)}
                 onClick={(event) => event.stopPropagation()}
                 // The row wrapper's own `onKeyDown` (Space/Enter -> select)

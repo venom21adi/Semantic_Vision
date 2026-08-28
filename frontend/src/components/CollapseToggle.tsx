@@ -12,10 +12,13 @@ export function CollapseToggle({ collapsed, onClick, edge, paneName }: CollapseT
   const expandChar = edge === 'left' ? '›' : '‹'
   const collapseChar = edge === 'left' ? '‹' : '›'
 
+  const label = `${collapsed ? 'Expand' : 'Collapse'} ${paneName}`
+
   return (
     <button
       type="button"
-      aria-label={`${collapsed ? 'Expand' : 'Collapse'} ${paneName}`}
+      aria-label={label}
+      title={label}
       onClick={onClick}
       className="sv-interactive"
       style={{

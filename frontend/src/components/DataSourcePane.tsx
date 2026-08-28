@@ -96,6 +96,7 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
             onChange={(event) => setManifestPath(event.target.value)}
             placeholder="/repo/target/manifest.json"
             aria-label="dbt manifest.json path"
+            title="Path to a manifest.json your own `dbt compile` already produced"
             style={{
               flex: 1,
               minWidth: 0,
@@ -152,6 +153,7 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
             onChange={(event) => setConnectionString(event.target.value)}
             placeholder="postgresql://readonly@host/db"
             aria-label="Database connection string"
+            title="A read-only connection string -- held only for this one request, never saved"
             style={{
               flex: 1,
               minWidth: 0,

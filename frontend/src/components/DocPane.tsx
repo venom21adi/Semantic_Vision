@@ -91,6 +91,7 @@ export function DocPane({
       <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm }}>
         <select
           aria-label="AI provider"
+          title="Which provider generates the documentation"
           value={provider}
           disabled={busy}
           onChange={(event) => onProviderChange(event.target.value as DocProvider)}
@@ -107,6 +108,7 @@ export function DocPane({
           onClick={onGenerate}
           disabled={busy}
           className="sv-interactive"
+          title="Generate Markdown documentation from this function's real source, callers, and callees"
           style={{
             background: colors.accentStrong,
             color: colors.textPrimary,
@@ -127,6 +129,7 @@ export function DocPane({
         >
           <select
             aria-label="Ollama model"
+            title="Which locally installed Ollama model to use"
             value={ollamaModel}
             disabled={busy || ollamaModels.length === 0}
             onChange={(event) => onOllamaModelChange(event.target.value)}
@@ -142,6 +145,7 @@ export function DocPane({
           <button
             type="button"
             aria-label="Refresh Ollama models"
+            title="Re-check which models you have pulled locally"
             onClick={onRefreshOllamaModels}
             disabled={ollamaModelsLoading}
             className="sv-interactive"
@@ -226,6 +230,7 @@ export function DocPane({
                 onClick={onSave}
                 disabled={pane.saved}
                 className="sv-interactive"
+                title={pane.saved ? 'Already saved' : `Write this documentation to ${docRoot}`}
                 style={{
                   background: pane.saved ? colors.bgPanel : colors.successBg,
                   color: colors.textPrimary,
@@ -242,6 +247,7 @@ export function DocPane({
                 type="button"
                 onClick={() => setIsEditing((prev) => !prev)}
                 className="sv-interactive"
+                title={isEditing ? 'Preview the rendered Markdown' : 'Edit the Markdown by hand before saving'}
                 style={secondaryButtonStyle}
               >
                 {isEditing ? 'Preview' : 'Edit'}
@@ -250,6 +256,7 @@ export function DocPane({
                 type="button"
                 onClick={handleExport}
                 className="sv-interactive"
+                title="Download this documentation as a .md file"
                 style={secondaryButtonStyle}
               >
                 Export
