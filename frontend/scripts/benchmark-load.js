@@ -10,6 +10,13 @@
  * Assumes the backend (http://localhost:8000) and frontend
  * (http://localhost:5173) dev servers are already running.
  *
+ * For any repo above GraphCanvas's 300-node threshold, the Codebase tree
+ * starts with nothing selected (`visibleIds` empty, App.tsx) -- so after
+ * data arrives, this script checks every top-level tree item's "Show on
+ * canvas" checkbox before waiting for a node to render, the same action a
+ * real user opening a large repo would take. Below the threshold every
+ * root already arrives pre-checked, so this is a no-op there.
+ *
  * Usage (from frontend/):
  *   node scripts/benchmark-load.js --repo "C:/AI_Voice/TTS/TTS" --label large
  *
@@ -82,6 +89,21 @@ async function main() {
         result.status = 'ERROR'
         result.error = await errorLocator.textContent().catch(() => null)
       } else {
+        // The Codebase tree starts with `visibleIds` empty for any repo
+        // above GraphCanvas's 300-node threshold (App.tsx) -- nothing
+        // renders until a root item's checkbox is checked. Below the
+        // threshold every root arrives pre-checked, so `.check()` (which
+        // no-ops if already checked, unlike `.click()`) is safe either way
+        // -- this mirrors a real user opening a large repo and ticking its
+        // top-level items, not a synthetic shortcut.
+        const rootCheckboxes = page.locator(
+          'ul[role="tree"] > li > div[role="treeitem"] > input[type="checkbox"]',
+        )
+        const rootCount = await rootCheckboxes.count()
+        for (let i = 0; i < rootCount; i++) {
+          await rootCheckboxes.nth(i).check()
+        }
+
         const renderOk = await page
           .waitForSelector('.react-flow__node', { timeout })
           .then(() => true)
