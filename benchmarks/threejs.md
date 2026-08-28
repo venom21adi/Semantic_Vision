@@ -21,7 +21,9 @@ directly.
 | Nodes | 6,014 |
 | Edges | 27,316 |
 | Parse errors | 0 |
-| Backend parse | 2.33s |
+| Backend parse (original, cache state undisclosed) | 2.33s |
+| Backend parse — cold | 29.33s |
+| Backend parse — warm | 1.98s |
 | Complexity index build | ~~17.69s~~ **2.93–3.01s, fixed — see below** |
 | `POST /api/parse-repo` | 3.12s |
 | `GET /api/graph` | 0.09s |
@@ -45,3 +47,10 @@ that this was a general, file-size-driven cost, not a webpack-only quirk.
 **Fixed** (branch `perf/js-ts-def-lookup`, same fix as webpack's): re-benchmarked on the same
 repo/commit after `ts_locate.py`/`ast_locate.py` switched to a build-once-per-file index —
 **2.93s and 3.01s** across two runs, a ~6x improvement.
+
+**Backend parse — cold vs. warm**: the original 2.33s figure never disclosed its OS-file-cache
+state. Re-benchmarked (alongside fastapi, webpack `lib/`, and nest) under a controlled procedure —
+a fresh shallow clone at the exact commit below, parsed once (**29.33s cold**), then parsed again
+immediately on the identical files (**1.98s warm**). Same universal cold/warm effect seen across
+every language in this comparison, not JavaScript-specific — see
+[the main README](README.md#cold-vs-warm-backend-parse-added-after-the-original-publish).

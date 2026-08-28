@@ -18,7 +18,8 @@ here.
 | Nodes | 6,848 |
 | Edges | 24,528 |
 | Parse errors | 2 |
-| Backend parse | 53.71s |
+| Backend parse — cold | ~~53.71s~~ **39.68s, re-measured under controlled cold-cache conditions — see below** |
+| Backend parse — warm | 2.48s |
 | Complexity index build | ~~7.51s~~ **1.88–2.05s, fixed — see below** |
 | `POST /api/parse-repo` | 5.32s |
 | `GET /api/graph` | 0.17s |
@@ -29,21 +30,30 @@ here.
 ## Notes
 
 Backend parse (53.71s, measured directly via `parse_repository`, the first-ever read of this
-freshly-cloned repo's files) is notably slower than FastAPI's 5.79s or webpack `lib/`'s 4.89s,
-despite a comparable-to-smaller node count than webpack. Observed directly, not root-caused here
-— a candidate factor is TypeScript's heavier use of decorators and type-only syntax (both central
-to NestJS's design) potentially costing more per file in the `tree-sitter-typescript` grammar than
-plain JavaScript does, but this wasn't confirmed.
+freshly-cloned repo's files) was originally notably slower than FastAPI's 5.79s or webpack
+`lib/`'s 4.89s, despite a comparable-to-smaller node count than webpack, and not root-caused at
+first publish beyond an unconfirmed guess (TypeScript's heavier decorator/type-only syntax costing
+more per file in the `tree-sitter-typescript` grammar).
 
-That cost doesn't reappear downstream: `POST /api/parse-repo` (5.32s) re-parses the same files a
-few seconds later through the live backend server and is roughly 10x faster than the direct call
-above — most plausibly the OS's own file cache warming between two back-to-back reads of the same
-1,907 files, not this app's own repo cache (which returns in well under a second, not 5.32s, once
-a path is actually cached). Browser render (6.85–6.88s) is in line with FastAPI and well ahead of
-webpack's `lib/`. Since first published, this repo has been re-benchmarked (see below) with a
-fully warm OS file cache: backend parse landed at 2.40s, consistent with the cold-cache theory
-above rather than anything TypeScript-specific — kept here as the original, honestly-reported
-first-run number rather than quietly revised away.
+That cost didn't reappear downstream: `POST /api/parse-repo` (5.32s) re-parsed the same files a
+few seconds later through the live backend server, roughly 10x faster than the direct call above
+— pointing at the OS's own file cache warming between two back-to-back reads of the same 1,907
+files, not this app's own repo cache (which returns in well under a second, not 5.32s, once a path
+is actually cached). Browser render (6.85–6.88s) is in line with FastAPI and well ahead of
+webpack's `lib/`.
+
+**Root-caused and confirmed** (not just theorized): this repo, along with fastapi, three.js, and
+webpack's `lib/`, was re-benchmarked under one explicit, controlled procedure — a fresh shallow
+clone at the exact commit below (never read by this machine before, the **cold** number) followed
+immediately by a second parse of the identical files (the **warm** number). Results: **39.68s
+cold, 2.48s warm** — a real, large, but entirely explainable-by-cache-state gap, and *not*
+TypeScript-specific: every language in the comparison (see
+[the main README](README.md#cold-vs-warm-backend-parse-added-after-the-original-publish)) showed
+the same 5.7x–16x cold/warm swing, including Python. Warm-to-warm, this repo (2.48s) is actually
+*faster* than fastapi's own warm number (4.08s) — the original headline "TypeScript is ~10x
+slower" reading doesn't survive controlling for cache state. Kept the original 53.71s figure
+struck through above (rather than deleted) so this remains an honestly-reported correction, not a
+quietly revised number.
 
 **Complexity-index build fixed** (branch `perf/js-ts-def-lookup`): same root cause and fix as
 [webpack.md](webpack.md#complexity-index-build--was-12813s-now-543583s-fixed) and

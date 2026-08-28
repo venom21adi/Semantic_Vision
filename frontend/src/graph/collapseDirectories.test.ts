@@ -226,6 +226,46 @@ describe('buildVisibleGraph', () => {
     const result = buildVisibleGraph(nodes, [], new Set(['does-not-exist']))
     expect(result).toEqual({ nodes: [], edges: [], containerState: new Map() })
   })
+
+  it('reflects each call\'s own visibleIds correctly when called repeatedly with the same edges array (parent-structure cache)', () => {
+    const nodes = [
+      node('pkg', 'directory'),
+      node('pkg/a.py', 'file', 'a.py'),
+      node('pkg/a.py::f', 'function', 'f'),
+    ]
+    const edges = [defines('pkg', 'pkg/a.py'), defines('pkg/a.py', 'pkg/a.py::f')]
+
+    // Repeated calls against the exact same `edges` array (as App.tsx's
+    // stable `codebaseGraph.edges` does across checkbox clicks) must not
+    // leak one call's `visibleIds` into another's result via the cached
+    // parent structure -- only `parentOf`/`childCountByParent` are shared;
+    // `representativeOf` is still computed fresh per call.
+    const collapsedToRoot = buildVisibleGraph(nodes, edges, new Set(['pkg']))
+    expect(collapsedToRoot.nodes.map((n) => n.id)).toEqual(['pkg'])
+
+    const drilledIntoFile = buildVisibleGraph(nodes, edges, new Set(['pkg/a.py']))
+    expect(drilledIntoFile.nodes.map((n) => n.id)).toEqual(['pkg/a.py'])
+
+    const backToRoot = buildVisibleGraph(nodes, edges, new Set(['pkg']))
+    expect(backToRoot.nodes.map((n) => n.id)).toEqual(['pkg'])
+  })
+
+  it('does not leak a cached parent structure across two distinct edges arrays with the same node ids', () => {
+    const nodes = [node('pkg', 'directory'), node('pkg/a.py', 'file', 'a.py'), node('pkg/b.py', 'file', 'b.py')]
+    // Same node ids, two different `defines` relationships (2 children vs.
+    // 1), two distinct `edges` array identities -- if a caching bug reused
+    // edgesA's parent structure for the edgesB call (e.g. one shared
+    // variable instead of a per-array cache), `pkg`'s hiddenDescendantCount
+    // below would wrongly stay 2 instead of dropping to 1.
+    const edgesA = [defines('pkg', 'pkg/a.py'), defines('pkg', 'pkg/b.py')]
+    const edgesB = [defines('pkg', 'pkg/a.py')]
+
+    const resultA = buildVisibleGraph(nodes, edgesA, new Set(['pkg']))
+    expect(resultA.containerState.get('pkg')?.hiddenDescendantCount).toBe(2)
+
+    const resultB = buildVisibleGraph(nodes, edgesB, new Set(['pkg']))
+    expect(resultB.containerState.get('pkg')?.hiddenDescendantCount).toBe(1)
+  })
 })
 
 describe('directChildIds', () => {

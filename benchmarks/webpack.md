@@ -25,7 +25,9 @@ for why this scoping was applied.
 | Nodes | 6,466 |
 | Edges | 42,031 |
 | Parse errors | 1 |
-| Backend parse | 4.89s |
+| Backend parse (original, cache state undisclosed) | 4.89s |
+| Backend parse — cold | 27.40s |
+| Backend parse — warm | 3.04s |
 | Complexity index build | ~~128.13s~~ **5.43–5.83s, fixed — see below** |
 | `POST /api/parse-repo` | 5.76s |
 | `GET /api/graph` | 0.13s |
@@ -65,6 +67,15 @@ per function. Re-benchmarked on the exact same repo/commit after the fix: **5.43
 across two runs — a ~23x improvement, and the fix helps every JS/TS (and Python) repo with large
 files, not just this one. See [threejs.md](threejs.md) and [nest.md](nest.md) for the same fix's
 effect at a less extreme scale (both had smaller but real versions of this same cost).
+
+### Backend parse — cold vs. warm
+
+The original 4.89s figure never disclosed its OS-file-cache state. Re-benchmarked (alongside
+fastapi, three.js, and nest) under a controlled procedure — a fresh shallow clone at the exact
+commit below, parsed once (**27.40s cold**), then parsed again immediately on the identical files
+(**3.04s warm**). Same universal cold/warm effect seen across every language in this comparison,
+including Python — see
+[the main README](README.md#cold-vs-warm-backend-parse-added-after-the-original-publish).
 
 ### Browser render time (56.71–58.39s)
 
@@ -118,9 +129,35 @@ once a second, distinct method claims it — `resolver/calls.py` then falls thro
 unresolved/ambiguous-edge path for that call, same as any other call it can't confidently resolve,
 rather than guessing.
 
-**Not fully root-caused**: *why* each click triggers its own separate render rather than all 157
-collapsing into one. React 18+'s automatic batching should, in principle, cover this — all 157
-clicks happen synchronously within one JS call, no `await` between them. The measured per-click
-cost is real and roughly uniform across all 157 clicks (not concentrated at the start or end, the
-pattern batching would produce), which is strong evidence against batching actually occurring
-here, but the exact mechanism preventing it wasn't isolated further.
+**Root-caused (Milestone 18, `docs/PHASE-2-BUILD-PLAN.md`)**: *why* each click triggers its own
+separate render rather than all 157 collapsing into one. Confirmed via a real CPU profile (Chrome
+DevTools Profiler, attached over CDP) taken during the actual 157-click burst against this exact
+repo, not assumed: React does flush any pending passive effects synchronously at the start of
+handling each new discrete event, specifically so a prior click's effects can't lag indefinitely
+behind a rapid-fire burst — so 157 clicks dispatched in one tight synchronous loop still produce
+157 separate render+commit+effect cycles, not one batched pass, even though nothing ever yields to
+the browser between them (confirmed as one continuous ~22-27s "long task" via a
+`PerformanceObserver({entryTypes:['longtask']})`).
+
+The CPU profile's real finding, though, was less about the worker and more about *where* those 157
+cycles actually spent their time: the majority was **React's development-mode overhead**
+(`jsxDEV`, element construction, dev-only prop validation — none of which exist in a production
+build), not this app's own code. Confirmed directly: building and serving a **production** bundle
+of the identical app and re-running the identical 157-click burst against this identical repo
+dropped the render-after-burst time from ~22-27s to **~4s** — a ~6x improvement with *zero* code
+changes, purely from removing dev-mode instrumentation. All the render-time numbers on this page
+were measured against the Vite dev server, consistent with every other number in this repo's
+benchmark suite (see [the main README](README.md#methodology)) — worth reading with that in mind.
+
+Within that remaining ~4s (production build), the single largest *named* contributor was
+`buildVisibleGraph` (`frontend/src/graph/collapseDirectories.ts`) — confirmed via the same CPU
+profile to be re-walking the entire `defines`-edge parent/child structure from scratch on every
+one of the 157 calls, even though that structure never depends on `visibleIds` and is identical
+across all of them. Fixed: `parentOf`/`childCountByParent` are now cached in a `WeakMap` keyed on
+the `edges` array identity, computed once instead of once per click. This closed part of the gap
+(~4.0s → ~3.4s in the production-build benchmark) but not most of it — the remaining, larger cost
+is simply React re-rendering 157 separate times, which a per-function cache can't reduce; closing
+that further would mean debouncing the `visibleIds` state updates themselves in `App.tsx`; not yet
+done. Worth noting: 157 clicks in well under a second is a benchmark-script artifact exercising an
+edge case (a real person clicking at human speed was never actually paying seconds per click) —
+this mostly mattered for the automated benchmark number, not everyday use.

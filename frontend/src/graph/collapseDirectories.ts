@@ -29,6 +29,43 @@ export interface VisibleGraph {
   containerState: ReadonlyMap<string, ContainerVisibility>
 }
 
+interface ParentStructure {
+  parentOf: Map<string, string>
+  childCountByParent: Map<string, number>
+}
+
+/** `parentOf`/`childCountByParent` are derived purely from `edges` (via
+ * `defines` edges) -- they never depend on `visibleIds`. But
+ * `buildVisibleGraph` is called once per `visibleIds` change (e.g. once per
+ * canvas checkbox click, App.tsx's `collapsedCodebaseGraph`), and was
+ * rebuilding this same edge-derived structure from scratch every single
+ * time, at O(edges) cost, for no reason -- confirmed via profiling
+ * (Milestone 18, `docs/PHASE-2-BUILD-PLAN.md`) as a real, avoidable share of
+ * this function's cost on repeated calls against the same graph. Cached per
+ * distinct `edges` array identity in a `WeakMap`, so a discarded graph's
+ * entry is garbage-collected along with it -- no explicit invalidation
+ * needed, and callers that always pass a referentially-stable `edges` array
+ * for the same underlying graph (as `App.tsx`'s `codebaseGraph` memo does)
+ * get the cache for free. */
+const parentStructureCache = new WeakMap<GraphEdge[], ParentStructure>()
+
+function parentStructureOf(edges: GraphEdge[]): ParentStructure {
+  const cached = parentStructureCache.get(edges)
+  if (cached) return cached
+
+  const parentOf = new Map<string, string>()
+  const childCountByParent = new Map<string, number>()
+  for (const edge of edges) {
+    if (edge.kind !== 'defines') continue
+    parentOf.set(edge.target, edge.source)
+    childCountByParent.set(edge.source, (childCountByParent.get(edge.source) ?? 0) + 1)
+  }
+
+  const structure = { parentOf, childCountByParent }
+  parentStructureCache.set(edges, structure)
+  return structure
+}
+
 /**
  * Single source of truth for the codebase canvas: a node id X renders as
  * its own box iff X itself is in `visibleIds`. Otherwise X rolls up into
@@ -54,13 +91,7 @@ export function buildVisibleGraph(
   visibleIds: ReadonlySet<string>,
 ): VisibleGraph {
   const nodeById = new Map(nodes.map((node) => [node.id, node]))
-  const parentOf = new Map<string, string>()
-  const childCountByParent = new Map<string, number>()
-  for (const edge of edges) {
-    if (edge.kind !== 'defines') continue
-    parentOf.set(edge.target, edge.source)
-    childCountByParent.set(edge.source, (childCountByParent.get(edge.source) ?? 0) + 1)
-  }
+  const { parentOf, childCountByParent } = parentStructureOf(edges)
 
   const representativeCache = new Map<string, string | undefined>()
   function representativeOf(id: string): string | undefined {

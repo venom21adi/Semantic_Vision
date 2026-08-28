@@ -17,7 +17,9 @@ downloaded).
 | Nodes | 6,650 |
 | Edges | 25,145 |
 | Parse errors | 0 |
-| Backend parse | 5.79s |
+| Backend parse (original, cache state undisclosed) | 5.79s |
+| Backend parse — cold | 23.25s |
+| Backend parse — warm | 4.08s |
 | Complexity index build | 3.41s |
 | `POST /api/parse-repo` | 9.29s |
 | `GET /api/graph` | 0.14s |
@@ -39,3 +41,13 @@ repo/commit: 2.64–2.94s, modestly down from 3.41s — a real but small improve
 FastAPI has no comparably huge, function-dense single files, so it was never hitting this cost
 hard to begin with. Consistent with the fix's cost model being file-size-driven, not
 language-specific.
+
+**Backend parse — cold vs. warm**: the original 5.79s figure never disclosed its OS-file-cache
+state, which turned out to matter a lot — this repo was re-benchmarked (alongside three.js,
+webpack `lib/`, and nest) under a controlled procedure: a fresh shallow clone at the exact commit
+below, parsed once (**23.25s cold**), then parsed again immediately on the identical files
+(**4.08s warm**). This closes the loop on the original nest.js comparison, which had made
+TypeScript look ~10x slower than Python — it doesn't, once cache state is controlled for; every
+language shows a comparable cold/warm gap. See
+[the main README](README.md#cold-vs-warm-backend-parse-added-after-the-original-publish) for the
+full cross-language table and methodology.
