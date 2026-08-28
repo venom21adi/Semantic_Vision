@@ -22,7 +22,7 @@ directly.
 | Edges | 27,316 |
 | Parse errors | 0 |
 | Backend parse | 2.33s |
-| Complexity index build | 17.69s |
+| Complexity index build | ~~17.69s~~ **2.93–3.01s, fixed — see below** |
 | `POST /api/parse-repo` | 3.12s |
 | `GET /api/graph` | 0.09s |
 | Graph payload | 5,349.5 KB |
@@ -32,11 +32,16 @@ directly.
 ## Notes
 
 Clean numbers across the board, comparable in shape to FastAPI's — this is the JS baseline the
-3-way comparison in [the main README](README.md) uses. One thing worth flagging rather than
-hiding: the complexity-index build (17.69s) is still meaningfully above FastAPI's 3.41s or nest's
-7.51s, despite fewer nodes than either. This is the same root cause documented in detail in
-[webpack.md](webpack.md#complexity-index-build-12813s) — `ts_locate.find_def_node` re-walks an
-entire file's syntax tree per function lookup, so files with many functions cost more regardless
-of repo. three.js's largest files (`renderers/common/Renderer.js`, ~4,000 lines) are far smaller
-than webpack's worst case (~13,500 lines), so the effect here is real but far less severe — good
-supporting evidence that this is a general, file-size-driven cost, not a webpack-only quirk.
+3-way comparison in [the main README](README.md) uses. The complexity-index build was originally
+17.69s — meaningfully above FastAPI's 3.41s or nest's 7.51s at the time, despite fewer nodes than
+either — from the same root cause documented in detail in
+[webpack.md](webpack.md#complexity-index-build--was-12813s-now-543583s-fixed):
+`ts_locate.find_def_node` re-walked an entire file's syntax tree per function lookup, so files
+with many functions cost more regardless of repo. three.js's largest files
+(`renderers/common/Renderer.js`, ~4,000 lines) are far smaller than webpack's worst case (~13,500
+lines), so the effect here was real but far less severe — good supporting evidence at the time
+that this was a general, file-size-driven cost, not a webpack-only quirk.
+
+**Fixed** (branch `perf/js-ts-def-lookup`, same fix as webpack's): re-benchmarked on the same
+repo/commit after `ts_locate.py`/`ast_locate.py` switched to a build-once-per-file index —
+**2.93s and 3.01s** across two runs, a ~6x improvement.

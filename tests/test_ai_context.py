@@ -8,7 +8,7 @@ from semantic_vision.ai.context import (
 )
 from semantic_vision.parser.javascript_extractor import parse_tree
 from semantic_vision.repo_parser import parse_repository
-from semantic_vision.ts_locate import find_def_node
+from semantic_vision.ts_locate import _build_index, find_def_node
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -19,7 +19,8 @@ def _parse(name: str):
 
 def _ts_def(source: str, line: int, label: str):
     tree = parse_tree(source, "a.ts")
-    node = find_def_node(tree, line, label)
+    index = _build_index(tree)
+    node = find_def_node(index, line, label)
     assert node is not None, f"no def node found for {label!r} at line {line}"
     return node
 

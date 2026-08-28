@@ -24,6 +24,8 @@ one-directional `languages/` -> `parser/` dependency).
 
 from __future__ import annotations
 
+from typing import Literal
+
 import tree_sitter
 import tree_sitter_javascript
 import tree_sitter_typescript
@@ -181,6 +183,24 @@ def _member_name(node: Node) -> Node | None:
     return None
 
 
+def _accessor_kind(node: Node) -> Literal["get", "set"] | None:
+    """A `method_definition`'s getter/setter marker. tree-sitter-javascript/
+    -typescript expose no `kind` *field* for this (confirmed by direct
+    inspection -- `child_by_field_name("kind")` returns `None`); `get`/`set`
+    instead show up as an unnamed leading child token (`node.type ==
+    "get"`/`"set"`), order-independent relative to any other modifier
+    token (`static`, an accessibility modifier, `async`, `*`) that may
+    precede it -- confirmed live against `static get foo()`,
+    `private get foo()`, etc. A method literally *named* `get`/`set`
+    (`get() {}`) never produces this token: its name is a
+    `property_identifier` with text `"get"`, never an unnamed
+    `"get"`-typed child, so this can't misfire on that case."""
+    for child in node.children:
+        if child.type in ("get", "set"):
+            return child.type
+    return None
+
+
 def _collect_calls(node: Node, calls: list[RawCall]) -> None:
     """Collects every call (`call_expression`/`new_expression`) reachable
     from `node`. Nested function/arrow/method defs are intentionally
@@ -274,7 +294,11 @@ def _find_nested_classes(container: Node) -> list[tuple[Node, str | None]]:
 
 
 def _extract_function(
-    func_node: Node, name: str, decorators: list[Node] | None = None
+    func_node: Node,
+    name: str,
+    decorators: list[Node] | None = None,
+    *,
+    accessor_kind: Literal["get", "set"] | None = None,
 ) -> RawFunction:
     body = func_node.child_by_field_name("body")
     calls: list[RawCall] = []
@@ -293,6 +317,7 @@ def _extract_function(
         calls=calls,
         decorator_calls=_collect_decorator_calls(decorators or []),
         nested_classes=nested_classes,
+        accessor_kind=accessor_kind,
     )
 
 
@@ -329,7 +354,14 @@ def _extract_class(node: Node, name: str | None = None) -> RawClass:
                     pending_decorators = []
                     continue  # computed member name -- no name to bind, skip
                 method_name = _text(member_name_node)
-                methods.append(_extract_function(member, method_name, pending_decorators))
+                methods.append(
+                    _extract_function(
+                        member,
+                        method_name,
+                        pending_decorators,
+                        accessor_kind=_accessor_kind(member),
+                    )
+                )
                 pending_decorators = []
             elif member.type in _FIELD_DEFINITION_TYPES:
                 member_name_node = _member_name(member)

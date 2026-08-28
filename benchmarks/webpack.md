@@ -26,7 +26,7 @@ for why this scoping was applied.
 | Edges | 42,031 |
 | Parse errors | 1 |
 | Backend parse | 4.89s |
-| Complexity index build | 128.13s |
+| Complexity index build | ~~128.13s~~ **5.43–5.83s, fixed — see below** |
 | `POST /api/parse-repo` | 5.76s |
 | `GET /api/graph` | 0.13s |
 | Graph payload | 7,746.8 KB |
@@ -39,7 +39,7 @@ Both outliers below were profiled directly, not left as unconfirmed observations
 version of this page guessed at "more visible nodes plus a dense edge graph" for the render-time
 outlier specifically; that guess was wrong, and is corrected below.
 
-### Complexity-index build (128.13s)
+### Complexity-index build — was 128.13s, now 5.43–5.83s (fixed)
 
 Confirmed via `cProfile` against `build_complexity_index` on this exact repo:
 `ts_locate.find_def_node` (which re-locates a JS/TS function's exact tree-sitter node from its
@@ -54,11 +54,17 @@ only 5,025 function lookups (~8,864 tree-node visits per lookup, on average), ac
 ~170s of a ~177s profiled run (a separate run from the 128.13s in the table above; both runs
 agree on what dominates, run-to-run variance aside).
 
-This is a real, fixable inefficiency in `ts_locate.py`, not a "JS parsing is inherently slow"
+This was a real, fixable inefficiency in `ts_locate.py`, not a "JS parsing is inherently slow"
 story — Python's equivalent (`ast_locate.py`) has the identical unconditional-full-walk shape,
-but FastAPI has no comparably large, function-dense single files, so it never exercises this
-path. Indexing each file's functions by name+line once, instead of re-walking per lookup, would
-help any JS/TS repo with large files, not just this one.
+but FastAPI has no comparably large, function-dense single files, so it never exercised this
+path.
+
+**Fixed** (branch `perf/js-ts-def-lookup`): both `ts_locate.py` and `ast_locate.py` now build a
+`(line, name) -> node` index once per file, on first lookup, instead of re-walking the whole tree
+per function. Re-benchmarked on the exact same repo/commit after the fix: **5.43s and 5.83s**
+across two runs — a ~23x improvement, and the fix helps every JS/TS (and Python) repo with large
+files, not just this one. See [threejs.md](threejs.md) and [nest.md](nest.md) for the same fix's
+effect at a less extreme scale (both had smaller but real versions of this same cost).
 
 ### Browser render time (56.71–58.39s)
 
@@ -81,15 +87,36 @@ cost is large enough to see.
 
 A second, independently real finding surfaced during this same measurement: React logged **2,385
 "duplicate key" warnings** while clicking through the tree — a genuine parser bug, not benchmark
-noise. `javascript_extractor.py`'s `_extract_class` names a class's `get foo()` and `set foo(v)`
-identically (`_member_name` reads only the method's name field, never tree-sitter's `kind` field,
-which is what actually distinguishes a getter from a setter from a plain method) — so a
-getter/setter pair for the same property collapses into one node id downstream. Confirmed live
-against real webpack methods (`Module.js::Module.issuer`, `ExportsInfo.js::ExportInfo.
-canInlineProvide`, and dozens more). This is a correctness bug independent of performance — it
-silently merges two distinct methods' impact analysis, complexity score, and AI docs into one
-node, for any JS/TS class with a getter/setter pair, not just at large-repo scale. Not fixed as
-part of this benchmarking pass; flagged here since it surfaced in the course of it.
+noise. `javascript_extractor.py`'s `_extract_class` named a class's `get foo()` and `set foo(v)`
+identically (`_member_name` reads only the method's name field, never tree-sitter's `kind` field
+— which, confirmed by direct inspection while fixing this, doesn't actually exist on this
+grammar's `method_definition` node at all; `get`/`set` show up as an unnamed leading child token
+instead) — so a getter/setter pair for the same property collapsed into one node id downstream.
+Confirmed live against real webpack methods (`Module.js::Module.issuer`,
+`ExportsInfo.js::ExportInfo.canInlineProvide`, and dozens more). This was a correctness bug
+independent of performance — it silently merged two distinct methods' impact analysis, complexity
+score, and AI docs into one node, for any JS/TS class with a getter/setter pair, not just at
+large-repo scale.
+
+**Fixed** (same branch): the extractor now reads the `get`/`set` marker and threads it through as
+`RawFunction.accessor_kind`; `resolver/symbol_table.py` appends a `#get`/`#set` suffix to the node
+id only when that's set, so `Module.js::Module.issuer#get` and `Module.js::Module.issuer#set` are
+now two distinct nodes instead of one silently overwriting the other — node identity, complexity
+score, and AI docs are all correctly separated now. `label` deliberately stays the bare method name
+(unchanged) — `ts_locate`'s matching is by line + label against the extractor's own plain-name
+output, so changing it would have broken re-locating exactly the nodes this fixes.
+
+One more collision surfaced (and fixed) by an adversarial review of this change before it landed:
+`resolver/symbol_table.py`'s *other* method index (`ModuleIndex.methods`, keyed by plain
+`(class, method)` name — backs the `this.foo()`/`ClassName.foo()` call-resolution shorthand in
+`resolver/calls.py`) still collided the two accessors even after the node-id fix above. Since the
+two accessors are now genuinely distinct nodes, that collision had gotten *worse*, not better: a
+call like `this.value()` now confidently resolved to whichever accessor happened to be registered
+last, silently wrong, instead of the old behavior (both sharing one id, so any resolution was
+trivially "correct" by construction). Fixed by removing a name from that shorthand index entirely
+once a second, distinct method claims it — `resolver/calls.py` then falls through to its existing
+unresolved/ambiguous-edge path for that call, same as any other call it can't confidently resolve,
+rather than guessing.
 
 **Not fully root-caused**: *why* each click triggers its own separate render rather than all 157
 collapsing into one. React 18+'s automatic batching should, in principle, cover this — all 157

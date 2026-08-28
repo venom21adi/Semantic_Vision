@@ -89,6 +89,15 @@ def _register_class(
 
     for method in cls.methods:
         method_id = f"{class_id}.{method.name}"
+        if method.accessor_kind is not None:
+            # A getter and setter for the same property (`get foo()` /
+            # `set foo(v)`) would otherwise share this exact id -- silently
+            # colliding as graph nodes and (confirmed live) React keys in
+            # the frontend. `label` stays the bare method name: `ts_locate`'s
+            # matching is by (line, label) against the extractor's own
+            # plain-name output, so changing it here would break re-locating
+            # exactly the nodes this disambiguates.
+            method_id = f"{method_id}#{method.accessor_kind}"
         nodes.append(
             Node(
                 id=method_id,
@@ -101,7 +110,24 @@ def _register_class(
         )
         defines_edges.append(Edge(source=class_id, target=method_id, kind=EdgeKind.DEFINES))
         if top_level:
-            index.methods[(cls.name, method.name)] = method_id
+            key = (cls.name, method.name)
+            existing_method_id = index.methods.get(key)
+            if existing_method_id is not None and existing_method_id != method_id:
+                # A second distinct method now claims a name this class's
+                # index already resolved -- only possible for a get/set pair
+                # sharing a name (a plain duplicate method name isn't valid
+                # JS/TS). Resolving `this.foo()`/`ClassName.foo()` to
+                # whichever one happened to be registered last would be a
+                # silent guess between two real, distinct nodes -- worse
+                # than before this id-disambiguation fix, when both shared
+                # one id and any resolution was trivially "correct" by
+                # construction. Removed instead, so `resolver/calls.py`'s
+                # shorthand lookup falls through to its existing unresolved/
+                # ambiguous-edge path, same as any other call it can't
+                # confidently resolve.
+                del index.methods[key]
+            else:
+                index.methods[key] = method_id
         for nested in method.nested_classes:
             _register_class(
                 nested,

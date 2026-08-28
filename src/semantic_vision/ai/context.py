@@ -240,10 +240,12 @@ def _locate(
     node: Node,
     ast_trees: dict[str, ast.Module | None],
     ts_trees: dict[str, tree_sitter.Tree | None],
+    ast_indices: dict[str, ast_locate.DefIndex],
+    ts_indices: dict[str, ts_locate.DefIndex],
 ) -> AnyDefNode | None:
     if _is_js_file(node.file):
-        return ts_locate.locate(root, node, ts_trees)
-    return ast_locate.locate(root, node, ast_trees)
+        return ts_locate.locate(root, node, ts_trees, ts_indices)
+    return ast_locate.locate(root, node, ast_trees, ast_indices)
 
 
 def _signature(
@@ -251,10 +253,12 @@ def _signature(
     node: Node,
     ast_trees: dict[str, ast.Module | None],
     ts_trees: dict[str, tree_sitter.Tree | None],
+    ast_indices: dict[str, ast_locate.DefIndex],
+    ts_indices: dict[str, ts_locate.DefIndex],
     *,
     strip_decorators: bool = True,
 ) -> str | None:
-    def_node = _locate(root, node, ast_trees, ts_trees)
+    def_node = _locate(root, node, ast_trees, ts_trees, ast_indices, ts_indices)
     if def_node is None:
         return None
     return _render_signature(def_node, node.label, strip_decorators=strip_decorators)
@@ -295,6 +299,8 @@ def _render_define_entry(
     nodes_by_id: dict[str, Node],
     ast_trees: dict[str, ast.Module | None],
     ts_trees: dict[str, tree_sitter.Tree | None],
+    ast_indices: dict[str, ast_locate.DefIndex],
+    ts_indices: dict[str, ts_locate.DefIndex],
     *,
     depth: int = 0,
 ) -> str:
@@ -304,13 +310,24 @@ def _render_define_entry(
     nested inside a *function*, e.g. a factory-local helper class, has no
     `DEFINES` edge from the file at all and so is out of scope here, same
     as any other function-local name)."""
-    sig = _signature(root, node, ast_trees, ts_trees) or _fallback_signature(node)
+    sig = (
+        _signature(root, node, ast_trees, ts_trees, ast_indices, ts_indices)
+        or _fallback_signature(node)
+    )
     lines = [f"{'  ' * depth}- `{sig}`"]
     if node.kind == NodeKind.CLASS:
         for member in _direct_defines(result, node.id, nodes_by_id):
             lines.append(
                 _render_define_entry(
-                    result, root, member, nodes_by_id, ast_trees, ts_trees, depth=depth + 1
+                    result,
+                    root,
+                    member,
+                    nodes_by_id,
+                    ast_trees,
+                    ts_trees,
+                    ast_indices,
+                    ts_indices,
+                    depth=depth + 1,
                 )
             )
     return "\n".join(lines)
@@ -387,12 +404,14 @@ def assemble_context(
     node = nodes_by_id[node_id]
     ast_trees: dict[str, ast.Module | None] = {}
     ts_trees: dict[str, tree_sitter.Tree | None] = {}
+    ast_indices: dict[str, ast_locate.DefIndex] = {}
+    ts_indices: dict[str, ts_locate.DefIndex] = {}
 
     budget = max_tokens
     sections: list[str] = []
     omitted: list[str] = []
 
-    target_def_node = _locate(root, node, ast_trees, ts_trees)
+    target_def_node = _locate(root, node, ast_trees, ts_trees, ast_indices, ts_indices)
     source = _read_source(root, node, target_def_node) or ""
     signature = (
         (target_def_node and _render_signature(target_def_node, node.label, strip_decorators=False))
@@ -414,9 +433,9 @@ def assemble_context(
         lines: list[str] = []
         dropped = 0
         for related_node in related:
-            sig = _signature(root, related_node, ast_trees, ts_trees) or _fallback_signature(
-                related_node
-            )
+            sig = _signature(
+                root, related_node, ast_trees, ts_trees, ast_indices, ts_indices
+            ) or _fallback_signature(related_node)
             if _approx_tokens(sig) <= budget:
                 lines.append(sig)
                 budget -= _approx_tokens(sig)
@@ -432,9 +451,9 @@ def assemble_context(
     _add_signature_list("Direct callers", callers)
 
     if parent_node is not None:
-        header = _signature(root, parent_node, ast_trees, ts_trees) or _fallback_signature(
-            parent_node
-        )
+        header = _signature(
+            root, parent_node, ast_trees, ts_trees, ast_indices, ts_indices
+        ) or _fallback_signature(parent_node)
         block = f"## Parent class\n\n`{header}`"
         if _approx_tokens(block) <= budget:
             sections.append(block)
@@ -468,6 +487,8 @@ def assemble_file_context(
     node = nodes_by_id[node_id]
     ast_trees: dict[str, ast.Module | None] = {}
     ts_trees: dict[str, tree_sitter.Tree | None] = {}
+    ast_indices: dict[str, ast_locate.DefIndex] = {}
+    ts_indices: dict[str, ts_locate.DefIndex] = {}
 
     budget = max_tokens
     sections: list[str] = []
@@ -498,7 +519,9 @@ def assemble_file_context(
     dropped = 0
     header_charged = False
     for child in top_level:
-        entry = _render_define_entry(result, root, child, nodes_by_id, ast_trees, ts_trees)
+        entry = _render_define_entry(
+            result, root, child, nodes_by_id, ast_trees, ts_trees, ast_indices, ts_indices
+        )
         # The header is only charged against the budget once, the first
         # time it would actually be included -- mirrors the `Imports`
         # block's all-or-nothing charge instead of leaving it free, but

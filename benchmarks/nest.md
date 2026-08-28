@@ -19,7 +19,7 @@ here.
 | Edges | 24,528 |
 | Parse errors | 2 |
 | Backend parse | 53.71s |
-| Complexity index build | 7.51s |
+| Complexity index build | ~~7.51s~~ **1.88–2.05s, fixed — see below** |
 | `POST /api/parse-repo` | 5.32s |
 | `GET /api/graph` | 0.17s |
 | Graph payload | 5,883.7 KB |
@@ -40,4 +40,14 @@ few seconds later through the live backend server and is roughly 10x faster than
 above — most plausibly the OS's own file cache warming between two back-to-back reads of the same
 1,907 files, not this app's own repo cache (which returns in well under a second, not 5.32s, once
 a path is actually cached). Browser render (6.85–6.88s) is in line with FastAPI and well ahead of
-webpack's `lib/`.
+webpack's `lib/`. Since first published, this repo has been re-benchmarked (see below) with a
+fully warm OS file cache: backend parse landed at 2.40s, consistent with the cold-cache theory
+above rather than anything TypeScript-specific — kept here as the original, honestly-reported
+first-run number rather than quietly revised away.
+
+**Complexity-index build fixed** (branch `perf/js-ts-def-lookup`): same root cause and fix as
+[webpack.md](webpack.md#complexity-index-build--was-12813s-now-543583s-fixed) and
+[threejs.md](threejs.md) — `ts_locate.find_def_node` re-walking a whole file's tree per function
+lookup, now a build-once-per-file index instead. Re-benchmarked on the same repo/commit: **1.88s
+and 2.05s** across two runs, a ~4x improvement (smaller than webpack's ~23x since nest has no
+comparably huge single files — consistent with the fix's cost model being file-size-driven).

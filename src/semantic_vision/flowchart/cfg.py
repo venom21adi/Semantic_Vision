@@ -25,7 +25,7 @@ from pathlib import Path
 
 import tree_sitter
 
-from semantic_vision import ts_locate
+from semantic_vision import ast_locate, ts_locate
 from semantic_vision.ai.context import _render_ts_signature
 from semantic_vision.ast_locate import DefNode, locate
 from semantic_vision.flowchart import ts_cfg
@@ -337,12 +337,14 @@ def build_flowchart(result: ParseResult, node_id: str) -> FlowchartResult:
 
     if _is_js_file(node.file):
         ts_trees: dict[str, tree_sitter.Tree | None] = {}
-        ts_def_node = ts_locate.locate(root, node, ts_trees)
+        ts_indices: dict[str, ts_locate.DefIndex] = {}
+        ts_def_node = ts_locate.locate(root, node, ts_trees, ts_indices)
         if ts_def_node is not None:
             return _build_js_flowchart(builder, result, node_id, node, ts_def_node)
     else:
         ast_trees: dict[str, ast.Module | None] = {}
-        def_node = locate(root, node, ast_trees)
+        ast_indices: dict[str, ast_locate.DefIndex] = {}
+        def_node = locate(root, node, ast_trees, ast_indices)
         if def_node is not None:
             return _build_python_flowchart(builder, result, node_id, node, def_node)
 

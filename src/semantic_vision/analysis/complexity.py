@@ -18,7 +18,7 @@ from pathlib import Path
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ts_locate
+from semantic_vision import ast_locate, ts_locate
 from semantic_vision.ast_locate import locate
 from semantic_vision.models import Edge, EdgeKind, NodeKind, ParseResult
 from semantic_vision.parser import javascript_extractor
@@ -265,7 +265,9 @@ def build_complexity_index(
     """
     root = Path(result.root)
     ast_trees: dict[str, ast.Module | None] = {}
+    ast_indices: dict[str, ast_locate.DefIndex] = {}
     ts_trees: dict[str, tree_sitter.Tree | None] = {}
+    ts_indices: dict[str, ts_locate.DefIndex] = {}
     forward_index = build_forward_call_index(result.edges)
 
     scores: dict[str, ComplexityScore] = {}
@@ -276,7 +278,7 @@ def build_complexity_index(
         depth = _call_chain_depth(node.id, forward_index, max_call_chain_depth)
 
         if _is_js_file(node.file):
-            ts_def_node = ts_locate.locate(root, node, ts_trees)
+            ts_def_node = ts_locate.locate(root, node, ts_trees, ts_indices)
             if ts_def_node is not None:
                 complexity, has_nested_loops = _ts_cyclomatic_complexity(ts_def_node)
                 scores[node.id] = ComplexityScore(
@@ -287,7 +289,7 @@ def build_complexity_index(
                 )
                 continue
         else:
-            def_node = locate(root, node, ast_trees)
+            def_node = locate(root, node, ast_trees, ast_indices)
             if isinstance(def_node, ast.FunctionDef | ast.AsyncFunctionDef):
                 complexity, has_nested_loops = _cyclomatic_complexity(def_node)
                 scores[node.id] = ComplexityScore(

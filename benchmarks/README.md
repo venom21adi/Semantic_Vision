@@ -41,6 +41,13 @@ their own. Kept out of the main comparison above so it doesn't skew "JavaScript"
 structural edge case, but the investigation is a genuinely useful read — see
 [webpack.md](webpack.md).
 
+**Update**: the complexity-index performance bug this investigation found (`ts_locate.py`/
+`ast_locate.py` re-walking a whole file's syntax tree per function lookup) has since been fixed
+on branch `perf/js-ts-def-lookup`, along with the getter/setter node-id collision bug found
+alongside it — see the "Fixed" notes in [webpack.md](webpack.md), [threejs.md](threejs.md),
+[nest.md](nest.md), and [fastapi.md](fastapi.md) for before/after numbers on each repo. The
+checkbox-click render-time cost (the other half of webpack's outlier) remains open.
+
 ## Methodology
 
 - **Backend/API tier**: `scripts/benchmark_repo_load.py`, run against a local backend

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass, field
+from typing import Literal
 
 
 @dataclass
@@ -35,6 +36,17 @@ class RawFunction:
     to this function's own node."""
     nested_classes: list[RawClass] = field(default_factory=list)
     """Classes defined directly in this function's body."""
+    accessor_kind: Literal["get", "set"] | None = None
+    """JS/TS getter/setter marker (`get foo() {}` / `set foo(v) {}`),
+    populated only by `javascript_extractor.py`'s `method_definition`
+    handling. Always `None` on the Python path -- Python's own `ast`
+    module already collapses an `@property`/`@x.setter` pair to a single
+    binding before extraction ever sees it, so there's no analogous
+    same-name collision to disambiguate there. Threaded through to
+    `resolver/symbol_table.py` so a getter/setter pair doesn't collapse
+    into one graph node id (both would otherwise be named identically --
+    confirmed live as a real bug: React duplicate-key warnings against a
+    real getter/setter-heavy codebase)."""
 
 
 @dataclass

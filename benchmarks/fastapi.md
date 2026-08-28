@@ -31,3 +31,11 @@ Zero parse errors on a real, unmodified third-party codebase. Browser render tim
 barely above time-to-data (6.58–7.07s) — once the graph data arrives, layout and paint add well
 under a second, the expected shape for a repo this size after this project's own large-graph
 collapse-by-default work.
+
+**Complexity-index build**: the same `ast_locate.py`/`ts_locate.py` indexing fix documented in
+[webpack.md](webpack.md#complexity-index-build--was-12813s-now-543583s-fixed) applies to Python
+too (`ast_locate.py` had the identical unconditional-full-walk shape). Re-benchmarked on the same
+repo/commit: 2.64–2.94s, modestly down from 3.41s — a real but small improvement, as expected:
+FastAPI has no comparably huge, function-dense single files, so it was never hitting this cost
+hard to begin with. Consistent with the fix's cost model being file-size-driven, not
+language-specific.

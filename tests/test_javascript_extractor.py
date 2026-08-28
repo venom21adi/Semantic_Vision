@@ -124,6 +124,42 @@ class Greeting implements Greeter {
     assert make.calls == [RawCall(dotted="Greeting", lineno=11)]
 
 
+def test_getter_and_setter_share_a_name_but_get_distinct_accessor_kinds():
+    source = """
+class Box {
+  get value() { return this._value; }
+  set value(v) { this._value = v; }
+  plain() { return 1; }
+}
+"""
+    raw = extract(source)
+    cls = raw.classes[0]
+    assert [(m.name, m.accessor_kind) for m in cls.methods] == [
+        ("value", "get"),
+        ("value", "set"),
+        ("plain", None),
+    ]
+
+
+def test_static_getter_still_reports_its_accessor_kind():
+    # `static` precedes `get`/`set` -- the accessor-kind detection must not
+    # assume `get`/`set` is the very first child token.
+    raw = extract("class C { static get value() { return 1; } }")
+    assert raw.classes[0].methods[0].accessor_kind == "get"
+
+
+def test_private_typescript_getter_still_reports_its_accessor_kind():
+    raw = extract("class C { private get value(): number { return 1; } }")
+    assert raw.classes[0].methods[0].accessor_kind == "get"
+
+
+def test_method_literally_named_get_is_not_misdetected_as_a_getter():
+    raw = extract("class C { get() { return 1; } }")
+    method = raw.classes[0].methods[0]
+    assert method.name == "get"
+    assert method.accessor_kind is None
+
+
 def test_class_field_with_annotation_becomes_raw_variable_ts():
     raw = extract('class C { private prefix: string = "Hello"; }')
     assert raw.classes[0].attributes == [
