@@ -90,6 +90,13 @@ describe('toFlowEdges', () => {
     expect(plain.label).toBeUndefined()
     expect(merged.label).toBeUndefined()
   })
+
+  it('carries the original kind on data, for the edge-kind legend/filter to read', () => {
+    const flowEdges = toFlowEdges(edges)
+
+    expect(flowEdges[0].data).toEqual({ kind: 'defines' })
+    expect(flowEdges[2].data).toEqual({ kind: 'calls' })
+  })
 })
 
 describe('buildFlowGraph', () => {

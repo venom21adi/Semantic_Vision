@@ -3,7 +3,10 @@ import type { GraphEdge, GraphNode } from '../api/types'
 import { layoutGraph } from './layout'
 import type { GraphNodeData } from './nodeTypes'
 
-const EDGE_COLORS: Record<GraphEdge['kind'], string> = {
+/** Exported so `EdgeLegend.tsx` can render a swatch that's guaranteed to
+ * match the actual line color -- one shared source, not a second copy
+ * that could silently drift out of sync with this one. */
+export const EDGE_COLORS: Record<GraphEdge['kind'], string> = {
   defines: '#94a3b8',
   imports: '#38bdf8',
   calls: '#fb923c',
@@ -31,7 +34,16 @@ export function toFlowNodes(nodes: GraphNode[]): Node<GraphNodeData>[] {
   }))
 }
 
-export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge[] {
+/** Carried on every flow edge's `data` so a downstream consumer (the
+ * edge-kind legend/filter) can tell kinds apart -- nothing else on a
+ * React Flow `Edge` object survives `toFlowEdges` from the original
+ * `GraphEdge.kind` (it's consumed here for label/color/dash but never
+ * otherwise stored). */
+export interface FlowEdgeData extends Record<string, unknown> {
+  kind: GraphEdge['kind']
+}
+
+export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge<FlowEdgeData>[] {
   const occurrences = new Map<string, number>()
 
   return edges.map((edge) => {
@@ -44,6 +56,7 @@ export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge[] {
       id: `${base}:${index}`,
       source: edge.source,
       target: edge.target,
+      data: { kind: edge.kind },
       // `count` is set by `collapseGraph` when multiple underlying edges
       // rolled up into this one after remapping both endpoints to their
       // visible directory representative.
@@ -71,7 +84,7 @@ export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge[] {
 export function buildFlowGraph(
   nodes: GraphNode[],
   edges: GraphEdge[],
-): { nodes: Node<GraphNodeData>[]; edges: Edge[] } {
+): { nodes: Node<GraphNodeData>[]; edges: Edge<FlowEdgeData>[] } {
   const flowNodes = toFlowNodes(nodes)
   const flowEdges = toFlowEdges(edges)
   return { nodes: layoutGraph(flowNodes, flowEdges), edges: flowEdges }

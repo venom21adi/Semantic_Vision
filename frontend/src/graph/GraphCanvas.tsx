@@ -14,14 +14,15 @@ import {
   type NodeMouseHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { ComplexityScore, NodePosition } from '../api/types'
+import type { ComplexityScore, GraphEdge, NodePosition } from '../api/types'
 import { colors } from '../theme'
 import { formatNodeLabel } from './accessorLabel'
 import type { ContainerVisibility } from './collapseDirectories'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
+import { EdgeLegend } from './EdgeLegend'
 import { complexityToColor } from './heatmap'
 import { nodeTypes, type GraphNodeData } from './nodeTypes'
-import { neighborNodeIds } from './transform'
+import { neighborNodeIds, type FlowEdgeData } from './transform'
 
 export const LARGE_GRAPH_NODE_THRESHOLD = 300
 export const AUTO_SAVE_POSITIONS_INTERVAL_MS = 60_000
@@ -74,6 +75,13 @@ export interface GraphCanvasProps {
    * already-laid-out nodes, not by feeding back into the layout pipeline,
    * so toggling it doesn't trigger a relayout or reset dragged positions. */
   complexityByNodeId?: ReadonlyMap<string, ComplexityScore> | null
+  /** Edge kinds currently hidden from the canvas via the legend's
+   * checkboxes -- a pure display filter applied after layout, so
+   * toggling one never moves a node or triggers a relayout. Omitted/
+   * empty shows every kind, matching this app's behavior before the
+   * legend existed. */
+  hiddenEdgeKinds?: ReadonlySet<GraphEdge['kind']>
+  onToggleEdgeKind?: (kind: GraphEdge['kind']) => void
 }
 
 function GraphCanvasInner({
@@ -91,6 +99,8 @@ function GraphCanvasInner({
   onAutoSavePositions,
   highlight,
   complexityByNodeId,
+  hiddenEdgeKinds,
+  onToggleEdgeKind,
 }: GraphCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, , onEdgesChange] = useEdgesState(initialEdges)
@@ -177,18 +187,23 @@ function GraphCanvasInner({
 
   const displayEdges = useMemo(
     () =>
-      edges.map((edge) => {
-        const baseStyle = baseEdgeStyleById.get(edge.id)
-        const key = `${edge.source}->${edge.target}`
-        const opacity = !highlight
-          ? (baseStyle?.opacity ?? 1)
-          : highlight.edgeKeys.has(key)
-            ? 1
-            : DIMMED_EDGE_OPACITY
-        if (edge.style?.opacity === opacity) return edge
-        return { ...edge, style: { ...baseStyle, opacity } }
-      }),
-    [edges, highlight, baseEdgeStyleById],
+      edges
+        .filter((edge) => {
+          const kind = (edge.data as FlowEdgeData | undefined)?.kind
+          return !kind || !hiddenEdgeKinds?.has(kind)
+        })
+        .map((edge) => {
+          const baseStyle = baseEdgeStyleById.get(edge.id)
+          const key = `${edge.source}->${edge.target}`
+          const opacity = !highlight
+            ? (baseStyle?.opacity ?? 1)
+            : highlight.edgeKeys.has(key)
+              ? 1
+              : DIMMED_EDGE_OPACITY
+          if (edge.style?.opacity === opacity) return edge
+          return { ...edge, style: { ...baseStyle, opacity } }
+        }),
+    [edges, highlight, baseEdgeStyleById, hiddenEdgeKinds],
   )
 
   const handleNodeClick: NodeMouseHandler = useCallback(
@@ -313,6 +328,14 @@ function GraphCanvasInner({
         fitView
         colorMode="dark"
         proOptions={{ hideAttribution: true }}
+        // Orthogonal routing instead of React Flow's bezier default --
+        // in a dagre layered layout, curvy bezier edges cross each other
+        // at unpredictable angles once a node has more than a couple of
+        // in/out edges, which is what actually made the graph feel
+        // "tangled" (confirmed against real screenshots), not sheer edge
+        // count. dagre itself only computes node positions and never
+        // reads this -- purely a rendering choice.
+        defaultEdgeOptions={{ type: 'smoothstep' }}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
@@ -327,6 +350,9 @@ function GraphCanvasInner({
           onViewSource={onViewSource}
           onExecutionFlowchart={onExecutionFlowchart}
         />
+      )}
+      {onToggleEdgeKind && (
+        <EdgeLegend edges={edges} hiddenEdgeKinds={hiddenEdgeKinds} onToggleEdgeKind={onToggleEdgeKind} />
       )}
     </div>
   )

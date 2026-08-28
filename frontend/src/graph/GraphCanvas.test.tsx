@@ -1,11 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { Node } from '@xyflow/react'
+import type { Edge, Node } from '@xyflow/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { ComplexityScore } from '../api/types'
+import type { ComplexityScore, GraphEdge } from '../api/types'
 import { AUTO_SAVE_POSITIONS_INTERVAL_MS, GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD } from './GraphCanvas'
 import { COMPLEX_COLOR } from './heatmap'
 import { KIND_COLORS, type GraphNodeData } from './nodeTypes'
+import type { FlowEdgeData } from './transform'
 
 function makeNode(id: string, kind: GraphNodeData['kind'] = 'function'): Node<GraphNodeData> {
   return {
@@ -14,6 +15,10 @@ function makeNode(id: string, kind: GraphNodeData['kind'] = 'function'): Node<Gr
     position: { x: 0, y: 0 },
     data: { label: id, kind, file: 'app.py', lineStart: 1, lineEnd: 2 },
   }
+}
+
+function makeEdge(source: string, target: string, kind: GraphEdge['kind']): Edge<FlowEdgeData> {
+  return { id: `${source}->${target}:${kind}`, source, target, data: { kind } }
 }
 
 const noop = {
@@ -376,5 +381,85 @@ describe('GraphCanvas', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  describe('edge-kind legend/filter', () => {
+    it('does not render the legend when onToggleEdgeKind is not provided', () => {
+      render(
+        <GraphCanvas
+          nodes={[makeNode('a'), makeNode('b')]}
+          edges={[makeEdge('a', 'b', 'calls')]}
+          selectedNodeId={null}
+          {...noop}
+        />,
+      )
+
+      expect(
+        screen.queryByRole('group', { name: 'Edge kinds shown on the canvas' }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders one checked legend checkbox per edge kind present, when onToggleEdgeKind is provided', () => {
+      render(
+        <GraphCanvas
+          nodes={[makeNode('a'), makeNode('b')]}
+          edges={[makeEdge('a', 'b', 'calls'), makeEdge('a', 'b', 'imports')]}
+          selectedNodeId={null}
+          {...noop}
+          onToggleEdgeKind={vi.fn()}
+        />,
+      )
+
+      expect(screen.getByLabelText('calls')).toBeChecked()
+      expect(screen.getByLabelText('imports')).toBeChecked()
+      expect(screen.queryByLabelText('defines')).not.toBeInTheDocument()
+    })
+
+    it('unchecks exactly the kind(s) in hiddenEdgeKinds, leaving others checked', () => {
+      render(
+        <GraphCanvas
+          nodes={[makeNode('a'), makeNode('b')]}
+          edges={[makeEdge('a', 'b', 'calls'), makeEdge('a', 'b', 'imports')]}
+          selectedNodeId={null}
+          {...noop}
+          onToggleEdgeKind={vi.fn()}
+          hiddenEdgeKinds={new Set(['imports'])}
+        />,
+      )
+
+      expect(screen.getByLabelText('calls')).toBeChecked()
+      expect(screen.getByLabelText('imports')).not.toBeChecked()
+    })
+
+    // Whether hiding a kind actually removes its lines from the canvas is
+    // deliberately not asserted here via DOM queries: confirmed live
+    // (writing the DOM to a file and inspecting it) that React Flow
+    // renders zero `.react-flow__edge` elements in this jsdom test setup
+    // regardless of filtering -- it needs real layout measurement of node
+    // handle positions that jsdom can't provide, so this file has never
+    // asserted on rendered edges at all (only node rendering and
+    // `toFlowEdges`'s own output shape, in transform.test.ts). The
+    // checkbox-state tests above already confirm `hiddenEdgeKinds` is
+    // received and interpreted correctly by the same component; the
+    // actual visual removal is verified live in a real browser instead
+    // (see this milestone's manual verification).
+
+    it('calls onToggleEdgeKind with the clicked kind', async () => {
+      const onToggleEdgeKind = vi.fn()
+      const user = userEvent.setup()
+      render(
+        <GraphCanvas
+          nodes={[makeNode('a'), makeNode('b')]}
+          edges={[makeEdge('a', 'b', 'calls')]}
+          selectedNodeId={null}
+          {...noop}
+          onToggleEdgeKind={onToggleEdgeKind}
+        />,
+      )
+
+      await user.click(screen.getByLabelText('calls'))
+
+      expect(onToggleEdgeKind).toHaveBeenCalledWith('calls')
+    })
   })
 })

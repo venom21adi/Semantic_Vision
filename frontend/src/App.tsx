@@ -157,6 +157,24 @@ export default function App() {
   const [expandBlockedNotice, setExpandBlockedNotice] = useState<{ label: string; count: number } | null>(
     null,
   )
+  // Kinds hidden via the canvas's edge-kind legend -- a pure display
+  // filter (see GraphCanvas's `displayEdges`), never fed back into
+  // layout, so toggling one never moves a node. Empty by default: every
+  // kind visible, identical to this app's behavior before the legend
+  // existed. Deliberately *not* reset on a view/repo switch (GraphCanvas
+  // itself remounts via its `key` below, but this state lives here, in
+  // App) -- hiding e.g. `imports` is a standing preference for how you
+  // want to read a graph, not a per-view setting, so it should carry
+  // over to the next view/repo the same way `sidebarCollapsed` does.
+  const [hiddenEdgeKinds, setHiddenEdgeKinds] = useState<ReadonlySet<GraphEdge['kind']>>(new Set())
+  const handleToggleEdgeKind = useCallback((kind: GraphEdge['kind']) => {
+    setHiddenEdgeKinds((prev) => {
+      const next = new Set(prev)
+      if (next.has(kind)) next.delete(kind)
+      else next.add(kind)
+      return next
+    })
+  }, [])
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => getSidebarCollapsed())
   const [detailsCollapsed, setDetailsCollapsedState] = useState(() => getDetailsCollapsed())
 
@@ -929,6 +947,8 @@ export default function App() {
                 onAutoSavePositions={handleAutoSavePositions}
                 highlight={impactHighlight}
                 complexityByNodeId={complexityByNodeId}
+                hiddenEdgeKinds={hiddenEdgeKinds}
+                onToggleEdgeKind={handleToggleEdgeKind}
               />
             )}
           {flowchartState?.status === 'loading' && (
