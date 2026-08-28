@@ -7,7 +7,7 @@ import { EdgeLegend } from './EdgeLegend'
 import type { FlowEdgeData } from './transform'
 
 function edge(kind: GraphEdge['kind']): Edge<FlowEdgeData> {
-  return { id: `a->b:${kind}`, source: 'a', target: 'b', data: { kind } }
+  return { id: `a->b:${kind}`, source: 'a', target: 'b', data: { kind, laneOffset: 0 } }
 }
 
 describe('EdgeLegend', () => {

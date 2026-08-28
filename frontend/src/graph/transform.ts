@@ -35,28 +35,94 @@ export function toFlowNodes(nodes: GraphNode[]): Node<GraphNodeData>[] {
 }
 
 /** Carried on every flow edge's `data` so a downstream consumer (the
- * edge-kind legend/filter) can tell kinds apart -- nothing else on a
- * React Flow `Edge` object survives `toFlowEdges` from the original
- * `GraphEdge.kind` (it's consumed here for label/color/dash but never
- * otherwise stored). */
+ * edge-kind legend/filter, and `LaneSmoothStepEdge`) can tell kinds apart
+ * and find its lane offset -- nothing else on a React Flow `Edge` object
+ * survives `toFlowEdges` from the original `GraphEdge.kind` (it's consumed
+ * here for label/color/dash but never otherwise stored). */
 export interface FlowEdgeData extends Record<string, unknown> {
   kind: GraphEdge['kind']
+  laneOffset: number
+}
+
+/** Horizontal spacing (px) between edges that share an endpoint with other
+ * edges -- see `computeLaneOffsets`. */
+const LANE_SPACING = 24
+
+/**
+ * A dagre TB layout puts single-child chains of nodes in one x-column, and
+ * React Flow's default smoothstep path always attaches to a node's exact
+ * center handle with no awareness of other edges -- so whenever two or more
+ * edges share a source or a target that's roughly co-linear, their paths
+ * (and the labels placed at each path's midpoint) land on top of each
+ * other, illegibly. Confirmed live: e.g. `applications.py -> dependencies`
+ * and `routing.py -> dependencies` rendering as one garbled overlapping
+ * label. Fixed by assigning each edge a small deterministic horizontal
+ * offset based on its position within its same-target and same-source
+ * groups (0 for either group of size 1, the common case -- an ordinary
+ * edge with unique endpoints is untouched). Computed once here, on full
+ * topology, rather than post-layout -- so toggling a kind's visibility via
+ * the legend never reshuffles the surviving edges' lanes.
+ *
+ * Two edges sharing *both* endpoints (e.g. a `routing.py -> dependencies`
+ * `imports` edge and a separate `routing.py -> dependencies` `calls` edge
+ * -- `collapseDirectories.ts` only merges same-*kind* duplicates) land in
+ * the same position in both their target group and their source group, so
+ * their two contributions add up to double `LANE_SPACING` apart rather
+ * than one -- still separated, just not at the exact spacing the constant
+ * implies. Known and accepted: still correct (no overlap), just not worth
+ * the extra bookkeeping a single combined "parallel edges" pass would add
+ * for what stays a purely cosmetic spacing difference.
+ */
+function computeLaneOffsets(edges: { source: string; target: string }[]): number[] {
+  function groupBy(key: (edge: { source: string; target: string }) => string): Map<string, number[]> {
+    const groups = new Map<string, number[]>()
+    edges.forEach((edge, index) => {
+      const group = groups.get(key(edge))
+      if (group) group.push(index)
+      else groups.set(key(edge), [index])
+    })
+    return groups
+  }
+
+  const byTarget = groupBy((edge) => edge.target)
+  const bySource = groupBy((edge) => edge.source)
+
+  function offsetsWithinGroups(
+    groups: Map<string, number[]>,
+    otherEndpointOf: (index: number) => string,
+  ): Map<number, number> {
+    const offsetByIndex = new Map<number, number>()
+    for (const group of groups.values()) {
+      if (group.length < 2) continue
+      const sorted = [...group].sort((a, b) => otherEndpointOf(a).localeCompare(otherEndpointOf(b)))
+      sorted.forEach((edgeIndex, positionInGroup) => {
+        offsetByIndex.set(edgeIndex, (positionInGroup - (sorted.length - 1) / 2) * LANE_SPACING)
+      })
+    }
+    return offsetByIndex
+  }
+
+  const targetOffsets = offsetsWithinGroups(byTarget, (i) => edges[i].source)
+  const sourceOffsets = offsetsWithinGroups(bySource, (i) => edges[i].target)
+
+  return edges.map((_, index) => (targetOffsets.get(index) ?? 0) + (sourceOffsets.get(index) ?? 0))
 }
 
 export function toFlowEdges(edges: (GraphEdge & { count?: number })[]): Edge<FlowEdgeData>[] {
   const occurrences = new Map<string, number>()
+  const laneOffsets = computeLaneOffsets(edges)
 
-  return edges.map((edge) => {
+  return edges.map((edge, index) => {
     const base = `${edge.source}->${edge.target}:${edge.kind}`
-    const index = occurrences.get(base) ?? 0
-    occurrences.set(base, index + 1)
+    const occurrenceIndex = occurrences.get(base) ?? 0
+    occurrences.set(base, occurrenceIndex + 1)
     const color = EDGE_COLORS[edge.kind]
 
     return {
-      id: `${base}:${index}`,
+      id: `${base}:${occurrenceIndex}`,
       source: edge.source,
       target: edge.target,
-      data: { kind: edge.kind },
+      data: { kind: edge.kind, laneOffset: laneOffsets[index] },
       // `count` is set by `collapseGraph` when multiple underlying edges
       // rolled up into this one after remapping both endpoints to their
       // visible directory representative.

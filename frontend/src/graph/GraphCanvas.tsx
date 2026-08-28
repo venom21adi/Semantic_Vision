@@ -21,8 +21,13 @@ import type { ContainerVisibility } from './collapseDirectories'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
 import { EdgeLegend } from './EdgeLegend'
 import { complexityToColor } from './heatmap'
+import { LaneSmoothStepEdge } from './LaneSmoothStepEdge'
 import { nodeTypes, type GraphNodeData } from './nodeTypes'
 import { neighborNodeIds, type FlowEdgeData } from './transform'
+
+// Defined once at module scope -- React Flow warns (and can churn internal
+// caches) if `edgeTypes` is a fresh object identity on every render.
+const edgeTypes = { 'sv-lane-smoothstep': LaneSmoothStepEdge }
 
 export const LARGE_GRAPH_NODE_THRESHOLD = 300
 export const AUTO_SAVE_POSITIONS_INTERVAL_MS = 60_000
@@ -321,6 +326,7 @@ function GraphCanvasInner({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodeClick={handleNodeClick}
         onNodeDoubleClick={handleNodeDoubleClick}
         onNodeContextMenu={handleNodeContextMenu}
@@ -335,7 +341,16 @@ function GraphCanvasInner({
         // "tangled" (confirmed against real screenshots), not sheer edge
         // count. dagre itself only computes node positions and never
         // reads this -- purely a rendering choice.
-        defaultEdgeOptions={{ type: 'smoothstep' }}
+        //
+        // `sv-lane-smoothstep` instead of the library's own `smoothstep`:
+        // the default always attaches every edge to a node's exact center
+        // handle, so two-plus edges sharing a source or target (common in
+        // a near-straight dagre chain) render on top of each other,
+        // garbling their labels together -- confirmed live on the FastAPI
+        // repo. `LaneSmoothStepEdge` applies `transform.ts`'s precomputed
+        // per-edge `laneOffset` to separate them; an edge with no crowding
+        // gets `laneOffset: 0` and renders identically to `smoothstep`.
+        defaultEdgeOptions={{ type: 'sv-lane-smoothstep' }}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />

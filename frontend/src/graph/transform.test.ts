@@ -94,8 +94,80 @@ describe('toFlowEdges', () => {
   it('carries the original kind on data, for the edge-kind legend/filter to read', () => {
     const flowEdges = toFlowEdges(edges)
 
-    expect(flowEdges[0].data).toEqual({ kind: 'defines' })
-    expect(flowEdges[2].data).toEqual({ kind: 'calls' })
+    expect(flowEdges[0].data).toEqual({ kind: 'defines', laneOffset: 0 })
+    expect(flowEdges[2].data).toEqual({ kind: 'calls', laneOffset: 0 })
+  })
+
+  describe('laneOffset', () => {
+    it('is 0 for an edge whose source and target are both unique in the graph', () => {
+      const flowEdges = toFlowEdges(edges)
+
+      for (const edge of flowEdges) {
+        expect((edge.data as { laneOffset: number }).laneOffset).toBe(0)
+      }
+    })
+
+    it('spaces out edges that converge on the same target, ordered by source id', () => {
+      const converging: GraphEdge[] = [
+        { source: 'c', target: 'z', kind: 'imports', external: false, ambiguous: false },
+        { source: 'a', target: 'z', kind: 'imports', external: false, ambiguous: false },
+        { source: 'b', target: 'z', kind: 'imports', external: false, ambiguous: false },
+      ]
+
+      const flowEdges = toFlowEdges(converging)
+      const offsetBySource = new Map(
+        flowEdges.map((edge) => [edge.source, (edge.data as { laneOffset: number }).laneOffset]),
+      )
+
+      // Sorted by source id (a, b, c) regardless of input order.
+      expect(offsetBySource.get('a')).toBe(-24)
+      expect(offsetBySource.get('b')).toBe(0)
+      expect(offsetBySource.get('c')).toBe(24)
+    })
+
+    it('spaces out edges diverging from the same source, ordered by target id', () => {
+      const diverging: GraphEdge[] = [
+        { source: 'a', target: 'y', kind: 'imports', external: false, ambiguous: false },
+        { source: 'a', target: 'x', kind: 'imports', external: false, ambiguous: false },
+      ]
+
+      const flowEdges = toFlowEdges(diverging)
+      const offsetByTarget = new Map(
+        flowEdges.map((edge) => [edge.target, (edge.data as { laneOffset: number }).laneOffset]),
+      )
+
+      expect(offsetByTarget.get('x')).toBe(-12)
+      expect(offsetByTarget.get('y')).toBe(12)
+    })
+
+    it('sums the target-side and source-side contributions for an edge crowded on both ends', () => {
+      // Mirrors the live FastAPI repro: applications.py both branches to
+      // routing.py and skips ahead to dependencies, while dependencies also
+      // receives a second, separate incoming edge from routing.py.
+      const mixed: GraphEdge[] = [
+        { source: 'applications.py', target: 'routing.py', kind: 'imports', external: false, ambiguous: false },
+        { source: 'applications.py', target: 'dependencies', kind: 'imports', external: false, ambiguous: false },
+        { source: 'routing.py', target: 'dependencies', kind: 'imports', external: false, ambiguous: false },
+      ]
+
+      const flowEdges = toFlowEdges(mixed)
+      const offsetByKey = new Map(
+        flowEdges.map((edge) => [`${edge.source}->${edge.target}`, (edge.data as { laneOffset: number }).laneOffset]),
+      )
+
+      // applications.py->routing.py: its target (routing.py) has only this
+      // one incoming edge (+0), but its source group {->dependencies,
+      // ->routing.py}, sorted by target id, puts ->routing.py second (+12).
+      expect(offsetByKey.get('applications.py->routing.py')).toBe(12)
+      // applications.py->dependencies: source-side ->dependencies sorts
+      // first in applications.py's group (-12); target-side, sorted by
+      // source id, applications.py sorts before routing.py (-12). Sum: -24.
+      expect(offsetByKey.get('applications.py->dependencies')).toBe(-24)
+      // routing.py->dependencies: its source (routing.py) has only this one
+      // outgoing edge (+0), but dependencies' incoming group, sorted by
+      // source id, puts routing.py second (+12).
+      expect(offsetByKey.get('routing.py->dependencies')).toBe(12)
+    })
   })
 })
 

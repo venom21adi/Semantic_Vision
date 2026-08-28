@@ -18,7 +18,7 @@ function makeNode(id: string, kind: GraphNodeData['kind'] = 'function'): Node<Gr
 }
 
 function makeEdge(source: string, target: string, kind: GraphEdge['kind']): Edge<FlowEdgeData> {
-  return { id: `${source}->${target}:${kind}`, source, target, data: { kind } }
+  return { id: `${source}->${target}:${kind}`, source, target, data: { kind, laneOffset: 0 } }
 }
 
 const noop = {
