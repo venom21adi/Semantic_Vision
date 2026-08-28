@@ -190,6 +190,26 @@ Select Python or JavaScript / TypeScript in the language selector to set the par
 
 JS/TS uses tree-sitter for static AST resolution—including full support for JSX/TSX. To preserve precision without execution, dynamic patterns (like computed require() calls) are flagged directly in the UI rather than inferred.
 
+## ⏱️ Benchmarks
+
+Real-world numbers against genuinely large, well-known open-source repos — not this project's own
+fixtures — one per supported language:
+
+| Language | Repo | Files | Backend parse — cold (s) | Backend parse — warm (s) | Browser: time to render (s) |
+|---|---|---|---|---|---|
+| Python | [fastapi/fastapi](benchmarks/fastapi.md) | 1,138 | 23.25 | 4.08 | 7.20–7.84 |
+| JavaScript | [three.js](benchmarks/threejs.md) | 752 | 29.33 | 1.98 | 4.88–5.01 |
+| TypeScript | [nestjs/nest](benchmarks/nest.md) | 1,907 | 39.68 | 2.48 | 6.85–6.88 |
+
+*"Cold" is the first read of a fresh clone this machine has never touched; "warm" is a second parse
+of the identical files immediately after — the only variable that changes is OS file-cache state.
+Every language shows a large cold/warm gap (5.7x–16x); it isn't specific to any one parser or
+language. Warm-to-warm, TypeScript actually parses faster than Python.*
+
+See the [`benchmarks/`](benchmarks/README.md) folder for the full methodology, a webpack case
+study on what happens when a repo's default view doesn't collapse much, and the reasoning behind
+every number above.
+
 ## 🚀 Quick start
 
 Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js 20+.
