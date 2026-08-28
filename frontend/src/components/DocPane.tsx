@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import type { DocProvider } from '../api/types'
-import { colors } from '../theme'
+import { colors, font, radius, spacing } from '../theme'
 import type { ActivePane } from './DetailsPanel'
 
 type DocActivePane = Extract<ActivePane, { kind: 'doc' }>
@@ -37,7 +37,7 @@ const selectStyle = {
   background: colors.bgPage,
   color: colors.textPrimary,
   border: `1px solid ${colors.bgPanel}`,
-  borderRadius: 6,
+  borderRadius: radius.sm,
   padding: '4px 6px',
   fontSize: 12,
 } as const
@@ -88,7 +88,7 @@ export function DocPane({
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm }}>
         <select
           aria-label="AI provider"
           value={provider}
@@ -111,7 +111,7 @@ export function DocPane({
             background: colors.accentStrong,
             color: colors.textPrimary,
             border: 'none',
-            borderRadius: 6,
+            borderRadius: radius.sm,
             padding: '4px 10px',
             fontSize: 12,
             cursor: busy ? 'default' : 'pointer',
@@ -122,7 +122,9 @@ export function DocPane({
       </div>
 
       {provider === 'ollama' && (
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+        <div
+          style={{ display: 'flex', gap: spacing.sm, alignItems: 'center', marginBottom: spacing.md }}
+        >
           <select
             aria-label="Ollama model"
             value={ollamaModel}
@@ -147,7 +149,7 @@ export function DocPane({
               background: 'transparent',
               border: `1px solid ${colors.bgPanel}`,
               color: colors.textMuted,
-              borderRadius: 6,
+              borderRadius: radius.sm,
               padding: '4px 8px',
               fontSize: 12,
               cursor: ollamaModelsLoading ? 'default' : 'pointer',
@@ -158,7 +160,7 @@ export function DocPane({
         </div>
       )}
       {provider === 'ollama' && ollamaModels.length === 0 && !ollamaModelsLoading && (
-        <p style={{ color: colors.textMuted, marginTop: -4, marginBottom: 12, fontSize: 12 }}>
+        <p style={{ color: colors.textMuted, marginTop: -4, marginBottom: spacing.md, fontSize: 12 }}>
           No local Ollama models found. Run <code>ollama serve</code> and{' '}
           <code>ollama pull &lt;model&gt;</code>, then refresh.
         </p>
@@ -189,10 +191,10 @@ export function DocPane({
                 boxSizing: 'border-box',
                 background: colors.bgPage,
                 border: `1px solid ${colors.bgPanel}`,
-                borderRadius: 6,
+                borderRadius: radius.sm,
                 padding: 10,
                 fontSize: 12,
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                fontFamily: font.mono,
                 color: colors.textPrimary,
                 resize: 'vertical',
               }}
@@ -203,7 +205,7 @@ export function DocPane({
               style={{
                 background: colors.bgPage,
                 border: `1px solid ${colors.bgPanel}`,
-                borderRadius: 6,
+                borderRadius: radius.sm,
                 padding: 10,
                 fontSize: 12,
                 overflowX: 'auto',
@@ -218,7 +220,7 @@ export function DocPane({
             <SaveLocationNotice docRoot={docRoot} onDismiss={onDismissNotice} />
           )}
           {pane.status === 'loaded' && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm }}>
               <button
                 type="button"
                 onClick={onSave}
@@ -228,7 +230,7 @@ export function DocPane({
                   background: pane.saved ? colors.bgPanel : colors.successBg,
                   color: colors.textPrimary,
                   border: 'none',
-                  borderRadius: 6,
+                  borderRadius: radius.sm,
                   padding: '4px 10px',
                   fontSize: 12,
                   cursor: pane.saved ? 'default' : 'pointer',
@@ -264,7 +266,7 @@ const secondaryButtonStyle = {
   background: 'transparent',
   color: colors.textPrimary,
   border: `1px solid ${colors.border}`,
-  borderRadius: 6,
+  borderRadius: radius.sm,
   padding: '4px 10px',
   fontSize: 12,
   cursor: 'pointer',
@@ -275,16 +277,16 @@ function SaveLocationNotice({ docRoot, onDismiss }: { docRoot: string; onDismiss
     <div
       role="status"
       style={{
-        marginTop: 8,
-        padding: '6px 8px',
+        marginTop: spacing.sm,
+        padding: `6px ${spacing.sm}px`,
         background: colors.bgPage,
         border: `1px solid ${colors.bgPanel}`,
-        borderRadius: 6,
+        borderRadius: radius.sm,
         fontSize: 11,
         color: colors.textMuted,
       }}
     >
-      <p style={{ margin: '0 0 4px' }}>
+      <p style={{ margin: `0 0 ${spacing.xs}px` }}>
         Documentation is saved to <code>{docRoot}</code>. Change this in the Save location field
         at the top of the page.
       </p>

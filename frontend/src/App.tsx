@@ -39,7 +39,8 @@ import {
 import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './graph/GraphCanvas'
 import { scopeToFile } from './graph/transform'
 import { useLayoutWorker } from './graph/useLayoutWorker'
-import { colors } from './theme'
+import { colors, font, spacing } from './theme'
+import { LogoMark } from './components/Logo'
 import { rootNodeIds } from './tree/buildTree'
 import {
   dismissDocSaveNotice,
@@ -68,6 +69,32 @@ const EMPTY_GRAPH: { nodes: GraphNode[]; edges: GraphEdge[] } = { nodes: [], edg
  * `DEFAULT_COLLAPSE_CHILD_THRESHOLD` (5) -- a compact text row and a
  * full canvas box are very different amounts of screen space. */
 const EXPAND_CHILD_THRESHOLD = 12
+
+/** How long `debouncedVisibleIds` (below) waits after the *last* `visibleIds`
+ * change before applying it. Milestone 18 (`docs/PHASE-2-BUILD-PLAN.md`)
+ * profiled a rapid burst of canvas checkbox clicks (e.g. many "show on
+ * canvas" boxes checked in a row) and found each one forced its own full,
+ * separate `buildVisibleGraph`/layout/render pass -- the checkbox itself
+ * isn't the expensive part, but everything downstream of `visibleIds`
+ * changing is. 150ms comfortably coalesces a rapid burst into one pass
+ * while staying low enough that a single click's own resulting graph
+ * update -- already not instant today, since it waits on the layout worker
+ * regardless -- doesn't read as newly sluggish. */
+export const VISIBLE_IDS_SETTLE_MS = 150
+
+/** Settles to `value` only after `delayMs` of no further changes. The
+ * checkbox's own visual checked state must stay on the un-debounced
+ * `visibleIds` directly (native checkboxes should never lag a click) --
+ * only the expensive downstream consumer (`collapsedCodebaseGraph` below)
+ * reads the debounced value. */
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs)
+    return () => clearTimeout(timer)
+  }, [value, delayMs])
+  return debounced
+}
 
 interface LoadedRepo {
   path: string
@@ -336,19 +363,28 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repo?.nodes, repo?.edges])
 
+  // Debounced, not the raw `visibleIds` -- a rapid burst of checkbox
+  // clicks (Milestone 18) should only pay for one `buildVisibleGraph` +
+  // layout pass, not one per click. Every other reader of `visibleIds`
+  // (the checkbox's own checked state, `showEmptySelectionPlaceholder`)
+  // stays on the un-debounced value directly; only this expensive
+  // downstream consumer waits.
+  const debouncedVisibleIds = useDebouncedValue(visibleIds, VISIBLE_IDS_SETTLE_MS)
+
   // Resolves `visibleIds` against the full codebase graph into exactly
   // what the canvas renders -- see `buildVisibleGraph`'s own doc comment
   // for the single-set rollup rule this replaces two previously-separate
   // mechanisms with. Referentially stable for the same reason
   // `codebaseGraph` is: only changes identity when `codebaseGraph` or
-  // `visibleIds` themselves do (load, a checkbox, expand/collapse, or
-  // selecting a node not yet on canvas -- see handleSelectNode), never on
-  // an unrelated re-render, so it doesn't spuriously re-trigger
-  // `useLayoutWorker` (see docs/PERFORMANCE-REPORT.md's Iteration 2 for
-  // why that worker-side layout exists in the first place).
+  // `debouncedVisibleIds` themselves do (load, a checkbox settling, expand/
+  // collapse, or selecting a node not yet on canvas -- see
+  // handleSelectNode), never on an unrelated re-render, so it doesn't
+  // spuriously re-trigger `useLayoutWorker` (see
+  // docs/PERFORMANCE-REPORT.md's Iteration 2 for why that worker-side
+  // layout exists in the first place).
   const collapsedCodebaseGraph = useMemo(
-    () => buildVisibleGraph(codebaseGraph.nodes, codebaseGraph.edges, visibleIds),
-    [codebaseGraph, visibleIds],
+    () => buildVisibleGraph(codebaseGraph.nodes, codebaseGraph.edges, debouncedVisibleIds),
+    [codebaseGraph, debouncedVisibleIds],
   )
 
   // Ids currently rendered as their own box on the codebase canvas --
@@ -842,31 +878,47 @@ export default function App() {
         height: '100vh',
         background: colors.bgPage,
         color: colors.textPrimary,
-        fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+        fontFamily: font.ui,
       }}
     >
-      <header style={{ padding: 12, borderBottom: `1px solid ${colors.bgPanel}` }}>
-        <RepoLoader
-          onLoad={handleLoad}
-          loading={loading}
-          error={loadError}
-          initialPath={lastRepoPath ?? undefined}
-          initialDocRoot={rememberedDocRoot ?? undefined}
-          initialLanguage={rememberedLanguage ?? undefined}
-          resolvedDocRoot={repo?.docRoot ?? null}
-          hasLoadedRepo={repo !== null}
-          onChangeDocRoot={handleChangeDocRoot}
-          stats={
-            repo
-              ? {
-                  path: repo.path,
-                  nodeCount: repo.nodeCount,
-                  edgeCount: repo.edgeCount,
-                  parseErrors: repo.parseErrors,
-                }
-              : null
-          }
-        />
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spacing.lg,
+          padding: spacing.md,
+          borderBottom: `1px solid ${colors.bgPanel}`,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, flexShrink: 0 }}>
+          <LogoMark size={20} />
+          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' }}>
+            Semantic Vision
+          </span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <RepoLoader
+            onLoad={handleLoad}
+            loading={loading}
+            error={loadError}
+            initialPath={lastRepoPath ?? undefined}
+            initialDocRoot={rememberedDocRoot ?? undefined}
+            initialLanguage={rememberedLanguage ?? undefined}
+            resolvedDocRoot={repo?.docRoot ?? null}
+            hasLoadedRepo={repo !== null}
+            onChangeDocRoot={handleChangeDocRoot}
+            stats={
+              repo
+                ? {
+                    path: repo.path,
+                    nodeCount: repo.nodeCount,
+                    edgeCount: repo.edgeCount,
+                    parseErrors: repo.parseErrors,
+                  }
+                : null
+            }
+          />
+        </div>
       </header>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         {repo && (
@@ -892,8 +944,20 @@ export default function App() {
         )}
         <main style={{ flex: 1, minWidth: 0 }}>
           {!repo && !flowchartState && (
-            <div style={{ padding: 24, color: colors.textMuted }}>
-              Load a repository to see its codebase graph.
+            <div
+              style={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing.md,
+              }}
+            >
+              <LogoMark size={40} bare />
+              <div style={{ fontSize: 15, color: colors.textMuted }}>
+                Load a repository to see its codebase graph.
+              </div>
             </div>
           )}
           {repo && !flowchartState && showFileViewPlaceholder && (

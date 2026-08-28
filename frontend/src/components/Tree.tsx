@@ -3,7 +3,7 @@ import type { NodeKind } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { CONTAINER_KINDS } from '../graph/collapseDirectories'
 import { KIND_COLORS } from '../graph/nodeTypes'
-import { colors as themeColors } from '../theme'
+import { colors as themeColors, spacing } from '../theme'
 import { isExpandedByDefault, type TreeNode } from '../tree/buildTree'
 
 /** Kinds that get their own "show on canvas" checkbox in addition to
@@ -79,7 +79,7 @@ export function Tree({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 4,
+            gap: spacing.xs,
             paddingLeft: depth * 14 + 4,
             paddingTop: 3,
             paddingBottom: 3,

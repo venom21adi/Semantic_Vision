@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { NodeKind } from '../api/types'
-import { colors as themeColors } from '../theme'
+import { colors as themeColors, font } from '../theme'
 import { formatNodeLabel } from './accessorLabel'
 
 export interface GraphNodeData extends Record<string, unknown> {
@@ -28,13 +28,24 @@ export interface GraphNodeData extends Record<string, unknown> {
   hiddenDescendantCount?: number
 }
 
+/** OKLCH, one consistent recipe per tier (background: L .42 C .15;
+ * border: L .74 C .12), hue-only varying by kind -- reads as one
+ * coordinated categorical palette rather than picked-independently
+ * Tailwind swatches (the previous hex values). Hues deliberately avoid
+ * 266-316 (theme.ts's `colors.accent` sits at 291): `class` was
+ * previously `#7e22ce`, a violet-purple landing almost exactly on the
+ * new brand accent's hue -- a node-kind color and "this is
+ * selected/interactive" read as the same color family, confirmed
+ * against the actual accent value while designing this pass, not
+ * assumed. Picked magenta (335) instead, clearly outside that range and
+ * still distinct from every other kind here. */
 export const KIND_COLORS: Record<NodeKind, { background: string; border: string }> = {
-  directory: { background: '#1d4ed8', border: '#93c5fd' },
-  file: { background: '#15803d', border: '#86efac' },
-  class: { background: '#7e22ce', border: '#d8b4fe' },
-  function: { background: '#c2410c', border: '#fdba74' },
-  table: { background: '#0e7490', border: '#67e8f9' },
-  dbt_model: { background: '#a16207', border: '#fde047' },
+  directory: { background: 'oklch(0.42 0.15 235)', border: 'oklch(0.74 0.12 235)' },
+  file: { background: 'oklch(0.42 0.15 150)', border: 'oklch(0.74 0.12 150)' },
+  class: { background: 'oklch(0.42 0.15 335)', border: 'oklch(0.74 0.12 335)' },
+  function: { background: 'oklch(0.42 0.15 40)', border: 'oklch(0.74 0.12 40)' },
+  table: { background: 'oklch(0.42 0.15 195)', border: 'oklch(0.74 0.12 195)' },
+  dbt_model: { background: 'oklch(0.42 0.15 95)', border: 'oklch(0.74 0.12 95)' },
 }
 
 function GraphNodeComponent({ data, selected }: NodeProps) {
@@ -64,7 +75,7 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
         padding: '6px 12px',
         color: themeColors.textPrimary,
         fontSize: 12,
-        fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+        fontFamily: font.ui,
         minWidth: 120,
         maxWidth: 220,
         textOverflow: 'ellipsis',

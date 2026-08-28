@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as client from './api/client'
 import type { ComplexityResponse, GraphResponse, GraphStateResponse } from './api/types'
-import App from './App'
+import App, { VISIBLE_IDS_SETTLE_MS } from './App'
 import {
   getDetailsCollapsed,
   getLastRepoPath,
@@ -516,10 +516,14 @@ describe('App', () => {
     // Force-collapse everything -- `greet` (inside `app.py`) is no longer
     // rendered on the canvas, only its containing file is.
     await user.click(screen.getByRole('button', { name: 'Collapse all' }))
-    await waitFor(() =>
-      expect(screen.queryByTestId('rf__node-app.py::Greeter.greet')).not.toBeInTheDocument(),
-    )
-    expect(screen.getByTestId('rf__node-app.py')).toBeInTheDocument()
+    // Both assertions in one `waitFor`, not sequential -- `visibleIds`
+    // changes settle on a debounce (Milestone 18), so a mid-settle poll can
+    // transiently satisfy "greet gone" while the canvas itself is still
+    // between layouts and `app.py` isn't rendered yet either.
+    await waitFor(() => {
+      expect(screen.queryByTestId('rf__node-app.py::Greeter.greet')).not.toBeInTheDocument()
+      expect(screen.getByTestId('rf__node-app.py')).toBeInTheDocument()
+    })
 
     // Selecting it from the sidebar tree (which isn't collapse-aware) must
     // force-expand `app.py` so the selected node actually becomes visible
@@ -654,10 +658,79 @@ describe('App', () => {
     const tree = screen.getByRole('tree')
     await user.click(within(tree).getByLabelText('Show a.py on canvas'))
 
-    await waitFor(() => expect(screen.queryByTestId('rf__node-pkg/a.py')).not.toBeInTheDocument())
-    // `b.py` and the directory itself are untouched by unchecking its sibling.
-    expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
-    expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument()
+    // All three in one `waitFor` -- `visibleIds` changes settle on a
+    // debounce (Milestone 18), so a mid-settle poll can transiently satisfy
+    // "a.py gone" while the canvas is still between layouts and `b.py`/
+    // `pkg` (untouched by unchecking their sibling) aren't rendered yet
+    // either.
+    await waitFor(() => {
+      expect(screen.queryByTestId('rf__node-pkg/a.py')).not.toBeInTheDocument()
+      expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
+      expect(screen.getByTestId('rf__node-pkg')).toBeInTheDocument()
+    })
+  })
+
+  it('coalesces a rapid burst of checkbox clicks into one canvas update instead of one per click', async () => {
+    // The actual point of `VISIBLE_IDS_SETTLE_MS` (Milestone 18,
+    // docs/PHASE-2-BUILD-PLAN.md): a rapid burst of `visibleIds` changes
+    // must not each force their own separate `buildVisibleGraph`/layout
+    // pass. Verified here by never letting fake time advance past the
+    // debounce window mid-burst -- if debouncing weren't actually
+    // coalescing, `pkg/a.py` would already be gone from the DOM the
+    // instant it's unchecked, before this test ever advances the clock.
+    mockedClient.parseRepo.mockResolvedValue({
+      path: '/repo',
+      doc_root: '/repo',
+      node_count: 3,
+      edge_count: 2,
+      parse_errors: [],
+    })
+    mockedClient.getGraph.mockResolvedValue({
+      nodes: [
+        { id: 'pkg', kind: 'directory', label: 'pkg', file: 'pkg', line_start: 0, line_end: 0 },
+        { id: 'pkg/a.py', kind: 'file', label: 'a.py', file: 'pkg/a.py', line_start: 1, line_end: 1 },
+        { id: 'pkg/b.py', kind: 'file', label: 'b.py', file: 'pkg/b.py', line_start: 1, line_end: 1 },
+      ],
+      edges: [
+        { source: 'pkg', target: 'pkg/a.py', kind: 'defines', external: false, ambiguous: false },
+        { source: 'pkg', target: 'pkg/b.py', kind: 'defines', external: false, ambiguous: false },
+      ],
+    })
+
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const user = userEvent.setup({ delay: null })
+      render(<App />)
+      await user.type(screen.getByLabelText('Repository path'), '/repo')
+      await user.click(screen.getByRole('button', { name: /load/i }))
+      await vi.waitFor(() => screen.getByTestId('rf__node-pkg/a.py'))
+
+      const tree = screen.getByRole('tree')
+      const aCheckbox = within(tree).getByLabelText('Show a.py on canvas')
+
+      // A burst of three toggles on the same checkbox, no time advanced
+      // between them -- exactly the rapid-fire pattern the debounce exists
+      // to coalesce.
+      await user.click(aCheckbox) // off
+      await user.click(aCheckbox) // on
+      await user.click(aCheckbox) // off
+
+      // Still mid-debounce: the canvas must not have reacted to any of the
+      // three toggles yet, including the two that already reversed
+      // themselves.
+      expect(screen.getByTestId('rf__node-pkg/a.py')).toBeInTheDocument()
+
+      await vi.advanceTimersByTimeAsync(VISIBLE_IDS_SETTLE_MS)
+
+      // Settles once, directly to the burst's *final* state (off) -- not
+      // an intermediate one, and not three separate updates.
+      await vi.waitFor(() =>
+        expect(screen.queryByTestId('rf__node-pkg/a.py')).not.toBeInTheDocument(),
+      )
+      expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('expanding a container via its canvas chevron keeps the container itself visible, not just its children', async () => {
@@ -1038,9 +1111,13 @@ describe('App', () => {
     // well under the large-graph threshold, so it starts selected/shown.
     await waitFor(() => expect(screen.getByTestId('rf__node-table::users')).toBeInTheDocument())
 
-    // The user explicitly hides it via its sidebar checkbox.
+    // The user explicitly hides it via its sidebar checkbox. `visibleIds`
+    // changes settle on a debounce (Milestone 18), so the canvas update
+    // isn't synchronous with the click -- wait for it.
     await user.click(screen.getByLabelText('Show users on canvas'))
-    expect(screen.queryByTestId('rf__node-table::users')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByTestId('rf__node-table::users')).not.toBeInTheDocument(),
+    )
 
     // A dbt ingest reconciles onto the SAME table (no new root) -- the
     // graph refetch keeps returning the identical node set.
@@ -1051,7 +1128,9 @@ describe('App', () => {
 
     // Reconciling onto an already-known node is not "newly ingested" --
     // the user's deselection must survive, not be silently overridden.
-    expect(screen.queryByTestId('rf__node-table::users')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByTestId('rf__node-table::users')).not.toBeInTheDocument(),
+    )
     expect(screen.getByLabelText('Show users on canvas')).not.toBeChecked()
   })
 })

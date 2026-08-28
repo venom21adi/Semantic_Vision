@@ -156,8 +156,24 @@ one of the 157 calls, even though that structure never depends on `visibleIds` a
 across all of them. Fixed: `parentOf`/`childCountByParent` are now cached in a `WeakMap` keyed on
 the `edges` array identity, computed once instead of once per click. This closed part of the gap
 (~4.0s → ~3.4s in the production-build benchmark) but not most of it — the remaining, larger cost
-is simply React re-rendering 157 separate times, which a per-function cache can't reduce; closing
-that further would mean debouncing the `visibleIds` state updates themselves in `App.tsx`; not yet
-done. Worth noting: 157 clicks in well under a second is a benchmark-script artifact exercising an
-edge case (a real person clicking at human speed was never actually paying seconds per click) —
-this mostly mattered for the automated benchmark number, not everyday use.
+was React re-rendering 157 separate times, which a per-function cache can't reduce.
+
+**Fixed** (`frontend/src/App.tsx`): the `visibleIds` state feeding `buildVisibleGraph`/the canvas
+is now debounced (`useDebouncedValue`, 150ms) before it reaches that expensive pipeline — a rapid
+burst of clicks now pays for one `buildVisibleGraph`+layout pass instead of 157. Deliberately
+split, not a blanket debounce: the checkbox's own visual checked state stays on the *un-debounced*
+`visibleIds` directly, so a native checkbox never visibly lags a click; only the canvas rendering
+waits. Re-benchmarked (production build): **~3.4s → ~2.49s**. A regression test
+(`App.test.tsx`, "coalesces a rapid burst of checkbox clicks") locks in the coalescing property
+itself, not just the eventual end state — worth calling out since an early version of that test
+passed even with the fix reverted, because a sanity-check revert only touched the memo's
+computation and missed its dependency array (the part that actually gates *when* it recomputes);
+fixed before trusting the test.
+
+**Not fully closed, and now understood why**: dev-mode's number barely moved (still ~20-25s
+render-after-data) despite the same fix. `Tree.tsx`'s sidebar rows have no row-level memoization,
+so the checkbox's own instant, deliberately-un-debounced `visibleIds` update still re-renders the
+*entire* 157-row tree on every click — cheap in a production build (confirmed: React reconciliation
+itself is fast), but still paying full dev-mode `jsxDEV` overhead per row per click, same root
+cause as the original 22-27s finding above, just relocated from the canvas to the sidebar. Not
+fixed here — would mean memoizing individual tree rows so only the toggled row itself re-renders.

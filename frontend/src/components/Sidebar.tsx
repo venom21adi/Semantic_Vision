@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GraphEdge, GraphNode } from '../api/types'
-import { colors } from '../theme'
+import { colors, radius, spacing } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { Tree } from './Tree'
 import { buildTree, collectMatchIds, collectVisiblePath } from '../tree/buildTree'
@@ -65,7 +65,7 @@ export function Sidebar({
           width: 28,
           flexShrink: 0,
           borderRight: `1px solid ${colors.bgPanel}`,
-          padding: '8px 4px',
+          padding: `${spacing.sm}px ${spacing.xs}px`,
         }}
       >
         <CollapseToggle collapsed onClick={onToggleCollapsed} edge="left" paneName="sidebar" />
@@ -84,7 +84,7 @@ export function Sidebar({
         minHeight: 0,
       }}
     >
-      <div style={{ display: 'flex', padding: 8, gap: 4, alignItems: 'center' }}>
+      <div style={{ display: 'flex', padding: spacing.sm, gap: spacing.xs, alignItems: 'center' }}>
         <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="left" paneName="sidebar" />
         {(['codebase', 'file'] as const).map((option) => (
           <button
@@ -95,8 +95,8 @@ export function Sidebar({
             className="sv-interactive"
             style={{
               flex: 1,
-              padding: '4px 8px',
-              borderRadius: 4,
+              padding: `${spacing.xs}px ${spacing.sm}px`,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.border}`,
               background: view === option ? colors.accent : 'transparent',
               color: colors.textPrimary,
@@ -110,7 +110,7 @@ export function Sidebar({
         ))}
       </div>
 
-      <div style={{ padding: '0 8px 8px' }}>
+      <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
         <button
           type="button"
           aria-pressed={complexityActive}
@@ -118,8 +118,8 @@ export function Sidebar({
           className="sv-interactive"
           style={{
             width: '100%',
-            padding: '4px 8px',
-            borderRadius: 4,
+            padding: `${spacing.xs}px ${spacing.sm}px`,
+            borderRadius: radius.sm,
             border: `1px solid ${colors.border}`,
             background: complexityActive ? colors.complexityActiveBg : 'transparent',
             color: colors.textPrimary,
@@ -131,7 +131,7 @@ export function Sidebar({
         </button>
       </div>
 
-      <div style={{ padding: '0 8px 8px' }}>
+      <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
         <button
           type="button"
           aria-pressed={dataSourceActive}
@@ -139,8 +139,8 @@ export function Sidebar({
           className="sv-interactive"
           style={{
             width: '100%',
-            padding: '4px 8px',
-            borderRadius: 4,
+            padding: `${spacing.xs}px ${spacing.sm}px`,
+            borderRadius: radius.sm,
             border: `1px solid ${colors.border}`,
             background: dataSourceActive ? colors.dataSourceActiveBg : 'transparent',
             color: colors.textPrimary,
@@ -153,7 +153,14 @@ export function Sidebar({
       </div>
 
       {view === 'codebase' && (
-        <div style={{ display: 'flex', padding: '0 8px 8px', gap: 8, alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            padding: `0 ${spacing.sm}px ${spacing.sm}px`,
+            gap: spacing.sm,
+            alignItems: 'center',
+          }}
+        >
           <span style={{ fontSize: 11, color: colors.textMuted }}>
             {selectedRootIds.size} selected
           </span>
@@ -164,8 +171,8 @@ export function Sidebar({
             className="sv-interactive"
             style={{
               marginLeft: 'auto',
-              padding: '4px 8px',
-              borderRadius: 4,
+              padding: `${spacing.xs}px ${spacing.sm}px`,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.border}`,
               background: 'transparent',
               color: selectedRootIds.size === 0 ? colors.disabled : colors.textPrimary,
@@ -179,15 +186,17 @@ export function Sidebar({
       )}
 
       {view === 'codebase' && (
-        <div style={{ display: 'flex', padding: '0 8px 8px', gap: 4 }}>
+        <div
+          style={{ display: 'flex', padding: `0 ${spacing.sm}px ${spacing.sm}px`, gap: spacing.xs }}
+        >
           <button
             type="button"
             onClick={onExpandAll}
             className="sv-interactive"
             style={{
               flex: 1,
-              padding: '4px 8px',
-              borderRadius: 4,
+              padding: `${spacing.xs}px ${spacing.sm}px`,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.border}`,
               background: 'transparent',
               color: colors.textPrimary,
@@ -203,8 +212,8 @@ export function Sidebar({
             className="sv-interactive"
             style={{
               flex: 1,
-              padding: '4px 8px',
-              borderRadius: 4,
+              padding: `${spacing.xs}px ${spacing.sm}px`,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.border}`,
               background: 'transparent',
               color: colors.textPrimary,
@@ -217,7 +226,7 @@ export function Sidebar({
         </div>
       )}
 
-      <div style={{ padding: '0 8px 8px', position: 'relative' }}>
+      <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px`, position: 'relative' }}>
         <input
           type="text"
           value={query}
@@ -229,8 +238,8 @@ export function Sidebar({
           aria-label="Filter tree"
           style={{
             width: '100%',
-            padding: '5px 24px 5px 8px',
-            borderRadius: 4,
+            padding: `5px ${spacing.xl}px 5px ${spacing.sm}px`,
+            borderRadius: radius.sm,
             border: `1px solid ${colors.border}`,
             background: colors.bgPage,
             color: colors.textPrimary,
@@ -262,12 +271,15 @@ export function Sidebar({
       </div>
 
       {isFiltering && (
-        <p role="status" style={{ margin: '0 8px 8px', fontSize: 11, color: colors.textMuted }}>
+        <p
+          role="status"
+          style={{ margin: `0 ${spacing.sm}px ${spacing.sm}px`, fontSize: 11, color: colors.textMuted }}
+        >
           {matchIds.size} match{matchIds.size === 1 ? '' : 'es'}
         </p>
       )}
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
         <Tree
           roots={tree}
           selectedNodeId={selectedNodeId}

@@ -1,6 +1,6 @@
 import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
-import { colors } from '../theme'
+import { colors, spacing } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
@@ -80,7 +80,7 @@ export function DetailsPanel({
           width: 28,
           flexShrink: 0,
           borderLeft: `1px solid ${colors.bgPanel}`,
-          padding: '8px 4px',
+          padding: `${spacing.sm}px ${spacing.xs}px`,
         }}
       >
         <CollapseToggle collapsed onClick={onToggleCollapsed} edge="right" paneName="details panel" />
@@ -94,23 +94,30 @@ export function DetailsPanel({
         width: 320,
         flexShrink: 0,
         borderLeft: `1px solid ${colors.bgPanel}`,
-        padding: 16,
+        padding: spacing.lg,
         overflowY: 'auto',
         color: colors.textPrimary,
         fontSize: 13,
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: spacing.sm }}>
         <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="right" paneName="details panel" />
       </div>
       {!selectedNode && <p style={{ color: colors.textMuted }}>Select a node to see details.</p>}
 
       {selectedNode && (
         <div>
-          <h2 style={{ fontSize: 15, margin: '0 0 8px' }}>
+          <h2 style={{ fontSize: 15, margin: `0 0 ${spacing.sm}px` }}>
             {formatNodeLabel(selectedNode.label, selectedNode.accessor_kind)}
           </h2>
-          <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 8px' }}>
+          <dl
+            style={{
+              margin: 0,
+              display: 'grid',
+              gridTemplateColumns: 'auto 1fr',
+              gap: `${spacing.xs}px ${spacing.sm}px`,
+            }}
+          >
             <dt style={{ color: colors.textMuted }}>kind</dt>
             <dd style={{ margin: 0 }}>{selectedNode.kind}</dd>
             <dt style={{ color: colors.textMuted }}>file</dt>
@@ -130,7 +137,7 @@ export function DetailsPanel({
       )}
 
       {pane?.kind === 'source' && (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: spacing.lg }}>
           <PaneHeader title="Source" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status === 'error' && (
@@ -157,7 +164,7 @@ export function DetailsPanel({
       )}
 
       {pane?.kind === 'doc' && (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: spacing.lg }}>
           <PaneHeader title="Document" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status !== 'loading' && (
@@ -187,7 +194,7 @@ export function DetailsPanel({
       )}
 
       {pane?.kind === 'impact' && (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: spacing.lg }}>
           <PaneHeader title="Impact Analysis" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status === 'error' && (
@@ -202,7 +209,7 @@ export function DetailsPanel({
       )}
 
       {pane?.kind === 'complexity' && (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: spacing.lg }}>
           <PaneHeader title="Performance Report" onClose={onClosePane} />
           {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
           {pane.status === 'error' && (
@@ -221,7 +228,7 @@ export function DetailsPanel({
       )}
 
       {pane?.kind === 'dataSource' && (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: spacing.lg }}>
           <PaneHeader title="Connect data source" onClose={onClosePane} />
           <DataSourcePane path={repoPath} onIngestComplete={onDataSourceIngestComplete} />
         </div>
@@ -237,7 +244,7 @@ function PaneHeader({ title, onClose }: { title: string; onClose: () => void }) 
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: spacing.sm,
       }}
     >
       <h3 style={{ fontSize: 13, margin: 0 }}>{title}</h3>
@@ -279,7 +286,7 @@ function ImpactCallers({
   return (
     <div>
       {result.cycles.length > 0 && (
-        <p role="alert" style={{ color: colors.danger, margin: '0 0 8px' }}>
+        <p role="alert" style={{ color: colors.danger, margin: `0 0 ${spacing.sm}px` }}>
           Circular call chain detected.
         </p>
       )}
@@ -307,8 +314,15 @@ function CallerGroup({
   onSelectCaller: (nodeId: string) => void
 }) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <h4 style={{ fontSize: 11, textTransform: 'uppercase', color: colors.textMuted, margin: '0 0 4px' }}>
+    <div style={{ marginBottom: spacing.md }}>
+      <h4
+        style={{
+          fontSize: 11,
+          textTransform: 'uppercase',
+          color: colors.textMuted,
+          margin: `0 0 ${spacing.xs}px`,
+        }}
+      >
         {title}
       </h4>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -326,7 +340,7 @@ function CallerGroup({
                 background: 'transparent',
                 border: 'none',
                 color: colors.textPrimary,
-                padding: '4px 0',
+                padding: `${spacing.xs}px 0`,
                 cursor: 'pointer',
                 fontSize: 12,
               }}

@@ -3,11 +3,17 @@ import type { FlowEdge, FlowNode } from '../api/types'
 import { layoutGraph } from '../graph/layout'
 import type { FlowNodeData } from './nodeTypes'
 
+/** OKLCH, matching `flowchart/nodeTypes.tsx`'s `FLOW_KIND_COLORS`
+ * conventions: `true`/`false` reuse theme.ts's success/danger hues,
+ * `loop_back` reuses this file's own `loop` node hue (350) rather than
+ * its previous `#c084fc` -- a light purple sitting close to
+ * `colors.accent`'s hue (291), the same clash `FLOW_KIND_COLORS.loop`
+ * had. `flow` stays a neutral, unremarkable gray for the common case. */
 const FLOW_EDGE_COLORS: Record<FlowEdge['kind'], string> = {
-  flow: '#94a3b8',
-  true: '#4ade80',
-  false: '#f87171',
-  loop_back: '#c084fc',
+  flow: 'oklch(0.58 0.013 265)',
+  true: 'oklch(0.72 0.15 152)',
+  false: 'oklch(0.72 0.16 25)',
+  loop_back: 'oklch(0.72 0.14 350)',
 }
 
 export function toFlowchartNodes(nodes: FlowNode[]): Node<FlowNodeData>[] {

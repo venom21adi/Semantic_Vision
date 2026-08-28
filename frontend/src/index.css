@@ -14,7 +14,29 @@ body,
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  /* Mirrors theme.ts's `font.ui` -- plain CSS can't import a TS value,
+     kept in sync by this comment rather than a build step. */
+  font-family:
+    'Inter',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+/* Form controls don't inherit `font-family` from an ancestor by default --
+   browsers apply their own UA-stylesheet font (e.g. Arial on Windows
+   Chrome) to `button`/`input`/`select`/`textarea` regardless of what the
+   page sets higher up, unless told otherwise. Every one of this app's 37
+   `button`/`input`/`select`/`textarea` elements was silently on the
+   browser's system font, not this app's, until this rule -- confirmed
+   live, not assumed. */
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 @keyframes spin {
@@ -38,7 +60,7 @@ body {
   filter: brightness(1.15);
 }
 .sv-interactive:focus-visible {
-  outline: 2px solid #2563eb; /* mirrors theme.ts's colors.focusRing */
+  outline: 2px solid oklch(0.635 0.19 291); /* mirrors theme.ts's colors.focusRing */
   outline-offset: 2px;
 }
 .sv-interactive:disabled {
@@ -49,7 +71,7 @@ body {
   filter: brightness(1.15);
 }
 .sv-row:focus-visible {
-  box-shadow: 0 0 0 2px #2563eb inset; /* mirrors theme.ts's colors.focusRing */
+  box-shadow: 0 0 0 2px oklch(0.635 0.19 291) inset; /* mirrors theme.ts's colors.focusRing */
 }
 
 /* graph/ContextMenu.tsx's items: `background` is a stable 'transparent'
@@ -62,10 +84,10 @@ body {
   background: transparent;
 }
 .sv-menu-item:hover {
-  background: #334155; /* mirrors theme.ts's colors.border */
+  background: oklch(0.33 0.012 265); /* mirrors theme.ts's colors.border */
 }
 .sv-menu-item:focus-visible {
-  outline: 2px solid #2563eb; /* mirrors theme.ts's colors.focusRing */
+  outline: 2px solid oklch(0.635 0.19 291); /* mirrors theme.ts's colors.focusRing */
   outline-offset: -2px;
 }
 
@@ -73,11 +95,11 @@ body {
   display: inline-block;
   width: 12px;
   height: 12px;
-  /* #f8fafc mirrors theme.ts's colors.textPrimary -- plain CSS can't
-     import a TS value, kept in sync by this comment rather than a build
-     step. */
-  border: 2px solid rgba(248, 250, 252, 0.35);
-  border-top-color: #f8fafc;
+  /* oklch(0.97 0.004 265) mirrors theme.ts's colors.textPrimary -- plain
+     CSS can't import a TS value, kept in sync by this comment rather than
+     a build step. */
+  border: 2px solid oklch(0.97 0.004 265 / 0.35);
+  border-top-color: oklch(0.97 0.004 265);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { FlowNodeKind } from '../api/types'
-import { colors as themeColors } from '../theme'
+import { colors as themeColors, font } from '../theme'
 
 export interface FlowNodeData extends Record<string, unknown> {
   label: string
@@ -9,14 +9,26 @@ export interface FlowNodeData extends Record<string, unknown> {
   endLine: number
 }
 
+/** OKLCH, same recipe as `graph/nodeTypes.tsx`'s `KIND_COLORS` (background:
+ * L .42 C .15; border: L .74 C .12), and the same reason: `loop` was
+ * previously `#3730a3`, an indigo landing on theme.ts's `colors.accent`
+ * hue (291) -- a loop node and "this is selected/interactive" read as the
+ * same color family. `entry`/`return`/`decision`/`call` reuse theme.ts's
+ * own semantic hues (success/danger/warning/info) where the meaning
+ * actually matches (start reads as success-green, return as danger-red,
+ * branch as warning-amber, a call as info-blue) rather than picking a
+ * fifth arbitrary hue family; `statement` stays a low-chroma neutral
+ * (the "plain, unremarkable" default case, distinct from the others by
+ * being colorless rather than by hue); `loop`/`io` get new hues, chosen
+ * outside 266-316 and spaced from every hue above. */
 const FLOW_KIND_COLORS: Record<FlowNodeKind, { background: string; border: string }> = {
-  entry: { background: '#065f46', border: '#34d399' },
-  return: { background: '#7f1d1d', border: '#fca5a5' },
-  statement: { background: '#334155', border: '#94a3b8' },
-  call: { background: '#164e63', border: '#67e8f9' },
-  decision: { background: '#854d0e', border: '#fde047' },
-  loop: { background: '#3730a3', border: '#a5b4fc' },
-  io: { background: '#701a75', border: '#e9d5ff' },
+  entry: { background: 'oklch(0.42 0.15 152)', border: 'oklch(0.74 0.12 152)' },
+  return: { background: 'oklch(0.42 0.15 25)', border: 'oklch(0.74 0.12 25)' },
+  statement: { background: 'oklch(0.33 0.012 265)', border: 'oklch(0.58 0.013 265)' },
+  call: { background: 'oklch(0.42 0.15 230)', border: 'oklch(0.74 0.12 230)' },
+  decision: { background: 'oklch(0.42 0.15 80)', border: 'oklch(0.74 0.12 80)' },
+  loop: { background: 'oklch(0.42 0.15 350)', border: 'oklch(0.74 0.12 350)' },
+  io: { background: 'oklch(0.42 0.15 116)', border: 'oklch(0.74 0.12 116)' },
 }
 
 function tooltip(data: FlowNodeData): string {
@@ -26,7 +38,7 @@ function tooltip(data: FlowNodeData): string {
 const BASE_TEXT_STYLE = {
   color: themeColors.textPrimary,
   fontSize: 12,
-  fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+  fontFamily: font.ui,
   textAlign: 'center' as const,
   textOverflow: 'ellipsis' as const,
   overflow: 'hidden' as const,

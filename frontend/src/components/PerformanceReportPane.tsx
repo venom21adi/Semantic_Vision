@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getImpact } from '../api/client'
 import type { Caller, ComplexityScore } from '../api/types'
-import { colors } from '../theme'
+import { colors, spacing } from '../theme'
 import {
   COMPLEX_COLOR,
   MODERATE_COLOR,
@@ -35,7 +35,7 @@ function Legend() {
 
 function LegendSwatch({ color, label }: { color: string; label: string }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: spacing.xs }}>
       <span
         aria-hidden="true"
         style={{
@@ -102,7 +102,7 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
       <Legend />
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {ranked.map((score) => (
-          <li key={score.node_id} style={{ marginBottom: 4 }}>
+          <li key={score.node_id} style={{ marginBottom: spacing.xs }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span
                 aria-hidden="true"
@@ -154,7 +154,7 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
                   color: colors.textMuted,
                   cursor: 'pointer',
                   fontSize: 12,
-                  padding: '0 4px',
+                  padding: `0 ${spacing.xs}px`,
                   flexShrink: 0,
                 }}
               >
@@ -162,7 +162,7 @@ export function PerformanceReportPane({ path, scores, onSelectNode }: Performanc
               </button>
             </div>
             {drillDown?.nodeId === score.node_id && (
-              <div style={{ marginLeft: 16, marginTop: 2 }}>
+              <div style={{ marginLeft: spacing.lg, marginTop: 2 }}>
                 {drillDown.status === 'loading' && (
                   <p style={{ color: colors.textMuted, fontSize: 11, margin: 0 }}>Loading…</p>
                 )}

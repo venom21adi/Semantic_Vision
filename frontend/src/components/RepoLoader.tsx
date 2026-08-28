@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { ParseErrorInfo } from '../api/types'
-import { colors } from '../theme'
+import { colors, radius, spacing } from '../theme'
 
 export interface RepoLoadStats {
   path: string
@@ -83,7 +83,7 @@ export function RepoLoader({
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
           <input
             type="text"
             value={path}
@@ -93,7 +93,7 @@ export function RepoLoader({
             style={{
               flex: 1,
               padding: '6px 10px',
-              borderRadius: 4,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.border}`,
               background: colors.bgPage,
               color: colors.textPrimary,
@@ -106,7 +106,7 @@ export function RepoLoader({
             aria-label="Language"
             style={{
               padding: '6px 10px',
-              borderRadius: 4,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.border}`,
               background: colors.bgPage,
               color: colors.textPrimary,
@@ -125,7 +125,7 @@ export function RepoLoader({
               alignItems: 'center',
               gap: 6,
               padding: '6px 14px',
-              borderRadius: 4,
+              borderRadius: radius.sm,
               border: 'none',
               background: loading ? colors.disabled : colors.accent,
               color: colors.textPrimary,
@@ -142,7 +142,7 @@ export function RepoLoader({
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
+        <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center', marginTop: 6 }}>
           <label
             htmlFor="doc-root-input"
             style={{ fontSize: 11, color: colors.textDim, whiteSpace: 'nowrap' }}
@@ -166,8 +166,8 @@ export function RepoLoader({
             style={{
               flex: 1,
               maxWidth: 480,
-              padding: '4px 8px',
-              borderRadius: 4,
+              padding: `${spacing.xs}px ${spacing.sm}px`,
+              borderRadius: radius.sm,
               border: `1px solid ${colors.bgPanel}`,
               background: colors.bgPage,
               color: colors.textMuted,
@@ -178,7 +178,10 @@ export function RepoLoader({
       </form>
 
       {stats && (
-        <div data-testid="repo-status" style={{ margin: '8px 0 0', fontSize: 12, color: colors.textMuted }}>
+        <div
+          data-testid="repo-status"
+          style={{ margin: `${spacing.sm}px 0 0`, fontSize: 12, color: colors.textMuted }}
+        >
           {stats.path} — {stats.nodeCount} nodes, {stats.edgeCount} edges
           {stats.parseErrors.length > 0 && (
             <details>
