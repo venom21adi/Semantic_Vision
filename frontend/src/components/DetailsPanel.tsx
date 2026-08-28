@@ -80,10 +80,15 @@ export function DetailsPanel({
           width: 28,
           flexShrink: 0,
           borderLeft: `1px solid ${colors.bgPanel}`,
-          padding: `${spacing.sm}px ${spacing.xs}px`,
         }}
       >
-        <CollapseToggle collapsed onClick={onToggleCollapsed} edge="right" paneName="details panel" />
+        <CollapseToggle
+          collapsed
+          onClick={onToggleCollapsed}
+          edge="right"
+          paneName="details panel"
+          fill
+        />
       </aside>
     )
   }

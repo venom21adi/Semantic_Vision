@@ -65,10 +65,9 @@ export function Sidebar({
           width: 28,
           flexShrink: 0,
           borderRight: `1px solid ${colors.bgPanel}`,
-          padding: `${spacing.sm}px ${spacing.xs}px`,
         }}
       >
-        <CollapseToggle collapsed onClick={onToggleCollapsed} edge="left" paneName="sidebar" />
+        <CollapseToggle collapsed onClick={onToggleCollapsed} edge="left" paneName="sidebar" fill />
       </aside>
     )
   }
@@ -113,6 +112,18 @@ export function Sidebar({
             {option}
           </button>
         ))}
+      </div>
+      <div
+        style={{
+          padding: `0 ${spacing.sm}px ${spacing.sm}px`,
+          fontSize: 11,
+          color: colors.textDim,
+          lineHeight: 1.4,
+        }}
+      >
+        {view === 'codebase'
+          ? 'Every directory, file, class, and function in the repo, as one graph.'
+          : "Just the open file's own classes and functions."}
       </div>
 
       <div
@@ -262,6 +273,20 @@ export function Sidebar({
           >
             Collapse all
           </button>
+        </div>
+      )}
+      {view === 'codebase' && (
+        <div
+          style={{
+            padding: `0 ${spacing.sm}px ${spacing.sm}px`,
+            marginTop: -4,
+            fontSize: 11,
+            color: colors.textDim,
+            lineHeight: 1.4,
+          }}
+        >
+          Affects containers already on the canvas — not the ▸ arrows in the list below, which only
+          change what you see here in the sidebar.
         </div>
       )}
 

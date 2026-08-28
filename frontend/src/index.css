@@ -91,6 +91,24 @@ textarea {
   outline-offset: -2px;
 }
 
+/* CollapseToggle.tsx's chevron button: transparent background at rest,
+   so `.sv-interactive`'s brightness-filter hover (the default for every
+   other button in this app) would be all but invisible here -- same root
+   cause as `.sv-menu-item`'s comment above. A real background swap on
+   hover/focus fixes that, plus a light background at rest so the control
+   has some presence before you're even hovering it -- it was reported as
+   "almost hidden" against the panel background otherwise. */
+.sv-collapse-toggle {
+  background: oklch(0.245 0.010 265); /* mirrors theme.ts's palette.slate850 */
+}
+.sv-collapse-toggle:hover:not(:disabled) {
+  background: oklch(0.33 0.012 265); /* mirrors theme.ts's colors.border */
+  filter: none;
+}
+.sv-collapse-toggle:focus-visible {
+  background: oklch(0.33 0.012 265);
+}
+
 .spinner {
   display: inline-block;
   width: 12px;
