@@ -17,10 +17,18 @@
  * real user opening a large repo would take. Below the threshold every
  * root already arrives pre-checked, so this is a no-op there.
  *
+ * Defaults to --language python (RepoLoader.tsx's own default); pass
+ * --language javascript for a JS/TS repo -- otherwise it parses as Python,
+ * matches 0 files, and reports "0 nodes, 0 edges" with no error banner,
+ * which then hangs waiting for a node that was never going to render.
+ *
  * Usage (from frontend/):
  *   node scripts/benchmark-load.js --repo "C:/AI_Voice/TTS/TTS" --label large
+ *   node scripts/benchmark-load.js --repo "C:/Benchmarks/nest" --label nest --language javascript
  *
- * Prints the result and appends a row to ../docs/PERFORMANCE-REPORT.md.
+ * Prints the result and appends a row to ../docs/PERFORMANCE-REPORT.md,
+ * unless --no-report is passed (e.g. a one-off benchmark published
+ * elsewhere that shouldn't touch this project's own tracked iterations).
  * Never hangs indefinitely -- a load that doesn't finish within
  * --timeout (default 120s) is recorded as "TIMED OUT", the same
  * outcome a real user hitting an unresponsive tab would see.
@@ -34,17 +42,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPORT_PATH = join(__dirname, '..', '..', 'docs', 'PERFORMANCE-REPORT.md')
 
 function parseArgs() {
-  const args = { timeout: 120000, label: 'unlabeled', app: 'http://localhost:5173' }
+  const args = {
+    timeout: 120000,
+    label: 'unlabeled',
+    app: 'http://localhost:5173',
+    noReport: false,
+    language: 'python',
+  }
   const argv = process.argv.slice(2)
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--repo') args.repo = argv[++i]
     else if (argv[i] === '--label') args.label = argv[++i]
     else if (argv[i] === '--timeout') args.timeout = Number(argv[++i])
     else if (argv[i] === '--app') args.app = argv[++i]
+    else if (argv[i] === '--no-report') args.noReport = true
+    else if (argv[i] === '--language') args.language = argv[++i]
   }
   if (!args.repo) {
     console.error(
-      'Usage: node scripts/benchmark-load.js --repo <path> [--label <name>] [--timeout <ms>]',
+      'Usage: node scripts/benchmark-load.js --repo <path> [--label <name>] ' +
+        '[--timeout <ms>] [--language python|javascript] [--no-report]',
     )
     process.exit(1)
   }
@@ -52,7 +69,7 @@ function parseArgs() {
 }
 
 async function main() {
-  const { repo, label, timeout, app } = parseArgs()
+  const { repo, label, timeout, app, noReport, language } = parseArgs()
   const browser = await chromium.launch()
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } })
   const result = {
@@ -67,6 +84,12 @@ async function main() {
   try {
     await page.goto(app, { timeout: 30000 })
     await page.getByLabel('Repository path').fill(repo)
+    // RepoLoader's language <select> defaults to 'python' (RepoLoader.tsx) --
+    // a JS/TS repo loaded without this selects 0 matching files and reports
+    // "0 nodes, 0 edges" with no error banner, which then hangs waiting for a
+    // node that was never going to render. Confirmed as the real cause of
+    // an earlier "TIMED OUT (render)" on this exact repo, before this fix.
+    await page.getByLabel('Language').selectOption(language)
 
     const clickStart = Date.now()
     await page.getByRole('button', { name: /load/i }).click()
@@ -92,17 +115,25 @@ async function main() {
         // The Codebase tree starts with `visibleIds` empty for any repo
         // above GraphCanvas's 300-node threshold (App.tsx) -- nothing
         // renders until a root item's checkbox is checked. Below the
-        // threshold every root arrives pre-checked, so `.check()` (which
-        // no-ops if already checked, unlike `.click()`) is safe either way
-        // -- this mirrors a real user opening a large repo and ticking its
-        // top-level items, not a synthetic shortcut.
-        const rootCheckboxes = page.locator(
-          'ul[role="tree"] > li > div[role="treeitem"] > input[type="checkbox"]',
-        )
-        const rootCount = await rootCheckboxes.count()
-        for (let i = 0; i < rootCount; i++) {
-          await rootCheckboxes.nth(i).check()
-        }
+        // threshold every root arrives pre-checked, so a real DOM
+        // `.click()` on an already-checked box would wrongly *uncheck*
+        // it -- skip those, mirroring `.check()`'s no-op behavior. A
+        // repo whose root itself is a wide, flat directory (confirmed on
+        // webpack's `lib/`: 157 direct entries) makes one Playwright
+        // action per checkbox -- each with its own actionability/scroll
+        // wait -- the dominant cost, well before layout even starts.
+        // Dispatching every click from inside the page in one batch
+        // keeps this a real click per checkbox (still fires React's
+        // onChange, unlike setting `.checked` directly) without paying
+        // that per-action round-trip 157 times over.
+        await page.evaluate(() => {
+          const boxes = document.querySelectorAll(
+            'ul[role="tree"] > li > div[role="treeitem"] > input[type="checkbox"]',
+          )
+          for (const box of boxes) {
+            if (!box.checked) box.click()
+          }
+        })
 
         const renderOk = await page
           .waitForSelector('.react-flow__node', { timeout })
@@ -123,10 +154,10 @@ async function main() {
     await browser.close()
   }
 
-  report(result)
+  report(result, noReport)
 }
 
-function report(result) {
+function report(result, noReport) {
   const dataStr = result.dataSeconds != null ? result.dataSeconds.toFixed(2) : '—'
   const renderStr = result.renderSeconds != null ? result.renderSeconds.toFixed(2) : '—'
 
@@ -135,6 +166,8 @@ function report(result) {
   console.log(`  time to data received: ${dataStr}s`)
   console.log(`  time to first node rendered: ${renderStr}s`)
   if (result.error) console.log(`  detail: ${result.error}`)
+
+  if (noReport) return
 
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
   const header = '| Repo | Path | Status | Time to data (s) | Time to first render (s) |\n|---|---|---|---|---|'

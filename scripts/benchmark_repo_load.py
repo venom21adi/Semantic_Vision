@@ -20,6 +20,11 @@ fixture and this repo itself as quick built-in reference points. A
 you're using as a stress test) is always passed explicitly -- it's
 machine-specific and never hardcoded here.
 
+Defaults to parsing every --repo as Python (--language python). Pass
+--language javascript for a JS/TS/JSX/TSX repo (one adapter covers that
+whole family -- see `languages/registry.py`); run once per language to
+benchmark a mix.
+
 The API tier is skipped automatically, with a note in the output, if
 http://localhost:8000 isn't reachable -- start it first (see README's
 Quick start) to include that tier.
@@ -70,11 +75,11 @@ class RepoResult:
     api_graph_payload_bytes: int | None = None
 
 
-def benchmark_backend(label: str, path: str) -> RepoResult:
+def benchmark_backend(label: str, path: str, language: str) -> RepoResult:
     resolved = Path(path).resolve()
 
     start = time.perf_counter()
-    result = parse_repository(str(resolved))
+    result = parse_repository(str(resolved), language=language)
     parse_seconds = time.perf_counter() - start
 
     # Counted from the actual parse result, not a raw filesystem walk --
@@ -112,9 +117,11 @@ def backend_reachable(client: httpx.Client) -> bool:
         return False
 
 
-def benchmark_api(result: RepoResult, client: httpx.Client) -> None:
+def benchmark_api(result: RepoResult, client: httpx.Client, language: str) -> None:
     start = time.perf_counter()
-    resp = client.post("/api/parse-repo", json={"path": result.path}, timeout=600)
+    resp = client.post(
+        "/api/parse-repo", json={"path": result.path, "language": language}, timeout=600
+    )
     resp.raise_for_status()
     result.api_parse_seconds = time.perf_counter() - start
 
@@ -195,6 +202,13 @@ def main() -> None:
         action="store_true",
         help="Print results only -- don't append to docs/PERFORMANCE-REPORT.md.",
     )
+    parser.add_argument(
+        "--language",
+        default="python",
+        help="A registered LanguageAdapter.language_id (see languages/registry.py) -- "
+        "e.g. 'python' or 'javascript' (the latter covers JS/TS/JSX/TSX together). "
+        "Applies to every --repo in this invocation; run once per language to mix them.",
+    )
     args = parser.parse_args()
 
     repos = parse_repo_args(args.repo) or [
@@ -202,7 +216,7 @@ def main() -> None:
         ("medium", "."),
     ]
 
-    results = [benchmark_backend(label, path) for label, path in repos]
+    results = [benchmark_backend(label, path, args.language) for label, path in repos]
 
     if httpx is None:
         print("httpx not installed -- skipping API tier (backend-only numbers below).")
@@ -210,7 +224,7 @@ def main() -> None:
         with httpx.Client(base_url=API_BASE_URL) as client:
             if backend_reachable(client):
                 for r in results:
-                    benchmark_api(r, client)
+                    benchmark_api(r, client, args.language)
             else:
                 print(f"No backend reachable at {API_BASE_URL} -- skipping API tier.")
                 print("Start it with: uv run uvicorn semantic_vision.api.app:app --port 8000\n")
