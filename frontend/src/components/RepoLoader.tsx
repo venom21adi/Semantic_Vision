@@ -27,6 +27,14 @@ interface RepoLoaderProps {
    * next Load. */
   hasLoadedRepo?: boolean
   onChangeDocRoot?: (newDocRoot: string) => void
+  /** Skips the outer card border/background -- for a caller that already
+   * provides its own surface (e.g. a popover), so the chrome isn't drawn
+   * twice. */
+  bare?: boolean
+  /** Stacks the path/language/Load row vertically instead of side-by-side
+   * -- for a narrow container (a popover) where the row layout used in the
+   * full-width empty-state card wouldn't fit. */
+  stacked?: boolean
 }
 
 export function RepoLoader({
@@ -40,6 +48,8 @@ export function RepoLoader({
   stats,
   hasLoadedRepo = false,
   onChangeDocRoot,
+  bare = false,
+  stacked = false,
 }: RepoLoaderProps) {
   const [path, setPath] = useState(initialPath ?? '')
   const [docRoot, setDocRoot] = useState(initialDocRoot ?? '')
@@ -80,78 +90,127 @@ export function RepoLoader({
     }
   }
 
+  const fieldLabelStyle = {
+    fontSize: 10,
+    fontWeight: 600,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase' as const,
+    color: colors.textDim,
+    marginBottom: 3,
+  }
+
   return (
-    <div>
+    <div
+      style={
+        bare
+          ? undefined
+          : {
+              padding: spacing.sm,
+              borderRadius: radius.md,
+              border: `1px solid ${colors.border}`,
+              background: colors.bgPanel,
+            }
+      }
+    >
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
-          <input
-            type="text"
-            value={path}
-            onChange={(event) => setPath(event.target.value)}
-            placeholder="Absolute path to a repository"
-            aria-label="Repository path"
-            title="Absolute path to a local Python or JavaScript/TypeScript repository"
-            style={{
-              flex: 1,
-              padding: '6px 10px',
-              borderRadius: radius.sm,
-              border: `1px solid ${colors.border}`,
-              background: colors.bgPage,
-              color: colors.textPrimary,
-              fontSize: 13,
-            }}
-          />
-          <select
-            value={language}
-            onChange={(event) => setLanguage(event.target.value)}
-            aria-label="Language"
-            title="Which language's parser to use for this repository"
-            style={{
-              padding: '6px 10px',
-              borderRadius: radius.sm,
-              border: `1px solid ${colors.border}`,
-              background: colors.bgPage,
-              color: colors.textPrimary,
-              fontSize: 13,
-            }}
-          >
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript / TypeScript</option>
-          </select>
-          <button
-            type="submit"
-            disabled={loading || path.trim().length === 0}
-            className="sv-interactive"
-            title="Parse the repository and build its graph"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '6px 14px',
-              borderRadius: radius.sm,
-              border: 'none',
-              background: loading ? colors.disabled : colors.accent,
-              color: colors.textPrimary,
-              fontSize: 13,
-              cursor: loading ? 'default' : 'pointer',
-            }}
-          >
-            {loading && <span className="spinner" aria-hidden="true" />}
-            {loading ? 'Loading…' : 'Load'}
-          </button>
-          {error && (
-            <span role="alert" style={{ color: colors.danger, fontSize: 13 }}>
-              {error}
-            </span>
-          )}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: stacked ? 'column' : 'row',
+            gap: spacing.sm,
+            alignItems: stacked ? 'stretch' : 'flex-end',
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+            <label htmlFor="repo-path-input" style={fieldLabelStyle}>
+              Repository path
+            </label>
+            <input
+              id="repo-path-input"
+              type="text"
+              value={path}
+              onChange={(event) => setPath(event.target.value)}
+              placeholder="e.g. C:/Users/you/projects/my-repo"
+              aria-label="Repository path"
+              title="Absolute path to a local Python or JavaScript/TypeScript repository"
+              style={{
+                width: '100%',
+                padding: '6px 10px',
+                borderRadius: radius.sm,
+                border: `1px solid ${colors.border}`,
+                background: colors.bgPage,
+                color: colors.textPrimary,
+                fontSize: 13,
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: stacked ? 1 : undefined }}>
+              <label htmlFor="repo-language-select" style={fieldLabelStyle}>
+                Language
+              </label>
+              <select
+                id="repo-language-select"
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                aria-label="Language"
+                title="Which language's parser to use for this repository"
+                style={{
+                  width: stacked ? '100%' : undefined,
+                  padding: '6px 10px',
+                  borderRadius: radius.sm,
+                  border: `1px solid ${colors.border}`,
+                  background: colors.bgPage,
+                  color: colors.textPrimary,
+                  fontSize: 13,
+                }}
+              >
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript / TypeScript</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              disabled={loading || path.trim().length === 0}
+              className="sv-interactive"
+              title="Parse the repository and build its graph"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '7px 16px',
+                borderRadius: radius.sm,
+                border: 'none',
+                background: loading ? colors.disabled : colors.accent,
+                color: colors.textPrimary,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: loading ? 'default' : 'pointer',
+                alignSelf: 'flex-end',
+              }}
+            >
+              {loading && <span className="spinner" aria-hidden="true" />}
+              {loading ? 'Loading…' : 'Load'}
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center', marginTop: 6 }}>
+        {error && (
+          <span role="alert" style={{ display: 'block', marginTop: 6, color: colors.danger, fontSize: 12 }}>
+            {error}
+          </span>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: spacing.sm }}>
           <label
             htmlFor="doc-root-input"
             title="Where dragged layout, saved docs, and analysis state are written -- defaults to the repo's .git root"
-            style={{ fontSize: 11, color: colors.textDim, whiteSpace: 'nowrap' }}
+            style={fieldLabelStyle}
           >
-            Save location
+            Save location{' '}
+            <span style={{ textTransform: 'none', fontWeight: 400, letterSpacing: 'normal' }}>
+              (optional — defaults to the repo's own folder)
+            </span>
           </label>
           <input
             id="doc-root-input"
@@ -169,14 +228,15 @@ export function RepoLoader({
             aria-label="Save location"
             title="Where dragged layout, saved docs, and analysis state are written -- defaults to the repo's .git root"
             style={{
-              flex: 1,
+              width: '100%',
               maxWidth: 480,
               padding: `${spacing.xs}px ${spacing.sm}px`,
               borderRadius: radius.sm,
-              border: `1px solid ${colors.bgPanel}`,
+              border: `1px solid ${colors.border}`,
               background: colors.bgPage,
-              color: colors.textMuted,
-              fontSize: 11,
+              color: colors.textFaint,
+              fontSize: 12,
+              boxSizing: 'border-box',
             }}
           />
         </div>

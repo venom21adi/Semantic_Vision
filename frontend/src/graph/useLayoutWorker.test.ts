@@ -98,6 +98,40 @@ describe('useLayoutWorker', () => {
     expect(result.current.nodes.find((n) => n.id === 'a')?.position).toEqual({ x: 10, y: 20 })
   })
 
+  it('returns a referentially stable result across re-renders when scopedGraph and direction are unchanged', async () => {
+    // A caller (App.tsx's `flowGraph`) memoizes on this hook's *return
+    // object*, not on its inputs -- a fresh `{status, nodes, edges}` on
+    // every render, even with identical content, would defeat that memo
+    // and cascade into GraphCanvas resetting every dragged node back to
+    // its last-saved position on completely unrelated re-renders (e.g.
+    // right-clicking a node to open the Document pane). Confirmed live as
+    // exactly that bug before this hook's result was itself memoized.
+    const graphA = { nodes: [node('a'), node('b')], edges: [edge('a', 'b')] }
+    const { result, rerender } = renderHook(({ graph }) => useLayoutWorker(graph), {
+      initialProps: { graph: graphA },
+    })
+
+    await waitFor(() => expect(spawnedWorkers.length).toBe(1))
+    const worker = spawnedWorkers[0]
+    const request = worker.posted[0] as { jobId: number }
+    act(() => {
+      worker.onmessage?.({
+        data: { jobId: request.jobId, positions: [{ id: 'a', x: 0, y: 0 }, { id: 'b', x: 0, y: 0 }] },
+      } as MessageEvent)
+    })
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+
+    const first = result.current
+    // Same `graphA` reference, an unrelated re-render (mirrors, e.g., the
+    // rest of the app re-rendering for a reason that has nothing to do
+    // with this graph or its layout).
+    rerender({ graph: graphA })
+
+    expect(result.current).toBe(first)
+    expect(result.current.nodes).toBe(first.nodes)
+    expect(result.current.edges).toBe(first.edges)
+  })
+
   it('does not report the old scope as ready once scopedGraph has changed, even before a new response arrives', async () => {
     const graphA = { nodes: [node('a')], edges: [] }
     const graphB = { nodes: [node('b')], edges: [] }

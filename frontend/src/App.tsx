@@ -26,6 +26,7 @@ import type {
 } from './api/types'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { RepoLoader } from './components/RepoLoader'
+import { RepoPill } from './components/RepoPill'
 import { Sidebar, type GraphView } from './components/Sidebar'
 import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
 import { buildFlowchartGraph } from './flowchart/transform'
@@ -38,6 +39,7 @@ import {
 } from './graph/collapseDirectories'
 import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './graph/GraphCanvas'
 import { scopeToFile } from './graph/transform'
+import { resolveNodeOverlaps } from './graph/layout'
 import { useLayoutWorker } from './graph/useLayoutWorker'
 import { colors, font, spacing } from './theme'
 import { LogoMark } from './components/Logo'
@@ -512,13 +514,17 @@ export default function App() {
     if (!repo || Object.keys(repo.positions).length === 0) {
       return { nodes: layout.nodes, edges: layout.edges }
     }
-    return {
-      nodes: layout.nodes.map((node) => {
-        const saved = repo.positions[node.id]
-        return saved ? { ...node, position: { x: saved.x, y: saved.y } } : node
-      }),
-      edges: layout.edges,
-    }
+    const fixedIds = new Set(Object.keys(repo.positions))
+    const positioned = layout.nodes.map((node) => {
+      const saved = repo.positions[node.id]
+      return saved ? { ...node, position: { x: saved.x, y: saved.y } } : node
+    })
+    // A restored drag can land dagre's fresh layout for everything *else*
+    // right on top of it -- dagre's own collision-free guarantee only
+    // holds among the positions it computed, and `saved` above just
+    // overrode some of those. Nudges only the non-fixed (freshly laid
+    // out) nodes clear of it; see `resolveNodeOverlaps`'s own comment.
+    return { nodes: resolveNodeOverlaps(positioned, fixedIds), edges: layout.edges }
   }, [layout, repo])
 
   const handleViewSource = useCallback(
@@ -898,27 +904,24 @@ export default function App() {
           </span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <RepoLoader
-            onLoad={handleLoad}
-            loading={loading}
-            error={loadError}
-            initialPath={lastRepoPath ?? undefined}
-            initialDocRoot={rememberedDocRoot ?? undefined}
-            initialLanguage={rememberedLanguage ?? undefined}
-            resolvedDocRoot={repo?.docRoot ?? null}
-            hasLoadedRepo={repo !== null}
-            onChangeDocRoot={handleChangeDocRoot}
-            stats={
-              repo
-                ? {
-                    path: repo.path,
-                    nodeCount: repo.nodeCount,
-                    edgeCount: repo.edgeCount,
-                    parseErrors: repo.parseErrors,
-                  }
-                : null
-            }
-          />
+          {repo && (
+            <RepoPill
+              onLoad={handleLoad}
+              loading={loading}
+              error={loadError}
+              initialPath={lastRepoPath ?? undefined}
+              initialDocRoot={rememberedDocRoot ?? undefined}
+              initialLanguage={rememberedLanguage ?? undefined}
+              resolvedDocRoot={repo.docRoot}
+              onChangeDocRoot={handleChangeDocRoot}
+              stats={{
+                path: repo.path,
+                nodeCount: repo.nodeCount,
+                edgeCount: repo.edgeCount,
+                parseErrors: repo.parseErrors,
+              }}
+            />
+          )}
         </div>
         <HelpGuide />
       </header>
@@ -953,12 +956,24 @@ export default function App() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: spacing.md,
+                gap: spacing.lg,
               }}
             >
               <LogoMark size={40} bare />
               <div style={{ fontSize: 15, color: colors.textMuted }}>
                 Load a repository to see its codebase graph.
+              </div>
+              <div style={{ width: '100%', maxWidth: 560, padding: `0 ${spacing.md}px` }}>
+                <RepoLoader
+                  onLoad={handleLoad}
+                  loading={loading}
+                  error={loadError}
+                  initialPath={lastRepoPath ?? undefined}
+                  initialDocRoot={rememberedDocRoot ?? undefined}
+                  initialLanguage={rememberedLanguage ?? undefined}
+                  resolvedDocRoot={null}
+                  stats={null}
+                />
               </div>
               <div
                 style={{
@@ -969,9 +984,9 @@ export default function App() {
                   lineHeight: 1.5,
                 }}
               >
-                Paste an absolute path above and click Load. Once it's in, right-click any node for
-                docs, impact analysis, and execution flowcharts — see the <strong>?</strong> in the
-                top-right corner for a full walkthrough.
+                Once it's in, right-click any node for docs, impact analysis, and execution
+                flowcharts — see the <strong>?</strong> in the top-right corner for a full
+                walkthrough.
               </div>
             </div>
           )}

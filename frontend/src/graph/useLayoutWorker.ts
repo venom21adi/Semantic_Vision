@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Edge, Node } from '@xyflow/react'
 import type { GraphEdge, GraphNode } from '../api/types'
 import { layoutGraph, NODE_HEIGHT, NODE_WIDTH } from './layout'
@@ -19,6 +19,14 @@ export interface LayoutResult {
   nodes: Node<GraphNodeData>[]
   edges: Edge[]
 }
+
+/** Stable references for the "nothing to show yet" cases below -- a fresh
+ * `[]` literal on every render would otherwise give `LayoutResult` a new
+ * identity on every render regardless of whether the actual layout
+ * changed, which is exactly the bug this whole result now guards against
+ * (see the `useMemo` at the end of the hook). */
+const EMPTY_NODES: Node<GraphNodeData>[] = []
+const EMPTY_EDGES: Edge[] = []
 
 interface InFlightJob {
   jobId: number
@@ -211,18 +219,46 @@ export function useLayoutWorker(
 
   const isReadyForCurrent =
     ready && ready.forScopedGraph === scopedGraph && ready.forDirection === direction
-  if (isReadyForCurrent) {
-    return { status: 'ready', nodes: ready.nodes, edges: ready.edges }
-  }
   const isErroredForCurrent =
     errored && errored.forScopedGraph === scopedGraph && errored.forDirection === direction
-  if (isErroredForCurrent) {
-    return { status: 'error', nodes: [], edges: [] }
+
+  let status: LayoutStatus
+  let resultNodes: Node<GraphNodeData>[]
+  let resultEdges: Edge[]
+  if (isReadyForCurrent) {
+    status = 'ready'
+    resultNodes = ready.nodes
+    resultEdges = ready.edges
+  } else if (isErroredForCurrent) {
+    status = 'error'
+    resultNodes = EMPTY_NODES
+    resultEdges = EMPTY_EDGES
+  } else {
+    // Neither ready nor errored for the current scope/direction -- either
+    // still laying it out, or (if `ready` has never been set at all) the
+    // very first render before any effect has run yet. Once `scopedGraph`
+    // changes again, `errored` (if set) stops matching immediately (this
+    // is this hook's retry path -- no separate "retry" action needed).
+    status = ready ? 'laying-out' : 'idle'
+    resultNodes = EMPTY_NODES
+    resultEdges = EMPTY_EDGES
   }
-  // Neither ready nor errored for the current scope/direction -- either
-  // still laying it out, or (if `ready` has never been set at all) the
-  // very first render before any effect has run yet. Once `scopedGraph`
-  // changes again, `errored` (if set) stops matching immediately (this is
-  // this hook's retry path -- no separate "retry" action needed).
-  return { status: ready ? 'laying-out' : 'idle', nodes: [], edges: [] }
+
+  // A fresh `{ status, nodes, edges }` object literal on every call (this
+  // hook is invoked directly in the caller's render body, not behind its
+  // own memo) would give every consumer a new `LayoutResult` identity on
+  // every unrelated re-render, even though `resultNodes`/`resultEdges`
+  // above are themselves already stable references when nothing actually
+  // changed. `App.tsx`'s `flowGraph` memo depends on this exact object,
+  // and downstream of that, `GraphCanvas`'s own node state gets forcibly
+  // resynced (see its `setNodes(initialNodes)` effect) whenever
+  // `flowGraph` produces a new object -- so without this `useMemo`, *any*
+  // unrelated state change elsewhere in the app (opening the Document
+  // pane, right-clicking a node, anything that re-renders `App`) silently
+  // reset every dragged node back to its last-saved position. Confirmed
+  // live as the cause of "right-click resets the position I just dragged."
+  return useMemo(
+    () => ({ status, nodes: resultNodes, edges: resultEdges }),
+    [status, resultNodes, resultEdges],
+  )
 }

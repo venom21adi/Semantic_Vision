@@ -95,7 +95,7 @@ export function Sidebar({
             title={
               option === 'codebase'
                 ? 'Show the whole repository as one graph'
-                : "Show only the selected file's own structure"
+                : "Show only the open file's own structure"
             }
             style={{
               flex: 1,
@@ -105,11 +105,11 @@ export function Sidebar({
               background: view === option ? colors.accent : 'transparent',
               color: colors.textPrimary,
               fontSize: 12,
+              fontWeight: view === option ? 600 : 400,
               cursor: 'pointer',
-              textTransform: 'capitalize',
             }}
           >
-            {option}
+            {option === 'codebase' ? 'Codebase' : 'Current file'}
           </button>
         ))}
       </div>
@@ -122,8 +122,8 @@ export function Sidebar({
         }}
       >
         {view === 'codebase'
-          ? 'Every directory, file, class, and function in the repo, as one graph.'
-          : "Just the open file's own classes and functions."}
+          ? 'Start here — browse the whole repo as one graph you can drag, zoom, and expand.'
+          : "A focused view of just the file you have open right now."}
       </div>
 
       <div
@@ -209,7 +209,9 @@ export function Sidebar({
             style={{ fontSize: 11, color: colors.textMuted }}
             title="How many directories, files, or tables are currently checked to appear on the canvas"
           >
-            {selectedRootIds.size} selected
+            {selectedRootIds.size === 0
+              ? 'Nothing on canvas yet'
+              : `${selectedRootIds.size} on canvas`}
           </span>
           <button
             type="button"
@@ -285,8 +287,8 @@ export function Sidebar({
             lineHeight: 1.4,
           }}
         >
-          Affects containers already on the canvas — not the ▸ arrows in the list below, which only
-          change what you see here in the sidebar.
+          Opens or closes everything already on your canvas. The ▸ arrows below are separate — they
+          only change what you see in this list, not the canvas.
         </div>
       )}
 

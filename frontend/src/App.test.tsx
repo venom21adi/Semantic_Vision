@@ -71,6 +71,14 @@ async function loadSampleRepo() {
   return user
 }
 
+/** Once a repo is loaded, the load form moves into the header's repo pill
+ * popover (see `RepoPill`) instead of staying visible -- tests that need
+ * to read or change the path/language/save-location fields after loading
+ * have to open it first. */
+async function openRepoPill(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: /^Current repository:/ }))
+}
+
 beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
@@ -91,7 +99,9 @@ describe('App', () => {
   it('loads a repository and renders its graph plus stats', async () => {
     await loadSampleRepo()
 
-    expect(screen.getByTestId('repo-status')).toHaveTextContent('/repo — 2 nodes, 1 edges')
+    expect(
+      screen.getByRole('button', { name: /^Current repository:/ }),
+    ).toHaveTextContent('2 nodes, 1 edges')
   })
 
   it('loads a repository with the selected language and remembers it per repo path', async () => {
@@ -359,8 +369,11 @@ describe('App', () => {
 
     expect(getLastRepoPath()).toBe('/repo')
 
+    // The loaded instance's own path field now lives behind its (closed)
+    // repo pill popover, so only the fresh second instance's empty-state
+    // form renders one.
     render(<App />)
-    expect(screen.getAllByLabelText('Repository path')[1]).toHaveValue('/repo')
+    expect(screen.getByLabelText('Repository path')).toHaveValue('/repo')
   })
 
   it('persists sidebar and details-panel collapsed state to localStorage, independently', async () => {
@@ -396,11 +409,14 @@ describe('App', () => {
       parse_errors: [],
     })
 
-    await loadSampleRepo()
+    const user = await loadSampleRepo()
+    await openRepoPill(user)
 
     expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/git-root')
 
     render(<App />)
+    // The just-opened popover's field (first instance) and the fresh
+    // second instance's empty-state field both match now.
     expect(screen.getAllByLabelText('Save location')[1]).toHaveValue('/auto/detected/git-root')
   })
 
@@ -463,6 +479,7 @@ describe('App', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Document' }))
     await waitFor(() => expect(screen.getByText(/original\/root/)).toBeInTheDocument())
 
+    await openRepoPill(user)
     const saveLocationInput = screen.getByLabelText('Save location')
     await user.clear(saveLocationInput)
     await user.type(saveLocationInput, '/new/root')
@@ -939,7 +956,7 @@ describe('App', () => {
   it('shows a placeholder in File view until a file-scoped node is selected', async () => {
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'file' }))
+    await user.click(screen.getByRole('button', { name: 'Current file' }))
     expect(screen.getByText(/select a file, class, or function/i)).toBeInTheDocument()
 
     await user.click(within(screen.getByRole('tree')).getByText('greet'))
@@ -1026,6 +1043,7 @@ describe('App', () => {
       edge_count: 1,
       parse_errors: [],
     })
+    await openRepoPill(user)
     await user.clear(screen.getByLabelText('Repository path'))
     await user.type(screen.getByLabelText('Repository path'), '/other-repo')
     await user.click(screen.getByRole('button', { name: /load/i }))

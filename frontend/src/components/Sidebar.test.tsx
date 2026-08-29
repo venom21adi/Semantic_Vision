@@ -118,7 +118,7 @@ describe('Sidebar', () => {
     const user = userEvent.setup()
     const { props } = renderSidebar()
 
-    await user.click(screen.getByRole('button', { name: 'file' }))
+    await user.click(screen.getByRole('button', { name: 'Current file' }))
 
     expect(props.onViewChange).toHaveBeenCalledWith('file')
   })
@@ -126,8 +126,8 @@ describe('Sidebar', () => {
   it('reflects the active view via aria-pressed', () => {
     renderSidebar({ view: 'file' })
 
-    expect(screen.getByRole('button', { name: 'file' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: 'codebase' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Current file' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Codebase' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('calls onToggleComplexity when the complexity toggle is clicked', async () => {
@@ -200,7 +200,7 @@ describe('Sidebar', () => {
   it('shows the selected-root count', () => {
     renderSidebar({ selectedRootIds: new Set(['app.py']) })
 
-    expect(screen.getByText('1 selected')).toBeInTheDocument()
+    expect(screen.getByText('1 on canvas')).toBeInTheDocument()
   })
 
   it('calls onResetSelection when Reset selection is clicked', async () => {
