@@ -123,3 +123,23 @@ export function setDetailsCollapsed(collapsed: boolean): void {
     // Best-effort only.
   }
 }
+
+const DETAILS_WIDTH_KEY = 'semantic-vision:details-width'
+
+export function getDetailsWidth(): number | null {
+  try {
+    const raw = localStorage.getItem(DETAILS_WIDTH_KEY)
+    const parsed = raw === null ? NaN : Number(raw)
+    return Number.isFinite(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+export function setDetailsWidth(width: number): void {
+  try {
+    localStorage.setItem(DETAILS_WIDTH_KEY, String(width))
+  } catch {
+    // Best-effort only.
+  }
+}

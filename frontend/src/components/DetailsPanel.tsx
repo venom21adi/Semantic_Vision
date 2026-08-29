@@ -1,3 +1,10 @@
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { colors, spacing } from '../theme'
@@ -6,6 +13,100 @@ import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
 import { escapedPlainText, highlightSource } from './highlightSource'
 import { PerformanceReportPane } from './PerformanceReportPane'
+
+const MIN_DETAILS_WIDTH = 260
+const MAX_DETAILS_WIDTH = 640
+/** Leaves at least this much room for the graph canvas + sidebar, even on a
+ * narrow window -- a drag that would otherwise squeeze the canvas away
+ * entirely is clamped instead of honored literally. */
+const MIN_CANVAS_WIDTH = 320
+
+function clampDetailsWidth(width: number): number {
+  const viewportMax = typeof window === 'undefined' ? MAX_DETAILS_WIDTH : window.innerWidth - MIN_CANVAS_WIDTH
+  return Math.min(Math.max(width, MIN_DETAILS_WIDTH), Math.min(MAX_DETAILS_WIDTH, viewportMax))
+}
+
+/** A thin drag handle on the panel's left edge -- mirrors `CollapseToggle`'s
+ * "one small control at the panel's own edge" placement, but for continuous
+ * resize instead of a binary collapse. Calls `onResize` on every
+ * `pointermove` for instant visual feedback (cheap -- it's just a React
+ * state update, App.tsx owns `width` the same way it owns `collapsed`);
+ * `App.tsx` is the one that debounces the actual `localStorage` write via
+ * its existing `useDebouncedValue` (the same helper `visibleIds` already
+ * uses), so a drag's rapid-fire moves settle to exactly one persisted
+ * write, not one per pixel, without this component needing to know
+ * anything about persistence at all. */
+function ResizeHandle({ width, onResize }: { width: number; onResize: (width: number) => void }) {
+  // Set once at drag start and cleared at drag end -- never mutated mid-drag
+  // (`handlePointerMove` below reads it, never calls `setDragStart` again
+  // until release), so the effect's closure over it stays valid for the
+  // whole gesture with no ref indirection needed.
+  const [dragStart, setDragStart] = useState<{ pointerX: number; startWidth: number } | null>(null)
+
+  const handlePointerDown = useCallback(
+    (event: ReactPointerEvent) => {
+      if (event.button !== 0) return
+      event.preventDefault()
+      setDragStart({ pointerX: event.clientX, startWidth: width })
+    },
+    [width],
+  )
+
+  useEffect(() => {
+    if (!dragStart) return
+
+    function handlePointerMove(event: PointerEvent) {
+      // The panel sits on the right edge -- dragging the handle left
+      // (decreasing clientX) grows the panel, the opposite sign a
+      // left-edge handle would use.
+      onResize(clampDetailsWidth(dragStart.startWidth - (event.clientX - dragStart.pointerX)))
+    }
+    function handlePointerUp() {
+      setDragStart(null)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+    }
+  }, [dragStart, onResize])
+
+  const handleKeyDown = useCallback(
+    (event: ReactKeyboardEvent) => {
+      const step = 16
+      if (event.key === 'ArrowLeft') onResize(clampDetailsWidth(width + step))
+      else if (event.key === 'ArrowRight') onResize(clampDetailsWidth(width - step))
+    },
+    [width, onResize],
+  )
+
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize details panel"
+      aria-valuenow={width}
+      aria-valuemin={MIN_DETAILS_WIDTH}
+      aria-valuemax={MAX_DETAILS_WIDTH}
+      tabIndex={0}
+      onPointerDown={handlePointerDown}
+      onKeyDown={handleKeyDown}
+      className="sv-resize-handle"
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: -4,
+        width: 8,
+        cursor: 'col-resize',
+        touchAction: 'none',
+        zIndex: 1,
+      }}
+    />
+  )
+}
 
 export type ActivePane =
   | { kind: 'source'; status: 'loading' }
@@ -49,6 +150,14 @@ interface DetailsPanelProps {
   onDataSourceIngestComplete: () => void
   collapsed?: boolean
   onToggleCollapsed?: () => void
+  /** Current panel width in px, and the callback fired once (on drag
+   * release, not per frame) with the new width -- see `ResizeHandle`.
+   * Both optional with a fallback default, same convention as
+   * `collapsed`/`onToggleCollapsed` above, so a caller that doesn't care
+   * about persisting width (e.g. a future standalone-embed use) doesn't
+   * have to wire it. */
+  width?: number
+  onResizeWidth?: (width: number) => void
 }
 
 export function DetailsPanel({
@@ -73,6 +182,8 @@ export function DetailsPanel({
   onDataSourceIngestComplete,
   collapsed = false,
   onToggleCollapsed = () => {},
+  width = 320,
+  onResizeWidth = () => {},
 }: DetailsPanelProps) {
   if (collapsed) {
     return (
@@ -97,7 +208,8 @@ export function DetailsPanel({
   return (
     <aside
       style={{
-        width: 320,
+        position: 'relative',
+        width,
         flexShrink: 0,
         borderLeft: `1px solid ${colors.bgPanel}`,
         padding: spacing.lg,
@@ -106,6 +218,7 @@ export function DetailsPanel({
         fontSize: 13,
       }}
     >
+      <ResizeHandle width={width} onResize={onResizeWidth} />
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: spacing.sm }}>
         <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="right" paneName="details panel" />
       </div>

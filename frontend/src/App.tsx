@@ -48,12 +48,14 @@ import { rootNodeIds } from './tree/buildTree'
 import {
   dismissDocSaveNotice,
   getDetailsCollapsed,
+  getDetailsWidth,
   getLastRepoPath,
   getRememberedDocRoot,
   getRememberedLanguage,
   getSidebarCollapsed,
   isDocSaveNoticeDismissed,
   setDetailsCollapsed,
+  setDetailsWidth,
   setLastRepoPath,
   setRememberedDocRoot,
   setRememberedLanguage,
@@ -228,6 +230,7 @@ export default function App() {
   }, [])
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => getSidebarCollapsed())
   const [detailsCollapsed, setDetailsCollapsedState] = useState(() => getDetailsCollapsed())
+  const [detailsWidth, setDetailsWidthState] = useState(() => getDetailsWidth() ?? 320)
 
   const toggleSidebarCollapsed = useCallback(() => {
     setSidebarCollapsedState((prev) => {
@@ -244,6 +247,20 @@ export default function App() {
       return next
     })
   }, [])
+
+  // Fired on every `pointermove` while dragging (see `DetailsPanel.tsx`'s
+  // `ResizeHandle`) -- cheap, just a state update, so the panel visually
+  // tracks the cursor with no lag. The `localStorage` write is debounced
+  // separately below (`debouncedDetailsWidth`), the same
+  // settle-before-persisting treatment `visibleIds` already gets, so a
+  // drag's rapid-fire moves don't turn into one write per pixel.
+  const handleResizeDetailsWidth = useCallback((width: number) => {
+    setDetailsWidthState(width)
+  }, [])
+  const debouncedDetailsWidth = useDebouncedValue(detailsWidth, 300)
+  useEffect(() => {
+    setDetailsWidth(debouncedDetailsWidth)
+  }, [debouncedDetailsWidth])
 
   const repoRef = useRef(repo)
   useEffect(() => {
@@ -1151,6 +1168,8 @@ export default function App() {
           onDataSourceIngestComplete={handleDataSourceIngestComplete}
           collapsed={detailsCollapsed}
           onToggleCollapsed={toggleDetailsCollapsed}
+          width={detailsWidth}
+          onResizeWidth={handleResizeDetailsWidth}
         />
       </div>
     </div>

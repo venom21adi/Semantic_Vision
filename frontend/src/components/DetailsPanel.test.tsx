@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { GraphNode, ImpactResponse } from '../api/types'
@@ -332,6 +332,114 @@ describe('DetailsPanel', () => {
 
     expect(screen.getByRole('button', { name: 'Expand details panel' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'greet' })).not.toBeInTheDocument()
+  })
+
+  it('renders the resize handle with the current width reflected in its aria attributes', () => {
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        width={400}
+      />,
+    )
+
+    const handle = screen.getByRole('separator', { name: 'Resize details panel' })
+    expect(handle).toHaveAttribute('aria-valuenow', '400')
+  })
+
+  it('dragging the resize handle left grows the panel, reported via onResizeWidth', () => {
+    const onResizeWidth = vi.fn()
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        width={320}
+        onResizeWidth={onResizeWidth}
+      />,
+    )
+
+    const handle = screen.getByRole('separator', { name: 'Resize details panel' })
+    fireEvent.pointerDown(handle, { clientX: 500, button: 0 })
+    fireEvent.pointerMove(window, { clientX: 460 })
+
+    // Dragging left (clientX 500 -> 460, a delta of -40) grows the
+    // right-edge panel by the same 40px it shrunk the drag distance --
+    // the opposite sign a left-edge handle would apply.
+    expect(onResizeWidth).toHaveBeenCalledWith(360)
+  })
+
+  it('clamps a drag past the minimum width instead of shrinking further', () => {
+    const onResizeWidth = vi.fn()
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        width={280}
+        onResizeWidth={onResizeWidth}
+      />,
+    )
+
+    const handle = screen.getByRole('separator', { name: 'Resize details panel' })
+    fireEvent.pointerDown(handle, { clientX: 500, button: 0 })
+    // Dragging right by 200px would shrink the panel to 80px -- well under
+    // the 260px floor.
+    fireEvent.pointerMove(window, { clientX: 700 })
+
+    expect(onResizeWidth).toHaveBeenCalledWith(260)
+  })
+
+  it('stops resizing once the pointer is released', () => {
+    const onResizeWidth = vi.fn()
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        width={320}
+        onResizeWidth={onResizeWidth}
+      />,
+    )
+
+    const handle = screen.getByRole('separator', { name: 'Resize details panel' })
+    fireEvent.pointerDown(handle, { clientX: 500, button: 0 })
+    fireEvent.pointerUp(window, { clientX: 500 })
+    onResizeWidth.mockClear()
+    fireEvent.pointerMove(window, { clientX: 400 })
+
+    expect(onResizeWidth).not.toHaveBeenCalled()
+  })
+
+  it('resizes with the arrow keys, left growing and right shrinking', () => {
+    const onResizeWidth = vi.fn()
+    render(
+      <DetailsPanel
+        selectedNode={node}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        width={320}
+        onResizeWidth={onResizeWidth}
+      />,
+    )
+
+    const handle = screen.getByRole('separator', { name: 'Resize details panel' })
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' })
+    expect(onResizeWidth).toHaveBeenLastCalledWith(336)
+
+    fireEvent.keyDown(handle, { key: 'ArrowRight' })
+    expect(onResizeWidth).toHaveBeenLastCalledWith(304)
   })
 
   it('renders the data source pane when the pane kind is dataSource', () => {

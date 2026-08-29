@@ -109,6 +109,33 @@ textarea {
   background: oklch(0.33 0.012 265);
 }
 
+/* DetailsPanel.tsx's ResizeHandle: invisible at rest (an always-visible bar
+   the full height of the panel would be a distracting stripe down the UI
+   for a control most sessions never touch), a thin accent highlight only
+   on hover/focus/drag -- same "only announce yourself when relevant"
+   reasoning as VS Code's own pane sashes. `:active` covers the drag itself
+   (`pointerdown` sets it), since the pointer can drift off the 8px strip
+   mid-drag while listeners stay attached at the window level -- without
+   it, the highlight would flicker off the instant the cursor left the
+   handle, even while still actively resizing. */
+.sv-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background: transparent;
+}
+.sv-resize-handle:hover::after,
+.sv-resize-handle:focus-visible::after,
+.sv-resize-handle:active::after {
+  background: oklch(0.635 0.19 291); /* mirrors theme.ts's colors.accent */
+}
+.sv-resize-handle:focus-visible {
+  outline: none;
+}
+
 .spinner {
   display: inline-block;
   width: 12px;
