@@ -40,7 +40,7 @@ instead and the same action generates a module-level summary from its
 imports and the signatures of everything it defines, without ever
 sending a function body:
 
-![Documentation streaming live for a function, shown alongside its call graph](assets/doc-generation.gif)
+![Documentation streaming live for a function, shown alongside its call graph](assets/AI_Documentation.mp4)
 
 Pick a provider in the panel that opens — no extra setup is required to
 try it, but each provider needs one of the following before generation
