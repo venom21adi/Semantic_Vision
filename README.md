@@ -138,33 +138,12 @@ some tables" into an actual lineage view:
   this column, drop this table, or change what this dbt model
   materializes" before doing it, not after.
 
-### A real dbt project, end to end
-
-This isn't a mocked-up example — it's [dbt Labs' own `jaffle_shop`
-tutorial project](https://github.com/dbt-labs/jaffle_shop_duckdb),
-paired with a small Python service reading the exact `customers`/
-`orders` tables it builds, run through the real ingest flow above.
-
-![The Data lineage panel after ingesting jaffle_shop's real manifest.json: 5 dbt models ingested, 2 tables matched, 3 new, 21 columns — the sidebar tree shows the customers table now carrying both the app's own declared columns and the ones dbt's schema.yml documents](assets/dbt-lineage-ingest.png)
-
-Ingesting the manifest didn't just add dbt's models alongside the app's
-own code — it **reconciled onto the same `customers` table** the
-Python `Customer` model already declared, and *added* the columns dbt
-knows about (`first_order`, `number_of_orders`, `total_order_amount`,
-…) to the ones the app already declared (`customer_id`, `first_name`,
-`last_name`). One table, enriched by two independent sources agreeing
-on what it is.
-
-![Right-clicking the customers table for impact analysis: direct callers are the dbt model that materializes it, the SQLAlchemy class mapped to it, and the two functions that read it; transitive callers reach into the orders table and the code around it](assets/dbt-lineage-impact.png)
-
-Right-click that same table and impact analysis crosses every source
-at once: the `customers` **dbt model** that builds it, the **ORM
-class** mapped to it, and the **functions** that actually read it —
-all as direct callers, one hop away — with the foreign-key-linked
-`orders` table and everything touching *it* showing up as transitive.
-That's the question a schema change actually needs answered, and it's
-one right-click, not four separate searches across a dbt project, an
-ORM, and a codebase.
+A real, worked example — dbt Labs' own `jaffle_shop` tutorial project
+ingested into an app that already declares `Customer`/`Order` models
+for the same tables, columns reconciling from both sources onto one
+table, impact analysis crossing the dbt model, the ORM class, and the
+reading functions in one right-click — is in
+[guides/data-lineage.md](guides/data-lineage.md), with screenshots.
 
 ## ✨ Features
 
