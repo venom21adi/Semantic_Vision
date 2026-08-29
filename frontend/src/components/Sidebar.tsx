@@ -18,6 +18,13 @@ interface SidebarProps {
   onToggleComplexity: () => void
   dataSourceActive: boolean
   onToggleDataSource: () => void
+  /** Dims every node on the canvas that isn't a table, dbt model, or the
+   * code directly reading/writing one -- a filter over the same graph, not
+   * a separate view, so impact analysis still traverses code and data
+   * together. Only ever rendered once `nodes` contains at least one table/
+   * dbt-model node (see `dataNodeCounts` below). */
+  dataOnlyActive: boolean
+  onToggleDataOnly: () => void
   /** Expands/collapses every directory and file in the codebase-view
    * graph at once -- the escape hatch back to full detail for a large
    * repo that starts mostly collapsed by default. */
@@ -43,6 +50,8 @@ export function Sidebar({
   onToggleComplexity,
   dataSourceActive,
   onToggleDataSource,
+  dataOnlyActive,
+  onToggleDataOnly,
   onExpandAll,
   onCollapseAll,
   selectedRootIds,
@@ -52,6 +61,23 @@ export function Sidebar({
   onToggleCollapsed = () => {},
 }: SidebarProps) {
   const [query, setQuery] = useState('')
+
+  // Counts, not just a boolean -- shown as the "N tables · M dbt models"
+  // helper line once a source is connected, so the sidebar states what's
+  // actually on the graph rather than just "something is connected".
+  // Table/dbt-model nodes can exist before any manual ingest, too --
+  // SQLAlchemy model detection (Milestone 17a) runs automatically on every
+  // parse -- so this reads `nodes` directly rather than gating on
+  // `dataSourceActive`.
+  const dataNodeCounts = useMemo(() => {
+    let tables = 0
+    let dbtModels = 0
+    for (const node of nodes) {
+      if (node.kind === 'table') tables += 1
+      else if (node.kind === 'dbt_model') dbtModels += 1
+    }
+    return { tables, dbtModels, total: tables + dbtModels }
+  }, [nodes])
 
   const tree = useMemo(() => buildTree(nodes, edges), [nodes, edges])
   const matchIds = useMemo(() => collectMatchIds(tree, query), [tree, query])
@@ -160,6 +186,18 @@ export function Sidebar({
         </button>
       </div>
 
+      <div
+        style={{
+          padding: `${spacing.xs}px ${spacing.sm}px 2px`,
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: colors.dataLineageHeading,
+        }}
+      >
+        Data lineage
+      </div>
       <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
         <button
           type="button"
@@ -178,8 +216,41 @@ export function Sidebar({
             cursor: 'pointer',
           }}
         >
-          Connect data source
+          Add tables &amp; models
         </button>
+        {dataNodeCounts.total > 0 && (
+          <>
+            <div style={{ margin: `${spacing.xs}px 2px 0`, fontSize: 10.5, color: colors.textDim }}>
+              {dataNodeCounts.tables} table{dataNodeCounts.tables === 1 ? '' : 's'}
+              {dataNodeCounts.dbtModels > 0
+                ? ` · ${dataNodeCounts.dbtModels} dbt model${dataNodeCounts.dbtModels === 1 ? '' : 's'}`
+                : ''}
+            </div>
+            <button
+              type="button"
+              aria-pressed={dataOnlyActive}
+              onClick={onToggleDataOnly}
+              className="sv-interactive"
+              title="Dim everything that isn't a table, dbt model, or code reading/writing one -- the same graph and impact analysis, just filtered to this view"
+              style={{
+                width: '100%',
+                marginTop: spacing.xs,
+                padding: `${spacing.xs}px ${spacing.sm}px`,
+                borderRadius: radius.sm,
+                border: `1px solid ${colors.border}`,
+                background: dataOnlyActive ? colors.dataSourceActiveBg : 'transparent',
+                color: colors.textPrimary,
+                fontSize: 12,
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span>Data only</span>
+              <span aria-hidden="true">{dataOnlyActive ? 'On' : 'Off'}</span>
+            </button>
+          </>
+        )}
       </div>
 
       {view === 'codebase' && (

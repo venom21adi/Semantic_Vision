@@ -127,8 +127,9 @@ export function HelpGuide() {
             </li>
             <li>
               Toggle <strong style={{ color: colors.textPrimary }}>Show complexity</strong> or{' '}
-              <strong style={{ color: colors.textPrimary }}>Connect data source</strong> in the
-              sidebar for deeper analysis.
+              <strong style={{ color: colors.textPrimary }}>Add tables &amp; models</strong> in the
+              sidebar for deeper analysis; once tables are on the graph, filter to them with{' '}
+              <strong style={{ color: colors.textPrimary }}>Data only</strong>.
             </li>
           </ol>
         </div>

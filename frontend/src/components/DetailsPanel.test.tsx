@@ -64,8 +64,8 @@ describe('DetailsPanel', () => {
     expect(screen.getByText('6-8')).toBeInTheDocument()
   })
 
-  it('renders loaded source', () => {
-    render(
+  it('renders loaded source, syntax-highlighted by file extension', () => {
+    const { container } = render(
       <DetailsPanel
         selectedNode={node}
         pane={{ kind: 'source', status: 'loaded', source: 'def greet(): ...' }}
@@ -75,7 +75,32 @@ describe('DetailsPanel', () => {
       />,
     )
 
-    expect(screen.getByText('def greet(): ...')).toBeInTheDocument()
+    // Highlighting fragments the text across several `<span>`s (`def` gets
+    // its own keyword span), so a plain `getByText` for the whole line
+    // wouldn't match any single node -- assert on the code block's overall
+    // text content instead, and that it actually got tagged for the
+    // language `app.py`'s extension implies.
+    const code = container.querySelector('code')
+    expect(code).toHaveTextContent('def greet(): ...')
+    expect(code).toHaveClass('language-python')
+    expect(code?.querySelector('.hljs-keyword')).toHaveTextContent('def')
+  })
+
+  it('falls back to plain (but still escaped) text for an unrecognized file extension', () => {
+    const { container } = render(
+      <DetailsPanel
+        selectedNode={{ ...node, file: 'notes.txt' }}
+        pane={{ kind: 'source', status: 'loaded', source: '<not html>' }}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+      />,
+    )
+
+    const code = container.querySelector('code')
+    expect(code).toHaveTextContent('<not html>')
+    expect(code?.className ?? '').not.toMatch(/language-/)
+    expect(code?.innerHTML).toContain('&lt;not html&gt;')
   })
 
   it('renders a source error', () => {
@@ -320,7 +345,7 @@ describe('DetailsPanel', () => {
       />,
     )
 
-    expect(screen.getByRole('heading', { name: 'Connect data source' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Add tables & models' })).toBeInTheDocument()
     expect(screen.getByLabelText(/dbt manifest.json path/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/database connection string/i)).toBeInTheDocument()
   })
@@ -338,7 +363,7 @@ describe('DetailsPanel', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Close Connect data source panel' }))
+    await user.click(screen.getByRole('button', { name: 'Close Add tables & models panel' }))
 
     expect(onClosePane).toHaveBeenCalledTimes(1)
   })

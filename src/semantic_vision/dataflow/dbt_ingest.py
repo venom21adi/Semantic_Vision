@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from semantic_vision.dataflow.sqlalchemy_parser import table_node_id
+from semantic_vision.dataflow.sqlalchemy_parser import column_node_id, table_node_id
 from semantic_vision.models import Edge, EdgeKind, Node, NodeKind
 
 
@@ -43,6 +43,8 @@ class DbtIngestResult:
     models_ingested: int
     tables_reconciled: int
     tables_created: int
+    columns_reconciled: int
+    columns_created: int
 
 
 def _load_manifest(manifest_path: str) -> dict[str, Any]:
@@ -87,11 +89,17 @@ def _model_file(model: dict[str, Any]) -> str:
     return path if isinstance(path, str) and path else "manifest.json"
 
 
-def ingest(manifest_path: str, existing_table_ids: set[str]) -> DbtIngestResult:
+def ingest(
+    manifest_path: str, existing_table_ids: set[str], existing_column_ids: set[str] | None = None
+) -> DbtIngestResult:
     """`existing_table_ids` is every `Table` node id already in the
     current `ParseResult` (from 17a's SQLAlchemy parsing, or a prior
     ingest) -- used to decide whether a model's `MATERIALIZES` target
-    reconciles onto an existing node or needs a freshly created one."""
+    reconciles onto an existing node or needs a freshly created one.
+    `existing_column_ids` is the same, one level down (Milestone 17e),
+    defaulting to none-known so callers that don't care about column-level
+    reconciliation (existing tests, primarily) don't have to pass it."""
+    existing_column_ids = existing_column_ids or set()
     manifest = _load_manifest(manifest_path)
     raw_nodes: dict[str, Any] = manifest["nodes"]
     models = {
@@ -103,8 +111,11 @@ def ingest(manifest_path: str, existing_table_ids: set[str]) -> DbtIngestResult:
     nodes: list[Node] = []
     edges: list[Edge] = []
     created_tables: dict[str, Node] = {}
+    created_columns: dict[str, Node] = {}
     tables_reconciled = 0
     tables_created = 0
+    columns_reconciled = 0
+    columns_created = 0
 
     for unique_id, model in models.items():
         model_node_id = dbt_model_node_id(unique_id)
@@ -154,12 +165,37 @@ def ingest(manifest_path: str, existing_table_ids: set[str]) -> DbtIngestResult:
                 source="dbt",
             )
 
+        columns = model.get("columns")
+        if not isinstance(columns, dict):
+            continue
+        for column_name in columns:
+            if not isinstance(column_name, str) or not column_name:
+                continue
+            column_id = column_node_id(table_name, column_name)
+            edges.append(Edge(source=table_id, target=column_id, kind=EdgeKind.DEFINES))
+            if column_id in existing_column_ids or column_id in created_columns:
+                columns_reconciled += 1
+            else:
+                columns_created += 1
+                created_columns[column_id] = Node(
+                    id=column_id,
+                    kind=NodeKind.COLUMN,
+                    label=column_name,
+                    file=_model_file(model),
+                    line_start=1,
+                    line_end=1,
+                    source="dbt",
+                )
+
     nodes.extend(created_tables.values())
+    nodes.extend(created_columns.values())
 
     return DbtIngestResult(
         nodes=nodes,
         edges=edges,
         models_ingested=len(models),
+        columns_reconciled=columns_reconciled,
+        columns_created=columns_created,
         tables_reconciled=tables_reconciled,
         tables_created=tables_created,
     )

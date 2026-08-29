@@ -96,27 +96,75 @@ codebase actually depends on.
 
 ## <img src="assets/icons/data-lineage.svg" width="22" height="22" align="absmiddle" alt=""/> Code-to-data lineage
 
-Click **Connect data source** in the sidebar to extend the graph past
-your code and into the data it reads and writes. Three sources feed the
-same graph, reconciled by table name so the same table only ever shows
-up once no matter how many of them see it:
+The sidebar's **Data lineage** section extends the graph past your code
+and into the data it reads and writes. Three sources feed the same
+graph, reconciled by table name so the same table only ever shows up
+once no matter how many of them see it:
 
 - **SQLAlchemy models** — declarative model classes are detected
   automatically on every parse, no setup needed: each becomes a table
-  node, with foreign keys drawn as edges between tables and every
-  function that queries or writes one connected to it.
-- **dbt** — paste the path to a `manifest.json` your own `dbt compile`
-  already produced (Semantic Vision never invokes dbt itself) to pull in
-  every model, its `ref()` dependencies, and the table it materializes.
-- **A live database** — paste a read-only connection string to
-  introspect a real schema directly, so you can see where your ORM
-  models have drifted from what's actually deployed.
+  node with its own columns underneath (expand the table to see them),
+  foreign keys drawn as edges between tables, and every function that
+  queries or writes one connected to it — down to the specific column,
+  where it can be named with no guessing (a constructor's own keyword
+  arguments, or a raw `INSERT`/`UPDATE`'s column list).
+- **dbt** — click **Add tables & models** and paste the path to a
+  `manifest.json` your own `dbt compile` already produced (Semantic
+  Vision never invokes dbt itself) to pull in every model, its `ref()`
+  dependencies, the table it materializes, and every column it declares.
+- **A live database** — from the same panel, paste a read-only
+  connection string to introspect a real schema directly — the highest-
+  confidence column source there is, straight from the catalog — so you
+  can see where your ORM models have drifted from what's actually
+  deployed.
 
 ![Connecting a dbt manifest and a live database to a repo with SQLAlchemy models already detected, watching new table and model nodes join the same graph](assets/code-to-data-lineage.gif)
 
-Impact analysis works on a table node exactly like it does on a
-function: right-click it to see every function, model, and table
-upstream of it, code and data lineage in one traversal.
+### Using it well
+
+Once at least one table or dbt model is on the graph, two more tools in
+the same **Data lineage** section turn "the graph happens to include
+some tables" into an actual lineage view:
+
+- **Data only** dims everything on the canvas that isn't a table, a
+  dbt model, or code that directly reads/writes one — the same graph
+  and the same impact analysis, just filtered to a lineage-only
+  reading, rather than a separate mode you have to switch into and out
+  of.
+- **Impact analysis** works on a table — or a single column — node
+  exactly like it does on a function: right-click it to see every
+  function, model, and table upstream of it, code and data lineage in
+  one traversal — the way to answer "what actually breaks if I rename
+  this column, drop this table, or change what this dbt model
+  materializes" before doing it, not after.
+
+### A real dbt project, end to end
+
+This isn't a mocked-up example — it's [dbt Labs' own `jaffle_shop`
+tutorial project](https://github.com/dbt-labs/jaffle_shop_duckdb),
+paired with a small Python service reading the exact `customers`/
+`orders` tables it builds, run through the real ingest flow above.
+
+![The Data lineage panel after ingesting jaffle_shop's real manifest.json: 5 dbt models ingested, 2 tables matched, 3 new, 21 columns — the sidebar tree shows the customers table now carrying both the app's own declared columns and the ones dbt's schema.yml documents](assets/dbt-lineage-ingest.png)
+
+Ingesting the manifest didn't just add dbt's models alongside the app's
+own code — it **reconciled onto the same `customers` table** the
+Python `Customer` model already declared, and *added* the columns dbt
+knows about (`first_order`, `number_of_orders`, `total_order_amount`,
+…) to the ones the app already declared (`customer_id`, `first_name`,
+`last_name`). One table, enriched by two independent sources agreeing
+on what it is.
+
+![Right-clicking the customers table for impact analysis: direct callers are the dbt model that materializes it, the SQLAlchemy class mapped to it, and the two functions that read it; transitive callers reach into the orders table and the code around it](assets/dbt-lineage-impact.png)
+
+Right-click that same table and impact analysis crosses every source
+at once: the `customers` **dbt model** that builds it, the **ORM
+class** mapped to it, and the **functions** that actually read it —
+all as direct callers, one hop away — with the foreign-key-linked
+`orders` table and everything touching *it* showing up as transitive.
+That's the question a schema change actually needs answered, and it's
+one right-click, not four separate searches across a dbt project, an
+ORM, and a codebase.
 
 ## ✨ Features
 
@@ -151,10 +199,12 @@ parent class, streamed live from your choice of a local
 [Ollama](https://ollama.com) model, OpenAI, or Anthropic, and saved
 straight into the repo.
 
-<img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> **See where your code touches your data** — SQLAlchemy models are
-detected automatically; connect a dbt manifest and/or a live database to
-add their tables and models to the same graph, reconciled by table
-name, with impact analysis spanning code and data in one traversal.
+<img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> **See where your code touches your data — down to the column** —
+SQLAlchemy models are detected automatically; connect a dbt manifest
+and/or a live database to add their tables, models, and columns to the
+same graph, reconciled by name. Flip **Data only** to read it as a pure
+lineage diagram, with impact analysis spanning code and data in one
+traversal.
 
 💾 **Pick up exactly where you left off** — dragged layout, saved docs,
 and analysis state persist locally and restore instantly next time you
@@ -295,8 +345,8 @@ Semantic Vision has two parts:
   pick. For a function, only its own source, its direct callers/callees'
   signatures, and its parent class header are sent; for a file, only its
   path, imports, and the signatures of what it defines — never a
-  function body or the whole repository. Code-to-data lineage extends the same graph with table and
-  dbt-model nodes, from SQLAlchemy models detected in your code, a dbt
+  function body or the whole repository. Code-to-data lineage extends the same graph with table,
+  column, and dbt-model nodes, from SQLAlchemy models detected in your code, a dbt
   `manifest.json` you point it at, and/or a live database connection
   string — held in memory for that one request only, never logged or
   written to disk.

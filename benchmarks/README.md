@@ -63,6 +63,19 @@ alongside it — see the "Fixed" notes in [webpack.md](webpack.md), [threejs.md]
 checkbox-click render-time cost (the other half of webpack's outlier) has since been substantially
 reduced — see `frontend/src/graph/collapseDirectories.ts`'s parent-structure cache (Milestone 18).
 
+## Case study: code-to-data lineage at scale
+
+**[apache/superset](superset.md)** (scoped to `superset/`, its Python/Flask/SQLAlchemy backend —
+1,458 files) is a special-purpose case study, not a second Python entry in the table above (FastAPI
+already covers that slot) — its point is data-lineage detection, not scale-matching. Parsing it
+found real, function-level lineage in a production codebase: **37 tables, 206 columns, 178
+`MAPS_TO` edges, 12 `FOREIGN_KEY` edges, and 462 `READS`/`WRITES` edges combined**, out of 11,258
+nodes and 74,444 edges overall — all reverified directly against `node.kind`/`edge.kind` on this
+pass, not carried over from an earlier informal look. Backend parse: **39.74s cold, 9.35s warm**,
+the same universal cache effect as every other repo here. See [superset.md](superset.md) for the
+full breakdown, the `superset-frontend/`/`docs/` long-path scoping decision, and why the browser
+tier was intentionally skipped for this one.
+
 ## Methodology
 
 - **Backend/API tier**: `scripts/benchmark_repo_load.py`, run against a local backend
@@ -121,6 +134,15 @@ Every repo here except nest required a scoping decision, made explicit rather th
   original TypeScript pick, but its real compiler source turned out to be only 130 files
   (34.5k lines); the rest of that repo is compiler test fixtures. Swapped to `nestjs/nest` for a
   fairer scale match to the other two.
+- **superset** (case study, not the main Python entry) is benchmarked against `superset/` (its
+  Python backend, 1,458 `.py` files) only, not the full monorepo. This wasn't a bloat-avoidance
+  choice like webpack's — it's a hard clone constraint: `superset-frontend/` and `docs/` both
+  contain files with 140-155+ character relative paths, which combined with a long enough base
+  clone directory exceed Windows' 260-character `MAX_PATH` and fail to check out at all
+  (`Filename too long`, confirmed directly against this exact commit — 60+ files failed across
+  those two directories in that clone, while `superset/` checked out 100% intact in the same failed
+  clone). Scoping to `superset/` sidesteps the failure entirely and also happens to be exactly the
+  part of the repo this case study cares about (see [superset.md](superset.md)).
 
 ## Repo versions benchmarked
 
@@ -130,5 +152,6 @@ Every repo here except nest required a scoping decision, made explicit rather th
 | [mrdoob/three.js](https://github.com/mrdoob/three.js) | `3744db754b77106a4b2921fcc0a77f0964b823a7` | 2026-08-27 |
 | [nestjs/nest](https://github.com/nestjs/nest) | `cd5ee129162d1d4b9cccfaf2def4cfb051bfe927` | 2026-08-28 |
 | [webpack/webpack](https://github.com/webpack/webpack) (case study) | `0b2952e15bb1aa9a198acbbfdcb9a0dc1aabb5af` | 2026-08-27 |
+| [apache/superset](https://github.com/apache/superset) (case study) | `1c8d58a77bda36f892cc27298ed87ded43e6ef9f` | 2026-08-29 |
 
 Benchmarked 2026-08-28 against Semantic Vision v0.2.0.

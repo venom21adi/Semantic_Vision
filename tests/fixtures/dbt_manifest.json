@@ -15,7 +15,11 @@
       "unique_id": "model.my_project.fct_orders",
       "original_file_path": "models/marts/fct_orders.sql",
       "depends_on": { "nodes": ["model.my_project.stg_users"] },
-      "config": { "materialized": "table" }
+      "config": { "materialized": "table" },
+      "columns": {
+        "id": { "name": "id", "data_type": "integer" },
+        "user_id": { "name": "user_id", "data_type": "integer" }
+      }
     },
     "test.my_project.not_null_fct_orders_id": {
       "resource_type": "test",

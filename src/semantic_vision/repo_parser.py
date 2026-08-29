@@ -85,7 +85,9 @@ def parse_repository(
         all_edges.extend(dataflow_result.edges)
         # Milestone 17b: function-to-table READS/WRITES, run after model
         # detection so it can recognize calls touching a known model.
-        all_edges.extend(table_usage.detect(sources, dataflow_result.model_tables))
+        all_edges.extend(
+            table_usage.detect(sources, dataflow_result.model_tables, dataflow_result.model_columns)
+        )
 
     nodes = sorted([*symbol_table.nodes, *dataflow_nodes], key=lambda n: n.id)
     edges = sorted(all_edges, key=lambda e: (e.source, e.target, e.kind))

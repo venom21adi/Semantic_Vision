@@ -20,12 +20,15 @@ class NodeKind(StrEnum):
     FUNCTION = "function"
     TABLE = "table"
     DBT_MODEL = "dbt_model"
+    COLUMN = "column"
 
 
 class EdgeKind(StrEnum):
     CALLS = "calls"
     IMPORTS = "imports"
     DEFINES = "defines"
+    """Containment: directory->file, file->function/class, class->method,
+    and (Milestone 17e) table->column."""
     MAPS_TO = "maps_to"
     """ORM class -> the table it's declared against (Milestone 17a)."""
     FOREIGN_KEY = "foreign_key"

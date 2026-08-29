@@ -29,6 +29,10 @@ def table_node_id(table_name: str) -> str:
     return f"table::{table_name}"
 
 
+def column_node_id(table_name: str, column_name: str) -> str:
+    return f"column::{table_name}.{column_name}"
+
+
 @dataclass
 class SqlAlchemyResult:
     nodes: list[Node]
@@ -40,6 +44,14 @@ class SqlAlchemyResult:
     like `tables` itself -- the last class seen with a given name wins on
     a same-named-class-in-two-files collision, an accepted heuristic
     limitation consistent with this module's other name-only matching."""
+    model_columns: dict[str, dict[str, str]]
+    """Declarative model class name -> {class attribute name -> `Column`
+    node id} (Milestone 17e). `table_usage.py` consumes this to recognize
+    a `Model(attr=...)` constructor call's keyword arguments as writes to
+    specific columns, not just the table as a whole. Keyed by the class
+    attribute name (e.g. `name` in `name = Column(String)`), not the
+    column's own DB name -- a `Column("actual_name", ...)` override isn't
+    chased, since code refers to the attribute, not the DB-side name."""
 
 
 def _base_name(expr: ast.expr) -> str | None:
@@ -128,6 +140,28 @@ def _foreign_key_targets(node: ast.ClassDef) -> list[str]:
     return targets
 
 
+def _column_attrs(node: ast.ClassDef) -> list[tuple[str, ast.stmt]]:
+    """Every `attr = Column(...)`/`attr: T = mapped_column(...)` class
+    attribute (Milestone 17e), paired with its own assignment statement
+    (for that column's `Node.line_start`/`line_end`, rather than pointing
+    every column at the whole class's span). Keyed on the class attribute
+    name -- `Column("actual_name", ...)`'s optional DB-name override isn't
+    read, same scope cut `_foreign_key_targets` already makes for this
+    call shape."""
+    attrs: list[tuple[str, ast.stmt]] = []
+    for stmt in node.body:
+        target: ast.expr | None = None
+        value: ast.expr | None = None
+        if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1:
+            target, value = stmt.targets[0], stmt.value
+        elif isinstance(stmt, ast.AnnAssign):
+            target, value = stmt.target, stmt.value
+        if not isinstance(target, ast.Name) or _call_name(value) not in _COLUMN_CALL_NAMES:
+            continue
+        attrs.append((target.id, stmt))
+    return attrs
+
+
 def extract(sources: dict[str, str]) -> SqlAlchemyResult:
     """Scans every given Python source (`rel_path -> source text`) for
     top-level SQLAlchemy declarative model classes, reconciling `Table`
@@ -136,9 +170,12 @@ def extract(sources: dict[str, str]) -> SqlAlchemyResult:
     node, not two. Nested classes are not scanned; declarative models are
     idiomatically module-level."""
     tables: dict[str, Node] = {}
+    columns: dict[str, Node] = {}
     model_tables: dict[str, str] = {}
+    model_columns: dict[str, dict[str, str]] = {}
     maps_to: list[Edge] = []
     foreign_keys: list[Edge] = []
+    defines: list[Edge] = []
     seen_foreign_keys: set[tuple[str, str]] = set()
     """(source table id, target table id) pairs already emitted -- this
     edge is table-level, not column-level (matching the FK edge's own
@@ -185,8 +222,25 @@ def extract(sources: dict[str, str]) -> SqlAlchemyResult:
                     Edge(source=table_id, target=fk_target_id, kind=EdgeKind.FOREIGN_KEY)
                 )
 
+            model_columns[stmt.name] = {}
+            for attr_name, column_stmt in _column_attrs(stmt):
+                column_id = column_node_id(table_name, attr_name)
+                if column_id not in columns:
+                    columns[column_id] = Node(
+                        id=column_id,
+                        kind=NodeKind.COLUMN,
+                        label=attr_name,
+                        file=rel_path,
+                        line_start=column_stmt.lineno,
+                        line_end=column_stmt.end_lineno or column_stmt.lineno,
+                        source="orm_model",
+                    )
+                    defines.append(Edge(source=table_id, target=column_id, kind=EdgeKind.DEFINES))
+                model_columns[stmt.name][attr_name] = column_id
+
     return SqlAlchemyResult(
-        nodes=list(tables.values()),
-        edges=[*maps_to, *foreign_keys],
+        nodes=[*tables.values(), *columns.values()],
+        edges=[*maps_to, *foreign_keys, *defines],
         model_tables=model_tables,
+        model_columns=model_columns,
     )

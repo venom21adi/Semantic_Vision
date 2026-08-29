@@ -46,22 +46,31 @@ export const KIND_COLORS: Record<NodeKind, { background: string; border: string 
   function: { background: 'oklch(0.42 0.15 40)', border: 'oklch(0.74 0.12 40)' },
   table: { background: 'oklch(0.42 0.15 195)', border: 'oklch(0.74 0.12 195)' },
   dbt_model: { background: 'oklch(0.42 0.15 95)', border: 'oklch(0.74 0.12 95)' },
+  // Same hue as `table` (195), lighter and less saturated -- a column
+  // reads as "part of a table," not a sibling kind with equal visual
+  // weight, since that's the actual containment relationship between them
+  // (a table --DEFINES--> its columns, same as a directory contains files).
+  column: { background: 'oklch(0.55 0.08 195)', border: 'oklch(0.80 0.07 195)' },
 }
 
 function GraphNodeComponent({ data, selected }: NodeProps) {
   const nodeData = data as GraphNodeData
   const colors = KIND_COLORS[nodeData.kind]
-  // A directory/file with nothing rolled up shows no chevron at all --
-  // there's nothing to expand/collapse, whether or not it's nominally
-  // "expanded".
-  const chevron =
-    nodeData.kind !== 'directory' && nodeData.kind !== 'file'
-      ? null
-      : nodeData.hiddenDescendantCount
-        ? '▸ '
-        : nodeData.isExpanded
-          ? '▾ '
-          : null
+  // A container with nothing rolled up shows no chevron at all -- there's
+  // nothing to expand/collapse, whether or not it's nominally "expanded".
+  // `table` joined `directory`/`file` as a collapsible container in
+  // Milestone 17e, once a table can have `column` children -- see
+  // `collapseDirectories.ts`'s `CONTAINER_KINDS`, the single source of
+  // truth this mirrors.
+  const isContainerKind =
+    nodeData.kind === 'directory' || nodeData.kind === 'file' || nodeData.kind === 'table'
+  const chevron = !isContainerKind
+    ? null
+    : nodeData.hiddenDescendantCount
+      ? '▸ '
+      : nodeData.isExpanded
+        ? '▾ '
+        : null
 
   const displayLabel = formatNodeLabel(nodeData.label, nodeData.accessorKind)
 
@@ -111,4 +120,5 @@ export const nodeTypes = {
   function: GraphNodeComponent,
   table: GraphNodeComponent,
   dbt_model: GraphNodeComponent,
+  column: GraphNodeComponent,
 }

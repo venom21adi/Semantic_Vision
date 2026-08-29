@@ -45,6 +45,13 @@ const palette = {
   // page), kept alive here rather than discarded.
   teal700: 'oklch(0.48 0.09 200)',
 
+  // A lighter tint at hue 195 -- the same hue `graph/nodeTypes.tsx`'s
+  // `KIND_COLORS.table` already uses for table nodes on the canvas --
+  // reserved for the sidebar's "Data lineage" section label, so the label
+  // reads as the same domain as the teal-bordered table nodes it points
+  // at, not a generic heading.
+  teal300: 'oklch(0.72 0.11 195)',
+
   // A warm amber-orange, hue 55 -- reserved for `complexityActiveBg`,
   // distinct from both the primary accent and the `warning` semantic
   // (hue 80) so "complexity view is on" doesn't visually collide with an
@@ -79,6 +86,7 @@ export const colors = {
   accentStrong: palette.indigo700,
   complexityActiveBg: palette.amber700,
   dataSourceActiveBg: palette.teal700,
+  dataLineageHeading: palette.teal300,
   /** Selected sidebar-tree row background, and the "expand blocked" info
    * banner's background on the canvas -- deliberately the accent hue,
    * dimmed, rather than a separate blue: a selected/active row should read

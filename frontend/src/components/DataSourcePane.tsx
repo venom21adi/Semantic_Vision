@@ -23,6 +23,16 @@ function errorMessage(error: unknown): string {
   return 'Something went wrong.'
 }
 
+/** ` — N columns` appended to an ingest summary, omitted entirely when
+ * neither manifest/schema declared any (a bare table list, or a
+ * dbt model with no `columns:` in its `schema.yml`) -- "0 columns" would
+ * read as an error rather than the unremarkable case it actually is. */
+function columnsClause(result: { columns_reconciled: number; columns_created: number }): string {
+  const total = result.columns_reconciled + result.columns_created
+  if (total === 0) return ''
+  return ` — ${total} column${total === 1 ? '' : 's'}`
+}
+
 export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) {
   const [manifestPath, setManifestPath] = useState('')
   const [manifestState, setManifestState] = useState<IngestState>({ status: 'idle' })
@@ -38,7 +48,7 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
       const result = await ingestDbtManifest(path, trimmed)
       setManifestState({
         status: 'success',
-        summary: `${result.models_ingested} model${result.models_ingested === 1 ? '' : 's'} ingested — ${result.tables_reconciled} table${result.tables_reconciled === 1 ? '' : 's'} matched, ${result.tables_created} new.`,
+        summary: `${result.models_ingested} model${result.models_ingested === 1 ? '' : 's'} ingested — ${result.tables_reconciled} table${result.tables_reconciled === 1 ? '' : 's'} matched, ${result.tables_created} new${columnsClause(result)}.`,
       })
       onIngestComplete()
     } catch (error) {
@@ -55,7 +65,7 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
       const result = await ingestDbConnection(path, trimmed)
       setConnectionState({
         status: 'success',
-        summary: `${result.tables_ingested} table${result.tables_ingested === 1 ? '' : 's'} introspected — ${result.tables_reconciled} matched, ${result.tables_created} new.`,
+        summary: `${result.tables_ingested} table${result.tables_ingested === 1 ? '' : 's'} introspected — ${result.tables_reconciled} matched, ${result.tables_created} new${columnsClause(result)}.`,
       })
       onIngestComplete()
     } catch (error) {
@@ -76,6 +86,7 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
       <p style={{ margin: '0 0 14px', fontSize: 11, color: colors.textMuted }}>
         Connect a dbt project or a live database to add its tables and models to this
         graph — reconciled by table name against anything already detected from your code.
+        SQLAlchemy models need no setup here; they're detected automatically on every parse.
       </p>
 
       <form
@@ -199,6 +210,22 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
           </p>
         )}
       </form>
+
+      <p
+        style={{
+          margin: `${spacing.lg}px 0 0`,
+          paddingTop: spacing.md,
+          borderTop: `1px solid ${colors.border}`,
+          fontSize: 11,
+          color: colors.textDim,
+          lineHeight: 1.5,
+        }}
+      >
+        Once a table's on the graph: flip <strong style={{ color: colors.textMuted }}>Data
+        only</strong> back in the sidebar to read the canvas as a pure lineage diagram, or
+        right-click any table for impact analysis — every function, model, and table upstream
+        of it, code and data in one traversal.
+      </p>
     </div>
   )
 }

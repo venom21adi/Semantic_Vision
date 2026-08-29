@@ -19,6 +19,8 @@ describe('DataSourcePane', () => {
       models_ingested: 2,
       tables_reconciled: 1,
       tables_created: 1,
+      columns_reconciled: 0,
+      columns_created: 5,
     })
     const onIngestComplete = vi.fn()
 
@@ -34,8 +36,29 @@ describe('DataSourcePane', () => {
     await waitFor(() => {
       expect(screen.getByText(/2 models ingested/i)).toBeInTheDocument()
     })
-    expect(screen.getByText(/1 table matched, 1 new/i)).toBeInTheDocument()
+    expect(screen.getByText(/1 table matched, 1 new — 5 columns/i)).toBeInTheDocument()
     expect(onIngestComplete).toHaveBeenCalledTimes(1)
+  })
+
+  it('omits the columns clause when the ingest declares none', async () => {
+    const user = userEvent.setup()
+    mockedClient.ingestDbtManifest.mockResolvedValue({
+      models_ingested: 1,
+      tables_reconciled: 1,
+      tables_created: 0,
+      columns_reconciled: 0,
+      columns_created: 0,
+    })
+
+    render(<DataSourcePane path="/repo" onIngestComplete={vi.fn()} />)
+
+    await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
+    await user.click(screen.getByRole('button', { name: /^ingest$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 model ingested/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText('1 model ingested — 1 table matched, 0 new.')).toBeInTheDocument()
   })
 
   it('shows an error message when the dbt manifest ingest fails', async () => {
@@ -60,6 +83,8 @@ describe('DataSourcePane', () => {
       tables_ingested: 3,
       tables_reconciled: 2,
       tables_created: 1,
+      columns_reconciled: 4,
+      columns_created: 2,
     })
     const onIngestComplete = vi.fn()
 

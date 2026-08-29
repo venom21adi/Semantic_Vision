@@ -641,6 +641,31 @@ def test_impact_max_depth_limits_transitive_callers():
     assert {c["id"] for c in resp.json()["callers"]} == {"c.py::func_c"}
 
 
+def test_impact_on_a_table_node_traverses_into_code_and_orm_classes():
+    """End-to-end regression for the bug found while building column-level
+    lineage: `build_reverse_caller_index` used to index only `calls`
+    edges, so impact analysis on a table node -- despite the feature being
+    advertised as spanning code and data in one traversal -- silently
+    returned zero callers. `dataflow_repo` has a SQLAlchemy `User` model
+    (mapped to `table::users`) and a `service.py::get_user` function that
+    reads it via `session.query(User)`; both should show up as upstream of
+    the table."""
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/impact", params={"path": repo_path, "id": "table::users"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["target"] == "table::users"
+    caller_ids = {c["id"] for c in body["callers"]}
+    assert "service.py::get_user" in caller_ids
+    assert "models.py::User" in caller_ids
+    edge_kinds_by_source = {e["source"]: e["kind"] for e in body["edges"]}
+    assert edge_kinds_by_source["service.py::get_user"] == "reads"
+    assert edge_kinds_by_source["models.py::User"] == "maps_to"
+
+
 def test_generate_doc_requires_prior_parse():
     resp = client.post(
         "/api/generate-doc",
@@ -872,7 +897,13 @@ def test_dbt_manifest_ingest_reconciles_and_creates_and_merges_into_the_graph():
 
     assert resp.status_code == 200
     body = resp.json()
-    assert body == {"models_ingested": 2, "tables_reconciled": 1, "tables_created": 1}
+    assert body == {
+        "models_ingested": 2,
+        "tables_reconciled": 1,
+        "tables_created": 1,
+        "columns_reconciled": 0,
+        "columns_created": 2,
+    }
 
     graph_resp = client.get("/api/graph", params={"path": repo_path})
     graph = graph_resp.json()
@@ -880,6 +911,8 @@ def test_dbt_manifest_ingest_reconciles_and_creates_and_merges_into_the_graph():
     assert "dbt::model.my_project.stg_users" in node_ids
     assert "dbt::model.my_project.fct_orders" in node_ids
     assert "table::fct_orders" in node_ids
+    assert "column::fct_orders.id" in node_ids
+    assert "column::fct_orders.user_id" in node_ids
     # The pre-existing `table::users` node (from 17a's SQLAlchemy parsing
     # of the fixture repo) is reconciled onto, not duplicated.
     assert sum(1 for n in graph["nodes"] if n["id"] == "table::users") == 1
@@ -896,9 +929,23 @@ def test_dbt_manifest_ingest_is_idempotent_on_repeated_ingest():
     resp = client.post("/api/dataflow/dbt-manifest", params={"path": repo_path}, json=manifest_body)
     second_graph = client.get("/api/graph", params={"path": repo_path}).json()
 
-    # A second ingest of the identical manifest reconciles onto
-    # everything the first ingest already created -- nothing new.
-    assert resp.json() == {"models_ingested": 2, "tables_reconciled": 2, "tables_created": 0}
+    # A second ingest of the identical manifest reconciles onto every
+    # `Table` node the first ingest already created -- nothing new there.
+    # `Column` nodes tagged `source="dbt"` are a different story: like
+    # `MATERIALIZES`/`REFERENCES` edges, they're fully retracted and
+    # freshly re-created on every ingest (see `_strip_previous_dbt_ingest`)
+    # rather than persisted-and-reconciled the way `Table` nodes are, so
+    # they show as "created" again here too -- the graph's own node/edge
+    # counts staying flat across the two ingests (below) is what actually
+    # proves this doesn't duplicate anything, not the created/reconciled
+    # split for this one node kind.
+    assert resp.json() == {
+        "models_ingested": 2,
+        "tables_reconciled": 2,
+        "tables_created": 0,
+        "columns_reconciled": 0,
+        "columns_created": 2,
+    }
     assert len(second_graph["nodes"]) == len(first_graph["nodes"])
     assert len(second_graph["edges"]) == len(first_graph["edges"])
 
@@ -957,6 +1004,44 @@ def test_dbt_manifest_ingest_retracts_a_stale_materializes_edge_on_re_ingest(tmp
     # Exactly one DBT_MODEL node for `model.p.x`, not a duplicate.
     second_nodes = client.get("/api/graph", params={"path": repo_path}).json()["nodes"]
     assert sum(1 for n in second_nodes if n["id"] == "dbt::model.p.x") == 1
+
+
+def test_dbt_manifest_ingest_retracts_a_stale_column_on_re_ingest(tmp_path: Path):
+    """Same lesson as the stale-`MATERIALIZES`-edge regression above, one
+    level down: a column dropped from a model's own `columns` dict
+    between manifest regenerations must not linger in the graph forever."""
+    repo_path = str(FIXTURES / "dataflow_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def _manifest_with_columns(column_names: list[str]) -> dict:
+        return {
+            "nodes": {
+                "model.p.x": {
+                    "resource_type": "model",
+                    "name": "x",
+                    "unique_id": "model.p.x",
+                    "columns": {name: {"name": name} for name in column_names},
+                }
+            }
+        }
+
+    manifest_a = tmp_path / "manifest_a.json"
+    manifest_a.write_text(json.dumps(_manifest_with_columns(["old_col"])), encoding="utf-8")
+    manifest_b = tmp_path / "manifest_b.json"
+    manifest_b.write_text(json.dumps(_manifest_with_columns(["new_col"])), encoding="utf-8")
+
+    client.post(
+        "/api/dataflow/dbt-manifest", params={"path": repo_path}, json={"path": str(manifest_a)}
+    )
+    first_node_ids = {n["id"] for n in client.get("/api/graph", params={"path": repo_path}).json()["nodes"]}
+    assert "column::x.old_col" in first_node_ids
+
+    client.post(
+        "/api/dataflow/dbt-manifest", params={"path": repo_path}, json={"path": str(manifest_b)}
+    )
+    second_node_ids = {n["id"] for n in client.get("/api/graph", params={"path": repo_path}).json()["nodes"]}
+    assert "column::x.new_col" in second_node_ids
+    assert "column::x.old_col" not in second_node_ids
 
 
 def test_dbt_manifest_ingest_invalid_path_returns_400():
@@ -1019,15 +1104,28 @@ def test_db_connection_ingest_reconciles_and_creates_and_merges_into_the_graph(t
 
     assert resp.status_code == 200
     body = resp.json()
-    assert body == {"tables_ingested": 2, "tables_reconciled": 1, "tables_created": 1}
+    assert body == {
+        "tables_ingested": 2,
+        "tables_reconciled": 1,
+        "tables_created": 1,
+        # `users` has one real column (`id`), reconciling onto the
+        # already-existing ORM-declared `column::users.id`; `legacy_orders`
+        # is a brand-new table, so both of its columns are newly created.
+        "columns_reconciled": 1,
+        "columns_created": 2,
+    }
 
     graph = client.get("/api/graph", params={"path": repo_path}).json()
     node_ids = {n["id"] for n in graph["nodes"]}
     assert "table::legacy_orders" in node_ids
+    assert "column::legacy_orders.id" in node_ids
+    assert "column::legacy_orders.user_id" in node_ids
     # `table::users` was already an ORM-sourced node from 17a -- reconciled
     # onto, not duplicated, and its `source` tag must stay "orm_model".
     users_node = next(n for n in graph["nodes"] if n["id"] == "table::users")
     assert users_node["source"] == "orm_model"
+    users_id_column = next(n for n in graph["nodes"] if n["id"] == "column::users.id")
+    assert users_id_column["source"] == "orm_model"
     legacy_orders_node = next(n for n in graph["nodes"] if n["id"] == "table::legacy_orders")
     assert legacy_orders_node["source"] == "live_db"
 

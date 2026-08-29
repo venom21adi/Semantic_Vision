@@ -1,4 +1,4 @@
-export type NodeKind = 'directory' | 'file' | 'class' | 'function' | 'table' | 'dbt_model'
+export type NodeKind = 'directory' | 'file' | 'class' | 'function' | 'table' | 'dbt_model' | 'column'
 export type EdgeKind =
   | 'calls'
   | 'imports'
@@ -152,10 +152,14 @@ export interface DbtManifestIngestResponse {
   models_ingested: number
   tables_reconciled: number
   tables_created: number
+  columns_reconciled: number
+  columns_created: number
 }
 
 export interface DbConnectionIngestResponse {
   tables_ingested: number
   tables_reconciled: number
   tables_created: number
+  columns_reconciled: number
+  columns_created: number
 }

@@ -9,13 +9,13 @@ from pathlib import Path
 
 from semantic_vision.analysis.complexity import ComplexityScore, build_complexity_index
 from semantic_vision.analysis.impact import build_reverse_caller_index
-from semantic_vision.models import ParseResult
+from semantic_vision.models import EdgeKind, ParseResult
 
 
 class RepoCache:
     def __init__(self) -> None:
         self._results: dict[str, ParseResult] = {}
-        self._reverse_indexes: dict[str, dict[str, list[str]]] = {}
+        self._reverse_indexes: dict[str, dict[str, list[tuple[str, EdgeKind]]]] = {}
         self._complexity_indexes: dict[str, dict[str, ComplexityScore]] = {}
         self._doc_roots: dict[str, Path] = {}
         # Guards building a repo's complexity index: `set()` no longer
@@ -32,7 +32,7 @@ class RepoCache:
     def get(self, path: str) -> ParseResult | None:
         return self._results.get(self._key(path))
 
-    def get_reverse_caller_index(self, path: str) -> dict[str, list[str]] | None:
+    def get_reverse_caller_index(self, path: str) -> dict[str, list[tuple[str, EdgeKind]]] | None:
         return self._reverse_indexes.get(self._key(path))
 
     def get_or_build_complexity_index(self, path: str) -> dict[str, ComplexityScore]:

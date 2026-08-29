@@ -126,6 +126,8 @@ class DbtManifestIngestResponse(BaseModel):
     models_ingested: int
     tables_reconciled: int
     tables_created: int
+    columns_reconciled: int
+    columns_created: int
 
 
 class DbConnectionIngestRequest(BaseModel):
@@ -139,3 +141,5 @@ class DbConnectionIngestResponse(BaseModel):
     tables_ingested: int
     tables_reconciled: int
     tables_created: int
+    columns_reconciled: int
+    columns_created: int

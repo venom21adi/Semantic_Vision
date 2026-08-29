@@ -33,16 +33,33 @@ def test_introspects_real_sqlite_tables_and_foreign_key(tmp_path: Path):
     assert result.tables_ingested == 2
     assert result.tables_created == 2
     assert result.tables_reconciled == 0
+    assert result.columns_created == 4
+    assert result.columns_reconciled == 0
 
-    table_ids = {n.id for n in result.nodes}
+    table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
     assert table_ids == {"table::users", "table::orders"}
     for node in result.nodes:
-        assert node.kind == NodeKind.TABLE
         assert node.source == "live_db"
 
-    assert result.edges == [
+    column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
+    assert column_ids == {
+        "column::users.id",
+        "column::users.name",
+        "column::orders.id",
+        "column::orders.user_id",
+    }
+
+    fk_edges = [e for e in result.edges if e.kind == EdgeKind.FOREIGN_KEY]
+    assert fk_edges == [
         Edge(source="table::orders", target="table::users", kind=EdgeKind.FOREIGN_KEY)
     ]
+    defines_edges = {(e.source, e.target) for e in result.edges if e.kind == EdgeKind.DEFINES}
+    assert defines_edges == {
+        ("table::users", "column::users.id"),
+        ("table::users", "column::users.name"),
+        ("table::orders", "column::orders.id"),
+        ("table::orders", "column::orders.user_id"),
+    }
 
 
 def test_reconciles_onto_an_existing_table_id_without_creating_a_duplicate(tmp_path: Path):
@@ -57,6 +74,21 @@ def test_reconciles_onto_an_existing_table_id_without_creating_a_duplicate(tmp_p
     assert result.tables_reconciled == 1
     assert result.tables_created == 0
     assert [n for n in result.nodes if n.kind == NodeKind.TABLE] == []
+
+
+def test_reconciles_onto_an_existing_column_id_without_creating_a_duplicate(tmp_path: Path):
+    db_path = tmp_path / "app.db"
+    _exec(db_path, "CREATE TABLE users (id INTEGER PRIMARY KEY)")
+
+    result = db_introspect.introspect(
+        _sqlite_url(db_path),
+        existing_table_ids={"table::users"},
+        existing_column_ids={"column::users.id"},
+    )
+
+    assert result.columns_reconciled == 1
+    assert result.columns_created == 0
+    assert [n for n in result.nodes if n.kind == NodeKind.COLUMN] == []
 
 
 def test_empty_database_produces_no_tables(tmp_path: Path):

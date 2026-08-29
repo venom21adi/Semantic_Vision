@@ -4,6 +4,7 @@ import { colors, spacing } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
+import { escapedPlainText, highlightSource } from './highlightSource'
 import { PerformanceReportPane } from './PerformanceReportPane'
 
 export type ActivePane =
@@ -150,21 +151,33 @@ export function DetailsPanel({
               {pane.message}
             </p>
           )}
-          {pane.status === 'loaded' && (
-            <pre
-              style={{
-                background: colors.bgPage,
-                border: `1px solid ${colors.bgPanel}`,
-                borderRadius: 6,
-                padding: 10,
-                overflowX: 'auto',
-                fontSize: 12,
-                whiteSpace: 'pre',
-              }}
-            >
-              {pane.source}
-            </pre>
-          )}
+          {pane.status === 'loaded' && (() => {
+            const highlighted = highlightSource(pane.source, selectedNode?.file ?? '')
+            return (
+              <pre
+                style={{
+                  background: colors.bgPage,
+                  border: `1px solid ${colors.bgPanel}`,
+                  borderRadius: 6,
+                  padding: 10,
+                  overflowX: 'auto',
+                  fontSize: 12,
+                  whiteSpace: 'pre',
+                }}
+              >
+                <code
+                  className={highlighted ? `hljs language-${highlighted.language}` : undefined}
+                  // Both branches are pre-escaped: `highlightSource` returns
+                  // hljs's own escaped output, and `escapedPlainText` escapes
+                  // the raw source by hand for a file extension with no
+                  // registered grammar -- never raw, unescaped `pane.source`.
+                  dangerouslySetInnerHTML={{
+                    __html: highlighted ? highlighted.html : escapedPlainText(pane.source),
+                  }}
+                />
+              </pre>
+            )
+          })()}
         </div>
       )}
 
@@ -234,7 +247,7 @@ export function DetailsPanel({
 
       {pane?.kind === 'dataSource' && (
         <div style={{ marginTop: spacing.lg }}>
-          <PaneHeader title="Connect data source" onClose={onClosePane} />
+          <PaneHeader title="Add tables & models" onClose={onClosePane} />
           <DataSourcePane path={repoPath} onIngestComplete={onDataSourceIngestComplete} />
         </div>
       )}

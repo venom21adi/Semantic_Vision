@@ -70,6 +70,58 @@ def test_source_dependency_does_not_produce_a_references_edge():
     )
 
 
+def test_model_columns_produce_column_nodes_and_defines_edges(tmp_path: Path):
+    manifest_path = _write_manifest(
+        tmp_path,
+        {
+            "model.p.x": {
+                "resource_type": "model",
+                "name": "x",
+                "unique_id": "model.p.x",
+                "columns": {
+                    "id": {"name": "id", "data_type": "integer"},
+                    "name": {"name": "name", "data_type": "text"},
+                },
+            }
+        },
+    )
+    result = dbt_ingest.ingest(manifest_path, existing_table_ids=set())
+
+    assert result.columns_created == 2
+    assert result.columns_reconciled == 0
+    column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
+    assert column_ids == {"column::x.id", "column::x.name"}
+    for node in result.nodes:
+        if node.kind == NodeKind.COLUMN:
+            assert node.source == "dbt"
+    defines_edges = {(e.source, e.target) for e in result.edges if e.kind == EdgeKind.DEFINES}
+    assert defines_edges == {
+        ("table::x", "column::x.id"),
+        ("table::x", "column::x.name"),
+    }
+
+
+def test_model_column_reconciles_onto_an_existing_column_id(tmp_path: Path):
+    manifest_path = _write_manifest(
+        tmp_path,
+        {
+            "model.p.x": {
+                "resource_type": "model",
+                "name": "x",
+                "unique_id": "model.p.x",
+                "columns": {"id": {"name": "id"}},
+            }
+        },
+    )
+    result = dbt_ingest.ingest(
+        manifest_path, existing_table_ids={"table::x"}, existing_column_ids={"column::x.id"}
+    )
+
+    assert result.columns_reconciled == 1
+    assert result.columns_created == 0
+    assert [n for n in result.nodes if n.kind == NodeKind.COLUMN] == []
+
+
 def test_ephemeral_model_gets_no_materializes_edge(tmp_path: Path):
     """An ephemeral model is inlined into whatever references it at
     compile time -- it never materializes its own table or view, so no

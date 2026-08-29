@@ -7,10 +7,14 @@ from semantic_vision.repo_parser import parse_repository
 FIXTURES = Path(__file__).parent / "fixtures"
 
 MODEL_TABLES = {"User": "table::users", "Order": "table::orders"}
+MODEL_COLUMNS: dict[str, dict[str, str]] = {
+    "User": {"id": "column::users.id", "name": "column::users.name"},
+    "Order": {"id": "column::orders.id", "user_id": "column::orders.user_id"},
+}
 
 
-def _detect(app_source: str) -> list[Edge]:
-    return table_usage.detect({"app.py": app_source}, MODEL_TABLES)
+def _detect(app_source: str, model_columns: dict[str, dict[str, str]] | None = None) -> list[Edge]:
+    return table_usage.detect({"app.py": app_source}, MODEL_TABLES, model_columns or {})
 
 
 def test_session_query_produces_reads_edge():
@@ -37,6 +41,50 @@ def test_direct_model_construction_produces_writes_edge():
     )
     assert edges == [
         Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)
+    ]
+
+
+def test_construction_keyword_matching_known_columns_produces_column_level_writes_edges():
+    edges = _detect(
+        "def create_user(session, name):\n"
+        "    user = User(name=name)\n"
+        "    session.add(user)\n"
+        "    return user\n",
+        MODEL_COLUMNS,
+    )
+    assert edges == [
+        Edge(source="app.py::create_user", target="column::users.name", kind=EdgeKind.WRITES)
+    ]
+
+
+def test_construction_keyword_not_matching_any_known_column_falls_back_to_table_level():
+    """`extra` isn't a column `User` declares (a `**kwargs`-style call, a
+    computed field, a typo) -- not guessed at as a column touch, so this
+    falls back to the same table-level edge as a plain `User()` would."""
+    edges = _detect("def create_user(session):\n    User(extra=1)\n", MODEL_COLUMNS)
+    assert edges == [Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)]
+
+
+def test_construction_with_no_columns_known_stays_table_level():
+    """No `model_columns` info at all for `User` (e.g. its columns weren't
+    captured, or this is called with an empty `model_columns` like the
+    default `_detect` helper) -- must behave exactly as it did before
+    column-level tracking existed, not silently produce zero edges."""
+    edges = _detect("def create_user(session, name):\n    User(name=name)\n")
+    assert edges == [Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)]
+
+
+def test_construction_with_multiple_matching_keywords_produces_one_edge_per_column():
+    edges = _detect(
+        "def create_order(session, uid):\n    Order(id=1, user_id=uid)\n", MODEL_COLUMNS
+    )
+    assert edges == [
+        Edge(source="app.py::create_order", target="column::orders.id", kind=EdgeKind.WRITES),
+        Edge(
+            source="app.py::create_order",
+            target="column::orders.user_id",
+            kind=EdgeKind.WRITES,
+        ),
     ]
 
 
@@ -68,6 +116,79 @@ def test_raw_sql_insert_produces_writes_edge():
     )
     assert edges == [
         Edge(source="app.py::raw_insert", target="table::users", kind=EdgeKind.WRITES)
+    ]
+
+
+def test_raw_sql_insert_with_known_columns_produces_column_level_writes_edges():
+    edges = _detect(
+        "def raw_insert(cursor, name):\n"
+        '    cursor.execute("INSERT INTO users (id, name) VALUES (%s, %s)", (1, name))\n',
+        MODEL_COLUMNS,
+    )
+    assert edges == [
+        Edge(source="app.py::raw_insert", target="column::users.id", kind=EdgeKind.WRITES),
+        Edge(source="app.py::raw_insert", target="column::users.name", kind=EdgeKind.WRITES),
+    ]
+
+
+def test_raw_sql_insert_with_unknown_columns_falls_back_to_table_level():
+    """`legacy_col` isn't a column any known model declares -- dropped,
+    not synthesized, so with nothing left resolved this falls back to the
+    table-level edge exactly as if no column list had been parsed."""
+    edges = _detect(
+        "def raw_insert(cursor):\n"
+        '    cursor.execute("INSERT INTO users (legacy_col) VALUES (1)")\n',
+        MODEL_COLUMNS,
+    )
+    assert edges == [Edge(source="app.py::raw_insert", target="table::users", kind=EdgeKind.WRITES)]
+
+
+def test_raw_sql_insert_without_a_column_list_stays_table_level():
+    edges = _detect(
+        'def raw_insert(cursor):\n    cursor.execute("INSERT INTO users VALUES (1, \'a\')")\n',
+        MODEL_COLUMNS,
+    )
+    assert edges == [Edge(source="app.py::raw_insert", target="table::users", kind=EdgeKind.WRITES)]
+
+
+def test_raw_sql_update_with_known_columns_produces_column_level_writes_edges():
+    edges = _detect(
+        "def rename(cursor, user_id, name):\n"
+        '    cursor.execute("UPDATE users SET name = %s WHERE id = %s", (name, user_id))\n',
+        MODEL_COLUMNS,
+    )
+    assert edges == [
+        Edge(source="app.py::rename", target="column::users.name", kind=EdgeKind.WRITES)
+    ]
+
+
+def test_raw_sql_update_set_value_containing_equals_is_not_mistaken_for_another_column():
+    """`SET name = 'a=b'` -- the value itself contains an `=`, which must
+    not be misread as a second assignment (`a` as a bogus column name).
+    Each candidate column is anchored to right after the clause's start or
+    a top-level `,`, so an `=` sitting inside a value's own string literal
+    never qualifies."""
+    edges = _detect(
+        "def f(cursor):\n"
+        '    cursor.execute("UPDATE users SET name = \'a=b\' WHERE id = 1")\n',
+        MODEL_COLUMNS,
+    )
+    assert edges == [
+        Edge(source="app.py::f", target="column::users.name", kind=EdgeKind.WRITES)
+    ]
+
+
+def test_raw_sql_update_set_value_containing_a_comma_is_not_mistaken_for_another_column():
+    """`SET name = 'a,b'` -- the value's own comma must not be read as a
+    column separator (which would otherwise let `b' where id = 1` get
+    misread as a second candidate)."""
+    edges = _detect(
+        "def f(cursor):\n"
+        '    cursor.execute("UPDATE users SET name = \'a,b\' WHERE id = 1")\n',
+        MODEL_COLUMNS,
+    )
+    assert edges == [
+        Edge(source="app.py::f", target="column::users.name", kind=EdgeKind.WRITES)
     ]
 
 
@@ -222,6 +343,8 @@ def test_extract_and_detect_compose_end_to_end():
     app_source = "def get_user(session, user_id):\n    return session.query(User).first()\n"
     sqlalchemy_result = sqlalchemy_parser.extract({"models.py": models_source})
 
-    edges = table_usage.detect({"app.py": app_source}, sqlalchemy_result.model_tables)
+    edges = table_usage.detect(
+        {"app.py": app_source}, sqlalchemy_result.model_tables, sqlalchemy_result.model_columns
+    )
 
     assert edges == [Edge(source="app.py::get_user", target="table::users", kind=EdgeKind.READS)]

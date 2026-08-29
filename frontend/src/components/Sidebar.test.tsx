@@ -56,6 +56,8 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onToggleComplexity: vi.fn(),
     dataSourceActive: false,
     onToggleDataSource: vi.fn(),
+    dataOnlyActive: false,
+    onToggleDataOnly: vi.fn(),
     onExpandAll: vi.fn(),
     onCollapseAll: vi.fn(),
     selectedRootIds: new Set(),
@@ -150,7 +152,7 @@ describe('Sidebar', () => {
     const user = userEvent.setup()
     const { props } = renderSidebar()
 
-    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.click(screen.getByRole('button', { name: 'Add tables & models' }))
 
     expect(props.onToggleDataSource).toHaveBeenCalledTimes(1)
   })
@@ -158,8 +160,30 @@ describe('Sidebar', () => {
   it('reflects the active data source state via aria-pressed', () => {
     renderSidebar({ dataSourceActive: true })
 
-    const button = screen.getByRole('button', { name: 'Connect data source' })
+    const button = screen.getByRole('button', { name: 'Add tables & models' })
     expect(button).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('hides the Data only filter when the graph has no table or dbt-model nodes', () => {
+    renderSidebar()
+
+    expect(screen.queryByRole('button', { name: /Data only/ })).not.toBeInTheDocument()
+  })
+
+  it('shows the Data only filter with a table/model count once the graph has one', async () => {
+    const user = userEvent.setup()
+    const nodesWithTable: GraphNode[] = [
+      ...nodes,
+      { id: 'table::orders', kind: 'table', label: 'orders', file: 'live_db', line_start: 1, line_end: 1 },
+      { id: 'dbt::model.x', kind: 'dbt_model', label: 'stg_orders', file: 'manifest.json', line_start: 1, line_end: 1 },
+    ]
+    const { props } = renderSidebar({ nodes: nodesWithTable })
+
+    expect(screen.getByText('1 table · 1 dbt model')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Data only/ }))
+
+    expect(props.onToggleDataOnly).toHaveBeenCalledTimes(1)
   })
 
   it('calls onExpandAll and onCollapseAll when their buttons are clicked, in the codebase view', async () => {

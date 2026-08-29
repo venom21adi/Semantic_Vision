@@ -27,11 +27,22 @@ def test_declarative_model_produces_table_node_and_maps_to_edge():
             line_start=7,
             line_end=10,
             source="orm_model",
-        )
+        ),
+        Node(
+            id="column::users.id",
+            kind=NodeKind.COLUMN,
+            label="id",
+            file="models.py",
+            line_start=10,
+            line_end=10,
+            source="orm_model",
+        ),
     ]
     assert result.edges == [
-        Edge(source="models.py::User", target="table::users", kind=EdgeKind.MAPS_TO)
+        Edge(source="models.py::User", target="table::users", kind=EdgeKind.MAPS_TO),
+        Edge(source="table::users", target="column::users.id", kind=EdgeKind.DEFINES),
     ]
+    assert result.model_columns == {"User": {"id": "column::users.id"}}
 
 
 def test_foreign_key_column_produces_foreign_key_edge_between_tables():
@@ -52,6 +63,56 @@ def test_foreign_key_column_produces_foreign_key_edge_between_tables():
     fk_edges = [e for e in result.edges if e.kind == EdgeKind.FOREIGN_KEY]
     assert fk_edges == [
         Edge(source="table::orders", target="table::users", kind=EdgeKind.FOREIGN_KEY)
+    ]
+
+
+def test_multiple_columns_produce_defines_edges_and_model_columns_mapping():
+    source = (
+        "from sqlalchemy.orm import declarative_base\n"
+        "from sqlalchemy import Column, Integer, String\n\n"
+        "Base = declarative_base()\n\n\n"
+        "class User(Base):\n"
+        '    __tablename__ = "users"\n\n'
+        "    id = Column(Integer, primary_key=True)\n"
+        "    name = Column(String)\n"
+    )
+    result = extract({"models.py": source})
+
+    column_nodes = [n for n in result.nodes if n.kind == NodeKind.COLUMN]
+    assert {n.id for n in column_nodes} == {"column::users.id", "column::users.name"}
+
+    defines_edges = [e for e in result.edges if e.kind == EdgeKind.DEFINES]
+    assert defines_edges == [
+        Edge(source="table::users", target="column::users.id", kind=EdgeKind.DEFINES),
+        Edge(source="table::users", target="column::users.name", kind=EdgeKind.DEFINES),
+    ]
+    assert result.model_columns == {
+        "User": {"id": "column::users.id", "name": "column::users.name"}
+    }
+
+
+def test_mapped_column_produces_a_column_node_same_as_legacy_column():
+    source = (
+        "from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column\n\n"
+        "class Base(DeclarativeBase):\n"
+        "    pass\n\n\n"
+        "class Order(Base):\n"
+        '    __tablename__ = "orders"\n\n'
+        "    id: Mapped[int] = mapped_column(primary_key=True)\n"
+    )
+    result = extract({"models.py": source})
+
+    column_nodes = [n for n in result.nodes if n.kind == NodeKind.COLUMN]
+    assert column_nodes == [
+        Node(
+            id="column::orders.id",
+            kind=NodeKind.COLUMN,
+            label="id",
+            file="models.py",
+            line_start=10,
+            line_end=10,
+            source="orm_model",
+        )
     ]
 
 
@@ -241,6 +302,23 @@ def test_dataflow_repo_fixture_produces_expected_table_nodes_and_edges():
     # `Class` nodes for the ORM models still come from the normal Python
     # class walk, unmodified by this additive pass.
     assert table_node_id("users") in {e.target for e in dataflow_edges}
+
+
+def test_dataflow_repo_fixture_produces_expected_column_nodes():
+    result = parse_repository(FIXTURES / "dataflow_repo")
+
+    column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
+    assert column_ids == {
+        "column::users.id",
+        "column::users.name",
+        "column::orders.id",
+        "column::orders.user_id",
+    }
+    defines_edges = {
+        (e.source, e.target) for e in result.edges if e.kind == EdgeKind.DEFINES
+    }
+    assert ("table::users", "column::users.name") in defines_edges
+    assert ("table::orders", "column::orders.user_id") in defines_edges
 
 
 def test_javascript_repo_produces_no_dataflow_nodes():

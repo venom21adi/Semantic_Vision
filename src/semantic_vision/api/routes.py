@@ -216,10 +216,27 @@ def _strip_previous_dbt_ingest(result: ParseResult) -> ParseResult:
     left in place even if now unreferenced by the fresh manifest: they
     may still be real (from 17a's SQLAlchemy parsing, or simply a table
     the fresh manifest still names under the same alias, which should
-    reconcile onto the same node rather than needing re-creation)."""
-    kept_nodes = [n for n in result.nodes if n.kind != NodeKind.DBT_MODEL]
+    reconcile onto the same node rather than needing re-creation).
+
+    `Column` nodes tagged `source="dbt"` (Milestone 17e) ARE retracted,
+    unlike `Table` nodes -- a column dropped from a model's own `columns`
+    dict between manifest regenerations must not linger forever the same
+    way a stale `MATERIALIZES` edge wasn't allowed to. Safe to key off the
+    tag alone (mirroring `_strip_previous_live_db_ingest`'s identical use
+    of `source="live_db"` below): a same-named column re-declared by
+    SQLAlchemy or live-db introspection reconciles onto a node carrying
+    *that* source's tag instead, never `"dbt"`, so this never strips a
+    column another source still vouches for."""
+    dbt_column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN and n.source == "dbt"}
+    kept_nodes = [
+        n for n in result.nodes if n.kind != NodeKind.DBT_MODEL and n.id not in dbt_column_ids
+    ]
     kept_edges = [
-        e for e in result.edges if e.kind not in (EdgeKind.REFERENCES, EdgeKind.MATERIALIZES)
+        e
+        for e in result.edges
+        if e.kind not in (EdgeKind.REFERENCES, EdgeKind.MATERIALIZES)
+        and e.source not in dbt_column_ids
+        and e.target not in dbt_column_ids
     ]
     return result.model_copy(update={"nodes": kept_nodes, "edges": kept_edges})
 
@@ -242,9 +259,10 @@ def ingest_dbt_manifest(
     with _dbt_ingest_lock:
         result = _strip_previous_dbt_ingest(_get_cached(path))
         existing_table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
+        existing_column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
 
         try:
-            ingested = dbt_ingest.ingest(request.path, existing_table_ids)
+            ingested = dbt_ingest.ingest(request.path, existing_table_ids, existing_column_ids)
         except dbt_ingest.DbtManifestError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -254,6 +272,8 @@ def ingest_dbt_manifest(
         models_ingested=ingested.models_ingested,
         tables_reconciled=ingested.tables_reconciled,
         tables_created=ingested.tables_created,
+        columns_reconciled=ingested.columns_reconciled,
+        columns_created=ingested.columns_created,
     )
 
 
@@ -278,15 +298,18 @@ def _strip_previous_live_db_ingest(result: ParseResult) -> ParseResult:
     is no edge-level provenance in this data model to attribute that
     specific edge to a previous introspection versus 17a's own FK
     detection. That specific, narrower case can persist until a fresh
-    parse -- a known, documented gap, not a silent one."""
-    live_db_table_ids = {
-        n.id for n in result.nodes if n.kind == NodeKind.TABLE and n.source == "live_db"
-    }
-    kept_nodes = [n for n in result.nodes if n.id not in live_db_table_ids]
+    parse -- a known, documented gap, not a silent one.
+
+    Also covers `Column` nodes tagged `source="live_db"` (Milestone 17e,
+    same "tag alone is enough" reasoning as `_strip_previous_dbt_ingest`'s
+    identical use of `source="dbt"`) -- no kind filter needed since
+    `"live_db"` is never set on anything but a `Table`/`Column` node."""
+    live_db_node_ids = {n.id for n in result.nodes if n.source == "live_db"}
+    kept_nodes = [n for n in result.nodes if n.id not in live_db_node_ids]
     kept_edges = [
         e
         for e in result.edges
-        if e.source not in live_db_table_ids and e.target not in live_db_table_ids
+        if e.source not in live_db_node_ids and e.target not in live_db_node_ids
     ]
     return result.model_copy(update={"nodes": kept_nodes, "edges": kept_edges})
 
@@ -303,9 +326,12 @@ def ingest_db_connection(
     with _db_introspect_lock:
         result = _strip_previous_live_db_ingest(_get_cached(path))
         existing_table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
+        existing_column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
 
         try:
-            introspected = db_introspect.introspect(request.connection_string, existing_table_ids)
+            introspected = db_introspect.introspect(
+                request.connection_string, existing_table_ids, existing_column_ids
+            )
         except db_introspect.DbIntrospectError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -315,6 +341,8 @@ def ingest_db_connection(
         tables_ingested=introspected.tables_ingested,
         tables_reconciled=introspected.tables_reconciled,
         tables_created=introspected.tables_created,
+        columns_reconciled=introspected.columns_reconciled,
+        columns_created=introspected.columns_created,
     )
 
 

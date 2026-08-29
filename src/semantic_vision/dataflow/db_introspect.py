@@ -4,8 +4,12 @@ read-only connection string, queries the database's own schema catalog
 schema-introspection client -- unrelated to `sqlalchemy_parser.py`'s
 static analysis of Python *source code* that happens to use the
 SQLAlchemy ORM, which never imports the real `sqlalchemy` package at
-all) and emits `Table` nodes tagged `source="live_db"` plus
-`FOREIGN_KEY` edges, additive to an already-parsed `ParseResult`.
+all) and emits `Table` nodes tagged `source="live_db"` plus `FOREIGN_KEY`
+edges, additive to an already-parsed `ParseResult`. Also emits a `Column`
+node (same tag) and a `DEFINES` edge per real column `get_columns()`
+reports (Milestone 17e) -- the highest-confidence of every column source
+this codebase has, since it comes straight from the schema catalog with
+no name-matching heuristics involved.
 
 Like 17c's dbt ingestion, this is a one-time, user-triggered ingest
 merged into an existing, already-cached `ParseResult` by the API layer
@@ -45,7 +49,7 @@ from dataclasses import dataclass
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 
-from semantic_vision.dataflow.sqlalchemy_parser import table_node_id
+from semantic_vision.dataflow.sqlalchemy_parser import column_node_id, table_node_id
 from semantic_vision.models import Edge, EdgeKind, Node, NodeKind
 
 _CONNECTION_ERRORS = (SQLAlchemyError, ModuleNotFoundError, ImportError)
@@ -64,6 +68,8 @@ class DbIntrospectResult:
     tables_ingested: int
     tables_reconciled: int
     tables_created: int
+    columns_reconciled: int
+    columns_created: int
 
 
 def _redacted(connection_string: str) -> str:
@@ -78,11 +84,19 @@ def _redacted(connection_string: str) -> str:
         return "<connection string>"
 
 
-def introspect(connection_string: str, existing_table_ids: set[str]) -> DbIntrospectResult:
+def introspect(
+    connection_string: str,
+    existing_table_ids: set[str],
+    existing_column_ids: set[str] | None = None,
+) -> DbIntrospectResult:
     """`existing_table_ids` is every `Table` node id already in the
     current `ParseResult` -- used to decide whether an introspected
     table reconciles onto an existing node or needs a freshly created
-    one."""
+    one. `existing_column_ids` is the same, one level down (Milestone
+    17e), defaulting to none-known so callers that don't care about
+    column-level reconciliation (existing tests, primarily) don't have to
+    pass it."""
+    existing_column_ids = existing_column_ids or set()
     redacted = _redacted(connection_string)
     engine = None
     try:
@@ -93,9 +107,12 @@ def introspect(connection_string: str, existing_table_ids: set[str]) -> DbIntros
         nodes: list[Node] = []
         edges: list[Edge] = []
         created_tables: dict[str, Node] = {}
+        created_columns: dict[str, Node] = {}
         seen_foreign_keys: set[tuple[str, str]] = set()
         tables_reconciled = 0
         tables_created = 0
+        columns_reconciled = 0
+        columns_created = 0
 
         for table_name in table_names:
             table_id = table_node_id(table_name)
@@ -112,6 +129,26 @@ def introspect(connection_string: str, existing_table_ids: set[str]) -> DbIntros
                     line_end=1,
                     source="live_db",
                 )
+
+            for column in inspector.get_columns(table_name):
+                column_name = column.get("name")
+                if not column_name:
+                    continue
+                column_id = column_node_id(table_name, column_name)
+                edges.append(Edge(source=table_id, target=column_id, kind=EdgeKind.DEFINES))
+                if column_id in existing_column_ids or column_id in created_columns:
+                    columns_reconciled += 1
+                else:
+                    columns_created += 1
+                    created_columns[column_id] = Node(
+                        id=column_id,
+                        kind=NodeKind.COLUMN,
+                        label=column_name,
+                        file="live_db",
+                        line_start=1,
+                        line_end=1,
+                        source="live_db",
+                    )
 
             for fk in inspector.get_foreign_keys(table_name):
                 referred_table = fk.get("referred_table")
@@ -132,10 +169,13 @@ def introspect(connection_string: str, existing_table_ids: set[str]) -> DbIntros
             engine.dispose()
 
     nodes.extend(created_tables.values())
+    nodes.extend(created_columns.values())
     return DbIntrospectResult(
         nodes=nodes,
         edges=edges,
         tables_ingested=len(table_names),
         tables_reconciled=tables_reconciled,
         tables_created=tables_created,
+        columns_reconciled=columns_reconciled,
+        columns_created=columns_created,
     )

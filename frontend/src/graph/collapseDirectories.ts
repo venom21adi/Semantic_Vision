@@ -1,12 +1,19 @@
 import type { GraphEdge, GraphNode } from '../api/types'
 
-/** Kinds that get a canvas expand/collapse chevron -- a `directory` or
- * `file` not independently visible rolls up into whichever visible
- * ancestor contains it. `class` is deliberately not one: it has no
- * separate collapse toggle, so a class's methods fold up to whatever
+/** Kinds that get a canvas expand/collapse chevron -- a `directory`,
+ * `file`, or `table` not independently visible rolls up into whichever
+ * visible ancestor contains it. `class` is deliberately not one: it has
+ * no separate collapse toggle, so a class's methods fold up to whatever
  * `file`/`directory` ancestor is visible, same as if there were no class
- * in between. */
-export const CONTAINER_KINDS = new Set<GraphNode['kind']>(['directory', 'file'])
+ * in between. `table` joined this set in Milestone 17e once a table can
+ * have `column` children (via a `DEFINES` edge, same containment kind as
+ * everything else here) -- this is the single change that makes columns
+ * collapsible at all: `parentStructureOf` below already builds its
+ * parent/child structure purely from `DEFINES` edges regardless of node
+ * kind, so a `reads`/`writes` edge retargeted at a column rolls up to its
+ * table for free, the same way a `calls` edge into a function already
+ * rolls up to its file. */
+export const CONTAINER_KINDS = new Set<GraphNode['kind']>(['directory', 'file', 'table'])
 
 export interface ContainerVisibility {
   /** True once this container has nothing left rolled up into it (every

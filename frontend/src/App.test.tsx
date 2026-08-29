@@ -152,7 +152,12 @@ describe('App', () => {
     fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
     await user.click(screen.getByRole('menuitem', { name: 'View Source' }))
 
-    await waitFor(() => expect(screen.getByText('def greet(self): ...')).toBeInTheDocument())
+    // Syntax highlighting fragments the line across several `<span>`s, so a
+    // plain `getByText` for the whole line wouldn't match any single node
+    // -- assert on the code block's overall text content instead.
+    await waitFor(() =>
+      expect(document.querySelector('code')).toHaveTextContent('def greet(self): ...'),
+    )
     expect(mockedClient.getFunctionSource).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
   })
 
@@ -1055,14 +1060,14 @@ describe('App', () => {
     expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
   })
 
-  it('opens and closes the Connect data source panel via the sidebar toggle', async () => {
+  it('opens and closes the Add tables & models panel via the sidebar toggle', async () => {
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
-    expect(screen.getByRole('heading', { name: 'Connect data source' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Add tables & models' }))
+    expect(screen.getByRole('heading', { name: 'Add tables & models' })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
-    expect(screen.queryByRole('heading', { name: 'Connect data source' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Add tables & models' }))
+    expect(screen.queryByRole('heading', { name: 'Add tables & models' })).not.toBeInTheDocument()
   })
 
   it('re-fetches the graph after a successful dbt manifest ingest, showing the new node', async () => {
@@ -1080,7 +1085,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.click(screen.getByRole('button', { name: 'Add tables & models' }))
     await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
     await user.click(screen.getByRole('button', { name: /^ingest$/i }))
 
@@ -1093,7 +1098,7 @@ describe('App', () => {
     mockedClient.ingestDbtManifest.mockRejectedValue(new Error('Not valid JSON'))
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.click(screen.getByRole('button', { name: 'Add tables & models' }))
     await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/bad.json')
     await user.click(screen.getByRole('button', { name: /^ingest$/i }))
 
@@ -1139,7 +1144,7 @@ describe('App', () => {
 
     // A dbt ingest reconciles onto the SAME table (no new root) -- the
     // graph refetch keeps returning the identical node set.
-    await user.click(screen.getByRole('button', { name: 'Connect data source' }))
+    await user.click(screen.getByRole('button', { name: 'Add tables & models' }))
     await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
     await user.click(screen.getByRole('button', { name: /^ingest$/i }))
     await waitFor(() => expect(screen.getByText(/1 model ingested/i)).toBeInTheDocument())

@@ -62,6 +62,19 @@ import {
 
 const EMPTY_GRAPH: { nodes: GraphNode[]; edges: GraphEdge[] } = { nodes: [], edges: [] }
 
+/** Edge kinds that connect code to data or data to data -- everything the
+ * "Data only" sidebar filter treats as in-scope. Kept as a standalone
+ * constant (rather than inlined into the memo below) since it doubles as
+ * the definition of "what counts as data lineage" on this canvas. */
+const DATA_LINEAGE_EDGE_KINDS: ReadonlySet<GraphEdge['kind']> = new Set([
+  'maps_to',
+  'foreign_key',
+  'references',
+  'materializes',
+  'reads',
+  'writes',
+])
+
 /** A container's canvas chevron expands it directly only when it has at
  * most this many immediate children -- above it, expanding would dump
  * more boxes onto the canvas in one click than are reasonably readable
@@ -197,6 +210,14 @@ export default function App() {
   // want to read a graph, not a per-view setting, so it should carry
   // over to the next view/repo the same way `sidebarCollapsed` does.
   const [hiddenEdgeKinds, setHiddenEdgeKinds] = useState<ReadonlySet<GraphEdge['kind']>>(new Set())
+  // The sidebar's "Data only" lens -- dims (never removes) every node/edge
+  // outside `dataLineageHighlight` below. A plain toggle, independent of
+  // `pane`, since it's a display filter over whatever's already on the
+  // canvas rather than a fetched analysis result.
+  const [dataOnlyActive, setDataOnlyActive] = useState(false)
+  const handleToggleDataOnly = useCallback(() => {
+    setDataOnlyActive((prev) => !prev)
+  }, [])
   const handleToggleEdgeKind = useCallback((kind: GraphEdge['kind']) => {
     setHiddenEdgeKinds((prev) => {
       const next = new Set(prev)
@@ -301,6 +322,7 @@ export default function App() {
       setPane(null)
       setView('codebase')
       setFlowchartState(null)
+      setDataOnlyActive(false)
       // At or below the threshold: every node id is independently visible,
       // identical to this app's pre-collapse, pre-selection behavior (a
       // node not explicitly in `visibleIds` only rolls up into an
@@ -847,6 +869,30 @@ export default function App() {
     }
   }, [pane])
 
+  // Every table/dbt-model node, plus anything directly connected to one by
+  // a `DATA_LINEAGE_EDGE_KINDS` edge (an ORM class, a function that reads/
+  // writes it, another table via foreign key, another dbt model via
+  // `ref()`) -- table/dbt-model nodes are always included even with no
+  // matching edge yet (a freshly introspected table with no detected
+  // foreign key still has a node but no edge). A dim-in-place filter over
+  // the same graph, not a separate scoped view, so right-clicking a table
+  // still traverses code and data together.
+  const dataLineageHighlight: GraphHighlight | null = useMemo(() => {
+    if (!dataOnlyActive || !repo) return null
+    const nodeIds = new Set<string>()
+    const edgeKeys = new Set<string>()
+    for (const node of repo.nodes) {
+      if (node.kind === 'table' || node.kind === 'dbt_model') nodeIds.add(node.id)
+    }
+    for (const edge of repo.edges) {
+      if (!DATA_LINEAGE_EDGE_KINDS.has(edge.kind)) continue
+      nodeIds.add(edge.source)
+      nodeIds.add(edge.target)
+      edgeKeys.add(`${edge.source}->${edge.target}`)
+    }
+    return { nodeIds, edgeKeys }
+  }, [dataOnlyActive, repo])
+
   // Stable identity (no `repo` dependency, read via `repoRef` instead) so
   // GraphCanvas's auto-save interval effect doesn't tear down and recreate
   // itself -- and the scopedGraph/flowGraph memos below don't invalidate
@@ -938,6 +984,8 @@ export default function App() {
             onToggleComplexity={handleToggleComplexity}
             dataSourceActive={pane?.kind === 'dataSource'}
             onToggleDataSource={handleToggleDataSource}
+            dataOnlyActive={dataOnlyActive}
+            onToggleDataOnly={handleToggleDataOnly}
             onExpandAll={handleExpandAll}
             onCollapseAll={handleCollapseAll}
             selectedRootIds={visibleIds}
@@ -1039,7 +1087,7 @@ export default function App() {
                 containerState={view === 'codebase' ? collapsedCodebaseGraph.containerState : undefined}
                 expandBlockedNotice={view === 'codebase' ? expandBlockedNotice : null}
                 onAutoSavePositions={handleAutoSavePositions}
-                highlight={impactHighlight}
+                highlight={impactHighlight ?? dataLineageHighlight}
                 complexityByNodeId={complexityByNodeId}
                 hiddenEdgeKinds={hiddenEdgeKinds}
                 onToggleEdgeKind={handleToggleEdgeKind}

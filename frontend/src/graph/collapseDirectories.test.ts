@@ -159,6 +159,68 @@ describe('buildVisibleGraph', () => {
     expect(result.edges).toEqual([calls('api.py', 'other.py', { count: 2 })])
   })
 
+  it('treats a table as its own collapse boundary over its column children', () => {
+    // Milestone 17e: `table` joined `CONTAINER_KINDS` once a table can
+    // have `column` children via `DEFINES` -- this locks in that the
+    // generic containment/rollup logic (already proven above for
+    // directory/file) works unmodified for this new container kind too.
+    const nodes = [
+      node('table::users', 'table', 'users'),
+      node('column::users.id', 'column', 'id'),
+      node('column::users.name', 'column', 'name'),
+      node('app.py::get_user', 'function', 'get_user'),
+    ]
+    const edges = [
+      defines('table::users', 'column::users.id'),
+      defines('table::users', 'column::users.name'),
+      { source: 'app.py::get_user', target: 'column::users.name', kind: 'writes', external: false, ambiguous: false } as GraphEdge,
+    ]
+
+    const result = buildVisibleGraph(nodes, edges, new Set(['table::users', 'app.py::get_user']))
+
+    expect(result.nodes.map((n) => n.id).sort()).toEqual(['app.py::get_user', 'table::users'])
+    expect(result.containerState.get('table::users')).toEqual({
+      expanded: false,
+      hiddenDescendantCount: 2,
+    })
+    // The `writes` edge into the collapsed `column::users.name` rolls up
+    // to its table, same as a `calls` edge into a collapsed file's
+    // function would roll up to that file -- no column-specific logic
+    // needed, since this is the exact same remapping every other
+    // container kind already gets.
+    expect(result.edges).toEqual([
+      { source: 'app.py::get_user', target: 'table::users', kind: 'writes', external: false, ambiguous: false },
+    ])
+  })
+
+  it('expands a table to show its columns as independently visible nodes', () => {
+    const nodes = [
+      node('table::users', 'table', 'users'),
+      node('column::users.id', 'column', 'id'),
+      node('column::users.name', 'column', 'name'),
+    ]
+    const edges = [
+      defines('table::users', 'column::users.id'),
+      defines('table::users', 'column::users.name'),
+    ]
+
+    const result = buildVisibleGraph(
+      nodes,
+      edges,
+      new Set(['table::users', 'column::users.id', 'column::users.name']),
+    )
+
+    expect(result.nodes.map((n) => n.id).sort()).toEqual([
+      'column::users.id',
+      'column::users.name',
+      'table::users',
+    ])
+    expect(result.containerState.get('table::users')).toEqual({
+      expanded: true,
+      hiddenDescendantCount: 0,
+    })
+  })
+
   it('keeps a real edge between two independently visible subtrees', () => {
     const nodes = [
       node('pkg', 'directory'),

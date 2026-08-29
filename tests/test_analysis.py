@@ -10,7 +10,7 @@ def edge(source: str, target: str) -> Edge:
     return Edge(source=source, target=target, kind=EdgeKind.CALLS)
 
 
-def test_reverse_index_only_indexes_calls_edges():
+def test_reverse_index_excludes_defines_and_imports_edges():
     edges = [
         edge("a", "b"),
         Edge(source="a", target="b.py", kind=EdgeKind.IMPORTS),
@@ -19,7 +19,46 @@ def test_reverse_index_only_indexes_calls_edges():
 
     index = build_reverse_caller_index(edges)
 
-    assert index == {"b": ["a"]}
+    assert index == {"b": [("a", EdgeKind.CALLS)]}
+
+
+def test_reverse_index_includes_lineage_edges():
+    # A function reading/writing a table, an ORM class mapped to it, a
+    # foreign key between tables, and a dbt model's own dependency/
+    # materialization edges -- every kind that should count as "upstream"
+    # for a table/column/dbt-model node's impact analysis, not just
+    # `calls` (Milestone 17's whole "code and data lineage in one
+    # traversal" claim depended on this).
+    edges = [
+        Edge(source="app.py::get_user", target="table::users", kind=EdgeKind.READS),
+        Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES),
+        Edge(source="models.py::User", target="table::users", kind=EdgeKind.MAPS_TO),
+        Edge(source="table::orders", target="table::users", kind=EdgeKind.FOREIGN_KEY),
+        Edge(source="dbt::model.a", target="dbt::model.b", kind=EdgeKind.REFERENCES),
+        Edge(source="dbt::model.a", target="table::stg_orders", kind=EdgeKind.MATERIALIZES),
+    ]
+
+    index = build_reverse_caller_index(edges)
+
+    assert set(index["table::users"]) == {
+        ("app.py::get_user", EdgeKind.READS),
+        ("app.py::create_user", EdgeKind.WRITES),
+        ("models.py::User", EdgeKind.MAPS_TO),
+        ("table::orders", EdgeKind.FOREIGN_KEY),
+    }
+
+    result = find_upstream_callers("table::users", index)
+    assert {c.id for c in result.callers} == {
+        "app.py::get_user",
+        "app.py::create_user",
+        "models.py::User",
+        "table::orders",
+    }
+    edge_kinds_by_source = {e.source: e.kind for e in result.edges}
+    assert edge_kinds_by_source["app.py::get_user"] == EdgeKind.READS
+    assert edge_kinds_by_source["app.py::create_user"] == EdgeKind.WRITES
+    assert edge_kinds_by_source["models.py::User"] == EdgeKind.MAPS_TO
+    assert edge_kinds_by_source["table::orders"] == EdgeKind.FOREIGN_KEY
 
 
 def test_direct_callers_only_one_hop_away():
