@@ -128,4 +128,4 @@ jobs:
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/vscode-v')
         working-directory: vscode-extension
-        run: npx vsce publish --target ${{ matrix.target }} -p ${{ secrets.VSCE_PAT }} --packagePath *.vsix
+        run: npx vsce publish -p ${{ secrets.VSCE_PAT }} --packagePath *.vsix
