@@ -6,6 +6,7 @@
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-007ACC)](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
 
 ### What problem does this solve?
 
@@ -185,6 +186,12 @@ same graph, reconciled by name. Flip **Data only** to read it as a pure
 lineage diagram, with impact analysis spanning code and data in one
 traversal.
 
+🧩 **Right inside your editor, zero setup** — install the
+[VS Code extension](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
+and get the full graph, impact analysis, and everything else below in a
+panel next to your code — no separate browser tab, no Python or `uv` to
+install, the backend ships bundled in.
+
 💾 **Pick up exactly where you left off** — dragged layout, saved docs,
 and analysis state persist locally and restore instantly next time you
 open the same repo. The save location defaults to the repo's `.git`
@@ -290,6 +297,32 @@ To point it at your own repos instead — including switching between
 several without editing `.env` or restarting each time — see
 [guides/docker-setup.md](guides/docker-setup.md), which also covers the
 AI provider keys and where saved data lands.
+
+
+## 🧩 VS Code Extension
+
+The fastest way to try Semantic Vision: install it straight from the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
+(search **Semantic Vision**, or `ext install venom21adi.semantic-vision`)
+and open a Python or JavaScript/TypeScript repo — no Python, no `uv`,
+nothing beyond VS Code itself. The backend it needs ships bundled
+inside the extension for Windows, macOS (Intel and Apple Silicon), and
+Linux.
+
+- **Semantic Vision: Open Graph** — opens the same interactive graph as
+  the web app in a panel beside your editor, centered on whichever file
+  you have open. Click any node to jump straight to that code.
+- **Semantic Vision: Impact Analysis at Cursor** (also on the editor's
+  right-click menu) — resolves your cursor position to a graph node and
+  highlights its full blast radius without leaving your place in the
+  file.
+
+Every other feature below — flowcharts, the complexity report, AI docs,
+code-to-data lineage — works the same way inside that panel. See
+[vscode-extension/README.md](vscode-extension/README.md) for
+configuration details (e.g. pointing it at an already-running backend
+instead of the bundled one). Prefer running the backend and frontend
+yourself, or via Docker? Both remain fully supported below.
 
 ## 🧩 How it works
 
