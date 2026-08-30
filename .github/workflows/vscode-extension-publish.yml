@@ -116,6 +116,11 @@ jobs:
         working-directory: vscode-extension
         run: npx vsce package --target ${{ matrix.target }}
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix-${{ matrix.target }}
+          path: vscode-extension/*.vsix
+
       # Requires a `VSCE_PAT` repo secret -- a Personal Access Token scoped
       # to Marketplace (Manage), from the publisher account created per
       # Part B step 1 (docs/PHASE-2-BUILD-PLAN.md). Not created by this
