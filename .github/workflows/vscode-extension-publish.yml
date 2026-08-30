@@ -1,0 +1,121 @@
+# Builds the bundled backend on every target platform and packages/publishes
+# the VS Code extension (Milestone 19, Parts A and B -- see
+# docs/PHASE-2-BUILD-PLAN.md).
+#
+# NOTE: `.github/` is git-ignored in this working copy (see .gitignore) --
+# this file exists locally as the milestone's CI deliverable but won't be
+# committed/pushed by a normal `git add` here. To actually run this in
+# GitHub Actions, the maintainer needs to add it with `git add -f` (or from
+# a checkout where `.github/` isn't ignored) when they're ready to wire up
+# real publishing.
+#
+# Version-sync policy (candidate scope item 4): this workflow always builds
+# the backend binary fresh from `pyproject.toml` at the commit being
+# released -- never from a cached or previously-built artifact -- so an
+# extension release can't silently ship a stale backend. The exact
+# `pyproject.toml` version that went into a given binary is stamped
+# alongside it as `bin/BACKEND_VERSION`, so it's inspectable after install.
+name: Publish VS Code Extension
+
+on:
+  push:
+    tags:
+      - "vscode-v*"
+  workflow_dispatch: {}
+
+jobs:
+  build-backend:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: win32-x64
+            binary_name: semantic-vision-backend.exe
+          - os: ubuntu-latest
+            target: linux-x64
+            binary_name: semantic-vision-backend
+          - os: macos-latest
+            target: darwin-x64
+            binary_name: semantic-vision-backend
+          - os: macos-latest
+            target: darwin-arm64
+            binary_name: semantic-vision-backend
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Sync backend dependencies
+        run: uv sync
+
+      - name: Build frozen backend binary
+        run: |
+          uv run --with pyinstaller pyinstaller --noconfirm \
+            --distpath dist/pyinstaller --workpath build/pyinstaller \
+            scripts/pyinstaller/backend.spec
+
+      - name: Stamp bundled backend version
+        shell: bash
+        run: |
+          uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])" \
+            > dist/pyinstaller/BACKEND_VERSION
+
+      - name: Smoke-test the frozen binary
+        shell: bash
+        run: |
+          ./dist/pyinstaller/${{ matrix.binary_name }} --port 8123 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8123/api/health && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8123/api/health
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-${{ matrix.target }}
+          path: |
+            dist/pyinstaller/${{ matrix.binary_name }}
+            dist/pyinstaller/BACKEND_VERSION
+
+  package-and-publish:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [win32-x64, linux-x64, darwin-x64, darwin-arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend deps and build
+        run: |
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
+      - name: Install extension deps
+        run: npm ci --prefix vscode-extension
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-${{ matrix.target }}
+          path: vscode-extension/bin
+
+      - run: chmod +x vscode-extension/bin/semantic-vision-backend* || true
+
+      - name: Compile extension
+        run: npm run compile --prefix vscode-extension
+
+      - name: Package
+        run: npx --prefix vscode-extension vsce package --target ${{ matrix.target }}
+
+      # Requires a `VSCE_PAT` repo secret -- a Personal Access Token scoped
+      # to Marketplace (Manage), from the publisher account created per
+      # Part B step 1 (docs/PHASE-2-BUILD-PLAN.md). Not created by this
+      # workflow; a human, one-time setup step.
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/vscode-v')
+        run: npx --prefix vscode-extension vsce publish --target ${{ matrix.target }} -p ${{ secrets.VSCE_PAT }} --packagePath vscode-extension/*.vsix
