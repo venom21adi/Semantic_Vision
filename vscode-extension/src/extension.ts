@@ -1,6 +1,13 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
-import { isBackendReachable, resolvePort, spawnBackend, waitForBackend } from './backend'
+import {
+  isBackendReachable,
+  resolveBundledBackendPath,
+  resolvePort,
+  spawnBackend,
+  spawnBundledBackend,
+  waitForBackend,
+} from './backend'
 import { findNodeAtCursor, type GraphNodeLike } from './graphLookup'
 import { isWithinRoot, toRelativePath } from './paths'
 import { buildWebviewHtml } from './webviewContent'
@@ -39,53 +46,84 @@ function workspaceRoot(): string | undefined {
   return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 }
 
-async function doEnsureBackendRunning(config: Config): Promise<boolean> {
+async function doEnsureBackendRunning(config: Config, extensionPath: string): Promise<boolean> {
   if (await isBackendReachable(config.backendUrl)) return true
 
-  if (!config.backendPath) {
-    const action = await vscode.window.showErrorMessage(
-      `Semantic Vision backend isn't reachable at ${config.backendUrl}. Start it yourself ` +
-        `("uv run uvicorn semantic_vision.api.app:app --port <port>" from a Semantic Vision ` +
-        'checkout), or set "semanticVision.backendPath" to let this extension start it for you.',
-      'Open Settings',
+  if (config.backendPath) {
+    void vscode.window.showInformationMessage(
+      `Starting the Semantic Vision backend from ${config.backendPath}...`,
     )
-    if (action === 'Open Settings') {
-      void vscode.commands.executeCommand('workbench.action.openSettings', 'semanticVision.backendPath')
+    spawnBackend(config.backendPath, resolvePort(config.backendUrl), (error) => {
+      void vscode.window.showErrorMessage(
+        `Semantic Vision: failed to start the backend from ${config.backendPath}: ${error.message}. ` +
+          'Check that "uv" is on PATH and that this path is a real Semantic Vision checkout.',
+      )
+    })
+
+    const reachable = await waitForBackend(config.backendUrl)
+    if (!reachable) {
+      void vscode.window.showErrorMessage(
+        `Semantic Vision backend still isn't reachable at ${config.backendUrl} after starting it ` +
+          `from ${config.backendPath}. Check that "uv sync" has been run there.`,
+      )
     }
-    return false
+    return reachable
   }
 
-  void vscode.window.showInformationMessage(
-    `Starting the Semantic Vision backend from ${config.backendPath}...`,
+  // No backendPath configured -- the public Marketplace case (Milestone
+  // 19, Part A). Prefer the binary bundled inside this extension's own
+  // install, if this platform's build shipped one, over asking the user
+  // to set up Python at all.
+  const bundledPath = resolveBundledBackendPath(extensionPath)
+  if (bundledPath) {
+    void vscode.window.showInformationMessage('Starting the Semantic Vision backend...')
+    spawnBundledBackend(bundledPath, resolvePort(config.backendUrl), (error) => {
+      void vscode.window.showErrorMessage(
+        `Semantic Vision: failed to start the bundled backend: ${error.message}.`,
+      )
+    })
+
+    // A one-file PyInstaller binary re-extracts itself to a temp directory
+    // on every launch before Python even starts -- measured at up to ~30s
+    // cold (Windows, this milestone's spike binary) versus a live `uv run
+    // uvicorn` process, which is typically reachable within a couple of
+    // seconds. `waitForBackend`'s 15s default budget (tuned for the latter)
+    // isn't enough here, so this path gets a longer one. This is a one-time
+    // cost per backend launch, not per command -- the process stays up
+    // across subsequent `openGraph`/`impactAnalysisAtCursor` calls.
+    const reachable = await waitForBackend(config.backendUrl, 45, 1000)
+    if (!reachable) {
+      void vscode.window.showErrorMessage(
+        `Semantic Vision backend still isn't reachable at ${config.backendUrl} after starting it.`,
+      )
+    }
+    return reachable
+  }
+
+  const action = await vscode.window.showErrorMessage(
+    `Semantic Vision backend isn't reachable at ${config.backendUrl}. Start it yourself ` +
+      `("uv run uvicorn semantic_vision.api.app:app --port <port>" from a Semantic Vision ` +
+      'checkout), or set "semanticVision.backendPath" to let this extension start it for you.',
+    'Open Settings',
   )
-  spawnBackend(config.backendPath, resolvePort(config.backendUrl), (error) => {
-    void vscode.window.showErrorMessage(
-      `Semantic Vision: failed to start the backend from ${config.backendPath}: ${error.message}. ` +
-        'Check that "uv" is on PATH and that this path is a real Semantic Vision checkout.',
-    )
-  })
-
-  const reachable = await waitForBackend(config.backendUrl)
-  if (!reachable) {
-    void vscode.window.showErrorMessage(
-      `Semantic Vision backend still isn't reachable at ${config.backendUrl} after starting it ` +
-        `from ${config.backendPath}. Check that "uv sync" has been run there.`,
-    )
+  if (action === 'Open Settings') {
+    void vscode.commands.executeCommand('workbench.action.openSettings', 'semanticVision.backendPath')
   }
-  return reachable
+  return false
 }
 
-/** Checks the configured backend, and -- only if `backendPath` is set --
- * starts it via the project's own documented command. Without
- * `backendPath` configured, this never guesses a location to spawn from;
- * it tells the user how to start it themselves instead, since a wrong
- * guess would fail confusingly (see `docs/PHASE-2-BUILD-PLAN.md`
- * Milestone 16 and this session's research: there's no console-script
- * entry point, so `cwd` must be a real Semantic Vision checkout with
- * `uv sync` already run there). */
-async function ensureBackendRunning(config: Config): Promise<boolean> {
+/** Checks the configured backend, and starts it if it's not reachable --
+ * from `backendPath` when set (Milestone 16's original dev flow,
+ * unchanged), otherwise from this install's own bundled binary when one
+ * exists (Milestone 19, Part A). Without either, this never guesses a
+ * location to spawn from; it tells the user how to start it themselves
+ * instead, since a wrong guess would fail confusingly (see
+ * `docs/PHASE-2-BUILD-PLAN.md` Milestone 16 and this session's research:
+ * there's no console-script entry point, so `cwd` must be a real Semantic
+ * Vision checkout with `uv sync` already run there). */
+async function ensureBackendRunning(config: Config, extensionPath: string): Promise<boolean> {
   if (ensureBackendPromise) return ensureBackendPromise
-  ensureBackendPromise = doEnsureBackendRunning(config).finally(() => {
+  ensureBackendPromise = doEnsureBackendRunning(config, extensionPath).finally(() => {
     ensureBackendPromise = null
   })
   return ensureBackendPromise
@@ -162,7 +200,7 @@ async function openGraph(context: vscode.ExtensionContext) {
   }
 
   const config = getConfig()
-  const ready = await ensureBackendRunning(config)
+  const ready = await ensureBackendRunning(config, context.extensionPath)
   if (!ready) return
 
   await fetch(`${config.backendUrl}/api/parse-repo`, {
@@ -188,7 +226,7 @@ async function impactAnalysisAtCursor(context: vscode.ExtensionContext) {
 
   const config = getConfig()
   if (!cachedGraph || cachedGraphRoot !== root) {
-    const ready = await ensureBackendRunning(config)
+    const ready = await ensureBackendRunning(config, context.extensionPath)
     if (!ready) return
     cachedGraph = await fetchGraph(config.backendUrl, root)
     cachedGraphRoot = root

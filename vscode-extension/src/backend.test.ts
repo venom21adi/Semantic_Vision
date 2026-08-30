@@ -1,8 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { isBackendReachable, resolvePort, spawnBackend, waitForBackend } from './backend'
+import {
+  isBackendReachable,
+  resolveBundledBackendPath,
+  resolvePort,
+  spawnBackend,
+  spawnBundledBackend,
+  waitForBackend,
+} from './backend'
 
 const fakeChild = { on: vi.fn() }
 vi.mock('child_process', () => ({ spawn: vi.fn(() => fakeChild) }))
+
+const existsSyncMock = vi.fn()
+vi.mock('fs', () => ({ existsSync: (...args: unknown[]) => existsSyncMock(...args) }))
 
 const originalFetch = globalThis.fetch
 
@@ -70,6 +80,48 @@ describe('spawnBackend', () => {
     const onError = vi.fn()
 
     spawnBackend('/checkout/semantic-vision', 8123, onError)
+
+    expect(fakeChild.on).toHaveBeenCalledWith('error', onError)
+  })
+})
+
+describe('resolveBundledBackendPath', () => {
+  afterEach(() => {
+    existsSyncMock.mockReset()
+  })
+
+  it('returns the bin/ path for this platform when the binary exists', async () => {
+    const path = await import('path')
+    existsSyncMock.mockReturnValue(true)
+
+    const filename = process.platform === 'win32' ? 'semantic-vision-backend.exe' : 'semantic-vision-backend'
+    const result = resolveBundledBackendPath('/extension')
+
+    expect(result).toBe(path.join('/extension', 'bin', filename))
+    expect(existsSyncMock).toHaveBeenCalledWith(path.join('/extension', 'bin', filename))
+  })
+
+  it('returns null when no bundled binary is present for this install', () => {
+    existsSyncMock.mockReturnValue(false)
+
+    expect(resolveBundledBackendPath('/extension')).toBeNull()
+  })
+})
+
+describe('spawnBundledBackend', () => {
+  it('spawns the given binary directly with just the port flag -- no uv, no shell command', async () => {
+    const { spawn } = await import('child_process')
+    const onError = vi.fn()
+
+    spawnBundledBackend('/extension/bin/semantic-vision-backend.exe', 8123, onError)
+
+    expect(spawn).toHaveBeenCalledWith('/extension/bin/semantic-vision-backend.exe', ['--port', '8123'])
+  })
+
+  it('attaches the given error handler to the spawned process', () => {
+    const onError = vi.fn()
+
+    spawnBundledBackend('/extension/bin/semantic-vision-backend.exe', 8123, onError)
 
     expect(fakeChild.on).toHaveBeenCalledWith('error', onError)
   })

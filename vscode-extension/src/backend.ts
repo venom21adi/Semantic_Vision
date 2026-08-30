@@ -1,4 +1,6 @@
 import { spawn, type ChildProcess } from 'child_process'
+import { existsSync } from 'fs'
+import * as path from 'path'
 
 /** The port to spawn `uvicorn` on, parsed from the configured backend
  * URL. `URL.port` is the empty string when the port equals the scheme's
@@ -27,6 +29,47 @@ export async function isBackendReachable(baseUrl: string, timeoutMs = 2000): Pro
   } finally {
     clearTimeout(timeout)
   }
+}
+
+/** The bundled backend binary's filename, matching what
+ * `scripts/pyinstaller/backend.spec` (`--name semantic-vision-backend`)
+ * produces, and what CI copies into `<extension>/bin/` for the platform
+ * being packaged (see `.github/workflows/vscode-extension-publish.yml`).
+ * Each per-platform `.vsix` (`vsce publish --target win32-x64|...`) ships
+ * only the one binary matching its own target, so no platform/arch
+ * selection is needed here -- whatever's in `bin/` is for this platform. */
+function bundledBackendFilename(): string {
+  return process.platform === 'win32' ? 'semantic-vision-backend.exe' : 'semantic-vision-backend'
+}
+
+/** Absolute path to the backend binary bundled inside this extension's own
+ * install directory (Milestone 19, Part A), or `null` if this install
+ * doesn't have one -- e.g. a dev build from source, or a platform CI
+ * hasn't built a binary for yet. `extensionPath` is
+ * `vscode.ExtensionContext.extensionPath`, the extension's own install
+ * root, passed in rather than imported so this stays testable without a
+ * real `vscode` module. */
+export function resolveBundledBackendPath(extensionPath: string): string | null {
+  const candidate = path.join(extensionPath, 'bin', bundledBackendFilename())
+  return existsSync(candidate) ? candidate : null
+}
+
+/** Starts the bundled backend binary directly -- no `uv`, no Python, no
+ * checkout required. Used when `semanticVision.backendPath` is unset (the
+ * public Marketplace install case); `spawnBackend` below remains the path
+ * used when a contributor has pointed the extension at a real checkout
+ * (Milestone 16's original dev flow, unchanged). Takes the same
+ * `--port <port>` flag `scripts/pyinstaller/run_backend.py` accepts,
+ * matching `spawnBackend`'s own interface so callers don't need to branch
+ * on which one they used. */
+export function spawnBundledBackend(
+  binaryPath: string,
+  port: number,
+  onError: (error: Error) => void,
+): ChildProcess {
+  const child = spawn(binaryPath, ['--port', String(port)])
+  child.on('error', onError)
+  return child
 }
 
 /**

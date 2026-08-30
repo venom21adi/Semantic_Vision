@@ -2,8 +2,14 @@
   "name": "semantic-vision",
   "displayName": "Semantic Vision",
   "description": "Interactive call graph, impact analysis, and AI-generated docs for your codebase, right inside the editor.",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "publisher": "venom21adi",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/venom21adi/Semantic_Vision.git",
+    "directory": "vscode-extension"
+  },
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"

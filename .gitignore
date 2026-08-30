@@ -18,6 +18,12 @@ node_modules/
 frontend/dist/
 *.tsbuildinfo
 
+# vscode-extension: the bundled backend binary (built per-platform by CI --
+# see scripts/pyinstaller/backend.spec -- and copied into bin/ just before
+# packaging) and packaged .vsix output are both build artifacts, not source.
+vscode-extension/bin/
+*.vsix
+
 # Semantic Vision persisted repo state (written into whatever repo you inspect,
 # including test fixtures if you load one through a locally running app)
 .visualiser/
