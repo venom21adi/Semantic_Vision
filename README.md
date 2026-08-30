@@ -297,9 +297,20 @@ further setup, `docker compose up` mounts this project's own repo as a
 ready-to-explore demo.
 
 To inspect a different repository, set `REPO_PATH` in `.env` to its
-absolute path on your host machine before starting, then keep typing
-`/workspace/repo` (or a subfolder of it, e.g. `/workspace/repo/src`) into
-the app — never your real host path, which the container can't see.
+absolute path on your host machine, then recreate the containers so the
+new mount takes effect:
+
+```bash
+docker compose up --build
+```
+
+(Editing `.env` alone does nothing to an already-running stack — the
+volume mount is fixed when the container is created, not read live. If
+`docker compose up --build` doesn't pick up the change, run
+`docker compose down` first, then `docker compose up --build`.) Keep
+typing `/workspace/repo` (or a subfolder of it, e.g.
+`/workspace/repo/src`) into the app — never your real host path, which
+the container can't see.
 `.env` is also where you'd set `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or
 `OLLAMA_API_BASE` (an Ollama server running on your host is reachable
 from the backend container at `http://host.docker.internal:11434` by

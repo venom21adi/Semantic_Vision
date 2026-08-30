@@ -144,6 +144,10 @@ export function RepoLoader({
                 boxSizing: 'border-box',
               }}
             />
+            <span style={{ marginTop: 3, fontSize: 11, color: colors.textDim }}>
+              Running via Docker Compose? Type <code>/workspace/repo</code> — your host path
+              isn't visible inside the container. See the README's Docker section.
+            </span>
           </div>
           <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>
             <div style={{ display: 'flex', flexDirection: 'column', flex: stacked ? 1 : undefined }}>
