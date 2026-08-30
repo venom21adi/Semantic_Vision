@@ -113,7 +113,8 @@ jobs:
         run: npm run compile --prefix vscode-extension
 
       - name: Package
-        run: npx --prefix vscode-extension vsce package --target ${{ matrix.target }}
+        working-directory: vscode-extension
+        run: npx vsce package --target ${{ matrix.target }}
 
       # Requires a `VSCE_PAT` repo secret -- a Personal Access Token scoped
       # to Marketplace (Manage), from the publisher account created per
@@ -121,4 +122,5 @@ jobs:
       # workflow; a human, one-time setup step.
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/vscode-v')
-        run: npx --prefix vscode-extension vsce publish --target ${{ matrix.target }} -p ${{ secrets.VSCE_PAT }} --packagePath vscode-extension/*.vsix
+        working-directory: vscode-extension
+        run: npx vsce publish --target ${{ matrix.target }} -p ${{ secrets.VSCE_PAT }} --packagePath *.vsix
