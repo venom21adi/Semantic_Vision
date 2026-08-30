@@ -54,12 +54,13 @@ function ResizeHandle({ width, onResize }: { width: number; onResize: (width: nu
 
   useEffect(() => {
     if (!dragStart) return
+    const { pointerX, startWidth } = dragStart
 
     function handlePointerMove(event: PointerEvent) {
       // The panel sits on the right edge -- dragging the handle left
       // (decreasing clientX) grows the panel, the opposite sign a
       // left-edge handle would use.
-      onResize(clampDetailsWidth(dragStart.startWidth - (event.clientX - dragStart.pointerX)))
+      onResize(clampDetailsWidth(startWidth - (event.clientX - pointerX)))
     }
     function handlePointerUp() {
       setDragStart(null)

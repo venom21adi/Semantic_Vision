@@ -1075,6 +1075,8 @@ describe('App', () => {
       models_ingested: 1,
       tables_reconciled: 0,
       tables_created: 1,
+      columns_reconciled: 0,
+      columns_created: 0,
     })
     mockedClient.getGraph.mockResolvedValueOnce(sampleGraph).mockResolvedValueOnce({
       nodes: [
@@ -1127,6 +1129,8 @@ describe('App', () => {
       models_ingested: 1,
       tables_reconciled: 1,
       tables_created: 0,
+      columns_reconciled: 0,
+      columns_created: 0,
     })
     const user = await loadSampleRepo()
 
