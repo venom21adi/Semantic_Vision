@@ -2,7 +2,7 @@
   "name": "semantic-vision",
   "displayName": "Semantic Vision",
   "description": "Interactive call graph, impact analysis, and AI-generated docs for your codebase, right inside the editor.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "venom21adi",
   "icon": "media/icon.png",
   "repository": {
