@@ -281,6 +281,15 @@ cp .env.example .env
 docker compose up --build
 ```
 
+If using CMD as a terminal
+
+```bash
+git clone https://github.com/venom21adi/Semantic_Vision.git
+cd Semantic_Vision
+copy .env.example .env
+docker compose up --build
+```
+
 Then open `http://localhost:5173` and type `/workspace/repo` as the
 repository path — that's the fixed, in-container path a host repository
 gets mounted at (see below), not a real path on your machine. With no
