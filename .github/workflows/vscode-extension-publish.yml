@@ -80,7 +80,7 @@ jobs:
             dist/pyinstaller/${{ matrix.binary_name }}
             dist/pyinstaller/BACKEND_VERSION
 
-  package-and-publish:
+  package:
     needs: build-backend
     runs-on: ubuntu-latest
     strategy:
@@ -121,11 +121,31 @@ jobs:
           name: vsix-${{ matrix.target }}
           path: vscode-extension/*.vsix
 
+  # A separate, single job rather than a `publish` step inside each
+  # `package` matrix leg: `vsce publish` for multiple platform targets of
+  # the *same* version has to happen as one call (it accepts several
+  # `--packagePath` values at once, specifically for this multi-target
+  # case) -- four parallel `vsce publish` calls, one per target, raced
+  # against the Marketplace API's "does this version already exist yet"
+  # check and every one of them lost, each seeing "The extension already
+  # exists" with nothing actually landing. Publishing once, after every
+  # platform's .vsix is built, avoids the race entirely.
+  publish:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/vscode-v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: vsix-*
+          path: vsix
+          merge-multiple: true
+
       # Requires a `VSCE_PAT` repo secret -- a Personal Access Token scoped
       # to Marketplace (Manage), from the publisher account created per
       # Part B step 1 (docs/PHASE-2-BUILD-PLAN.md). Not created by this
-      # workflow; a human, one-time setup step.
-      - name: Publish
-        if: startsWith(github.ref, 'refs/tags/vscode-v')
-        working-directory: vscode-extension
-        run: npx vsce publish -p ${{ secrets.VSCE_PAT }} --packagePath *.vsix
+      # workflow; a human, one-time setup step. `npx --yes` fetches
+      # `@vscode/vsce` fresh -- this job has no checkout/npm-install step of
+      # its own, since all it needs is the already-built .vsix files.
+      - name: Publish all platform packages together
+        run: npx --yes @vscode/vsce publish -p ${{ secrets.VSCE_PAT }} --packagePath vsix/*.vsix
