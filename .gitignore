@@ -10,8 +10,10 @@ wheels/
 .venv
 .claude/
 .github/
+
+# Internal planning/progress docs (roadmap, build plans, progress log, lessons
+# learned, half-baked ideas) -- kept locally for context, not pushed publicly.
 docs/
-ROADMAP.md
 
 # Node / frontend
 node_modules/

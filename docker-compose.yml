@@ -16,7 +16,7 @@ services:
       # The inspected repository, read-only -- source code should never be
       # writable from the container. `.visualiser/` needs its own mount
       # layered on top since persistence still needs somewhere to write;
-      # see docs/BUILD-PLAN.md's "Docker Path Convention".
+      # see docs/progress/PROGRESS.md's Milestone 8 entry.
       - ${REPO_PATH:-.}:/workspace/repo:ro
       - ${REPO_PATH:-.}/.visualiser:/workspace/repo/.visualiser
     healthcheck:
