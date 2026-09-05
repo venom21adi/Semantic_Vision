@@ -119,6 +119,29 @@ def test_parse_repo_translates_a_pasted_host_path(monkeypatch):
     assert body["path"] == (FIXTURES / "simple_repo").resolve().as_posix()
 
 
+def test_parse_repo_uses_fast_cache_when_configured(monkeypatch, tmp_path: Path):
+    """When `SEMANTIC_VISION_FAST_CACHE_DIR` is set (as Docker Compose
+    sets it -- see docker-compose.yml), parsing mirrors the repo into it
+    first and reads from the mirror, but the response's `path` (and thus
+    where `.visualiser/` lands) still reflects the real parsed path, not
+    the internal cache location."""
+    import semantic_vision.api.repo_cache_sync as sync_module
+
+    cache_dir = tmp_path / "fast-cache"
+    monkeypatch.setenv(sync_module.FAST_CACHE_DIR_ENV, str(cache_dir))
+
+    resp = client.post("/api/parse-repo", json={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["node_count"] == 5
+    assert body["edge_count"] == 7
+    assert body["path"] == (FIXTURES / "simple_repo").resolve().as_posix()
+
+    mirrored = list(cache_dir.rglob("*.py"))
+    assert mirrored, "expected the fast cache to contain a mirrored copy of the repo's .py files"
+
+
 def test_parse_repo_auto_detects_the_nearest_git_root(monkeypatch, tmp_path: Path):
     """Restores the real `resolve_doc_root` (undoing this file's autouse
     identity stub) to verify the actual ancestor-`.git` detection works

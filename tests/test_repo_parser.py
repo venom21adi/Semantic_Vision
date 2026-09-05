@@ -402,3 +402,22 @@ def test_decorator_calls_are_attributed_to_enclosing_scope():
 
     handler_calls = [e for e in calls if e.source == "app.py::handler"]
     assert handler_calls == []
+
+
+def test_read_root_reads_files_from_a_different_directory_but_reports_root_unchanged(
+    tmp_path: Path,
+):
+    """`read_root` (used by the fast-cache sync in Docker, see
+    api/repo_cache_sync.py) lets parsing pull file contents from a mirror
+    directory while everything the response reports -- `root`, and thus
+    every node's file path -- still reflects `root` itself, since that's
+    the path save-location resolution and the read-write `.visualiser`
+    mount depend on."""
+    mirror = tmp_path / "mirror"
+    mirror.mkdir()
+    (mirror / "app.py").write_text("def greet():\n    return 'hi'\n")
+
+    result = parse_repository(FIXTURES / "simple_repo", read_root=mirror)
+
+    assert result.root == (FIXTURES / "simple_repo").resolve().as_posix()
+    assert [n.id for n in result.nodes if n.kind == NodeKind.FUNCTION] == ["app.py::greet"]

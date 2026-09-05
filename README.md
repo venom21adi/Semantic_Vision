@@ -306,6 +306,17 @@ without editing `.env` or restarting each time; see
 [guides/docker-setup.md](guides/docker-setup.md) for that pattern, plus
 the AI provider keys and where saved data lands.
 
+`REPO_PATH` is deliberately a one-time `.env` setting, not something the
+app can change about itself at runtime — see
+["Why REPO_PATH isn't configurable from the app itself"](guides/docker-setup.md#why-repo_path-isnt-configurable-from-the-app-itself)
+for why.
+
+Loading a large repo for the first time is noticeably slower in Docker
+than natively (bind-mounted files cross the Docker Desktop VM boundary on
+every read) — every load after that first one is much faster, since the
+backend keeps an internal fast copy and only re-reads what actually
+changed. See ["Why the first load is slow"](guides/docker-setup.md#why-the-first-load-is-slow-and-why-every-load-after-that-isnt) for the numbers.
+
 
 ## 🧩 VS Code Extension
 

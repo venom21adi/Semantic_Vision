@@ -11,6 +11,7 @@ from semantic_vision.ai.providers import ProviderError, list_ollama_models, stre
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.host_path import translate_host_path
+from semantic_vision.api.repo_cache_sync import sync_to_fast_cache
 from semantic_vision.api.schemas import (
     ComplexityResponse,
     DbConnectionIngestRequest,
@@ -37,6 +38,7 @@ from semantic_vision.api.schemas import (
 from semantic_vision.dataflow import db_introspect, dbt_ingest
 from semantic_vision.flowchart.cfg import build_flowchart
 from semantic_vision.languages import UnknownLanguageError
+from semantic_vision.languages.registry import get_adapter
 from semantic_vision.models import Edge, EdgeKind, Node, NodeKind, ParseResult
 from semantic_vision.persistence import store as persistence
 from semantic_vision.repo_parser import parse_repository
@@ -54,7 +56,23 @@ def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
     path = translate_host_path(request.path)
     doc_root_override = translate_host_path(request.doc_root) if request.doc_root else None
     try:
-        result = parse_repository(path, language=request.language)
+        adapter = get_adapter(request.language)
+    except UnknownLanguageError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # In Docker, `path` is a slow bind-mounted path -- mirror it into fast
+    # local storage first (a no-op outside Docker; see
+    # `repo_cache_sync.py`) and parse from the mirror instead. Only
+    # attempted when `path` actually resolves to a real directory, so a
+    # bad path still fails with the same `NotADirectoryError` it always
+    # has, from `parse_repository` itself.
+    read_root = None
+    root_path = Path(path)
+    if root_path.is_dir():
+        read_root = sync_to_fast_cache(root_path.resolve(), adapter.file_extensions)
+
+    try:
+        result = parse_repository(path, language=adapter, read_root=read_root)
     except (NotADirectoryError, PermissionError, UnknownLanguageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

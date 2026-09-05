@@ -17,8 +17,19 @@ from semantic_vision.resolver.symbol_table import build_symbol_table
 
 
 def parse_repository(
-    root: str | Path, *, language: str | LanguageAdapter = "python"
+    root: str | Path,
+    *,
+    language: str | LanguageAdapter = "python",
+    read_root: str | Path | None = None,
 ) -> ParseResult:
+    """Parses the repo at `root`, reading its files from `read_root`
+    instead when given -- a fast local mirror of `root` (see
+    `api/repo_cache_sync.py`), used only in Docker where `root` itself is
+    a slow bind-mounted path. The returned `ParseResult.root` is always
+    `root`, never `read_root`: everything downstream (save-location
+    resolution, the read-write `.visualiser` mount) depends on `root`
+    being the path the container actually exposes, not an internal cache
+    directory nothing outside the container can see."""
     adapter = language if isinstance(language, LanguageAdapter) else get_adapter(language)
 
     root_path = Path(root)
@@ -28,8 +39,10 @@ def parse_repository(
         raise PermissionError(f"Directory is not readable: {root_path}")
     root_path = root_path.resolve()
 
-    files = discover_files(root_path, adapter.file_extensions)
-    all_rel_paths = [f.relative_to(root_path).as_posix() for f in files]
+    read_path = Path(read_root).resolve() if read_root is not None else root_path
+
+    files = discover_files(read_path, adapter.file_extensions)
+    all_rel_paths = [f.relative_to(read_path).as_posix() for f in files]
 
     raw_modules: dict[str, RawModule] = {}
     line_counts: dict[str, int] = {}

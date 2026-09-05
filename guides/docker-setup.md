@@ -166,6 +166,90 @@ the full list. Unlike `REPO_PATH`, these are read at container start the
 same way — changing them also needs `docker compose up --build` to take
 effect.
 
+## Why REPO_PATH isn't configurable from the app itself
+
+It would be more convenient if the app's own **Repository path** field
+could change what folder Docker has access to, with no `.env` edit and
+no restart, ever. We looked at this and deliberately didn't build it —
+not a "maybe later," a real no, for a reason worth spelling out rather
+than leaving unexplained.
+
+A Docker volume mount is fixed the moment its container is created;
+nothing running inside that container can change it. The *only* way for
+the app to change its own mount at runtime is for the backend container
+to be able to recreate itself — which means giving it access to the
+Docker socket (`/var/run/docker.sock`, or Docker Desktop's equivalent on
+Windows). There's no lighter-weight way to do it; that access is what
+"reconfigure my own container" requires.
+
+Docker socket access is equivalent to root on the *host machine*, not
+just the container — this is one of the most well-documented container
+escape techniques there is, and it's the first thing real malware
+scans for when it finds an exposed Docker socket. Anything that can
+reach that socket can launch a brand new container mounting your entire
+disk read-write and read or write anything on it: SSH keys, saved
+credentials, unrelated projects, anything.
+
+This app is a worse-than-average place to add that capability, not a
+neutral one, for two reasons specific to it:
+
+- **It already sends real code to a third-party API.** Clicking
+  **Document** with OpenAI or Anthropic selected sends a function's
+  source, callers, and callees off this machine — an accepted, narrow,
+  opt-in exposure on its own. Stack host-level Docker control on top of
+  that, and any bug anywhere in that pipeline (or in the parser, given
+  this tool's whole purpose is pointing it at code you may not fully
+  trust yet) stops meaning "a code snippet went somewhere it shouldn't"
+  and starts meaning "the attacker now has read/write on your entire
+  machine, including whatever credentials made that AI call possible in
+  the first place."
+- **It's self-hosted and unmanaged.** This runs on each user's own
+  machine, not on infrastructure we operate — a mistake in this code
+  path is a standing host-compromise vector on every install, forever,
+  until each person updates on their own. That's a much worse failure
+  mode here than it would be for something centrally run and patched.
+
+Compare the blast radius against what's already documented above
+instead: the "mount a parent folder" pattern gives up almost nothing —
+worst case, a bug lets someone read files under one folder *you
+explicitly chose*, read-only. Bounded, and entirely within a scope you
+picked. That's why it's the recommended way to cut this friction, not a
+consolation prize for the "real" dynamic version.
+
+## Why the first load is slow, and why every load after that isn't
+
+Loading a large repo for the first time in Docker takes noticeably
+longer than a native run of the same repo would. That's not a bug or a
+misconfiguration — it's a real cost of how Docker Desktop shares files
+between Windows/macOS and the Linux VM the container actually runs in:
+every single file read on a bind mount (`REPO_PATH`'s mount, above)
+crosses that VM boundary, and each crossing has a fixed latency cost on
+top of the read itself. For a few hundred small source files that tax
+adds up to far more time than the actual parsing does, in a way that
+doesn't show up at all in a native run.
+
+Measured directly, parsing a ~1,100-file repo:
+
+| | Docker, first load | Docker, every load after | Native |
+|---|---|---|---|
+| Time | ~54s | ~10s | ~6s |
+
+The backend doesn't just eat that cost every time, though. It keeps its
+own fast, container-local copy of whatever repo it last parsed (in a
+Docker-managed volume, not visible on your host — it grants no new
+filesystem access beyond what `REPO_PATH` already exposes read-only, and
+survives `docker compose restart`, so it stays warm across ordinary
+container restarts too). The **first** time you load a given repo, it
+still has to read every file across the VM boundary at least once —
+nothing can avoid that. Every load after that, it only needs to check
+what's changed since last time (fast) and re-read the handful of files
+that actually did (usually none), instead of paying the full cost again.
+
+This needs no setup and no change to how you use Docker — it's just how
+`POST /api/parse-repo` behaves now. See
+[`src/semantic_vision/api/repo_cache_sync.py`](../src/semantic_vision/api/repo_cache_sync.py)
+for the implementation.
+
 ## See also
 
 - [Main README — Run with Docker](../README.md#-run-with-docker) for the
