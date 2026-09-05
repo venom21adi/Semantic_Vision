@@ -235,11 +235,11 @@ export function DetailsPanel({
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: spacing.sm }}>
         <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="right" paneName="details panel" />
       </div>
-      {!selectedNode && showcaseItems.length === 0 && (
+      {!selectedNode && !pane && showcaseItems.length === 0 && (
         <p style={{ color: colors.textMuted }}>Select a node to see details.</p>
       )}
 
-      {!selectedNode && showcaseItems.length > 0 && (
+      {!selectedNode && !pane && showcaseItems.length > 0 && (
         <div>
           <p style={{ color: colors.textPrimary, fontWeight: 600, fontSize: 13, margin: `0 0 4px` }}>
             New here? Try Impact Analysis
