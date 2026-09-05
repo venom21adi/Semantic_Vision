@@ -7,7 +7,7 @@ import {
 } from 'react'
 import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
-import { colors, spacing } from '../theme'
+import { colors, radius, spacing } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
@@ -152,6 +152,12 @@ interface DetailsPanelProps {
   /** See `DataSourcePane`'s prop of the same name -- passed through
    * unchanged, `undefined` outside the static demo build. */
   dataSourceDefaultManifestPath?: string
+  /** Curated functions worth suggesting when nothing is selected yet --
+   * populated only by the static demo build (see App.tsx's `showcaseIds`),
+   * empty in the real app, in which case the plain "Select a node..."
+   * placeholder renders instead. */
+  showcaseItems?: { id: string; label: string }[]
+  onTryShowcase?: (id: string) => void
   collapsed?: boolean
   onToggleCollapsed?: () => void
   /** Current panel width in px, and the callback fired once (on drag
@@ -185,6 +191,8 @@ export function DetailsPanel({
   repoPath,
   onDataSourceIngestComplete,
   dataSourceDefaultManifestPath,
+  showcaseItems = [],
+  onTryShowcase = () => {},
   collapsed = false,
   onToggleCollapsed = () => {},
   width = 320,
@@ -227,7 +235,43 @@ export function DetailsPanel({
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: spacing.sm }}>
         <CollapseToggle collapsed={false} onClick={onToggleCollapsed} edge="right" paneName="details panel" />
       </div>
-      {!selectedNode && <p style={{ color: colors.textMuted }}>Select a node to see details.</p>}
+      {!selectedNode && showcaseItems.length === 0 && (
+        <p style={{ color: colors.textMuted }}>Select a node to see details.</p>
+      )}
+
+      {!selectedNode && showcaseItems.length > 0 && (
+        <div>
+          <p style={{ color: colors.textPrimary, fontWeight: 600, fontSize: 13, margin: `0 0 4px` }}>
+            New here? Try Impact Analysis
+          </p>
+          <p style={{ color: colors.textMuted, fontSize: 12, margin: `0 0 ${spacing.sm}px` }}>
+            Click a function below to see who actually depends on it — every
+            direct and transitive caller, highlighted live on the graph.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {showcaseItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onTryShowcase(item.id)}
+                className="sv-interactive"
+                style={{
+                  textAlign: 'left',
+                  background: colors.bgPanel,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: radius.sm,
+                  padding: `6px ${spacing.sm}px`,
+                  color: colors.textPrimary,
+                  fontSize: 12.5,
+                  cursor: 'pointer',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {selectedNode && (
         <div>

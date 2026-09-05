@@ -82,6 +82,20 @@ export function loadDemoRepoList(): Promise<DemoRepoMeta[]> {
   return Promise.all(DEMO_SLUGS.map((slug) => loadMeta(slug)))
 }
 
+/** The same handful of functions curated for AI-doc generation (real
+ * callers, real branching, worth looking at) double as good impact-
+ * analysis examples -- a function picked at random is as likely as not
+ * to have zero callers in a ~90-node demo repo (a dead end that reads as
+ * "this feature doesn't do anything" rather than the small-repo artifact
+ * it actually is). `App.tsx` uses this to point a first-time visitor at
+ * one that actually shows something. Cached via `loadMeta`, so this is
+ * never a second network round trip once `meta.json` has loaded once. */
+export async function getShowcaseFunctionIds(path: string): Promise<string[]> {
+  if (!isDemoSlug(path)) return []
+  const meta = await loadMeta(path)
+  return meta.showcaseDocIds
+}
+
 const bundleCache = new Map<string, Promise<DemoBundle>>()
 
 async function fetchBundle(slug: string): Promise<DemoBundle> {

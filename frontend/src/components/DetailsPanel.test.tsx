@@ -47,6 +47,50 @@ describe('DetailsPanel', () => {
     expect(screen.getByText(/select a node/i)).toBeInTheDocument()
   })
 
+  it('suggests showcase functions instead of the plain placeholder when given some', () => {
+    const onTryShowcase = vi.fn()
+    render(
+      <DetailsPanel
+        selectedNode={null}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        showcaseItems={[
+          { id: 'services/orders.py::transition_order_status', label: 'transition_order_status' },
+          { id: 'services/customers.py::flag_high_value_customers', label: 'flag_high_value_customers' },
+        ]}
+        onTryShowcase={onTryShowcase}
+      />,
+    )
+
+    expect(screen.queryByText(/select a node/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'transition_order_status' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'flag_high_value_customers' })).toBeInTheDocument()
+  })
+
+  it('calls onTryShowcase with the node id when a suggestion is clicked', async () => {
+    const onTryShowcase = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <DetailsPanel
+        selectedNode={null}
+        pane={null}
+        onSelectCaller={noop}
+        onClosePane={noop}
+        {...docProps}
+        showcaseItems={[
+          { id: 'services/orders.py::transition_order_status', label: 'transition_order_status' },
+        ]}
+        onTryShowcase={onTryShowcase}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'transition_order_status' }))
+
+    expect(onTryShowcase).toHaveBeenCalledWith('services/orders.py::transition_order_status')
+  })
+
   it('shows the selected node metadata', () => {
     render(
       <DetailsPanel

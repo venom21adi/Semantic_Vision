@@ -10,6 +10,7 @@ import {
   getGraphState,
   getImpact,
   getOllamaModels,
+  getShowcaseFunctionIds,
   parseRepo,
   saveDoc,
   saveGraphState,
@@ -195,6 +196,11 @@ export default function App() {
   // below it still starts fully expanded, matching this app's original
   // zero-click behavior.
   const [visibleIds, setVisibleIds] = useState<ReadonlySet<string>>(new Set())
+  // Populated on load, demo mode only (see handleLoad) -- curated function
+  // ids worth suggesting to a first-time visitor, since a function picked
+  // at random is as likely as not to have zero callers in a small demo
+  // repo. Empty (and unused) in the real app.
+  const [showcaseIds, setShowcaseIds] = useState<string[]>([])
   // Set when the canvas chevron is clicked on a container with more
   // direct children than `EXPAND_CHILD_THRESHOLD` -- expanding it right
   // there would dump all of them onto the canvas at once (confirmed live
@@ -372,6 +378,7 @@ export default function App() {
             : new Set(),
       )
       setExpandBlockedNotice(null)
+      setShowcaseIds(DEMO_MODE ? await getShowcaseFunctionIds(parseResult.path) : [])
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {
@@ -401,6 +408,18 @@ export default function App() {
     () => repo?.nodes.find((node) => node.id === selectedNodeId) ?? null,
     [repo, selectedNodeId],
   )
+
+  // Display labels for the demo's "try these" suggestions -- a showcase id
+  // not found on the currently-loaded graph (stale cache, repo switched
+  // mid-fetch) is silently dropped rather than shown with a broken label.
+  const showcaseItems = useMemo(() => {
+    if (!repo) return []
+    const byId = new Map(repo.nodes.map((node) => [node.id, node]))
+    return showcaseIds
+      .map((id) => byId.get(id))
+      .filter((node): node is GraphNode => node !== undefined)
+      .map((node) => ({ id: node.id, label: formatNodeLabel(node.label, node.accessor_kind) }))
+  }, [repo, showcaseIds])
 
   // Split into two independently-memoized branches, each keyed only on
   // what actually changes its content, rather than one memo keyed on
@@ -843,6 +862,20 @@ export default function App() {
     [cancelGeneration],
   )
 
+  // One click, from the demo's own "try these" suggestions, does what a
+  // first-time visitor would otherwise need two separate discoveries for
+  // (that a node can be brought onto the canvas at all, and that
+  // right-click has an Impact Analysis item) -- selects the suggested
+  // function (bringing it onto the canvas as its own box, per
+  // `handleSelectNode` above) and runs impact analysis on it immediately.
+  const handleTryShowcase = useCallback(
+    (nodeId: string) => {
+      handleSelectNode(nodeId)
+      void handleImpactAnalysis(nodeId)
+    },
+    [handleSelectNode, handleImpactAnalysis],
+  )
+
   // `onMessage` below needs the *latest* `handleSelectNode`/
   // `handleImpactAnalysis` on every call, but re-registering the
   // `window` listener every time either identity changes (they're
@@ -1219,6 +1252,8 @@ export default function App() {
               ? 'jaffle_shop/target/manifest.json (bundled with this demo)'
               : undefined
           }
+          showcaseItems={showcaseItems}
+          onTryShowcase={handleTryShowcase}
           collapsed={detailsCollapsed}
           onToggleCollapsed={toggleDetailsCollapsed}
           width={detailsWidth}
