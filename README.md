@@ -22,7 +22,23 @@ to begin with.
 
 ### At a glance
 
-<img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Complexity report · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
+<img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Complexity report · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
+
+## <img src="assets/icons/impact-analysis.svg" width="22" height="22" align="absmiddle" alt=""/> Impact Analysis
+
+Right-click any function — or, with code-to-data lineage connected, any
+table or column — and choose **Impact Analysis** to see every direct
+and transitive caller, resolved from the real call graph, not a guess.
+Circular call chains are flagged instead of silently mishandled, and
+the whole blast radius highlights live on the graph.
+
+![Impact analysis run on a function, its direct caller highlighted live on the call graph and listed in the side panel](assets/impact-analysis.png)
+
+Reviewing an AI agent's edit, or your own? This is the answer to "what
+actually depends on this" before you merge, not after something breaks
+in production — the same traversal also crosses into data lineage, so
+renaming a column or dropping a table surfaces every function, model,
+and table upstream of it in one right-click.
 
 ## <img src="assets/icons/call-graph.svg" width="22" height="22" align="absmiddle" alt=""/> Interactive Call Graph
 

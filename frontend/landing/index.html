@@ -585,7 +585,7 @@
     <div class="hero-shot" data-reveal>
       <div class="frame">
         <div class="chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>
-        <img src="./img/interactive-call-graph.png" alt="Semantic Vision's interactive call graph, showing a color-coded directory/file/class/function structure with call and import edges" loading="eager" width="1912" height="942" />
+        <img src="./img/impact-analysis.png" alt="Impact analysis run on a function, its direct caller highlighted live on the call graph and listed in the side panel" loading="eager" width="1600" height="960" />
       </div>
     </div>
   </div>
@@ -603,19 +603,37 @@
 
     <div class="feature-row" data-reveal>
       <div class="feature-copy">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Know what you'll break before you approve the diff</h3>
+        <p>
+          Right-click any function for <strong>impact analysis</strong>:
+          every direct and transitive caller, resolved from the real call
+          graph — not a guess. Circular call chains are flagged instead of
+          silently mishandled, and the whole blast radius lights up live
+          on the graph.
+        </p>
+        <p>
+          Reviewing an AI agent's edit, or your own? See exactly what
+          depends on a function before you merge, not after something
+          breaks in production.
+        </p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Works the same on a table or column, tracing impact across code and data in one traversal</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>The live demo highlights functions with real callers, so you can try it in one click</li>
+        </ul>
+      </div>
+      <div class="feature-shot"><img src="./img/impact-analysis.png" alt="Impact analysis run on a function, its direct caller highlighted live on the call graph and listed in the side panel" loading="lazy" width="1600" height="960" /></div>
+    </div>
+
+    <div class="feature-row reverse" data-reveal>
+      <div class="feature-copy">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="18" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 7.4 10.6 16M15.8 7.4 13.4 16M8.6 6h6.8" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <h3>See the whole call graph, and what breaks if you touch it</h3>
+        <h3>See the whole codebase as one map</h3>
         <p>
           Every directory, file, class, and function as a zoomable,
           color-coded graph with call/import/defines edges — structure
           that would otherwise take an hour of grepping to piece together
           by hand.
-        </p>
-        <p>
-          Right-click any function for <strong>impact analysis</strong>:
-          every direct and transitive caller, circular call chains flagged
-          instead of silently mishandled, the whole chain highlighted live
-          on the graph.
         </p>
         <ul>
           <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Real-time search across the whole repo, or scoped to one file</li>
@@ -625,7 +643,7 @@
       <div class="feature-shot"><img src="./img/interactive-call-graph.png" alt="Interactive call graph with a selected node and its callers highlighted" loading="lazy" width="1912" height="942" /></div>
     </div>
 
-    <div class="feature-row reverse" data-reveal>
+    <div class="feature-row" data-reveal>
       <div class="feature-copy">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         <h3>Trace exactly how a function behaves</h3>
@@ -641,7 +659,7 @@
       <div class="feature-shot"><img src="./img/execution-flowchart.png" alt="An execution flowchart with branches, a loop back-edge, and an I/O call" loading="lazy" width="1600" height="960" /></div>
     </div>
 
-    <div class="feature-row" data-reveal>
+    <div class="feature-row reverse" data-reveal>
       <div class="feature-copy">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         <h3>See which functions are actually worth worrying about</h3>
@@ -662,7 +680,7 @@
       <div class="feature-shot"><img src="./img/complexity-report.png" alt="A complexity heatmap tinting graph nodes, with a ranked report and legend in the side panel" loading="lazy" width="1600" height="960" /></div>
     </div>
 
-    <div class="feature-row reverse" data-reveal>
+    <div class="feature-row" data-reveal>
       <div class="feature-copy">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <h3>Never write another docstring by hand</h3>
