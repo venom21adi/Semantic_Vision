@@ -288,15 +288,23 @@ cp .env.example .env      # Windows CMD: copy .env.example .env
 docker compose up --build
 ```
 
-Open `http://localhost:5173` and type `/workspace/repo` as the
-repository path — that's the fixed, in-container path a host repository
-gets mounted at, not a real path on your machine. With no further setup,
-this mounts the project's own repo as a ready-to-explore demo.
+Open `http://localhost:5173` — with no further setup, it mounts the
+project's own repo, so `/workspace/repo` gets you a ready-to-explore
+demo. To point it at one of your own repos, set `REPO_PATH` in `.env`
+first:
 
-To point it at your own repos instead — including switching between
-several without editing `.env` or restarting each time — see
-[guides/docker-setup.md](guides/docker-setup.md), which also covers the
-AI provider keys and where saved data lands.
+```bash
+# .env
+REPO_PATH=C:/Users/you/projects/my-repo
+```
+
+then `docker compose up --build` and paste that same path (the real one
+from your machine, not `/workspace/repo`) into the app's repository-path
+field — it's mapped into the container automatically. Point `REPO_PATH`
+at a *parent* folder instead of one repo to switch between several
+without editing `.env` or restarting each time; see
+[guides/docker-setup.md](guides/docker-setup.md) for that pattern, plus
+the AI provider keys and where saved data lands.
 
 
 ## 🧩 VS Code Extension

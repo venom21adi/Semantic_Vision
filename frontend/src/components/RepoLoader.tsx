@@ -145,8 +145,9 @@ export function RepoLoader({
               }}
             />
             <span style={{ marginTop: 3, fontSize: 11, color: colors.textDim }}>
-              Running via Docker Compose? Type <code>/workspace/repo</code> — your host path
-              isn't visible inside the container. See the README's Docker section.
+              Running via Docker Compose? Paste the same path you set as{' '}
+              <code>REPO_PATH</code> in <code>.env</code> (or a subfolder of it) — it's mapped
+              into the container automatically.
             </span>
           </div>
           <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>

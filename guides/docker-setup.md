@@ -1,27 +1,34 @@
 # Running Semantic Vision in Docker
 
-A practical walkthrough of the Docker setup: the one thing that trips
-people up (why a real host path "isn't found"), and the actual best way
-to point it at your own repos without editing `.env` and restarting
-every time you switch. See the [main README](../README.md#-run-with-docker)
+A practical walkthrough of the Docker setup: how a real host path you
+paste into the app actually reaches the container, and the best way to
+point it at your own repos without editing `.env` and restarting every
+time you switch. See the [main README](../README.md#-run-with-docker)
 for the one-command quick start; this is the long version.
 
 ## The one rule: the container only sees what you mount
 
 `docker compose up` runs the backend inside a container, which has its
 own filesystem — it cannot see `C:\Users\you\projects\my-repo` or
-`/home/you/my-repo` no matter what you type into the app. The only part
-of your machine it can see is whatever host folder `docker-compose.yml`
-mounts, and that folder always lands at the fixed in-container path
-`/workspace/repo`. That's why the app's **Repository path** field always
-wants `/workspace/repo`, never a real path from your machine — typing a
-real host path fails with `Not a directory: ...`, which reads like "not
-found" but really just means "the container never saw this path to
-begin with."
+`/home/you/my-repo` unless `docker-compose.yml` mounted it there. The
+only part of your machine it can see is whatever host folder `REPO_PATH`
+(in `.env`) points at, and that folder always lands at the fixed
+in-container path `/workspace/repo`.
+
+Paste the same path you set as `REPO_PATH` — or a subfolder of it —
+into the app's **Repository path** field, and the backend recognizes it
+and maps it onto `/workspace/repo` itself (it's told `REPO_PATH` too, so
+it knows the mapping); typing `/workspace/repo` directly still works the
+same as always. A path that *isn't* under `REPO_PATH` at all still fails
+with `Not a directory: ...`, since the container genuinely never saw it
+— that's the one case where you do need to either update `REPO_PATH` and
+restart, or mount a shared parent folder, covered below.
 
 `REPO_PATH` in `.env` controls *which* host folder gets mounted at
 `/workspace/repo`. Leave it blank and `docker compose up` mounts this
-project's own repo, ready to explore with zero setup.
+project's own repo, ready to explore with zero setup — but with nothing
+in `REPO_PATH` to translate from, only `/workspace/repo` itself works in
+that default case.
 
 ## The naive way (works, but you'll fight it constantly)
 
@@ -36,8 +43,9 @@ REPO_PATH=C:/Users/you/projects/my-api
 docker compose up --build
 ```
 
-Type `/workspace/repo` in the app — `my-api` loads. Now you want to look
-at `my-frontend` instead. You have to:
+Paste `C:/Users/you/projects/my-api` (or type `/workspace/repo`) in the
+app — `my-api` loads. Now you want to look at `my-frontend` instead. You
+have to:
 
 1. Edit `.env` to `REPO_PATH=C:/Users/you/projects/my-frontend`
 2. Recreate the containers, because a volume mount is fixed when a
@@ -68,13 +76,15 @@ docker compose up --build
 ```
 
 Now `/workspace/repo` is your whole projects folder, and every repo
-under it is a subpath away — no `.env` edit, no restart, just type a
-different path into the same field:
+under it is a subpath away — no `.env` edit, no restart, just paste a
+different path into the same field. Any of these work, and land on the
+exact same place:
 
 ```
-/workspace/repo/my-api
+C:/Users/you/projects/my-api          (the real path -- just paste it)
+C:/Users/you/projects/my-frontend
+/workspace/repo/my-api                 (the in-container path, if you prefer)
 /workspace/repo/my-frontend
-/workspace/repo/another-service
 ```
 
 Switching between them is exactly as fast as switching tabs. This needs
@@ -100,12 +110,13 @@ REPO_PATH=C:/Users/you/projects
 docker compose up --build
 ```
 
-Open `http://localhost:5173`, type `/workspace/repo/my-api`, click
-**Load** — `my-api` loads, its `.visualiser/` save data lands at the
-real `C:\Users\you\projects\my-api\.visualiser` on your host (see
-"Where saves land" below). Clear the field, type
-`/workspace/repo/my-frontend`, click **Load** again — no restart, same
-running containers.
+Open `http://localhost:5173`, paste `C:\Users\you\projects\my-api`
+(or type `/workspace/repo/my-api`), click **Load** — `my-api` loads,
+its `.visualiser/` save data lands at the real
+`C:\Users\you\projects\my-api\.visualiser` on your host (see "Where
+saves land" below). Clear the field, paste
+`C:\Users\you\projects\my-frontend`, click **Load** again — no restart,
+same running containers.
 
 ### If your repos aren't all under one folder
 
@@ -136,8 +147,10 @@ read-write, landing exactly where it would if you'd run Semantic Vision
 natively — inside the repo you loaded, on your host. Two things follow:
 
 - The **Save location** field's "Change" control only works if pointed
-  at a path under `/workspace/repo` — anywhere else fails with a
-  permission error, since nothing else is writable in the container.
+  at a path under `/workspace/repo` (or the equivalent real host path,
+  translated the same way the repository path is) — anywhere else fails
+  with a permission error, since nothing else is writable in the
+  container.
 - The default auto-detected save location only resolves correctly if
   the specific repo you loaded (e.g. `/workspace/repo/my-api`) has its
   own `.git` — true for a normal repo root, not for an arbitrary

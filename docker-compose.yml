@@ -10,6 +10,13 @@ services:
       - SEMANTIC_VISION_ANTHROPIC_MODEL=${SEMANTIC_VISION_ANTHROPIC_MODEL:-}
       - SEMANTIC_VISION_OLLAMA_MODEL=${SEMANTIC_VISION_OLLAMA_MODEL:-}
       - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+      # Same value as the volume mount's source below -- lets the backend
+      # recognize a real host path pasted into the app (instead of
+      # /workspace/repo) and translate it itself. See
+      # src/semantic_vision/api/host_path.py. Empty when REPO_PATH is
+      # unset, matching the volume mount's own default of "."; the app's
+      # own repo still needs /workspace/repo typed in that case.
+      - SEMANTIC_VISION_HOST_REPO_PATH=${REPO_PATH:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

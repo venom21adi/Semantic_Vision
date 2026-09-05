@@ -96,6 +96,29 @@ def test_parse_repo_honors_an_explicit_doc_root(tmp_path: Path):
     assert (doc_root / ".visualiser" / "metadata.json").is_file()
 
 
+def test_parse_repo_translates_a_pasted_host_path(monkeypatch):
+    """Docker Compose passes `REPO_PATH` through as
+    `SEMANTIC_VISION_HOST_REPO_PATH`, so a real host path pasted into the
+    app -- not the in-container `/workspace/repo` mount point -- resolves
+    correctly. Stands in for the container mount point here with a real
+    directory on disk (`FIXTURES`), since these tests don't run inside
+    Docker themselves."""
+    import semantic_vision.api.host_path as host_path_module
+
+    monkeypatch.setenv(host_path_module.HOST_REPO_PATH_ENV, "C:/fake/host/projects")
+    monkeypatch.setattr(host_path_module, "CONTAINER_REPO_ROOT", str(FIXTURES))
+
+    resp = client.post(
+        "/api/parse-repo",
+        json={"path": "C:/fake/host/projects/simple_repo"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["node_count"] == 5
+    assert body["path"] == (FIXTURES / "simple_repo").resolve().as_posix()
+
+
 def test_parse_repo_auto_detects_the_nearest_git_root(monkeypatch, tmp_path: Path):
     """Restores the real `resolve_doc_root` (undoing this file's autouse
     identity stub) to verify the actual ancestor-`.git` detection works

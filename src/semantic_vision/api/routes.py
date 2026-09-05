@@ -10,6 +10,7 @@ from semantic_vision.ai.context import assemble_context, assemble_file_context
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
+from semantic_vision.api.host_path import translate_host_path
 from semantic_vision.api.schemas import (
     ComplexityResponse,
     DbConnectionIngestRequest,
@@ -50,14 +51,16 @@ def get_health() -> HealthResponse:
 
 @router.post("/parse-repo", response_model=ParseRepoResponse)
 def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
+    path = translate_host_path(request.path)
+    doc_root_override = translate_host_path(request.doc_root) if request.doc_root else None
     try:
-        result = parse_repository(request.path, language=request.language)
+        result = parse_repository(path, language=request.language)
     except (NotADirectoryError, PermissionError, UnknownLanguageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    doc_root = persistence.resolve_doc_root(Path(result.root), request.doc_root)
-    cache.set(request.path, result)
-    cache.set_doc_root(request.path, doc_root)
+    doc_root = persistence.resolve_doc_root(Path(result.root), doc_root_override)
+    cache.set(path, result)
+    cache.set_doc_root(path, doc_root)
     persistence.write_metadata(
         doc_root,
         node_count=len(result.nodes),
@@ -95,7 +98,7 @@ def update_doc_root(request: UpdateDocRootRequest, path: str = Query(...)) -> Do
     without re-parsing -- parsing a large repo can be slow, and relocating
     the save path shouldn't force paying that cost again."""
     _get_cached(path)
-    doc_root = Path(request.doc_root).resolve()
+    doc_root = Path(translate_host_path(request.doc_root)).resolve()
     cache.set_doc_root(path, doc_root)
     return DocRootResponse(doc_root=doc_root.as_posix())
 
