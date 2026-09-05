@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Semantic Vision — Understand any codebase in minutes</title>
+<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, AI-generated documentation, and code-to-data lineage for Python, JavaScript, and TypeScript. 100% local and private — try the live demo, no install." />
+<meta property="og:title" content="Semantic Vision" />
+<meta property="og:description" content="Understand any Python, JavaScript, or TypeScript codebase in minutes, not days." />
+<meta property="og:image" content="./img/Banner.png" />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#121317" />
+<link rel="icon" type="image/png" href="./img/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0c0d10;
+    --bg-panel: #15171b;
+    --bg-panel-raised: #1e2025;
+    --border: #32353c;
+    --border-subtle: #24262b;
+    --text: #f4f5f8;
+    --text-faint: #cbced3;
+    --text-muted: #a7abb3;
+    --text-dim: #767a82;
+    --accent: #8e6ff3;
+    --accent-strong: #714ad4;
+    --accent-soft-bg: #2f2552;
+    --accent-text: #cdc8f3;
+    --teal: #006c72;
+    --teal-light: #36baba;
+    --amber: #d89700;
+    --green: #4dbf74;
+    --font-ui: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+  code, .mono { font-family: var(--font-mono); }
+
+  /* ---------- Reveal-on-scroll (progressive enhancement) ---------- */
+  html.js [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html.js [data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.js [data-reveal] { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(12, 13, 16, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--teal));
+    display: grid;
+    place-items: center;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  }
+  .brand-mark svg { width: 15px; height: 15px; }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .nav-links a { text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .navmenu-toggle { display: none; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: white;
+    box-shadow: 0 8px 24px -8px rgba(142, 111, 243, 0.55);
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-faint);
+  }
+  .btn-ghost:hover { border-color: var(--text-dim); background: var(--bg-panel); }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    padding: 96px 0 88px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -220px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 620px;
+    background:
+      radial-gradient(closest-side, rgba(142, 111, 243, 0.3), transparent 70%);
+    filter: blur(10px);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, black 40%, transparent 85%);
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, black 40%, transparent 85%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; text-align: center; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 26px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: var(--green);
+    box-shadow: 0 0 0 3px rgba(77, 191, 116, 0.18);
+  }
+  .hero h1 {
+    font-size: clamp(34px, 5.2vw, 60px);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    margin: 0 auto 22px;
+    max-width: 880px;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(135deg, var(--accent-text), var(--teal-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.lede {
+    font-size: clamp(16px, 1.6vw, 19px);
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 38px;
+  }
+  .hero-ctas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 44px;
+  }
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 22px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .hero-badges span { display: inline-flex; align-items: center; gap: 7px; }
+  .hero-badges svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--text-dim); }
+
+  .hero-shot {
+    position: relative;
+    margin: 64px auto 0;
+    max-width: 980px;
+  }
+  .hero-shot .frame {
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .hero-shot .chrome {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .hero-shot .chrome .d { width: 10px; height: 10px; border-radius: 999px; background: var(--border); }
+  .hero-shot img { width: 100%; display: block; }
+
+  /* ---------- Section shell ---------- */
+  section { padding: 108px 0; }
+  .section-head {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 64px;
+  }
+  .kicker {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+    margin-bottom: 12px;
+  }
+  .section-head h2 {
+    font-size: clamp(26px, 3.4vw, 36px);
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    margin: 0 0 14px;
+  }
+  .section-head p { color: var(--text-muted); font-size: 16px; margin: 0; }
+
+  /* ---------- Feature rows ---------- */
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    padding: 56px 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .feature-row:first-of-type { border-top: none; padding-top: 0; }
+  .feature-row.reverse .feature-copy { order: 2; }
+  .feature-row.reverse .feature-shot { order: 1; }
+  .feature-icon {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    display: grid; place-items: center;
+    background: var(--accent-soft-bg);
+    margin-bottom: 20px;
+  }
+  .feature-icon svg { width: 21px; height: 21px; color: var(--accent-text); }
+  .feature-copy h3 {
+    font-size: clamp(20px, 2.4vw, 25px);
+    letter-spacing: -0.015em;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+  .feature-copy p {
+    color: var(--text-muted);
+    font-size: 15.5px;
+    margin: 0 0 12px;
+  }
+  .feature-copy ul {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+  .feature-copy li {
+    display: flex;
+    gap: 10px;
+    font-size: 14.5px;
+    color: var(--text-faint);
+  }
+  .feature-copy li svg {
+    width: 16px; height: 16px;
+    color: var(--teal-light);
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .feature-shot {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    overflow: hidden;
+    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
+  }
+  .feature-shot img { width: 100%; }
+
+  /* ---------- Trio (VS Code / local-private / persistence) ---------- */
+  .trio {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .trio-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 28px 26px;
+  }
+  .trio-card .feature-icon { margin-bottom: 16px; }
+  .trio-card h4 { margin: 0 0 10px; font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
+  .trio-card p { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+  /* ---------- Benchmarks ---------- */
+  .bench-wrap {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table.bench { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.bench th, table.bench td { padding: 16px 20px; text-align: left; }
+  table.bench thead th {
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  table.bench tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border-subtle); }
+  table.bench td.lang { font-weight: 600; color: var(--text-faint); }
+  table.bench td.num { font-family: var(--font-mono); color: var(--text-faint); }
+  table.bench td.warm { color: var(--green); font-family: var(--font-mono); font-weight: 600; }
+  .bench-foot {
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* ---------- Get started ---------- */
+  .paths {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .path-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 30px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .path-card.featured {
+    border-color: rgba(142, 111, 243, 0.5);
+    background: linear-gradient(180deg, rgba(47, 37, 82, 0.22), var(--bg-panel) 60%);
+  }
+  .path-tag {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-text);
+  }
+  .path-card h4 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .path-card p { margin: 0; color: var(--text-muted); font-size: 14px; flex-grow: 1; }
+  .path-card .btn { margin-top: 4px; align-self: flex-start; }
+
+  /* ---------- Support matrix ---------- */
+  .matrix-wrap {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    overflow-x: auto;
+  }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+  table.matrix th, table.matrix td { padding: 13px 20px; text-align: left; }
+  table.matrix thead th {
+    color: var(--text-dim); font-weight: 600; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  table.matrix th:not(:first-child), table.matrix td:not(:first-child) { text-align: center; }
+  table.matrix tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border-subtle); }
+  table.matrix td:first-child { color: var(--text-faint); }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--text-dim); }
+
+  /* ---------- CTA banner ---------- */
+  .cta-banner {
+    text-align: center;
+    background: linear-gradient(180deg, rgba(47, 37, 82, 0.28), transparent);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 72px 32px;
+  }
+  .cta-banner h2 { font-size: clamp(24px, 3vw, 32px); margin: 0 0 14px; letter-spacing: -0.02em; }
+  .cta-banner p { color: var(--text-muted); margin: 0 0 30px; }
+
+  /* ---------- Footer ---------- */
+  footer { border-top: 1px solid var(--border-subtle); padding: 44px 0; }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .footer-links { display: flex; gap: 24px; font-size: 13.5px; color: var(--text-dim); }
+  .footer-links a { text-decoration: none; }
+  .footer-links a:hover { color: var(--text-faint); }
+  .footer-note { font-size: 13px; color: var(--text-dim); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+    .feature-row { grid-template-columns: 1fr; gap: 32px; }
+    .feature-row.reverse .feature-copy { order: 1; }
+    .feature-row.reverse .feature-shot { order: 2; }
+    .trio { grid-template-columns: 1fr; }
+    .paths { grid-template-columns: 1fr; }
+    section { padding: 76px 0; }
+    .hero { padding: 72px 0 60px; }
+  }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="2.4" fill="white"/><circle cx="18" cy="6" r="2.4" fill="white"/><circle cx="12" cy="18" r="2.4" fill="white"/><path d="M7.8 7.2 10.5 16M16.2 7.2 13.5 16M8.4 6h7.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </span>
+      Semantic Vision
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#lineage">Data lineage</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="#get-started">Get started</a>
+      <a href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">★ Star</a>
+      <a class="btn btn-primary btn-sm" href="./app/">Try the demo</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="container hero-inner">
+    <div class="eyebrow"><span class="dot"></span> Live static demo — explore two real repos, no install</div>
+    <h1>Understand any codebase <span class="grad">in minutes, not days.</span></h1>
+    <p class="lede">
+      Semantic Vision turns a Python, JavaScript, or TypeScript repo into an
+      interactive map — call graph, impact analysis, execution flowcharts,
+      complexity hotspots, AI-generated docs, and code-to-data lineage —
+      built automatically from the code as it actually is today.
+    </p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="./app/">Try the live demo →</a>
+      <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install VS Code extension</a>
+    </div>
+    <div class="hero-badges">
+      <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg>100% local &amp; private</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="1.6"/></svg>Python 3.12+ · Node 20+</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" stroke="currentColor" stroke-width="1.6"/></svg>MIT licensed</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Static analysis only — code never runs</span>
+    </div>
+
+    <div class="hero-shot" data-reveal>
+      <div class="frame">
+        <div class="chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>
+        <img src="./img/interactive-call-graph.png" alt="Semantic Vision's interactive call graph, showing a color-coded directory/file/class/function structure with call and import edges" loading="eager" width="1600" height="960" />
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="features">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Explore the code</div>
+      <h2>Every feature that would take an hour of grepping — on one screen</h2>
+      <p>Everything below is a right-click away, on the exact code you loaded, not a rough summary.</p>
+    </div>
+
+    <div class="feature-row" data-reveal>
+      <div class="feature-copy">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="18" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 7.4 10.6 16M15.8 7.4 13.4 16M8.6 6h6.8" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h3>See the whole call graph, and what breaks if you touch it</h3>
+        <p>
+          Every directory, file, class, and function as a zoomable,
+          color-coded graph with call/import/defines edges — structure
+          that would otherwise take an hour of grepping to piece together
+          by hand.
+        </p>
+        <p>
+          Right-click any function for <strong>impact analysis</strong>:
+          every direct and transitive caller, circular call chains flagged
+          instead of silently mishandled, the whole chain highlighted live
+          on the graph.
+        </p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Real-time search across the whole repo, or scoped to one file</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dragged layout and analysis state persist automatically</li>
+        </ul>
+      </div>
+      <div class="feature-shot"><img src="./img/interactive-call-graph.png" alt="Interactive call graph with a selected node and its callers highlighted" loading="lazy" width="1600" height="960" /></div>
+    </div>
+
+    <div class="feature-row reverse" data-reveal>
+      <div class="feature-copy">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3>Trace exactly how a function behaves</h3>
+        <p>
+          Right-click any function for its execution flowchart, built from
+          its real AST/CST rather than a rough summary: entry and return
+          points, decisions with Yes/No edges, loops with a visible
+          back-edge, I/O calls, and calls out to other functions in the
+          repo — each in its own conventional flowchart shape.
+        </p>
+        <p>Works for both Python and JS/TS, including <code>switch</code> fallthrough, <code>do...while</code>'s bottom-condition check, and labeled <code>break</code>/<code>continue</code>.</p>
+      </div>
+      <div class="feature-shot"><img src="./img/execution-flowchart.png" alt="An execution flowchart with branches, a loop back-edge, and an I/O call" loading="lazy" width="1600" height="1000" /></div>
+    </div>
+
+    <div class="feature-row" data-reveal>
+      <div class="feature-copy">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3>See which functions are actually worth worrying about</h3>
+        <p>
+          Toggle <strong>Show complexity</strong> for a cyclomatic-complexity
+          heatmap over the whole graph and a ranked report, computed from a
+          real AST walk — decisions, boolean-operator chains, comprehension
+          filters, <code>match</code> cases, and nested-loop hotspots all
+          count, not just a line-count guess.
+        </p>
+        <p>
+          Click any entry to jump to it on the graph; the drill-down shows
+          its direct callers cross-referenced with their own scores, so you
+          can tell a complex-but-unused function apart from one half the
+          codebase depends on.
+        </p>
+      </div>
+      <div class="feature-shot"><img src="./img/complexity-report.png" alt="A complexity heatmap tinting graph nodes, with a ranked report and legend in the side panel" loading="lazy" width="1600" height="1000" /></div>
+    </div>
+
+    <div class="feature-row reverse" data-reveal>
+      <div class="feature-copy">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h3>Never write another docstring by hand</h3>
+        <p>
+          Right-click any function and choose <strong>Document</strong> to
+          stream real Markdown documentation — Purpose, Parameters, Returns,
+          Side Effects, Notes — assembled from its actual source, callers,
+          callees, and parent class. Right-click a file for a module-level
+          summary from its imports and signatures, without ever sending a
+          function body.
+        </p>
+        <p>
+          Pick your provider: a local <strong>Ollama</strong> model (free,
+          nothing leaves your machine), <strong>OpenAI</strong>, or
+          <strong>Anthropic</strong>. Nothing is saved until you click
+          <strong>Save</strong>.
+        </p>
+      </div>
+      <div class="feature-shot"><img src="./img/doc-generation.gif" alt="AI documentation streaming live for a function, alongside its call graph" loading="lazy" width="1600" height="1000" /></div>
+    </div>
+  </div>
+</section>
+
+<section id="lineage">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Code-to-data lineage</div>
+      <h2>See where your code touches your data — down to the column</h2>
+      <p>Three sources feed the same graph, reconciled by table name, so the same table only ever shows up once.</p>
+    </div>
+
+    <div class="feature-row" data-reveal>
+      <div class="feature-copy">
+        <h3>Detected automatically, or connected explicitly</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>SQLAlchemy models</strong> — declarative classes are detected on every parse, no setup: each becomes a table node with columns, foreign keys as edges, every reading/writing function connected down to the specific column.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>dbt</strong> — point it at a <code>manifest.json</code> your own <code>dbt compile</code> already produced to pull in every model, its <code>ref()</code> dependencies, and the table it materializes.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>A live database</strong> — paste a read-only connection string to introspect the real schema and see where your ORM models have drifted from what's actually deployed.</span></li>
+        </ul>
+      </div>
+      <div class="feature-shot"><img src="./img/dbt-lineage-ingest.png" alt="Connecting a dbt manifest to a repo, adding table and model nodes to the graph" loading="lazy" width="1600" height="1000" /></div>
+    </div>
+
+    <div class="feature-row reverse" data-reveal>
+      <div class="feature-copy">
+        <h3>Impact analysis that crosses code and data in one traversal</h3>
+        <p>
+          Flip <strong>Data only</strong> to dim everything that isn't a
+          table, a dbt model, or code that reads/writes one — the same
+          graph, filtered to a lineage-only reading.
+        </p>
+        <p>
+          Right-click a table or a single column exactly like a function to
+          see every function, model, and table upstream of it — the way to
+          answer "what actually breaks if I rename this column, drop this
+          table, or change what this dbt model materializes" before doing
+          it, not after.
+        </p>
+      </div>
+      <div class="feature-shot"><img src="./img/dbt-lineage-impact.png" alt="Impact analysis run on a table column, highlighting every upstream function, model, and table" loading="lazy" width="1600" height="1000" /></div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Fits how you already work</div>
+      <h2>Zero setup, fully local, picks up where you left off</h2>
+    </div>
+    <div class="trio">
+      <div class="trio-card" data-reveal>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 9h4M8 13h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h4>Right inside your editor</h4>
+        <p>Install the VS Code extension and get the full graph, impact analysis, and everything else in a panel next to your code — no separate browser tab, no Python or <code>uv</code> to install, the backend ships bundled in.</p>
+      </div>
+      <div class="trio-card" data-reveal>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h4>Pick up exactly where you left off</h4>
+        <p>Dragged layout, saved docs, and analysis state persist locally and restore instantly. Save location defaults to the repo's <code>.git</code> root, auto-detected even from a scoped-down subfolder.</p>
+      </div>
+      <div class="trio-card" data-reveal>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h4>Fast, local, and private</h4>
+        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS. No account, no cloud, no telemetry. Code is never executed, and nothing leaves your machine unless you explicitly ask for AI docs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="benchmarks">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Real numbers</div>
+      <h2>Benchmarked against real, well-known open-source repos</h2>
+      <p>Not this project's own fixtures — one large, popular repo per supported language.</p>
+    </div>
+    <div class="bench-wrap" data-reveal>
+      <table class="bench">
+        <thead>
+          <tr><th>Language</th><th>Repo</th><th>Files</th><th>Parse — cold</th><th>Parse — warm</th><th>Render in browser</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lang">Python</td><td>fastapi/fastapi</td><td class="num">1,138</td><td class="num">23.25s</td><td class="warm">4.08s</td><td class="num">7.20–7.84s</td></tr>
+          <tr><td class="lang">JavaScript</td><td>three.js</td><td class="num">752</td><td class="num">29.33s</td><td class="warm">1.98s</td><td class="num">4.88–5.01s</td></tr>
+          <tr><td class="lang">TypeScript</td><td>nestjs/nest</td><td class="num">1,907</td><td class="num">39.68s</td><td class="warm">2.48s</td><td class="num">6.85–6.88s</td></tr>
+        </tbody>
+      </table>
+      <div class="bench-foot">"Cold" is the first read of a fresh clone; "warm" is a second parse of the identical files right after — the only variable that changes is OS file-cache state. Full methodology on <a href="https://github.com/venom21adi/Semantic_Vision/tree/master/benchmarks" target="_blank" rel="noopener" style="color: var(--accent-text)">GitHub</a>.</div>
+    </div>
+
+    <div style="height: 56px"></div>
+
+    <div class="section-head" data-reveal>
+      <div class="kicker">Language support</div>
+      <h2>What works today</h2>
+    </div>
+    <div class="matrix-wrap" data-reveal>
+      <table class="matrix">
+        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th></tr></thead>
+        <tbody>
+          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Complexity report</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td></tr>
+          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="get-started">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Get started</div>
+      <h2>Three ways to try it — pick one</h2>
+    </div>
+    <div class="paths">
+      <div class="path-card featured" data-reveal>
+        <span class="path-tag">Zero install</span>
+        <h4>Try the live demo</h4>
+        <p>Explore two real, precomputed repos — one Python, one TypeScript — right in your browser. No backend, no account, nothing to set up.</p>
+        <a class="btn btn-primary" href="./app/">Open the demo →</a>
+      </div>
+      <div class="path-card" data-reveal>
+        <span class="path-tag">Fastest for real use</span>
+        <h4>VS Code extension</h4>
+        <p>Install from the Marketplace and open any Python or JS/TS repo. The backend ships bundled — no Python or Node toolchain required.</p>
+        <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">View on Marketplace →</a>
+      </div>
+      <div class="path-card" data-reveal>
+        <span class="path-tag">Full control</span>
+        <h4>Run it locally, or via Docker</h4>
+        <p>Clone the repo and run the backend + frontend yourself, or a single <code>docker compose up --build</code> — both fully documented.</p>
+        <a class="btn btn-ghost" href="https://github.com/venom21adi/Semantic_Vision#-quick-start" target="_blank" rel="noopener">Read the setup guide →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="final-cta">
+  <div class="container">
+    <div class="cta-banner" data-reveal>
+      <h2>See it on your own code, in the next two minutes.</h2>
+      <p>No signup, no data leaves your machine unless you ask for AI docs.</p>
+      <a class="btn btn-primary" href="./app/">Try the live demo →</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <a class="brand" href="#top" style="font-size: 14px;">
+      <span class="brand-mark" style="width: 22px; height: 22px;">
+        <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><circle cx="6" cy="6" r="2.4" fill="white"/><circle cx="18" cy="6" r="2.4" fill="white"/><circle cx="12" cy="18" r="2.4" fill="white"/><path d="M7.8 7.2 10.5 16M16.2 7.2 13.5 16M8.4 6h7.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </span>
+      Semantic Vision
+    </a>
+    <div class="footer-links">
+      <a href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">VS Code Extension</a>
+      <a href="https://github.com/venom21adi/Semantic_Vision/issues" target="_blank" rel="noopener">Report an issue</a>
+      <a href="https://github.com/venom21adi/Semantic_Vision/blob/master/LICENSE" target="_blank" rel="noopener">MIT License</a>
+    </div>
+    <div class="footer-note">Static analysis only — your code is never executed.</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var els = document.querySelectorAll('[data-reveal]');
+  if (!('IntersectionObserver' in window) || !els.length) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>
