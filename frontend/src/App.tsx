@@ -352,8 +352,25 @@ export default function App() {
       // canvas starts empty (see showEmptySelectionPlaceholder below)
       // rather than rendering every top-level node the user never asked
       // to see.
+      //
+      // The static demo's own repos are small enough to fall under the
+      // threshold, which would otherwise dump every function in a
+      // ~90-node repo onto the canvas at once on a stranger's very first
+      // click -- a busy first impression this app's real users never hit
+      // (a repo they intentionally loaded that small is rare, and one
+      // that size is genuinely not cluttered at full detail). Demo mode
+      // instead starts collapsed to just the top-level directories/files,
+      // the same rollup a real user reaches by checking a few sidebar
+      // boxes -- not the large-repo empty canvas either, since a first-
+      // time visitor has no reason yet to know that's an available move.
       const underThreshold = parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
-      setVisibleIds(underThreshold ? new Set(graph.nodes.map((node) => node.id)) : new Set())
+      setVisibleIds(
+        DEMO_MODE
+          ? rootNodeIds(graph.nodes, graph.edges)
+          : underThreshold
+            ? new Set(graph.nodes.map((node) => node.id))
+            : new Set(),
+      )
       setExpandBlockedNotice(null)
     } catch (error) {
       setLoadError(errorMessage(error))
