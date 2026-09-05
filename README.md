@@ -32,7 +32,9 @@ and transitive caller, resolved from the real call graph, not a guess.
 Circular call chains are flagged instead of silently mishandled, and
 the whole blast radius highlights live on the graph.
 
-![Impact analysis run on a function, its direct caller highlighted live on the call graph and listed in the side panel](assets/impact-analysis.png)
+<video src="assets/impact-analysis-demo.mp4" controls muted playsinline poster="assets/impact-analysis.png" width="100%">
+Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically.
+</video>
 
 Reviewing an AI agent's edit, or your own? This is the answer to "what
 actually depends on this" before you merge, not after something breaks

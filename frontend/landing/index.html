@@ -267,7 +267,7 @@
     border-bottom: 1px solid var(--border-subtle);
   }
   .hero-shot .chrome .d { width: 10px; height: 10px; border-radius: 999px; background: var(--border); }
-  .hero-shot img { width: 100%; height: auto; display: block; }
+  .hero-shot img, .hero-shot video { width: 100%; height: auto; display: block; }
 
   /* ---------- Section shell ---------- */
   section { padding: 108px 0; }
@@ -349,7 +349,7 @@
     overflow: hidden;
     box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
   }
-  .feature-shot img { width: 100%; height: auto; display: block; }
+  .feature-shot img, .feature-shot video { width: 100%; height: auto; display: block; }
   .feature-shot img, .hero-shot img { cursor: zoom-in; transition: filter 0.15s ease; }
   .feature-shot img:hover, .hero-shot img:hover { filter: brightness(1.06); }
 
@@ -585,7 +585,10 @@
     <div class="hero-shot" data-reveal>
       <div class="frame">
         <div class="chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>
-        <img src="./img/impact-analysis.png" alt="Impact analysis run on a function, its direct caller highlighted live on the call graph and listed in the side panel" loading="eager" width="1600" height="960" />
+        <video autoplay muted loop playsinline poster="./img/impact-analysis.png" width="1600" height="756" aria-label="Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically">
+          <source src="./img/impact-analysis-demo.mp4" type="video/mp4" />
+          <img src="./img/impact-analysis.png" alt="Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically" width="1600" height="756" />
+        </video>
       </div>
     </div>
   </div>
@@ -622,7 +625,12 @@
           <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>The live demo highlights functions with real callers, so you can try it in one click</li>
         </ul>
       </div>
-      <div class="feature-shot"><img src="./img/impact-analysis.png" alt="Impact analysis run on a function, its direct caller highlighted live on the call graph and listed in the side panel" loading="lazy" width="1600" height="960" /></div>
+      <div class="feature-shot">
+        <video autoplay muted loop playsinline poster="./img/impact-analysis.png" width="1600" height="756" aria-label="Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically">
+          <source src="./img/impact-analysis-demo.mp4" type="video/mp4" />
+          <img src="./img/impact-analysis.png" alt="Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically" width="1600" height="756" />
+        </video>
+      </div>
     </div>
 
     <div class="feature-row reverse" data-reveal>
@@ -893,6 +901,25 @@
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   els.forEach(function (el) { io.observe(el); });
+})();
+
+(function () {
+  // Chrome's autoplay heuristics don't reliably start a muted <video> that
+  // was off-screen at load time (confirmed live: the hero video autoplays
+  // fine, the one further down the page in the Impact Analysis feature
+  // row does not) -- explicitly `.play()` each one once it scrolls into
+  // view rather than relying on the `autoplay` attribute alone.
+  var videos = document.querySelectorAll('.hero-shot video, .feature-shot video');
+  if (!('IntersectionObserver' in window) || !videos.length) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.play().catch(function () {});
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.25 });
+  videos.forEach(function (el) { io.observe(el); });
 })();
 
 (function () {
