@@ -267,7 +267,7 @@
     border-bottom: 1px solid var(--border-subtle);
   }
   .hero-shot .chrome .d { width: 10px; height: 10px; border-radius: 999px; background: var(--border); }
-  .hero-shot img { width: 100%; display: block; }
+  .hero-shot img { width: 100%; height: auto; display: block; }
 
   /* ---------- Section shell ---------- */
   section { padding: 108px 0; }
@@ -349,7 +349,7 @@
     overflow: hidden;
     box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
   }
-  .feature-shot img { width: 100%; }
+  .feature-shot img { width: 100%; height: auto; display: block; }
 
   /* ---------- Trio (VS Code / local-private / persistence) ---------- */
   .trio {
@@ -532,7 +532,7 @@
     <div class="hero-shot" data-reveal>
       <div class="frame">
         <div class="chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>
-        <img src="./img/interactive-call-graph.png" alt="Semantic Vision's interactive call graph, showing a color-coded directory/file/class/function structure with call and import edges" loading="eager" width="1600" height="960" />
+        <img src="./img/interactive-call-graph.png" alt="Semantic Vision's interactive call graph, showing a color-coded directory/file/class/function structure with call and import edges" loading="eager" width="1912" height="942" />
       </div>
     </div>
   </div>
@@ -569,7 +569,7 @@
           <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dragged layout and analysis state persist automatically</li>
         </ul>
       </div>
-      <div class="feature-shot"><img src="./img/interactive-call-graph.png" alt="Interactive call graph with a selected node and its callers highlighted" loading="lazy" width="1600" height="960" /></div>
+      <div class="feature-shot"><img src="./img/interactive-call-graph.png" alt="Interactive call graph with a selected node and its callers highlighted" loading="lazy" width="1912" height="942" /></div>
     </div>
 
     <div class="feature-row reverse" data-reveal>
@@ -585,7 +585,7 @@
         </p>
         <p>Works for both Python and JS/TS, including <code>switch</code> fallthrough, <code>do...while</code>'s bottom-condition check, and labeled <code>break</code>/<code>continue</code>.</p>
       </div>
-      <div class="feature-shot"><img src="./img/execution-flowchart.png" alt="An execution flowchart with branches, a loop back-edge, and an I/O call" loading="lazy" width="1600" height="1000" /></div>
+      <div class="feature-shot"><img src="./img/execution-flowchart.png" alt="An execution flowchart with branches, a loop back-edge, and an I/O call" loading="lazy" width="1600" height="960" /></div>
     </div>
 
     <div class="feature-row" data-reveal>
@@ -606,7 +606,7 @@
           codebase depends on.
         </p>
       </div>
-      <div class="feature-shot"><img src="./img/complexity-report.png" alt="A complexity heatmap tinting graph nodes, with a ranked report and legend in the side panel" loading="lazy" width="1600" height="1000" /></div>
+      <div class="feature-shot"><img src="./img/complexity-report.png" alt="A complexity heatmap tinting graph nodes, with a ranked report and legend in the side panel" loading="lazy" width="1600" height="960" /></div>
     </div>
 
     <div class="feature-row reverse" data-reveal>
@@ -628,7 +628,7 @@
           <strong>Save</strong>.
         </p>
       </div>
-      <div class="feature-shot"><img src="./img/doc-generation.gif" alt="AI documentation streaming live for a function, alongside its call graph" loading="lazy" width="1600" height="1000" /></div>
+      <div class="feature-shot"><img src="./img/doc-generation.gif" alt="AI documentation streaming live for a function, alongside its call graph" loading="lazy" width="1100" height="440" /></div>
     </div>
   </div>
 </section>
@@ -650,7 +650,7 @@
           <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>A live database</strong> — paste a read-only connection string to introspect the real schema and see where your ORM models have drifted from what's actually deployed.</span></li>
         </ul>
       </div>
-      <div class="feature-shot"><img src="./img/dbt-lineage-ingest.png" alt="Connecting a dbt manifest to a repo, adding table and model nodes to the graph" loading="lazy" width="1600" height="1000" /></div>
+      <div class="feature-shot"><img src="./img/dbt-lineage-ingest.png" alt="Connecting a dbt manifest to a repo, adding table and model nodes to the graph" loading="lazy" width="1450" height="950" /></div>
     </div>
 
     <div class="feature-row reverse" data-reveal>
@@ -669,7 +669,7 @@
           it, not after.
         </p>
       </div>
-      <div class="feature-shot"><img src="./img/dbt-lineage-impact.png" alt="Impact analysis run on a table column, highlighting every upstream function, model, and table" loading="lazy" width="1600" height="1000" /></div>
+      <div class="feature-shot"><img src="./img/dbt-lineage-impact.png" alt="Impact analysis run on a table column, highlighting every upstream function, model, and table" loading="lazy" width="1450" height="950" /></div>
     </div>
   </div>
 </section>

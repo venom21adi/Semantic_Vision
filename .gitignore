@@ -34,4 +34,8 @@ vscode-extension/bin/
 *.log
 .env
 
-vercel.json
+# Vercel CLI's local project link (project/org IDs) -- created only if
+# `vercel` is ever run from this machine, never meant to be shared.
+# vercel.json itself (the deploy config) stays tracked -- Vercel's build
+# reads it from the repo, same as any other build config.
+.vercel
