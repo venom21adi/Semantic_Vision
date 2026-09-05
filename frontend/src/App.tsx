@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
+  DEMO_MODE,
   getComplexity,
   getDoc,
   getFlowchart,
@@ -25,6 +26,8 @@ import type {
   ParseErrorInfo,
 } from './api/types'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
+import { DemoRepoPicker } from './components/DemoRepoPicker'
+import { DemoRepoPill } from './components/DemoRepoPill'
 import { RepoLoader } from './components/RepoLoader'
 import { RepoPill } from './components/RepoPill'
 import { Sidebar, type GraphView } from './components/Sidebar'
@@ -41,7 +44,7 @@ import { GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD, type GraphHighlight } from './
 import { scopeToFile } from './graph/transform'
 import { resolveNodeOverlaps } from './graph/layout'
 import { useLayoutWorker } from './graph/useLayoutWorker'
-import { colors, font, spacing } from './theme'
+import { colors, font, radius, spacing } from './theme'
 import { LogoMark } from './components/Logo'
 import { HelpGuide } from './components/HelpGuide'
 import { rootNodeIds } from './tree/buildTree'
@@ -965,9 +968,33 @@ export default function App() {
           <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' }}>
             Semantic Vision
           </span>
+          {DEMO_MODE && (
+            <a
+              href="https://github.com/venom21adi/Semantic_Vision"
+              target="_blank"
+              rel="noreferrer"
+              title="Static demo with precomputed data -- no backend. Get it for your own repo on GitHub."
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.03em',
+                textTransform: 'uppercase',
+                color: colors.accent,
+                border: `1px solid ${colors.accent}`,
+                borderRadius: radius.full,
+                padding: '2px 7px',
+                textDecoration: 'none',
+              }}
+            >
+              Static demo · Get it for your repo →
+            </a>
+          )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {repo && (
+          {repo && DEMO_MODE && (
+            <DemoRepoPill slug={repo.path} onSwitch={() => setRepo(null)} />
+          )}
+          {repo && !DEMO_MODE && (
             <RepoPill
               onLoad={handleLoad}
               loading={loading}
@@ -1028,17 +1055,21 @@ export default function App() {
               <div style={{ fontSize: 15, color: colors.textMuted }}>
                 Load a repository to see its codebase graph.
               </div>
-              <div style={{ width: '100%', maxWidth: 560, padding: `0 ${spacing.md}px` }}>
-                <RepoLoader
-                  onLoad={handleLoad}
-                  loading={loading}
-                  error={loadError}
-                  initialPath={lastRepoPath ?? undefined}
-                  initialDocRoot={rememberedDocRoot ?? undefined}
-                  initialLanguage={rememberedLanguage ?? undefined}
-                  resolvedDocRoot={null}
-                  stats={null}
-                />
+              <div style={{ width: '100%', maxWidth: 640, padding: `0 ${spacing.md}px` }}>
+                {DEMO_MODE ? (
+                  <DemoRepoPicker onLoad={handleLoad} loading={loading} error={loadError} />
+                ) : (
+                  <RepoLoader
+                    onLoad={handleLoad}
+                    loading={loading}
+                    error={loadError}
+                    initialPath={lastRepoPath ?? undefined}
+                    initialDocRoot={rememberedDocRoot ?? undefined}
+                    initialLanguage={rememberedLanguage ?? undefined}
+                    resolvedDocRoot={null}
+                    stats={null}
+                  />
+                )}
               </div>
               <div
                 style={{
@@ -1166,6 +1197,11 @@ export default function App() {
           onDismissDocSaveNotice={handleDismissDocSaveNotice}
           repoPath={repo?.path ?? ''}
           onDataSourceIngestComplete={handleDataSourceIngestComplete}
+          dataSourceDefaultManifestPath={
+            DEMO_MODE && repo?.path === 'python-shop'
+              ? 'jaffle_shop/target/manifest.json (bundled with this demo)'
+              : undefined
+          }
           collapsed={detailsCollapsed}
           onToggleCollapsed={toggleDetailsCollapsed}
           width={detailsWidth}

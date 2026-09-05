@@ -1,0 +1,17 @@
+{
+  "slug": "python-shop",
+  "displayName": "Python: jaffle-shop-style order service",
+  "language": "python",
+  "description": "A small e-commerce backend (SQLAlchemy models, services, jobs) whose customers/orders tables match dbt Labs' jaffle_shop tutorial schema -- wired for real code-to-data lineage.",
+  "nodeCount": 85,
+  "edgeCount": 321,
+  "hasDataLineage": true,
+  "showcaseDocIds": [
+    "services/orders.py::transition_order_status",
+    "services/customers.py::flag_high_value_customers",
+    "services/payments.py::reconcile_payment_methods",
+    "services/reporting.py::monthly_revenue_report",
+    "jobs/scheduler.py::retry_with_backoff",
+    "utils/validation.py::validate_order_payload"
+  ]
+}

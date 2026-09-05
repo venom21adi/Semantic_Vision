@@ -1,0 +1,1980 @@
+{
+  "api/routes.py::advance_order_status_endpoint": {
+    "target": "api/routes.py::advance_order_status_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::cancel_order_endpoint": {
+    "target": "api/routes.py::cancel_order_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::create_order_endpoint": {
+    "target": "api/routes.py::create_order_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::get_customer_endpoint": {
+    "target": "api/routes.py::get_customer_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::high_value_customers_endpoint": {
+    "target": "api/routes.py::high_value_customers_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::list_orders_endpoint": {
+    "target": "api/routes.py::list_orders_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::revenue_report_endpoint": {
+    "target": "api/routes.py::revenue_report_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "api/routes.py::top_customers_endpoint": {
+    "target": "api/routes.py::top_customers_endpoint",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "db.py::init_db": {
+    "target": "db.py::init_db",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "db.py::session_scope": {
+    "target": "db.py::session_scope",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "jobs/cleanup.py::archive_old_payments": {
+    "target": "jobs/cleanup.py::archive_old_payments",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "jobs/cleanup.py::purge_stale_orders": {
+    "target": "jobs/cleanup.py::purge_stale_orders",
+    "callers": [
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "jobs/cleanup.py::purge_stale_orders",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "jobs/scheduler.py::retry_with_backoff": {
+    "target": "jobs/scheduler.py::retry_with_backoff",
+    "callers": [
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "jobs/scheduler.py::retry_with_backoff",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "jobs/scheduler.py::run_nightly_jobs": {
+    "target": "jobs/scheduler.py::run_nightly_jobs",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "models.py::Customer.full_name": {
+    "target": "models.py::Customer.full_name",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "models.py::Order.is_terminal": {
+    "target": "models.py::Order.is_terminal",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "models.py::today": {
+    "target": "models.py::today",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/customers.py::flag_high_value_customers": {
+    "target": "services/customers.py::flag_high_value_customers",
+    "callers": [
+      {
+        "id": "api/routes.py::high_value_customers_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::high_value_customers_endpoint",
+        "target": "services/customers.py::flag_high_value_customers",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/customers.py::get_customer": {
+    "target": "services/customers.py::get_customer",
+    "callers": [
+      {
+        "id": "services/customers.py::get_customer_summary",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/customers.py::get_customer_summary",
+        "target": "services/customers.py::get_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers",
+        "target": "services/customers.py::get_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint",
+        "target": "services/customers.py::get_customer_summary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/customers.py::get_customer_summary": {
+    "target": "services/customers.py::get_customer_summary",
+    "callers": [
+      {
+        "id": "api/routes.py::get_customer_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::get_customer_endpoint",
+        "target": "services/customers.py::get_customer_summary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/customers.py::merge_duplicate_customers": {
+    "target": "services/customers.py::merge_duplicate_customers",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/notifications.py::_send_email": {
+    "target": "services/notifications.py::_send_email",
+    "callers": [
+      {
+        "id": "services/notifications.py::notify_customer",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/notifications.py::batch_notify",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::transition_order_status",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::notify_customer",
+        "target": "services/notifications.py::_send_email",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/notifications.py::batch_notify",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::create_order",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::transition_order_status",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "services/notifications.py::batch_notify",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/notifications.py::_send_sms": {
+    "target": "services/notifications.py::_send_sms",
+    "callers": [
+      {
+        "id": "services/notifications.py::notify_customer",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/notifications.py::batch_notify",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::transition_order_status",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::notify_customer",
+        "target": "services/notifications.py::_send_sms",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/notifications.py::batch_notify",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::create_order",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::transition_order_status",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "services/notifications.py::batch_notify",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/notifications.py::batch_notify": {
+    "target": "services/notifications.py::batch_notify",
+    "callers": [
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "services/notifications.py::batch_notify",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/notifications.py::notify_customer": {
+    "target": "services/notifications.py::notify_customer",
+    "callers": [
+      {
+        "id": "services/notifications.py::batch_notify",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/orders.py::transition_order_status",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::batch_notify",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::create_order",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::transition_order_status",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "services/notifications.py::batch_notify",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/notifications.py::render_template": {
+    "target": "services/notifications.py::render_template",
+    "callers": [
+      {
+        "id": "services/notifications.py::notify_customer",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/notifications.py::batch_notify",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::transition_order_status",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::notify_customer",
+        "target": "services/notifications.py::render_template",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/notifications.py::batch_notify",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::create_order",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::transition_order_status",
+        "target": "services/notifications.py::notify_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "services/notifications.py::batch_notify",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/orders.py::cancel_order": {
+    "target": "services/orders.py::cancel_order",
+    "callers": [
+      {
+        "id": "api/routes.py::cancel_order_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::cancel_order_endpoint",
+        "target": "services/orders.py::cancel_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/orders.py::compute_order_total": {
+    "target": "services/orders.py::compute_order_total",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/orders.py::create_order": {
+    "target": "services/orders.py::create_order",
+    "callers": [
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/orders.py::list_orders_for_customer": {
+    "target": "services/orders.py::list_orders_for_customer",
+    "callers": [
+      {
+        "id": "api/routes.py::list_orders_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::list_orders_endpoint",
+        "target": "services/orders.py::list_orders_for_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/orders.py::transition_order_status": {
+    "target": "services/orders.py::transition_order_status",
+    "callers": [
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/payments.py::process_payment": {
+    "target": "services/payments.py::process_payment",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/payments.py::reconcile_payment_methods": {
+    "target": "services/payments.py::reconcile_payment_methods",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/payments.py::refund_payment": {
+    "target": "services/payments.py::refund_payment",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/payments.py::validate_payment_method": {
+    "target": "services/payments.py::validate_payment_method",
+    "callers": [
+      {
+        "id": "services/payments.py::process_payment",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/payments.py::process_payment",
+        "target": "services/payments.py::validate_payment_method",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/reporting.py::customer_lifetime_value": {
+    "target": "services/reporting.py::customer_lifetime_value",
+    "callers": [
+      {
+        "id": "services/reporting.py::top_customers_by_spend",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::top_customers_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/reporting.py::top_customers_by_spend",
+        "target": "services/reporting.py::customer_lifetime_value",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::top_customers_endpoint",
+        "target": "services/reporting.py::top_customers_by_spend",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/reporting.py::monthly_revenue_report": {
+    "target": "services/reporting.py::monthly_revenue_report",
+    "callers": [
+      {
+        "id": "api/routes.py::revenue_report_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::revenue_report_endpoint",
+        "target": "services/reporting.py::monthly_revenue_report",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "services/reporting.py::order_status_breakdown": {
+    "target": "services/reporting.py::order_status_breakdown",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/reporting.py::raw_high_value_customers": {
+    "target": "services/reporting.py::raw_high_value_customers",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "services/reporting.py::top_customers_by_spend": {
+    "target": "services/reporting.py::top_customers_by_spend",
+    "callers": [
+      {
+        "id": "api/routes.py::top_customers_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::top_customers_endpoint",
+        "target": "services/reporting.py::top_customers_by_spend",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils/formatting.py::format_currency": {
+    "target": "utils/formatting.py::format_currency",
+    "callers": [
+      {
+        "id": "services/customers.py::get_customer_summary",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/customers.py::get_customer_summary",
+        "target": "utils/formatting.py::format_currency",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint",
+        "target": "services/customers.py::get_customer_summary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils/formatting.py::format_customer_name": {
+    "target": "utils/formatting.py::format_customer_name",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils/formatting.py::humanize_status": {
+    "target": "utils/formatting.py::humanize_status",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils/pagination.py::build_page_links": {
+    "target": "utils/pagination.py::build_page_links",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils/pagination.py::paginate": {
+    "target": "utils/pagination.py::paginate",
+    "callers": [
+      {
+        "id": "api/routes.py::list_orders_endpoint",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::list_orders_endpoint",
+        "target": "utils/pagination.py::paginate",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils/validation.py::sanitize_string": {
+    "target": "utils/validation.py::sanitize_string",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils/validation.py::validate_email": {
+    "target": "utils/validation.py::validate_email",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils/validation.py::validate_order_payload": {
+    "target": "utils/validation.py::validate_order_payload",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "utils/validation.py::validate_order_payload",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::customers.customer_id": {
+    "target": "column::customers.customer_id",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::customers.first_name": {
+    "target": "column::customers.first_name",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::customers.first_order": {
+    "target": "column::customers.first_order",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::customers.last_name": {
+    "target": "column::customers.last_name",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::customers.most_recent_order": {
+    "target": "column::customers.most_recent_order",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::customers.number_of_orders": {
+    "target": "column::customers.number_of_orders",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::customers.total_order_amount": {
+    "target": "column::customers.total_order_amount",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::orders.amount": {
+    "target": "column::orders.amount",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.amount",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.bank_transfer_amount": {
+    "target": "column::orders.bank_transfer_amount",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.bank_transfer_amount",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.coupon_amount": {
+    "target": "column::orders.coupon_amount",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.coupon_amount",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.credit_card_amount": {
+    "target": "column::orders.credit_card_amount",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.credit_card_amount",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.customer_id": {
+    "target": "column::orders.customer_id",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.customer_id",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.gift_card_amount": {
+    "target": "column::orders.gift_card_amount",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.gift_card_amount",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.order_date": {
+    "target": "column::orders.order_date",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.order_date",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::orders.order_id": {
+    "target": "column::orders.order_id",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::orders.status": {
+    "target": "column::orders.status",
+    "callers": [
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order",
+        "target": "column::orders.status",
+        "kind": "writes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "column::stg_customers.customer_id": {
+    "target": "column::stg_customers.customer_id",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::stg_orders.order_id": {
+    "target": "column::stg_orders.order_id",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::stg_orders.status": {
+    "target": "column::stg_orders.status",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::stg_payments.payment_id": {
+    "target": "column::stg_payments.payment_id",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "column::stg_payments.payment_method": {
+    "target": "column::stg_payments.payment_method",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "table::customers": {
+    "target": "table::customers",
+    "callers": [
+      {
+        "id": "dbt::model.jaffle_shop.customers",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "models.py::Customer",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/customers.py::get_customer",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/reporting.py::raw_high_value_customers",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "table::orders",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::high_value_customers_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::revenue_report_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::top_customers_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "dbt::model.jaffle_shop.orders",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "models.py::Order",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/customers.py::get_customer_summary",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::cancel_order",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::transition_order_status",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/payments.py::process_payment",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/payments.py::refund_payment",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::cancel_order_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 4,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "dbt::model.jaffle_shop.customers",
+        "target": "table::customers",
+        "kind": "materializes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "models.py::Customer",
+        "target": "table::customers",
+        "kind": "maps_to",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::get_customer",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/reporting.py::raw_high_value_customers",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend",
+        "target": "table::customers",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "table::orders",
+        "target": "table::customers",
+        "kind": "foreign_key",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::high_value_customers_endpoint",
+        "target": "services/customers.py::flag_high_value_customers",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::get_customer_summary",
+        "target": "services/customers.py::get_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers",
+        "target": "services/customers.py::get_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend",
+        "target": "services/reporting.py::customer_lifetime_value",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::revenue_report_endpoint",
+        "target": "services/reporting.py::monthly_revenue_report",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::top_customers_endpoint",
+        "target": "services/reporting.py::top_customers_by_spend",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "dbt::model.jaffle_shop.orders",
+        "target": "table::orders",
+        "kind": "materializes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "models.py::Order",
+        "target": "table::orders",
+        "kind": "maps_to",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::get_customer_summary",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::cancel_order",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::transition_order_status",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/payments.py::process_payment",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/payments.py::refund_payment",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint",
+        "target": "services/customers.py::get_customer_summary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "jobs/cleanup.py::purge_stale_orders",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::create_order",
+        "target": "models.py::Order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::cancel_order_endpoint",
+        "target": "services/orders.py::cancel_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint",
+        "target": "services/orders.py::list_orders_for_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "table::orders": {
+    "target": "table::orders",
+    "callers": [
+      {
+        "id": "dbt::model.jaffle_shop.orders",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "models.py::Order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/customers.py::get_customer_summary",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/orders.py::cancel_order",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/orders.py::transition_order_status",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/payments.py::process_payment",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "services/payments.py::refund_payment",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::cancel_order_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "services/orders.py::create_order",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "dbt::model.jaffle_shop.orders",
+        "target": "table::orders",
+        "kind": "materializes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "models.py::Order",
+        "target": "table::orders",
+        "kind": "maps_to",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/customers.py::get_customer_summary",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::cancel_order",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::transition_order_status",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/payments.py::process_payment",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/payments.py::refund_payment",
+        "target": "table::orders",
+        "kind": "reads",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs",
+        "target": "jobs/cleanup.py::purge_stale_orders",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "services/orders.py::create_order",
+        "target": "models.py::Order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint",
+        "target": "services/customers.py::get_customer_summary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::cancel_order_endpoint",
+        "target": "services/orders.py::cancel_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint",
+        "target": "services/orders.py::list_orders_for_customer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint",
+        "target": "services/orders.py::transition_order_status",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint",
+        "target": "services/orders.py::create_order",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "table::stg_customers": {
+    "target": "table::stg_customers",
+    "callers": [
+      {
+        "id": "dbt::model.jaffle_shop.stg_customers",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "dbt::model.jaffle_shop.customers",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "dbt::model.jaffle_shop.stg_customers",
+        "target": "table::stg_customers",
+        "kind": "materializes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "dbt::model.jaffle_shop.customers",
+        "target": "dbt::model.jaffle_shop.stg_customers",
+        "kind": "references",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "table::stg_orders": {
+    "target": "table::stg_orders",
+    "callers": [
+      {
+        "id": "dbt::model.jaffle_shop.stg_orders",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "dbt::model.jaffle_shop.customers",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "dbt::model.jaffle_shop.orders",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "dbt::model.jaffle_shop.stg_orders",
+        "target": "table::stg_orders",
+        "kind": "materializes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "dbt::model.jaffle_shop.customers",
+        "target": "dbt::model.jaffle_shop.stg_orders",
+        "kind": "references",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "dbt::model.jaffle_shop.orders",
+        "target": "dbt::model.jaffle_shop.stg_orders",
+        "kind": "references",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "table::stg_payments": {
+    "target": "table::stg_payments",
+    "callers": [
+      {
+        "id": "dbt::model.jaffle_shop.stg_payments",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "dbt::model.jaffle_shop.customers",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "dbt::model.jaffle_shop.orders",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "dbt::model.jaffle_shop.stg_payments",
+        "target": "table::stg_payments",
+        "kind": "materializes",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "dbt::model.jaffle_shop.customers",
+        "target": "dbt::model.jaffle_shop.stg_payments",
+        "kind": "references",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "dbt::model.jaffle_shop.orders",
+        "target": "dbt::model.jaffle_shop.stg_payments",
+        "kind": "references",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  }
+}

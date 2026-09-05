@@ -1,0 +1,4979 @@
+{
+  "api/routes.py::advance_order_status_endpoint": {
+    "target": "api/routes.py::advance_order_status_endpoint",
+    "entry": "api/routes.py::advance_order_status_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::advance_order_status_endpoint::n0",
+        "kind": "entry",
+        "label": "def advance_order_status_endpoint(session, order_id, new_status):",
+        "line": 44,
+        "end_line": 44
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint::n1",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 45,
+        "end_line": 50
+      },
+      {
+        "id": "api/routes.py::advance_order_status_endpoint::n2",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': {'order_id': order.order_id, 'status': order.status}}",
+        "line": 51,
+        "end_line": 51
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::advance_order_status_endpoint::n1",
+        "target": "api/routes.py::advance_order_status_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::advance_order_status_endpoint::n0",
+        "target": "api/routes.py::advance_order_status_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::cancel_order_endpoint": {
+    "target": "api/routes.py::cancel_order_endpoint",
+    "entry": "api/routes.py::cancel_order_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::cancel_order_endpoint::n0",
+        "kind": "entry",
+        "label": "def cancel_order_endpoint(session, order_id):",
+        "line": 34,
+        "end_line": 34
+      },
+      {
+        "id": "api/routes.py::cancel_order_endpoint::n1",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 35,
+        "end_line": 40
+      },
+      {
+        "id": "api/routes.py::cancel_order_endpoint::n2",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': {'order_id': order.order_id, 'status': order.status}}",
+        "line": 41,
+        "end_line": 41
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::cancel_order_endpoint::n1",
+        "target": "api/routes.py::cancel_order_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::cancel_order_endpoint::n0",
+        "target": "api/routes.py::cancel_order_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::create_order_endpoint": {
+    "target": "api/routes.py::create_order_endpoint",
+    "entry": "api/routes.py::create_order_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::create_order_endpoint::n0",
+        "kind": "entry",
+        "label": "def create_order_endpoint(session, payload):",
+        "line": 26,
+        "end_line": 26
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint::n1",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 27,
+        "end_line": 30
+      },
+      {
+        "id": "api/routes.py::create_order_endpoint::n2",
+        "kind": "return",
+        "label": "return {'status': 201, 'body': {'order_id': order.order_id}}",
+        "line": 31,
+        "end_line": 31
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::create_order_endpoint::n1",
+        "target": "api/routes.py::create_order_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::create_order_endpoint::n0",
+        "target": "api/routes.py::create_order_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::get_customer_endpoint": {
+    "target": "api/routes.py::get_customer_endpoint",
+    "entry": "api/routes.py::get_customer_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::get_customer_endpoint::n0",
+        "kind": "entry",
+        "label": "def get_customer_endpoint(session, customer_id):",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint::n1",
+        "kind": "statement",
+        "label": "summary = get_customer_summary(session, customer_id)",
+        "line": 20,
+        "end_line": 20
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint::n2",
+        "kind": "decision",
+        "label": "if summary is None",
+        "line": 21,
+        "end_line": 22
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint::n3",
+        "kind": "return",
+        "label": "return {'status': 404, 'body': {'error': 'customer not found'}}",
+        "line": 22,
+        "end_line": 22
+      },
+      {
+        "id": "api/routes.py::get_customer_endpoint::n4",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': summary}",
+        "line": 23,
+        "end_line": 23
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::get_customer_endpoint::n2",
+        "target": "api/routes.py::get_customer_endpoint::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint::n1",
+        "target": "api/routes.py::get_customer_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint::n2",
+        "target": "api/routes.py::get_customer_endpoint::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "api/routes.py::get_customer_endpoint::n0",
+        "target": "api/routes.py::get_customer_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::high_value_customers_endpoint": {
+    "target": "api/routes.py::high_value_customers_endpoint",
+    "entry": "api/routes.py::high_value_customers_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::high_value_customers_endpoint::n0",
+        "kind": "entry",
+        "label": "def high_value_customers_endpoint(session, threshold=1000):",
+        "line": 64,
+        "end_line": 64
+      },
+      {
+        "id": "api/routes.py::high_value_customers_endpoint::n1",
+        "kind": "statement",
+        "label": "ids = flag_high_value_customers(session, threshold=threshold)",
+        "line": 65,
+        "end_line": 65
+      },
+      {
+        "id": "api/routes.py::high_value_customers_endpoint::n2",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': {'customer_ids': ids}}",
+        "line": 66,
+        "end_line": 66
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::high_value_customers_endpoint::n1",
+        "target": "api/routes.py::high_value_customers_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::high_value_customers_endpoint::n0",
+        "target": "api/routes.py::high_value_customers_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::list_orders_endpoint": {
+    "target": "api/routes.py::list_orders_endpoint",
+    "entry": "api/routes.py::list_orders_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::list_orders_endpoint::n0",
+        "kind": "entry",
+        "label": "def list_orders_endpoint(session, customer_id, page=1, page_size=20, status=None):",
+        "line": 54,
+        "end_line": 54
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint::n1",
+        "kind": "statement",
+        "label": "statuses = None",
+        "line": 55,
+        "end_line": 55
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint::n2",
+        "kind": "decision",
+        "label": "if status",
+        "line": 56,
+        "end_line": 57
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint::n3",
+        "kind": "statement",
+        "label": "statuses = [s.strip() for s in status.split(',') if s.strip()]",
+        "line": 57,
+        "end_line": 57
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint::n4",
+        "kind": "statement",
+        "label": "orders = list_orders_for_customer(session, customer_id, statuses=statuses)",
+        "line": 59,
+        "end_line": 59
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint::n5",
+        "kind": "statement",
+        "label": "rows = [{'order_id': o.order_id, 'status': o.status, 'amount': float(o.amount or 0)} for o in orders]",
+        "line": 60,
+        "end_line": 60
+      },
+      {
+        "id": "api/routes.py::list_orders_endpoint::n6",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': paginate(rows, page=page, page_size=page_size)}",
+        "line": 61,
+        "end_line": 61
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::list_orders_endpoint::n2",
+        "target": "api/routes.py::list_orders_endpoint::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint::n1",
+        "target": "api/routes.py::list_orders_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint::n3",
+        "target": "api/routes.py::list_orders_endpoint::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint::n2",
+        "target": "api/routes.py::list_orders_endpoint::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint::n4",
+        "target": "api/routes.py::list_orders_endpoint::n5",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint::n5",
+        "target": "api/routes.py::list_orders_endpoint::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::list_orders_endpoint::n0",
+        "target": "api/routes.py::list_orders_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::revenue_report_endpoint": {
+    "target": "api/routes.py::revenue_report_endpoint",
+    "entry": "api/routes.py::revenue_report_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::revenue_report_endpoint::n0",
+        "kind": "entry",
+        "label": "def revenue_report_endpoint(session, year):",
+        "line": 69,
+        "end_line": 69
+      },
+      {
+        "id": "api/routes.py::revenue_report_endpoint::n1",
+        "kind": "statement",
+        "label": "report = monthly_revenue_report(session, year)",
+        "line": 70,
+        "end_line": 70
+      },
+      {
+        "id": "api/routes.py::revenue_report_endpoint::n2",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': {'year': year, 'months': report}}",
+        "line": 71,
+        "end_line": 71
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::revenue_report_endpoint::n1",
+        "target": "api/routes.py::revenue_report_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::revenue_report_endpoint::n0",
+        "target": "api/routes.py::revenue_report_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "api/routes.py::top_customers_endpoint": {
+    "target": "api/routes.py::top_customers_endpoint",
+    "entry": "api/routes.py::top_customers_endpoint::n0",
+    "nodes": [
+      {
+        "id": "api/routes.py::top_customers_endpoint::n0",
+        "kind": "entry",
+        "label": "def top_customers_endpoint(session, limit=10):",
+        "line": 74,
+        "end_line": 74
+      },
+      {
+        "id": "api/routes.py::top_customers_endpoint::n1",
+        "kind": "statement",
+        "label": "rows = top_customers_by_spend(session, limit=limit)",
+        "line": 75,
+        "end_line": 75
+      },
+      {
+        "id": "api/routes.py::top_customers_endpoint::n2",
+        "kind": "statement",
+        "label": "body = [{'customer_id': cid, 'lifetime_value': value} for cid, value in rows]",
+        "line": 76,
+        "end_line": 76
+      },
+      {
+        "id": "api/routes.py::top_customers_endpoint::n3",
+        "kind": "return",
+        "label": "return {'status': 200, 'body': body}",
+        "line": 77,
+        "end_line": 77
+      }
+    ],
+    "edges": [
+      {
+        "source": "api/routes.py::top_customers_endpoint::n1",
+        "target": "api/routes.py::top_customers_endpoint::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::top_customers_endpoint::n2",
+        "target": "api/routes.py::top_customers_endpoint::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "api/routes.py::top_customers_endpoint::n0",
+        "target": "api/routes.py::top_customers_endpoint::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "db.py::init_db": {
+    "target": "db.py::init_db",
+    "entry": "db.py::init_db::n0",
+    "nodes": [
+      {
+        "id": "db.py::init_db::n0",
+        "kind": "entry",
+        "label": "def init_db() -> None:",
+        "line": 14,
+        "end_line": 14
+      },
+      {
+        "id": "db.py::init_db::n1",
+        "kind": "statement",
+        "label": "Base.metadata.create_all(_engine)",
+        "line": 15,
+        "end_line": 15
+      },
+      {
+        "id": "db.py::init_db::n2",
+        "kind": "return",
+        "label": "return (implicit)",
+        "line": 15,
+        "end_line": 15
+      }
+    ],
+    "edges": [
+      {
+        "source": "db.py::init_db::n0",
+        "target": "db.py::init_db::n1",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "db.py::init_db::n1",
+        "target": "db.py::init_db::n2",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "db.py::session_scope": {
+    "target": "db.py::session_scope",
+    "entry": "db.py::session_scope::n0",
+    "nodes": [
+      {
+        "id": "db.py::session_scope::n0",
+        "kind": "entry",
+        "label": "def session_scope():",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "db.py::session_scope::n1",
+        "kind": "statement",
+        "label": "session = _SessionLocal()",
+        "line": 20,
+        "end_line": 20
+      },
+      {
+        "id": "db.py::session_scope::n2",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 21,
+        "end_line": 28
+      },
+      {
+        "id": "db.py::session_scope::n3",
+        "kind": "return",
+        "label": "return (implicit)",
+        "line": 28,
+        "end_line": 28
+      }
+    ],
+    "edges": [
+      {
+        "source": "db.py::session_scope::n1",
+        "target": "db.py::session_scope::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "db.py::session_scope::n0",
+        "target": "db.py::session_scope::n1",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "db.py::session_scope::n2",
+        "target": "db.py::session_scope::n3",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "jobs/cleanup.py::archive_old_payments": {
+    "target": "jobs/cleanup.py::archive_old_payments",
+    "entry": "jobs/cleanup.py::archive_old_payments::n0",
+    "nodes": [
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n0",
+        "kind": "entry",
+        "label": "def archive_old_payments(session, orders, cutoff_year):",
+        "line": 25,
+        "end_line": 25
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n1",
+        "kind": "statement",
+        "label": "'Split orders into (archived, retained) by year, for cold storage.'",
+        "line": 26,
+        "end_line": 26
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n2",
+        "kind": "statement",
+        "label": "archived = []",
+        "line": 27,
+        "end_line": 27
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n3",
+        "kind": "statement",
+        "label": "retained = []",
+        "line": 28,
+        "end_line": 28
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n4",
+        "kind": "loop",
+        "label": "for order in orders",
+        "line": 30,
+        "end_line": 38
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n5",
+        "kind": "decision",
+        "label": "if order.order_date is None",
+        "line": 31,
+        "end_line": 33
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n6",
+        "kind": "statement",
+        "label": "retained.append(order)",
+        "line": 32,
+        "end_line": 32
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n7",
+        "kind": "statement",
+        "label": "continue",
+        "line": 33,
+        "end_line": 33
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n8",
+        "kind": "decision",
+        "label": "if order.order_date.year < cutoff_year",
+        "line": 35,
+        "end_line": 38
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n9",
+        "kind": "statement",
+        "label": "archived.append(order)",
+        "line": 36,
+        "end_line": 36
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n10",
+        "kind": "statement",
+        "label": "retained.append(order)",
+        "line": 38,
+        "end_line": 38
+      },
+      {
+        "id": "jobs/cleanup.py::archive_old_payments::n11",
+        "kind": "return",
+        "label": "return (archived, retained)",
+        "line": 40,
+        "end_line": 40
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n1",
+        "target": "jobs/cleanup.py::archive_old_payments::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n2",
+        "target": "jobs/cleanup.py::archive_old_payments::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n7",
+        "target": "jobs/cleanup.py::archive_old_payments::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n6",
+        "target": "jobs/cleanup.py::archive_old_payments::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n5",
+        "target": "jobs/cleanup.py::archive_old_payments::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n8",
+        "target": "jobs/cleanup.py::archive_old_payments::n9",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n8",
+        "target": "jobs/cleanup.py::archive_old_payments::n10",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n5",
+        "target": "jobs/cleanup.py::archive_old_payments::n8",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n4",
+        "target": "jobs/cleanup.py::archive_old_payments::n5",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n9",
+        "target": "jobs/cleanup.py::archive_old_payments::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n10",
+        "target": "jobs/cleanup.py::archive_old_payments::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n3",
+        "target": "jobs/cleanup.py::archive_old_payments::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n4",
+        "target": "jobs/cleanup.py::archive_old_payments::n11",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "jobs/cleanup.py::archive_old_payments::n0",
+        "target": "jobs/cleanup.py::archive_old_payments::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "jobs/cleanup.py::purge_stale_orders": {
+    "target": "jobs/cleanup.py::purge_stale_orders",
+    "entry": "jobs/cleanup.py::purge_stale_orders::n0",
+    "nodes": [
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n0",
+        "kind": "entry",
+        "label": "def purge_stale_orders(session, older_than_days=90):",
+        "line": 8,
+        "end_line": 8
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n1",
+        "kind": "statement",
+        "label": "\"Cancel-out any `placed` order that's been sitting untouched too long.\"",
+        "line": 9,
+        "end_line": 9
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n2",
+        "kind": "statement",
+        "label": "cutoff = date.today() - timedelta(days=older_than_days)",
+        "line": 10,
+        "end_line": 10
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n3",
+        "kind": "statement",
+        "label": "purged = 0",
+        "line": 11,
+        "end_line": 11
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n4",
+        "kind": "loop",
+        "label": "for order in session.query(Order).filter_by(status='placed').all()",
+        "line": 13,
+        "end_line": 20
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n5",
+        "kind": "decision",
+        "label": "if order.order_date is None",
+        "line": 14,
+        "end_line": 15
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n6",
+        "kind": "statement",
+        "label": "continue",
+        "line": 15,
+        "end_line": 15
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n7",
+        "kind": "decision",
+        "label": "if order.order_date > cutoff",
+        "line": 16,
+        "end_line": 17
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n8",
+        "kind": "statement",
+        "label": "continue",
+        "line": 17,
+        "end_line": 17
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n9",
+        "kind": "statement",
+        "label": "order.status = 'return_pending'",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n10",
+        "kind": "statement",
+        "label": "purged += 1",
+        "line": 20,
+        "end_line": 20
+      },
+      {
+        "id": "jobs/cleanup.py::purge_stale_orders::n11",
+        "kind": "return",
+        "label": "return purged",
+        "line": 22,
+        "end_line": 22
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n1",
+        "target": "jobs/cleanup.py::purge_stale_orders::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n2",
+        "target": "jobs/cleanup.py::purge_stale_orders::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n6",
+        "target": "jobs/cleanup.py::purge_stale_orders::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n5",
+        "target": "jobs/cleanup.py::purge_stale_orders::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n8",
+        "target": "jobs/cleanup.py::purge_stale_orders::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n7",
+        "target": "jobs/cleanup.py::purge_stale_orders::n8",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n5",
+        "target": "jobs/cleanup.py::purge_stale_orders::n7",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n7",
+        "target": "jobs/cleanup.py::purge_stale_orders::n9",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n9",
+        "target": "jobs/cleanup.py::purge_stale_orders::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n4",
+        "target": "jobs/cleanup.py::purge_stale_orders::n5",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n10",
+        "target": "jobs/cleanup.py::purge_stale_orders::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n3",
+        "target": "jobs/cleanup.py::purge_stale_orders::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n4",
+        "target": "jobs/cleanup.py::purge_stale_orders::n11",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "jobs/cleanup.py::purge_stale_orders::n0",
+        "target": "jobs/cleanup.py::purge_stale_orders::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "jobs/scheduler.py::retry_with_backoff": {
+    "target": "jobs/scheduler.py::retry_with_backoff",
+    "entry": "jobs/scheduler.py::retry_with_backoff::n0",
+    "nodes": [
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n0",
+        "kind": "entry",
+        "label": "def retry_with_backoff(fn, *, max_attempts=3, base_delay=0.0):",
+        "line": 9,
+        "end_line": 9
+      },
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n1",
+        "kind": "statement",
+        "label": "\"Run `fn`, retrying on any exception with exponential backoff.\\n\\n    `base_delay=0.0` in this demo repo so nightly-job traces don't actually\\n    sleep; a real deployment would pass a real delay.\\n    \"",
+        "line": 10,
+        "end_line": 14
+      },
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n2",
+        "kind": "statement",
+        "label": "attempt = 0",
+        "line": 15,
+        "end_line": 15
+      },
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n3",
+        "kind": "statement",
+        "label": "last_error = None",
+        "line": 16,
+        "end_line": 16
+      },
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n4",
+        "kind": "loop",
+        "label": "while attempt < max_attempts",
+        "line": 18,
+        "end_line": 27
+      },
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n5",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 19,
+        "end_line": 27
+      },
+      {
+        "id": "jobs/scheduler.py::retry_with_backoff::n6",
+        "kind": "statement",
+        "label": "raise RuntimeError(f'gave up after {attempt} attempts') from last_error",
+        "line": 29,
+        "end_line": 29
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n1",
+        "target": "jobs/scheduler.py::retry_with_backoff::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n2",
+        "target": "jobs/scheduler.py::retry_with_backoff::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n4",
+        "target": "jobs/scheduler.py::retry_with_backoff::n5",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n5",
+        "target": "jobs/scheduler.py::retry_with_backoff::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n3",
+        "target": "jobs/scheduler.py::retry_with_backoff::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n4",
+        "target": "jobs/scheduler.py::retry_with_backoff::n6",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "jobs/scheduler.py::retry_with_backoff::n0",
+        "target": "jobs/scheduler.py::retry_with_backoff::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "jobs/scheduler.py::run_nightly_jobs": {
+    "target": "jobs/scheduler.py::run_nightly_jobs",
+    "entry": "jobs/scheduler.py::run_nightly_jobs::n0",
+    "nodes": [
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n0",
+        "kind": "entry",
+        "label": "def run_nightly_jobs(session, notify_customer_ids=None):",
+        "line": 32,
+        "end_line": 32
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n1",
+        "kind": "statement",
+        "label": "'Run each nightly job in turn, collecting failures instead of aborting.'",
+        "line": 33,
+        "end_line": 33
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n2",
+        "kind": "statement",
+        "label": "results = {}",
+        "line": 34,
+        "end_line": 34
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n3",
+        "kind": "statement",
+        "label": "jobs = {'purge_stale_orders': lambda: purge_stale_orders(session)}",
+        "line": 35,
+        "end_line": 37
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n4",
+        "kind": "loop",
+        "label": "for (name, job) in jobs.items()",
+        "line": 39,
+        "end_line": 43
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n5",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 40,
+        "end_line": 43
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n6",
+        "kind": "decision",
+        "label": "if notify_customer_ids",
+        "line": 45,
+        "end_line": 46
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n7",
+        "kind": "statement",
+        "label": "results['notifications'] = batch_notify(notify_customer_ids, 'nightly_digest')",
+        "line": 46,
+        "end_line": 46
+      },
+      {
+        "id": "jobs/scheduler.py::run_nightly_jobs::n8",
+        "kind": "return",
+        "label": "return results",
+        "line": 48,
+        "end_line": 48
+      }
+    ],
+    "edges": [
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n1",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n2",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n4",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n5",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n5",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n3",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n6",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n7",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n4",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n6",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n7",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n8",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n6",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n8",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "jobs/scheduler.py::run_nightly_jobs::n0",
+        "target": "jobs/scheduler.py::run_nightly_jobs::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "models.py::Customer.full_name": {
+    "target": "models.py::Customer.full_name",
+    "entry": "models.py::Customer.full_name::n0",
+    "nodes": [
+      {
+        "id": "models.py::Customer.full_name::n0",
+        "kind": "entry",
+        "label": "def full_name(self) -> str:",
+        "line": 25,
+        "end_line": 25
+      },
+      {
+        "id": "models.py::Customer.full_name::n1",
+        "kind": "return",
+        "label": "return f'{self.first_name} {self.last_name}'.strip()",
+        "line": 26,
+        "end_line": 26
+      }
+    ],
+    "edges": [
+      {
+        "source": "models.py::Customer.full_name::n0",
+        "target": "models.py::Customer.full_name::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "models.py::Order.is_terminal": {
+    "target": "models.py::Order.is_terminal",
+    "entry": "models.py::Order.is_terminal::n0",
+    "nodes": [
+      {
+        "id": "models.py::Order.is_terminal::n0",
+        "kind": "entry",
+        "label": "def is_terminal(self) -> bool:",
+        "line": 44,
+        "end_line": 44
+      },
+      {
+        "id": "models.py::Order.is_terminal::n1",
+        "kind": "return",
+        "label": "return self.status in ('completed', 'returned')",
+        "line": 45,
+        "end_line": 45
+      }
+    ],
+    "edges": [
+      {
+        "source": "models.py::Order.is_terminal::n0",
+        "target": "models.py::Order.is_terminal::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "models.py::today": {
+    "target": "models.py::today",
+    "entry": "models.py::today::n0",
+    "nodes": [
+      {
+        "id": "models.py::today::n0",
+        "kind": "entry",
+        "label": "def today() -> date:",
+        "line": 52,
+        "end_line": 52
+      },
+      {
+        "id": "models.py::today::n1",
+        "kind": "return",
+        "label": "return date.today()",
+        "line": 53,
+        "end_line": 53
+      }
+    ],
+    "edges": [
+      {
+        "source": "models.py::today::n0",
+        "target": "models.py::today::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/customers.py::flag_high_value_customers": {
+    "target": "services/customers.py::flag_high_value_customers",
+    "entry": "services/customers.py::flag_high_value_customers::n0",
+    "nodes": [
+      {
+        "id": "services/customers.py::flag_high_value_customers::n0",
+        "kind": "entry",
+        "label": "def flag_high_value_customers(session, threshold=1000):",
+        "line": 43,
+        "end_line": 43
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n1",
+        "kind": "statement",
+        "label": "'Return customer ids whose lifetime spend crosses `threshold`.\\n\\n    Walks every customer once rather than pushing the aggregation into SQL,\\n    since this demo store also wants a function with a real loop + branch\\n    for the complexity/flowchart views.\\n    '",
+        "line": 44,
+        "end_line": 49
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n2",
+        "kind": "statement",
+        "label": "flagged = []",
+        "line": 50,
+        "end_line": 50
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n3",
+        "kind": "loop",
+        "label": "for customer in session.query(Customer).all()",
+        "line": 51,
+        "end_line": 58
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n4",
+        "kind": "statement",
+        "label": "total = 0",
+        "line": 52,
+        "end_line": 52
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n5",
+        "kind": "loop",
+        "label": "for order in customer.orders",
+        "line": 53,
+        "end_line": 56
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n6",
+        "kind": "decision",
+        "label": "if order.amount is None",
+        "line": 54,
+        "end_line": 55
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n7",
+        "kind": "statement",
+        "label": "continue",
+        "line": 55,
+        "end_line": 55
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n8",
+        "kind": "statement",
+        "label": "total += float(order.amount)",
+        "line": 56,
+        "end_line": 56
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n9",
+        "kind": "decision",
+        "label": "if total > threshold",
+        "line": 57,
+        "end_line": 58
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n10",
+        "kind": "statement",
+        "label": "flagged.append(customer.customer_id)",
+        "line": 58,
+        "end_line": 58
+      },
+      {
+        "id": "services/customers.py::flag_high_value_customers::n11",
+        "kind": "return",
+        "label": "return flagged",
+        "line": 59,
+        "end_line": 59
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/customers.py::flag_high_value_customers::n1",
+        "target": "services/customers.py::flag_high_value_customers::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n7",
+        "target": "services/customers.py::flag_high_value_customers::n5",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n6",
+        "target": "services/customers.py::flag_high_value_customers::n7",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n6",
+        "target": "services/customers.py::flag_high_value_customers::n8",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n5",
+        "target": "services/customers.py::flag_high_value_customers::n6",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n8",
+        "target": "services/customers.py::flag_high_value_customers::n5",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n4",
+        "target": "services/customers.py::flag_high_value_customers::n5",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n9",
+        "target": "services/customers.py::flag_high_value_customers::n10",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n5",
+        "target": "services/customers.py::flag_high_value_customers::n9",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n3",
+        "target": "services/customers.py::flag_high_value_customers::n4",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n10",
+        "target": "services/customers.py::flag_high_value_customers::n3",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n9",
+        "target": "services/customers.py::flag_high_value_customers::n3",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n2",
+        "target": "services/customers.py::flag_high_value_customers::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n3",
+        "target": "services/customers.py::flag_high_value_customers::n11",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/customers.py::flag_high_value_customers::n0",
+        "target": "services/customers.py::flag_high_value_customers::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/customers.py::get_customer": {
+    "target": "services/customers.py::get_customer",
+    "entry": "services/customers.py::get_customer::n0",
+    "nodes": [
+      {
+        "id": "services/customers.py::get_customer::n0",
+        "kind": "entry",
+        "label": "def get_customer(session, customer_id):",
+        "line": 7,
+        "end_line": 7
+      },
+      {
+        "id": "services/customers.py::get_customer::n1",
+        "kind": "return",
+        "label": "return session.query(Customer).filter_by(customer_id=customer_id).first()",
+        "line": 8,
+        "end_line": 8
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/customers.py::get_customer::n0",
+        "target": "services/customers.py::get_customer::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/customers.py::get_customer_summary": {
+    "target": "services/customers.py::get_customer_summary",
+    "entry": "services/customers.py::get_customer_summary::n0",
+    "nodes": [
+      {
+        "id": "services/customers.py::get_customer_summary::n0",
+        "kind": "entry",
+        "label": "def get_customer_summary(session, customer_id):",
+        "line": 11,
+        "end_line": 11
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n1",
+        "kind": "statement",
+        "label": "'Fetch a customer plus the order stats a support agent actually needs.'",
+        "line": 12,
+        "end_line": 12
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n2",
+        "kind": "statement",
+        "label": "customer = get_customer(session, customer_id)",
+        "line": 13,
+        "end_line": 13
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n3",
+        "kind": "decision",
+        "label": "if customer is None",
+        "line": 14,
+        "end_line": 15
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n4",
+        "kind": "return",
+        "label": "return None",
+        "line": 15,
+        "end_line": 15
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n5",
+        "kind": "statement",
+        "label": "orders = session.query(Order).filter_by(customer_id=customer_id).all()",
+        "line": 17,
+        "end_line": 17
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n6",
+        "kind": "decision",
+        "label": "if not orders",
+        "line": 18,
+        "end_line": 24
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n7",
+        "kind": "return",
+        "label": "return {'customer_id': customer_id, 'name': customer.full_name(), 'order_count': 0, 'lifetime_value': format_currency(0)}",
+        "line": 19,
+        "end_line": 24
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n8",
+        "kind": "statement",
+        "label": "total = 0",
+        "line": 26,
+        "end_line": 26
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n9",
+        "kind": "statement",
+        "label": "completed = 0",
+        "line": 27,
+        "end_line": 27
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n10",
+        "kind": "loop",
+        "label": "for order in orders",
+        "line": 28,
+        "end_line": 32
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n11",
+        "kind": "decision",
+        "label": "if order.status == 'completed'",
+        "line": 29,
+        "end_line": 30
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n12",
+        "kind": "statement",
+        "label": "completed += 1",
+        "line": 30,
+        "end_line": 30
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n13",
+        "kind": "decision",
+        "label": "if order.amount is not None",
+        "line": 31,
+        "end_line": 32
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n14",
+        "kind": "statement",
+        "label": "total += float(order.amount)",
+        "line": 32,
+        "end_line": 32
+      },
+      {
+        "id": "services/customers.py::get_customer_summary::n15",
+        "kind": "return",
+        "label": "return {'customer_id': customer_id, 'name': customer.full_name(), 'order_count': len(orders), 'completed_orders': completed, 'lifetime_value': format_currency(total)}",
+        "line": 34,
+        "end_line": 40
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/customers.py::get_customer_summary::n1",
+        "target": "services/customers.py::get_customer_summary::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n3",
+        "target": "services/customers.py::get_customer_summary::n4",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n2",
+        "target": "services/customers.py::get_customer_summary::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n3",
+        "target": "services/customers.py::get_customer_summary::n5",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n6",
+        "target": "services/customers.py::get_customer_summary::n7",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n5",
+        "target": "services/customers.py::get_customer_summary::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n6",
+        "target": "services/customers.py::get_customer_summary::n8",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n8",
+        "target": "services/customers.py::get_customer_summary::n9",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n11",
+        "target": "services/customers.py::get_customer_summary::n12",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n13",
+        "target": "services/customers.py::get_customer_summary::n14",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n12",
+        "target": "services/customers.py::get_customer_summary::n13",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n11",
+        "target": "services/customers.py::get_customer_summary::n13",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n10",
+        "target": "services/customers.py::get_customer_summary::n11",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n14",
+        "target": "services/customers.py::get_customer_summary::n10",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n13",
+        "target": "services/customers.py::get_customer_summary::n10",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n9",
+        "target": "services/customers.py::get_customer_summary::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n10",
+        "target": "services/customers.py::get_customer_summary::n15",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/customers.py::get_customer_summary::n0",
+        "target": "services/customers.py::get_customer_summary::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/customers.py::merge_duplicate_customers": {
+    "target": "services/customers.py::merge_duplicate_customers",
+    "entry": "services/customers.py::merge_duplicate_customers::n0",
+    "nodes": [
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n0",
+        "kind": "entry",
+        "label": "def merge_duplicate_customers(session, keep_id, duplicate_id):",
+        "line": 62,
+        "end_line": 62
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n1",
+        "kind": "statement",
+        "label": "\"Reassign a duplicate customer's orders onto the record to keep.\"",
+        "line": 63,
+        "end_line": 63
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n2",
+        "kind": "statement",
+        "label": "keep = get_customer(session, keep_id)",
+        "line": 64,
+        "end_line": 64
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n3",
+        "kind": "statement",
+        "label": "duplicate = get_customer(session, duplicate_id)",
+        "line": 65,
+        "end_line": 65
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n4",
+        "kind": "decision",
+        "label": "if keep is None or duplicate is None",
+        "line": 66,
+        "end_line": 67
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n5",
+        "kind": "statement",
+        "label": "raise ValueError('both customers must exist to merge')",
+        "line": 67,
+        "end_line": 67
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n6",
+        "kind": "statement",
+        "label": "moved = 0",
+        "line": 69,
+        "end_line": 69
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n7",
+        "kind": "loop",
+        "label": "for order in list(duplicate.orders)",
+        "line": 70,
+        "end_line": 72
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n8",
+        "kind": "statement",
+        "label": "order.customer_id = keep.customer_id",
+        "line": 71,
+        "end_line": 71
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n9",
+        "kind": "statement",
+        "label": "moved += 1",
+        "line": 72,
+        "end_line": 72
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n10",
+        "kind": "statement",
+        "label": "session.delete(duplicate)",
+        "line": 74,
+        "end_line": 74
+      },
+      {
+        "id": "services/customers.py::merge_duplicate_customers::n11",
+        "kind": "return",
+        "label": "return moved",
+        "line": 75,
+        "end_line": 75
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n1",
+        "target": "services/customers.py::merge_duplicate_customers::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n2",
+        "target": "services/customers.py::merge_duplicate_customers::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n4",
+        "target": "services/customers.py::merge_duplicate_customers::n5",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n3",
+        "target": "services/customers.py::merge_duplicate_customers::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n4",
+        "target": "services/customers.py::merge_duplicate_customers::n6",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n8",
+        "target": "services/customers.py::merge_duplicate_customers::n9",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n7",
+        "target": "services/customers.py::merge_duplicate_customers::n8",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n9",
+        "target": "services/customers.py::merge_duplicate_customers::n7",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n6",
+        "target": "services/customers.py::merge_duplicate_customers::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n7",
+        "target": "services/customers.py::merge_duplicate_customers::n10",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n10",
+        "target": "services/customers.py::merge_duplicate_customers::n11",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/customers.py::merge_duplicate_customers::n0",
+        "target": "services/customers.py::merge_duplicate_customers::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/notifications.py::_send_email": {
+    "target": "services/notifications.py::_send_email",
+    "entry": "services/notifications.py::_send_email::n0",
+    "nodes": [
+      {
+        "id": "services/notifications.py::_send_email::n0",
+        "kind": "entry",
+        "label": "def _send_email(customer_id, message):",
+        "line": 43,
+        "end_line": 43
+      },
+      {
+        "id": "services/notifications.py::_send_email::n1",
+        "kind": "io",
+        "label": "print(f'[email -> customer {customer_id}] {message}')",
+        "line": 44,
+        "end_line": 44
+      },
+      {
+        "id": "services/notifications.py::_send_email::n2",
+        "kind": "return",
+        "label": "return (implicit)",
+        "line": 44,
+        "end_line": 44
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::_send_email::n0",
+        "target": "services/notifications.py::_send_email::n1",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::_send_email::n1",
+        "target": "services/notifications.py::_send_email::n2",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/notifications.py::_send_sms": {
+    "target": "services/notifications.py::_send_sms",
+    "entry": "services/notifications.py::_send_sms::n0",
+    "nodes": [
+      {
+        "id": "services/notifications.py::_send_sms::n0",
+        "kind": "entry",
+        "label": "def _send_sms(customer_id, message):",
+        "line": 47,
+        "end_line": 47
+      },
+      {
+        "id": "services/notifications.py::_send_sms::n1",
+        "kind": "io",
+        "label": "print(f'[sms -> customer {customer_id}] {message}')",
+        "line": 48,
+        "end_line": 48
+      },
+      {
+        "id": "services/notifications.py::_send_sms::n2",
+        "kind": "return",
+        "label": "return (implicit)",
+        "line": 48,
+        "end_line": 48
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::_send_sms::n0",
+        "target": "services/notifications.py::_send_sms::n1",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::_send_sms::n1",
+        "target": "services/notifications.py::_send_sms::n2",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/notifications.py::batch_notify": {
+    "target": "services/notifications.py::batch_notify",
+    "entry": "services/notifications.py::batch_notify::n0",
+    "nodes": [
+      {
+        "id": "services/notifications.py::batch_notify::n0",
+        "kind": "entry",
+        "label": "def batch_notify(customer_ids, event, **context):",
+        "line": 31,
+        "end_line": 31
+      },
+      {
+        "id": "services/notifications.py::batch_notify::n1",
+        "kind": "statement",
+        "label": "sent = 0",
+        "line": 32,
+        "end_line": 32
+      },
+      {
+        "id": "services/notifications.py::batch_notify::n2",
+        "kind": "statement",
+        "label": "failed = []",
+        "line": 33,
+        "end_line": 33
+      },
+      {
+        "id": "services/notifications.py::batch_notify::n3",
+        "kind": "loop",
+        "label": "for customer_id in customer_ids",
+        "line": 34,
+        "end_line": 39
+      },
+      {
+        "id": "services/notifications.py::batch_notify::n4",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 35,
+        "end_line": 39
+      },
+      {
+        "id": "services/notifications.py::batch_notify::n5",
+        "kind": "return",
+        "label": "return {'sent': sent, 'failed': failed}",
+        "line": 40,
+        "end_line": 40
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::batch_notify::n1",
+        "target": "services/notifications.py::batch_notify::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::batch_notify::n3",
+        "target": "services/notifications.py::batch_notify::n4",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/notifications.py::batch_notify::n4",
+        "target": "services/notifications.py::batch_notify::n3",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::batch_notify::n2",
+        "target": "services/notifications.py::batch_notify::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::batch_notify::n3",
+        "target": "services/notifications.py::batch_notify::n5",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/notifications.py::batch_notify::n0",
+        "target": "services/notifications.py::batch_notify::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/notifications.py::notify_customer": {
+    "target": "services/notifications.py::notify_customer",
+    "entry": "services/notifications.py::notify_customer::n0",
+    "nodes": [
+      {
+        "id": "services/notifications.py::notify_customer::n0",
+        "kind": "entry",
+        "label": "def notify_customer(customer_id, event, channel='email', **context):",
+        "line": 18,
+        "end_line": 18
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n1",
+        "kind": "statement",
+        "label": "message = render_template(event, **context)",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n2",
+        "kind": "decision",
+        "label": "if channel == 'email'",
+        "line": 21,
+        "end_line": 26
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n3",
+        "kind": "call",
+        "label": "_send_email(customer_id, message)",
+        "line": 22,
+        "end_line": 22
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n4",
+        "kind": "decision",
+        "label": "if channel == 'sms'",
+        "line": 23,
+        "end_line": 26
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n5",
+        "kind": "call",
+        "label": "_send_sms(customer_id, message)",
+        "line": 24,
+        "end_line": 24
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n6",
+        "kind": "statement",
+        "label": "raise ValueError(f'unknown channel: {channel}')",
+        "line": 26,
+        "end_line": 26
+      },
+      {
+        "id": "services/notifications.py::notify_customer::n7",
+        "kind": "return",
+        "label": "return message",
+        "line": 28,
+        "end_line": 28
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::notify_customer::n2",
+        "target": "services/notifications.py::notify_customer::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n4",
+        "target": "services/notifications.py::notify_customer::n5",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n4",
+        "target": "services/notifications.py::notify_customer::n6",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n2",
+        "target": "services/notifications.py::notify_customer::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n1",
+        "target": "services/notifications.py::notify_customer::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n3",
+        "target": "services/notifications.py::notify_customer::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n5",
+        "target": "services/notifications.py::notify_customer::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::notify_customer::n0",
+        "target": "services/notifications.py::notify_customer::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/notifications.py::render_template": {
+    "target": "services/notifications.py::render_template",
+    "entry": "services/notifications.py::render_template::n0",
+    "nodes": [
+      {
+        "id": "services/notifications.py::render_template::n0",
+        "kind": "entry",
+        "label": "def render_template(event, **context):",
+        "line": 11,
+        "end_line": 11
+      },
+      {
+        "id": "services/notifications.py::render_template::n1",
+        "kind": "statement",
+        "label": "template = _TEMPLATES.get(event)",
+        "line": 12,
+        "end_line": 12
+      },
+      {
+        "id": "services/notifications.py::render_template::n2",
+        "kind": "decision",
+        "label": "if template is None",
+        "line": 13,
+        "end_line": 14
+      },
+      {
+        "id": "services/notifications.py::render_template::n3",
+        "kind": "return",
+        "label": "return f'Update on your account (event: {event})'",
+        "line": 14,
+        "end_line": 14
+      },
+      {
+        "id": "services/notifications.py::render_template::n4",
+        "kind": "return",
+        "label": "return template.format(**context)",
+        "line": 15,
+        "end_line": 15
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/notifications.py::render_template::n2",
+        "target": "services/notifications.py::render_template::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/notifications.py::render_template::n1",
+        "target": "services/notifications.py::render_template::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/notifications.py::render_template::n2",
+        "target": "services/notifications.py::render_template::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/notifications.py::render_template::n0",
+        "target": "services/notifications.py::render_template::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/orders.py::cancel_order": {
+    "target": "services/orders.py::cancel_order",
+    "entry": "services/orders.py::cancel_order::n0",
+    "nodes": [
+      {
+        "id": "services/orders.py::cancel_order::n0",
+        "kind": "entry",
+        "label": "def cancel_order(session, order_id):",
+        "line": 67,
+        "end_line": 67
+      },
+      {
+        "id": "services/orders.py::cancel_order::n1",
+        "kind": "statement",
+        "label": "order = session.query(Order).filter_by(order_id=order_id).first()",
+        "line": 68,
+        "end_line": 68
+      },
+      {
+        "id": "services/orders.py::cancel_order::n2",
+        "kind": "decision",
+        "label": "if order is None",
+        "line": 69,
+        "end_line": 70
+      },
+      {
+        "id": "services/orders.py::cancel_order::n3",
+        "kind": "statement",
+        "label": "raise LookupError(f'no such order: {order_id}')",
+        "line": 70,
+        "end_line": 70
+      },
+      {
+        "id": "services/orders.py::cancel_order::n4",
+        "kind": "decision",
+        "label": "if order.status not in ('placed', 'shipped')",
+        "line": 72,
+        "end_line": 73
+      },
+      {
+        "id": "services/orders.py::cancel_order::n5",
+        "kind": "statement",
+        "label": "raise ValueError(f'order {order_id} can no longer be cancelled')",
+        "line": 73,
+        "end_line": 73
+      },
+      {
+        "id": "services/orders.py::cancel_order::n6",
+        "kind": "statement",
+        "label": "order.status = 'return_pending'",
+        "line": 75,
+        "end_line": 75
+      },
+      {
+        "id": "services/orders.py::cancel_order::n7",
+        "kind": "return",
+        "label": "return order",
+        "line": 76,
+        "end_line": 76
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::cancel_order::n2",
+        "target": "services/orders.py::cancel_order::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::cancel_order::n1",
+        "target": "services/orders.py::cancel_order::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::cancel_order::n4",
+        "target": "services/orders.py::cancel_order::n5",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::cancel_order::n2",
+        "target": "services/orders.py::cancel_order::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::cancel_order::n4",
+        "target": "services/orders.py::cancel_order::n6",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::cancel_order::n6",
+        "target": "services/orders.py::cancel_order::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::cancel_order::n0",
+        "target": "services/orders.py::cancel_order::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/orders.py::compute_order_total": {
+    "target": "services/orders.py::compute_order_total",
+    "entry": "services/orders.py::compute_order_total::n0",
+    "nodes": [
+      {
+        "id": "services/orders.py::compute_order_total::n0",
+        "kind": "entry",
+        "label": "def compute_order_total(order):",
+        "line": 79,
+        "end_line": 79
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n1",
+        "kind": "statement",
+        "label": "'Cross-check the four payment-method columns against `amount`.'",
+        "line": 80,
+        "end_line": 80
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n2",
+        "kind": "statement",
+        "label": "parts = [order.credit_card_amount, order.coupon_amount, order.bank_transfer_amount, order.gift_card_amount]",
+        "line": 81,
+        "end_line": 86
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n3",
+        "kind": "statement",
+        "label": "total = 0",
+        "line": 88,
+        "end_line": 88
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n4",
+        "kind": "loop",
+        "label": "for part in parts",
+        "line": 89,
+        "end_line": 91
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n5",
+        "kind": "decision",
+        "label": "if part is not None",
+        "line": 90,
+        "end_line": 91
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n6",
+        "kind": "statement",
+        "label": "total += float(part)",
+        "line": 91,
+        "end_line": 91
+      },
+      {
+        "id": "services/orders.py::compute_order_total::n7",
+        "kind": "return",
+        "label": "return total",
+        "line": 93,
+        "end_line": 93
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::compute_order_total::n1",
+        "target": "services/orders.py::compute_order_total::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n2",
+        "target": "services/orders.py::compute_order_total::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n5",
+        "target": "services/orders.py::compute_order_total::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n4",
+        "target": "services/orders.py::compute_order_total::n5",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n6",
+        "target": "services/orders.py::compute_order_total::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n5",
+        "target": "services/orders.py::compute_order_total::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n3",
+        "target": "services/orders.py::compute_order_total::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n4",
+        "target": "services/orders.py::compute_order_total::n7",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/orders.py::compute_order_total::n0",
+        "target": "services/orders.py::compute_order_total::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/orders.py::create_order": {
+    "target": "services/orders.py::create_order",
+    "entry": "services/orders.py::create_order::n0",
+    "nodes": [
+      {
+        "id": "services/orders.py::create_order::n0",
+        "kind": "entry",
+        "label": "def create_order(session, payload):",
+        "line": 18,
+        "end_line": 18
+      },
+      {
+        "id": "services/orders.py::create_order::n1",
+        "kind": "statement",
+        "label": "errors = validate_order_payload(payload)",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "services/orders.py::create_order::n2",
+        "kind": "decision",
+        "label": "if errors",
+        "line": 20,
+        "end_line": 21
+      },
+      {
+        "id": "services/orders.py::create_order::n3",
+        "kind": "statement",
+        "label": "raise ValueError(f\"invalid order payload: {', '.join(errors)}\")",
+        "line": 21,
+        "end_line": 21
+      },
+      {
+        "id": "services/orders.py::create_order::n4",
+        "kind": "statement",
+        "label": "order = Order(customer_id=payload['customer_id'], order_date=payload.get('order_date', date.today()), status='placed', amount=payload['amount'], credit_card_amount=payload.get('credit_card_amount', 0), coupon_amount=payload.get('coupon_amount', 0), bank_transfer_amount=payload.get('bank_transfer_amount', 0), gift_card_amount=payload.get('gift_card_amount', 0))",
+        "line": 23,
+        "end_line": 32
+      },
+      {
+        "id": "services/orders.py::create_order::n5",
+        "kind": "statement",
+        "label": "session.add(order)",
+        "line": 33,
+        "end_line": 33
+      },
+      {
+        "id": "services/orders.py::create_order::n6",
+        "kind": "statement",
+        "label": "session.flush()",
+        "line": 34,
+        "end_line": 34
+      },
+      {
+        "id": "services/orders.py::create_order::n7",
+        "kind": "statement",
+        "label": "notify_customer(order.customer_id, 'order_placed', order_id=order.order_id)",
+        "line": 35,
+        "end_line": 35
+      },
+      {
+        "id": "services/orders.py::create_order::n8",
+        "kind": "return",
+        "label": "return order",
+        "line": 36,
+        "end_line": 36
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::create_order::n2",
+        "target": "services/orders.py::create_order::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::create_order::n1",
+        "target": "services/orders.py::create_order::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::create_order::n2",
+        "target": "services/orders.py::create_order::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::create_order::n4",
+        "target": "services/orders.py::create_order::n5",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::create_order::n5",
+        "target": "services/orders.py::create_order::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::create_order::n6",
+        "target": "services/orders.py::create_order::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::create_order::n7",
+        "target": "services/orders.py::create_order::n8",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::create_order::n0",
+        "target": "services/orders.py::create_order::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/orders.py::list_orders_for_customer": {
+    "target": "services/orders.py::list_orders_for_customer",
+    "entry": "services/orders.py::list_orders_for_customer::n0",
+    "nodes": [
+      {
+        "id": "services/orders.py::list_orders_for_customer::n0",
+        "kind": "entry",
+        "label": "def list_orders_for_customer(session, customer_id, statuses=None):",
+        "line": 96,
+        "end_line": 96
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n1",
+        "kind": "statement",
+        "label": "query = session.query(Order).filter_by(customer_id=customer_id)",
+        "line": 97,
+        "end_line": 97
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n2",
+        "kind": "statement",
+        "label": "orders = query.all()",
+        "line": 98,
+        "end_line": 98
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n3",
+        "kind": "decision",
+        "label": "if statuses is None",
+        "line": 100,
+        "end_line": 101
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n4",
+        "kind": "return",
+        "label": "return orders",
+        "line": 101,
+        "end_line": 101
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n5",
+        "kind": "statement",
+        "label": "matched = []",
+        "line": 103,
+        "end_line": 103
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n6",
+        "kind": "loop",
+        "label": "for order in orders",
+        "line": 104,
+        "end_line": 106
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n7",
+        "kind": "decision",
+        "label": "if order.status in statuses",
+        "line": 105,
+        "end_line": 106
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n8",
+        "kind": "statement",
+        "label": "matched.append(order)",
+        "line": 106,
+        "end_line": 106
+      },
+      {
+        "id": "services/orders.py::list_orders_for_customer::n9",
+        "kind": "return",
+        "label": "return matched",
+        "line": 107,
+        "end_line": 107
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::list_orders_for_customer::n1",
+        "target": "services/orders.py::list_orders_for_customer::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n3",
+        "target": "services/orders.py::list_orders_for_customer::n4",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n2",
+        "target": "services/orders.py::list_orders_for_customer::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n3",
+        "target": "services/orders.py::list_orders_for_customer::n5",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n7",
+        "target": "services/orders.py::list_orders_for_customer::n8",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n6",
+        "target": "services/orders.py::list_orders_for_customer::n7",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n8",
+        "target": "services/orders.py::list_orders_for_customer::n6",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n7",
+        "target": "services/orders.py::list_orders_for_customer::n6",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n5",
+        "target": "services/orders.py::list_orders_for_customer::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n6",
+        "target": "services/orders.py::list_orders_for_customer::n9",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/orders.py::list_orders_for_customer::n0",
+        "target": "services/orders.py::list_orders_for_customer::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/orders.py::transition_order_status": {
+    "target": "services/orders.py::transition_order_status",
+    "entry": "services/orders.py::transition_order_status::n0",
+    "nodes": [
+      {
+        "id": "services/orders.py::transition_order_status::n0",
+        "kind": "entry",
+        "label": "def transition_order_status(session, order_id, new_status):",
+        "line": 39,
+        "end_line": 39
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n1",
+        "kind": "statement",
+        "label": "'Move an order to `new_status`, enforcing the allowed transition graph.'",
+        "line": 40,
+        "end_line": 40
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n2",
+        "kind": "decision",
+        "label": "if new_status not in ORDER_STATUSES",
+        "line": 41,
+        "end_line": 42
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n3",
+        "kind": "statement",
+        "label": "raise ValueError(f'unknown status: {new_status}')",
+        "line": 42,
+        "end_line": 42
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n4",
+        "kind": "statement",
+        "label": "order = session.query(Order).filter_by(order_id=order_id).first()",
+        "line": 44,
+        "end_line": 44
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n5",
+        "kind": "decision",
+        "label": "if order is None",
+        "line": 45,
+        "end_line": 46
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n6",
+        "kind": "statement",
+        "label": "raise LookupError(f'no such order: {order_id}')",
+        "line": 46,
+        "end_line": 46
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n7",
+        "kind": "statement",
+        "label": "allowed = _ALLOWED_TRANSITIONS.get(order.status, ())",
+        "line": 48,
+        "end_line": 48
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n8",
+        "kind": "decision",
+        "label": "if new_status not in allowed",
+        "line": 49,
+        "end_line": 52
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n9",
+        "kind": "statement",
+        "label": "raise ValueError(f'cannot move order {order_id} from {order.status} to {new_status}')",
+        "line": 50,
+        "end_line": 52
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n10",
+        "kind": "statement",
+        "label": "previous = order.status",
+        "line": 54,
+        "end_line": 54
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n11",
+        "kind": "statement",
+        "label": "order.status = new_status",
+        "line": 55,
+        "end_line": 55
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n12",
+        "kind": "decision",
+        "label": "if new_status == 'shipped'",
+        "line": 57,
+        "end_line": 62
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n13",
+        "kind": "statement",
+        "label": "notify_customer(order.customer_id, 'order_shipped', order_id=order_id)",
+        "line": 58,
+        "end_line": 58
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n14",
+        "kind": "decision",
+        "label": "if new_status == 'completed'",
+        "line": 59,
+        "end_line": 62
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n15",
+        "kind": "statement",
+        "label": "notify_customer(order.customer_id, 'order_completed', order_id=order_id)",
+        "line": 60,
+        "end_line": 60
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n16",
+        "kind": "decision",
+        "label": "if new_status == 'returned' and previous != 'returned'",
+        "line": 61,
+        "end_line": 62
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n17",
+        "kind": "statement",
+        "label": "notify_customer(order.customer_id, 'return_processed', order_id=order_id)",
+        "line": 62,
+        "end_line": 62
+      },
+      {
+        "id": "services/orders.py::transition_order_status::n18",
+        "kind": "return",
+        "label": "return order",
+        "line": 64,
+        "end_line": 64
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/orders.py::transition_order_status::n2",
+        "target": "services/orders.py::transition_order_status::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n1",
+        "target": "services/orders.py::transition_order_status::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n2",
+        "target": "services/orders.py::transition_order_status::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n5",
+        "target": "services/orders.py::transition_order_status::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n4",
+        "target": "services/orders.py::transition_order_status::n5",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n5",
+        "target": "services/orders.py::transition_order_status::n7",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n8",
+        "target": "services/orders.py::transition_order_status::n9",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n7",
+        "target": "services/orders.py::transition_order_status::n8",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n8",
+        "target": "services/orders.py::transition_order_status::n10",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n10",
+        "target": "services/orders.py::transition_order_status::n11",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n12",
+        "target": "services/orders.py::transition_order_status::n13",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n14",
+        "target": "services/orders.py::transition_order_status::n15",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n16",
+        "target": "services/orders.py::transition_order_status::n17",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n14",
+        "target": "services/orders.py::transition_order_status::n16",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n12",
+        "target": "services/orders.py::transition_order_status::n14",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n11",
+        "target": "services/orders.py::transition_order_status::n12",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n13",
+        "target": "services/orders.py::transition_order_status::n18",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n15",
+        "target": "services/orders.py::transition_order_status::n18",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n17",
+        "target": "services/orders.py::transition_order_status::n18",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n16",
+        "target": "services/orders.py::transition_order_status::n18",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/orders.py::transition_order_status::n0",
+        "target": "services/orders.py::transition_order_status::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/payments.py::process_payment": {
+    "target": "services/payments.py::process_payment",
+    "entry": "services/payments.py::process_payment::n0",
+    "nodes": [
+      {
+        "id": "services/payments.py::process_payment::n0",
+        "kind": "entry",
+        "label": "def process_payment(session, order_id, method, amount):",
+        "line": 17,
+        "end_line": 17
+      },
+      {
+        "id": "services/payments.py::process_payment::n1",
+        "kind": "decision",
+        "label": "if not validate_payment_method(method)",
+        "line": 18,
+        "end_line": 19
+      },
+      {
+        "id": "services/payments.py::process_payment::n2",
+        "kind": "statement",
+        "label": "raise ValueError(f'unsupported payment method: {method}')",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "services/payments.py::process_payment::n3",
+        "kind": "decision",
+        "label": "if amount <= 0",
+        "line": 20,
+        "end_line": 21
+      },
+      {
+        "id": "services/payments.py::process_payment::n4",
+        "kind": "statement",
+        "label": "raise ValueError('payment amount must be positive')",
+        "line": 21,
+        "end_line": 21
+      },
+      {
+        "id": "services/payments.py::process_payment::n5",
+        "kind": "statement",
+        "label": "order = session.query(Order).filter_by(order_id=order_id).first()",
+        "line": 23,
+        "end_line": 23
+      },
+      {
+        "id": "services/payments.py::process_payment::n6",
+        "kind": "decision",
+        "label": "if order is None",
+        "line": 24,
+        "end_line": 25
+      },
+      {
+        "id": "services/payments.py::process_payment::n7",
+        "kind": "statement",
+        "label": "raise LookupError(f'no such order: {order_id}')",
+        "line": 25,
+        "end_line": 25
+      },
+      {
+        "id": "services/payments.py::process_payment::n8",
+        "kind": "statement",
+        "label": "column = _COLUMN_BY_METHOD[method]",
+        "line": 27,
+        "end_line": 27
+      },
+      {
+        "id": "services/payments.py::process_payment::n9",
+        "kind": "statement",
+        "label": "current = getattr(order, column) or 0",
+        "line": 28,
+        "end_line": 28
+      },
+      {
+        "id": "services/payments.py::process_payment::n10",
+        "kind": "statement",
+        "label": "setattr(order, column, float(current) + amount)",
+        "line": 29,
+        "end_line": 29
+      },
+      {
+        "id": "services/payments.py::process_payment::n11",
+        "kind": "statement",
+        "label": "order.amount = (order.amount or 0) + amount",
+        "line": 30,
+        "end_line": 30
+      },
+      {
+        "id": "services/payments.py::process_payment::n12",
+        "kind": "return",
+        "label": "return order",
+        "line": 31,
+        "end_line": 31
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/payments.py::process_payment::n1",
+        "target": "services/payments.py::process_payment::n2",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::process_payment::n3",
+        "target": "services/payments.py::process_payment::n4",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::process_payment::n1",
+        "target": "services/payments.py::process_payment::n3",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::process_payment::n3",
+        "target": "services/payments.py::process_payment::n5",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::process_payment::n6",
+        "target": "services/payments.py::process_payment::n7",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::process_payment::n5",
+        "target": "services/payments.py::process_payment::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::process_payment::n6",
+        "target": "services/payments.py::process_payment::n8",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::process_payment::n8",
+        "target": "services/payments.py::process_payment::n9",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::process_payment::n9",
+        "target": "services/payments.py::process_payment::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::process_payment::n10",
+        "target": "services/payments.py::process_payment::n11",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::process_payment::n11",
+        "target": "services/payments.py::process_payment::n12",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::process_payment::n0",
+        "target": "services/payments.py::process_payment::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/payments.py::reconcile_payment_methods": {
+    "target": "services/payments.py::reconcile_payment_methods",
+    "entry": "services/payments.py::reconcile_payment_methods::n0",
+    "nodes": [
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n0",
+        "kind": "entry",
+        "label": "def reconcile_payment_methods(session, order_id):",
+        "line": 50,
+        "end_line": 50
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n1",
+        "kind": "statement",
+        "label": "'Recompute `amount` from the four per-method columns, method by method.\\n\\n    Surfaces any drift (an order whose columns no longer sum to `amount`,\\n    e.g. after a partial refund rounding error) instead of trusting the\\n    cached total blindly.\\n    '",
+        "line": 51,
+        "end_line": 56
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n2",
+        "kind": "statement",
+        "label": "order = session.query(Order).filter_by(order_id=order_id).first()",
+        "line": 57,
+        "end_line": 57
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n3",
+        "kind": "decision",
+        "label": "if order is None",
+        "line": 58,
+        "end_line": 59
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n4",
+        "kind": "statement",
+        "label": "raise LookupError(f'no such order: {order_id}')",
+        "line": 59,
+        "end_line": 59
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n5",
+        "kind": "statement",
+        "label": "recomputed = 0.0",
+        "line": 61,
+        "end_line": 61
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n6",
+        "kind": "statement",
+        "label": "breakdown = {}",
+        "line": 62,
+        "end_line": 62
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n7",
+        "kind": "loop",
+        "label": "for method in PAYMENT_METHODS",
+        "line": 63,
+        "end_line": 69
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n8",
+        "kind": "statement",
+        "label": "column = _COLUMN_BY_METHOD[method]",
+        "line": 64,
+        "end_line": 64
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n9",
+        "kind": "statement",
+        "label": "value = getattr(order, column)",
+        "line": 65,
+        "end_line": 65
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n10",
+        "kind": "decision",
+        "label": "if value is None",
+        "line": 66,
+        "end_line": 67
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n11",
+        "kind": "statement",
+        "label": "continue",
+        "line": 67,
+        "end_line": 67
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n12",
+        "kind": "statement",
+        "label": "recomputed += float(value)",
+        "line": 68,
+        "end_line": 68
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n13",
+        "kind": "statement",
+        "label": "breakdown[method] = float(value)",
+        "line": 69,
+        "end_line": 69
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n14",
+        "kind": "statement",
+        "label": "drift = round(recomputed - float(order.amount or 0), 2)",
+        "line": 71,
+        "end_line": 71
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n15",
+        "kind": "decision",
+        "label": "if drift != 0",
+        "line": 72,
+        "end_line": 73
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n16",
+        "kind": "statement",
+        "label": "order.amount = recomputed",
+        "line": 73,
+        "end_line": 73
+      },
+      {
+        "id": "services/payments.py::reconcile_payment_methods::n17",
+        "kind": "return",
+        "label": "return {'order_id': order_id, 'breakdown': breakdown, 'drift': drift}",
+        "line": 75,
+        "end_line": 75
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n1",
+        "target": "services/payments.py::reconcile_payment_methods::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n3",
+        "target": "services/payments.py::reconcile_payment_methods::n4",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n2",
+        "target": "services/payments.py::reconcile_payment_methods::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n3",
+        "target": "services/payments.py::reconcile_payment_methods::n5",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n5",
+        "target": "services/payments.py::reconcile_payment_methods::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n8",
+        "target": "services/payments.py::reconcile_payment_methods::n9",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n11",
+        "target": "services/payments.py::reconcile_payment_methods::n7",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n10",
+        "target": "services/payments.py::reconcile_payment_methods::n11",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n9",
+        "target": "services/payments.py::reconcile_payment_methods::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n10",
+        "target": "services/payments.py::reconcile_payment_methods::n12",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n12",
+        "target": "services/payments.py::reconcile_payment_methods::n13",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n7",
+        "target": "services/payments.py::reconcile_payment_methods::n8",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n13",
+        "target": "services/payments.py::reconcile_payment_methods::n7",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n6",
+        "target": "services/payments.py::reconcile_payment_methods::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n7",
+        "target": "services/payments.py::reconcile_payment_methods::n14",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n15",
+        "target": "services/payments.py::reconcile_payment_methods::n16",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n14",
+        "target": "services/payments.py::reconcile_payment_methods::n15",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n16",
+        "target": "services/payments.py::reconcile_payment_methods::n17",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n15",
+        "target": "services/payments.py::reconcile_payment_methods::n17",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::reconcile_payment_methods::n0",
+        "target": "services/payments.py::reconcile_payment_methods::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/payments.py::refund_payment": {
+    "target": "services/payments.py::refund_payment",
+    "entry": "services/payments.py::refund_payment::n0",
+    "nodes": [
+      {
+        "id": "services/payments.py::refund_payment::n0",
+        "kind": "entry",
+        "label": "def refund_payment(session, order_id, method, amount):",
+        "line": 34,
+        "end_line": 34
+      },
+      {
+        "id": "services/payments.py::refund_payment::n1",
+        "kind": "statement",
+        "label": "order = session.query(Order).filter_by(order_id=order_id).first()",
+        "line": 35,
+        "end_line": 35
+      },
+      {
+        "id": "services/payments.py::refund_payment::n2",
+        "kind": "decision",
+        "label": "if order is None",
+        "line": 36,
+        "end_line": 37
+      },
+      {
+        "id": "services/payments.py::refund_payment::n3",
+        "kind": "statement",
+        "label": "raise LookupError(f'no such order: {order_id}')",
+        "line": 37,
+        "end_line": 37
+      },
+      {
+        "id": "services/payments.py::refund_payment::n4",
+        "kind": "statement",
+        "label": "column = _COLUMN_BY_METHOD.get(method)",
+        "line": 39,
+        "end_line": 39
+      },
+      {
+        "id": "services/payments.py::refund_payment::n5",
+        "kind": "decision",
+        "label": "if column is None",
+        "line": 40,
+        "end_line": 41
+      },
+      {
+        "id": "services/payments.py::refund_payment::n6",
+        "kind": "statement",
+        "label": "raise ValueError(f'unsupported payment method: {method}')",
+        "line": 41,
+        "end_line": 41
+      },
+      {
+        "id": "services/payments.py::refund_payment::n7",
+        "kind": "statement",
+        "label": "current = getattr(order, column) or 0",
+        "line": 43,
+        "end_line": 43
+      },
+      {
+        "id": "services/payments.py::refund_payment::n8",
+        "kind": "statement",
+        "label": "refundable = min(float(current), amount)",
+        "line": 44,
+        "end_line": 44
+      },
+      {
+        "id": "services/payments.py::refund_payment::n9",
+        "kind": "statement",
+        "label": "setattr(order, column, float(current) - refundable)",
+        "line": 45,
+        "end_line": 45
+      },
+      {
+        "id": "services/payments.py::refund_payment::n10",
+        "kind": "statement",
+        "label": "order.amount = max(0.0, (order.amount or 0) - refundable)",
+        "line": 46,
+        "end_line": 46
+      },
+      {
+        "id": "services/payments.py::refund_payment::n11",
+        "kind": "return",
+        "label": "return refundable",
+        "line": 47,
+        "end_line": 47
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/payments.py::refund_payment::n2",
+        "target": "services/payments.py::refund_payment::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::refund_payment::n1",
+        "target": "services/payments.py::refund_payment::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::refund_payment::n2",
+        "target": "services/payments.py::refund_payment::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::refund_payment::n5",
+        "target": "services/payments.py::refund_payment::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/payments.py::refund_payment::n4",
+        "target": "services/payments.py::refund_payment::n5",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::refund_payment::n5",
+        "target": "services/payments.py::refund_payment::n7",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/payments.py::refund_payment::n7",
+        "target": "services/payments.py::refund_payment::n8",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::refund_payment::n8",
+        "target": "services/payments.py::refund_payment::n9",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::refund_payment::n9",
+        "target": "services/payments.py::refund_payment::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::refund_payment::n10",
+        "target": "services/payments.py::refund_payment::n11",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/payments.py::refund_payment::n0",
+        "target": "services/payments.py::refund_payment::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/payments.py::validate_payment_method": {
+    "target": "services/payments.py::validate_payment_method",
+    "entry": "services/payments.py::validate_payment_method::n0",
+    "nodes": [
+      {
+        "id": "services/payments.py::validate_payment_method::n0",
+        "kind": "entry",
+        "label": "def validate_payment_method(method):",
+        "line": 13,
+        "end_line": 13
+      },
+      {
+        "id": "services/payments.py::validate_payment_method::n1",
+        "kind": "return",
+        "label": "return method in PAYMENT_METHODS",
+        "line": 14,
+        "end_line": 14
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/payments.py::validate_payment_method::n0",
+        "target": "services/payments.py::validate_payment_method::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/reporting.py::customer_lifetime_value": {
+    "target": "services/reporting.py::customer_lifetime_value",
+    "entry": "services/reporting.py::customer_lifetime_value::n0",
+    "nodes": [
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n0",
+        "kind": "entry",
+        "label": "def customer_lifetime_value(session, customer_id):",
+        "line": 14,
+        "end_line": 14
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n1",
+        "kind": "statement",
+        "label": "customer = session.query(Customer).filter_by(customer_id=customer_id).first()",
+        "line": 15,
+        "end_line": 15
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n2",
+        "kind": "decision",
+        "label": "if customer is None",
+        "line": 16,
+        "end_line": 17
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n3",
+        "kind": "return",
+        "label": "return 0.0",
+        "line": 17,
+        "end_line": 17
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n4",
+        "kind": "statement",
+        "label": "total = 0.0",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n5",
+        "kind": "loop",
+        "label": "for order in customer.orders",
+        "line": 20,
+        "end_line": 22
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n6",
+        "kind": "decision",
+        "label": "if order.amount is not None",
+        "line": 21,
+        "end_line": 22
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n7",
+        "kind": "statement",
+        "label": "total += float(order.amount)",
+        "line": 22,
+        "end_line": 22
+      },
+      {
+        "id": "services/reporting.py::customer_lifetime_value::n8",
+        "kind": "return",
+        "label": "return total",
+        "line": 23,
+        "end_line": 23
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n2",
+        "target": "services/reporting.py::customer_lifetime_value::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n1",
+        "target": "services/reporting.py::customer_lifetime_value::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n2",
+        "target": "services/reporting.py::customer_lifetime_value::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n6",
+        "target": "services/reporting.py::customer_lifetime_value::n7",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n5",
+        "target": "services/reporting.py::customer_lifetime_value::n6",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n7",
+        "target": "services/reporting.py::customer_lifetime_value::n5",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n6",
+        "target": "services/reporting.py::customer_lifetime_value::n5",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n4",
+        "target": "services/reporting.py::customer_lifetime_value::n5",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n5",
+        "target": "services/reporting.py::customer_lifetime_value::n8",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/reporting.py::customer_lifetime_value::n0",
+        "target": "services/reporting.py::customer_lifetime_value::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/reporting.py::monthly_revenue_report": {
+    "target": "services/reporting.py::monthly_revenue_report",
+    "entry": "services/reporting.py::monthly_revenue_report::n0",
+    "nodes": [
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n0",
+        "kind": "entry",
+        "label": "def monthly_revenue_report(session, year):",
+        "line": 36,
+        "end_line": 36
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n1",
+        "kind": "statement",
+        "label": "\"Bucket every completed order's amount by month, for one year.\"",
+        "line": 37,
+        "end_line": 37
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n2",
+        "kind": "statement",
+        "label": "by_month = defaultdict(float)",
+        "line": 38,
+        "end_line": 38
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n3",
+        "kind": "loop",
+        "label": "for customer in session.query(Customer).all()",
+        "line": 40,
+        "end_line": 49
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n4",
+        "kind": "loop",
+        "label": "for order in customer.orders",
+        "line": 41,
+        "end_line": 49
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n5",
+        "kind": "decision",
+        "label": "if order.order_date is None or order.order_date.year != year",
+        "line": 42,
+        "end_line": 43
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n6",
+        "kind": "statement",
+        "label": "continue",
+        "line": 43,
+        "end_line": 43
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n7",
+        "kind": "decision",
+        "label": "if order.status != 'completed'",
+        "line": 44,
+        "end_line": 45
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n8",
+        "kind": "statement",
+        "label": "continue",
+        "line": 45,
+        "end_line": 45
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n9",
+        "kind": "statement",
+        "label": "month = order.order_date.month",
+        "line": 47,
+        "end_line": 47
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n10",
+        "kind": "decision",
+        "label": "if order.amount is not None",
+        "line": 48,
+        "end_line": 49
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n11",
+        "kind": "statement",
+        "label": "by_month[month] += float(order.amount)",
+        "line": 49,
+        "end_line": 49
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n12",
+        "kind": "statement",
+        "label": "report = []",
+        "line": 51,
+        "end_line": 51
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n13",
+        "kind": "loop",
+        "label": "for month in range(1, 13)",
+        "line": 52,
+        "end_line": 53
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n14",
+        "kind": "statement",
+        "label": "report.append({'month': month, 'revenue': round(by_month.get(month, 0.0), 2)})",
+        "line": 53,
+        "end_line": 53
+      },
+      {
+        "id": "services/reporting.py::monthly_revenue_report::n15",
+        "kind": "return",
+        "label": "return report",
+        "line": 54,
+        "end_line": 54
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n1",
+        "target": "services/reporting.py::monthly_revenue_report::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n6",
+        "target": "services/reporting.py::monthly_revenue_report::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n5",
+        "target": "services/reporting.py::monthly_revenue_report::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n8",
+        "target": "services/reporting.py::monthly_revenue_report::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n7",
+        "target": "services/reporting.py::monthly_revenue_report::n8",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n5",
+        "target": "services/reporting.py::monthly_revenue_report::n7",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n7",
+        "target": "services/reporting.py::monthly_revenue_report::n9",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n10",
+        "target": "services/reporting.py::monthly_revenue_report::n11",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n9",
+        "target": "services/reporting.py::monthly_revenue_report::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n4",
+        "target": "services/reporting.py::monthly_revenue_report::n5",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n11",
+        "target": "services/reporting.py::monthly_revenue_report::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n10",
+        "target": "services/reporting.py::monthly_revenue_report::n4",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n3",
+        "target": "services/reporting.py::monthly_revenue_report::n4",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n4",
+        "target": "services/reporting.py::monthly_revenue_report::n3",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n2",
+        "target": "services/reporting.py::monthly_revenue_report::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n3",
+        "target": "services/reporting.py::monthly_revenue_report::n12",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n13",
+        "target": "services/reporting.py::monthly_revenue_report::n14",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n14",
+        "target": "services/reporting.py::monthly_revenue_report::n13",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n12",
+        "target": "services/reporting.py::monthly_revenue_report::n13",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n13",
+        "target": "services/reporting.py::monthly_revenue_report::n15",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/reporting.py::monthly_revenue_report::n0",
+        "target": "services/reporting.py::monthly_revenue_report::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/reporting.py::order_status_breakdown": {
+    "target": "services/reporting.py::order_status_breakdown",
+    "entry": "services/reporting.py::order_status_breakdown::n0",
+    "nodes": [
+      {
+        "id": "services/reporting.py::order_status_breakdown::n0",
+        "kind": "entry",
+        "label": "def order_status_breakdown(session):",
+        "line": 57,
+        "end_line": 57
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n1",
+        "kind": "statement",
+        "label": "counts = {status: 0 for status in ORDER_STATUSES}",
+        "line": 58,
+        "end_line": 58
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n2",
+        "kind": "loop",
+        "label": "for customer in session.query(Customer).all()",
+        "line": 59,
+        "end_line": 64
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n3",
+        "kind": "loop",
+        "label": "for order in customer.orders",
+        "line": 60,
+        "end_line": 64
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n4",
+        "kind": "decision",
+        "label": "if order.status in counts",
+        "line": 61,
+        "end_line": 64
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n5",
+        "kind": "statement",
+        "label": "counts[order.status] += 1",
+        "line": 62,
+        "end_line": 62
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n6",
+        "kind": "statement",
+        "label": "counts[order.status] = counts.get(order.status, 0) + 1",
+        "line": 64,
+        "end_line": 64
+      },
+      {
+        "id": "services/reporting.py::order_status_breakdown::n7",
+        "kind": "return",
+        "label": "return counts",
+        "line": 65,
+        "end_line": 65
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/reporting.py::order_status_breakdown::n4",
+        "target": "services/reporting.py::order_status_breakdown::n5",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n4",
+        "target": "services/reporting.py::order_status_breakdown::n6",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n3",
+        "target": "services/reporting.py::order_status_breakdown::n4",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n5",
+        "target": "services/reporting.py::order_status_breakdown::n3",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n6",
+        "target": "services/reporting.py::order_status_breakdown::n3",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n2",
+        "target": "services/reporting.py::order_status_breakdown::n3",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n3",
+        "target": "services/reporting.py::order_status_breakdown::n2",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n1",
+        "target": "services/reporting.py::order_status_breakdown::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n2",
+        "target": "services/reporting.py::order_status_breakdown::n7",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/reporting.py::order_status_breakdown::n0",
+        "target": "services/reporting.py::order_status_breakdown::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/reporting.py::raw_high_value_customers": {
+    "target": "services/reporting.py::raw_high_value_customers",
+    "entry": "services/reporting.py::raw_high_value_customers::n0",
+    "nodes": [
+      {
+        "id": "services/reporting.py::raw_high_value_customers::n0",
+        "kind": "entry",
+        "label": "def raw_high_value_customers(cursor, threshold=1000):",
+        "line": 68,
+        "end_line": 68
+      },
+      {
+        "id": "services/reporting.py::raw_high_value_customers::n1",
+        "kind": "statement",
+        "label": "'Same intent as `flag_high_value_customers`, via a raw cursor query.'",
+        "line": 69,
+        "end_line": 69
+      },
+      {
+        "id": "services/reporting.py::raw_high_value_customers::n2",
+        "kind": "statement",
+        "label": "cursor.execute('SELECT customer_id, first_name, last_name, total_order_amount FROM customers WHERE total_order_amount > ?', (threshold,))",
+        "line": 70,
+        "end_line": 74
+      },
+      {
+        "id": "services/reporting.py::raw_high_value_customers::n3",
+        "kind": "return",
+        "label": "return cursor.fetchall()",
+        "line": 75,
+        "end_line": 75
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/reporting.py::raw_high_value_customers::n1",
+        "target": "services/reporting.py::raw_high_value_customers::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::raw_high_value_customers::n2",
+        "target": "services/reporting.py::raw_high_value_customers::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::raw_high_value_customers::n0",
+        "target": "services/reporting.py::raw_high_value_customers::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "services/reporting.py::top_customers_by_spend": {
+    "target": "services/reporting.py::top_customers_by_spend",
+    "entry": "services/reporting.py::top_customers_by_spend::n0",
+    "nodes": [
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n0",
+        "kind": "entry",
+        "label": "def top_customers_by_spend(session, limit=10):",
+        "line": 26,
+        "end_line": 26
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n1",
+        "kind": "statement",
+        "label": "totals = []",
+        "line": 27,
+        "end_line": 27
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n2",
+        "kind": "loop",
+        "label": "for customer in session.query(Customer).all()",
+        "line": 28,
+        "end_line": 30
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n3",
+        "kind": "statement",
+        "label": "value = customer_lifetime_value(session, customer.customer_id)",
+        "line": 29,
+        "end_line": 29
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n4",
+        "kind": "statement",
+        "label": "totals.append((customer.customer_id, value))",
+        "line": 30,
+        "end_line": 30
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n5",
+        "kind": "statement",
+        "label": "totals.sort(key=lambda row: row[1], reverse=True)",
+        "line": 32,
+        "end_line": 32
+      },
+      {
+        "id": "services/reporting.py::top_customers_by_spend::n6",
+        "kind": "return",
+        "label": "return totals[:limit]",
+        "line": 33,
+        "end_line": 33
+      }
+    ],
+    "edges": [
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n3",
+        "target": "services/reporting.py::top_customers_by_spend::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n2",
+        "target": "services/reporting.py::top_customers_by_spend::n3",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n4",
+        "target": "services/reporting.py::top_customers_by_spend::n2",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n1",
+        "target": "services/reporting.py::top_customers_by_spend::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n2",
+        "target": "services/reporting.py::top_customers_by_spend::n5",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n5",
+        "target": "services/reporting.py::top_customers_by_spend::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "services/reporting.py::top_customers_by_spend::n0",
+        "target": "services/reporting.py::top_customers_by_spend::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/formatting.py::format_currency": {
+    "target": "utils/formatting.py::format_currency",
+    "entry": "utils/formatting.py::format_currency::n0",
+    "nodes": [
+      {
+        "id": "utils/formatting.py::format_currency::n0",
+        "kind": "entry",
+        "label": "def format_currency(amount, currency='AUD'):",
+        "line": 4,
+        "end_line": 4
+      },
+      {
+        "id": "utils/formatting.py::format_currency::n1",
+        "kind": "decision",
+        "label": "if amount is None",
+        "line": 5,
+        "end_line": 6
+      },
+      {
+        "id": "utils/formatting.py::format_currency::n2",
+        "kind": "statement",
+        "label": "amount = 0",
+        "line": 6,
+        "end_line": 6
+      },
+      {
+        "id": "utils/formatting.py::format_currency::n3",
+        "kind": "return",
+        "label": "return f'{currency} {amount:,.2f}'",
+        "line": 7,
+        "end_line": 7
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/formatting.py::format_currency::n1",
+        "target": "utils/formatting.py::format_currency::n2",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/formatting.py::format_currency::n2",
+        "target": "utils/formatting.py::format_currency::n3",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/formatting.py::format_currency::n1",
+        "target": "utils/formatting.py::format_currency::n3",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/formatting.py::format_currency::n0",
+        "target": "utils/formatting.py::format_currency::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/formatting.py::format_customer_name": {
+    "target": "utils/formatting.py::format_customer_name",
+    "entry": "utils/formatting.py::format_customer_name::n0",
+    "nodes": [
+      {
+        "id": "utils/formatting.py::format_customer_name::n0",
+        "kind": "entry",
+        "label": "def format_customer_name(first_name, last_name):",
+        "line": 10,
+        "end_line": 10
+      },
+      {
+        "id": "utils/formatting.py::format_customer_name::n1",
+        "kind": "statement",
+        "label": "parts = [part for part in (first_name, last_name) if part]",
+        "line": 11,
+        "end_line": 11
+      },
+      {
+        "id": "utils/formatting.py::format_customer_name::n2",
+        "kind": "return",
+        "label": "return ' '.join(parts) if parts else 'Unknown customer'",
+        "line": 12,
+        "end_line": 12
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/formatting.py::format_customer_name::n1",
+        "target": "utils/formatting.py::format_customer_name::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/formatting.py::format_customer_name::n0",
+        "target": "utils/formatting.py::format_customer_name::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/formatting.py::humanize_status": {
+    "target": "utils/formatting.py::humanize_status",
+    "entry": "utils/formatting.py::humanize_status::n0",
+    "nodes": [
+      {
+        "id": "utils/formatting.py::humanize_status::n0",
+        "kind": "entry",
+        "label": "def humanize_status(status):",
+        "line": 15,
+        "end_line": 15
+      },
+      {
+        "id": "utils/formatting.py::humanize_status::n1",
+        "kind": "decision",
+        "label": "if not status",
+        "line": 16,
+        "end_line": 17
+      },
+      {
+        "id": "utils/formatting.py::humanize_status::n2",
+        "kind": "return",
+        "label": "return 'Unknown'",
+        "line": 17,
+        "end_line": 17
+      },
+      {
+        "id": "utils/formatting.py::humanize_status::n3",
+        "kind": "statement",
+        "label": "words = status.split('_')",
+        "line": 18,
+        "end_line": 18
+      },
+      {
+        "id": "utils/formatting.py::humanize_status::n4",
+        "kind": "return",
+        "label": "return ' '.join((word.capitalize() for word in words))",
+        "line": 19,
+        "end_line": 19
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/formatting.py::humanize_status::n1",
+        "target": "utils/formatting.py::humanize_status::n2",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/formatting.py::humanize_status::n1",
+        "target": "utils/formatting.py::humanize_status::n3",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/formatting.py::humanize_status::n3",
+        "target": "utils/formatting.py::humanize_status::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/formatting.py::humanize_status::n0",
+        "target": "utils/formatting.py::humanize_status::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/pagination.py::build_page_links": {
+    "target": "utils/pagination.py::build_page_links",
+    "entry": "utils/pagination.py::build_page_links::n0",
+    "nodes": [
+      {
+        "id": "utils/pagination.py::build_page_links::n0",
+        "kind": "entry",
+        "label": "def build_page_links(base_url, page, total_pages):",
+        "line": 30,
+        "end_line": 30
+      },
+      {
+        "id": "utils/pagination.py::build_page_links::n1",
+        "kind": "statement",
+        "label": "links = {}",
+        "line": 31,
+        "end_line": 31
+      },
+      {
+        "id": "utils/pagination.py::build_page_links::n2",
+        "kind": "decision",
+        "label": "if page > 1",
+        "line": 32,
+        "end_line": 33
+      },
+      {
+        "id": "utils/pagination.py::build_page_links::n3",
+        "kind": "statement",
+        "label": "links['prev'] = f'{base_url}?page={page - 1}'",
+        "line": 33,
+        "end_line": 33
+      },
+      {
+        "id": "utils/pagination.py::build_page_links::n4",
+        "kind": "decision",
+        "label": "if page < total_pages",
+        "line": 34,
+        "end_line": 35
+      },
+      {
+        "id": "utils/pagination.py::build_page_links::n5",
+        "kind": "statement",
+        "label": "links['next'] = f'{base_url}?page={page + 1}'",
+        "line": 35,
+        "end_line": 35
+      },
+      {
+        "id": "utils/pagination.py::build_page_links::n6",
+        "kind": "return",
+        "label": "return links",
+        "line": 36,
+        "end_line": 36
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/pagination.py::build_page_links::n2",
+        "target": "utils/pagination.py::build_page_links::n3",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n1",
+        "target": "utils/pagination.py::build_page_links::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n4",
+        "target": "utils/pagination.py::build_page_links::n5",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n3",
+        "target": "utils/pagination.py::build_page_links::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n2",
+        "target": "utils/pagination.py::build_page_links::n4",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n5",
+        "target": "utils/pagination.py::build_page_links::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n4",
+        "target": "utils/pagination.py::build_page_links::n6",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/pagination.py::build_page_links::n0",
+        "target": "utils/pagination.py::build_page_links::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/pagination.py::paginate": {
+    "target": "utils/pagination.py::paginate",
+    "entry": "utils/pagination.py::paginate::n0",
+    "nodes": [
+      {
+        "id": "utils/pagination.py::paginate::n0",
+        "kind": "entry",
+        "label": "def paginate(items, page=1, page_size=20):",
+        "line": 4,
+        "end_line": 4
+      },
+      {
+        "id": "utils/pagination.py::paginate::n1",
+        "kind": "decision",
+        "label": "if page < 1",
+        "line": 5,
+        "end_line": 6
+      },
+      {
+        "id": "utils/pagination.py::paginate::n2",
+        "kind": "statement",
+        "label": "raise ValueError('page must be >= 1')",
+        "line": 6,
+        "end_line": 6
+      },
+      {
+        "id": "utils/pagination.py::paginate::n3",
+        "kind": "decision",
+        "label": "if page_size < 1",
+        "line": 7,
+        "end_line": 8
+      },
+      {
+        "id": "utils/pagination.py::paginate::n4",
+        "kind": "statement",
+        "label": "raise ValueError('page_size must be >= 1')",
+        "line": 8,
+        "end_line": 8
+      },
+      {
+        "id": "utils/pagination.py::paginate::n5",
+        "kind": "statement",
+        "label": "start = (page - 1) * page_size",
+        "line": 10,
+        "end_line": 10
+      },
+      {
+        "id": "utils/pagination.py::paginate::n6",
+        "kind": "statement",
+        "label": "end = start + page_size",
+        "line": 11,
+        "end_line": 11
+      },
+      {
+        "id": "utils/pagination.py::paginate::n7",
+        "kind": "statement",
+        "label": "page_items = []",
+        "line": 13,
+        "end_line": 13
+      },
+      {
+        "id": "utils/pagination.py::paginate::n8",
+        "kind": "loop",
+        "label": "for (index, item) in enumerate(items)",
+        "line": 14,
+        "end_line": 19
+      },
+      {
+        "id": "utils/pagination.py::paginate::n9",
+        "kind": "decision",
+        "label": "if index < start",
+        "line": 15,
+        "end_line": 16
+      },
+      {
+        "id": "utils/pagination.py::paginate::n10",
+        "kind": "statement",
+        "label": "continue",
+        "line": 16,
+        "end_line": 16
+      },
+      {
+        "id": "utils/pagination.py::paginate::n11",
+        "kind": "decision",
+        "label": "if index >= end",
+        "line": 17,
+        "end_line": 18
+      },
+      {
+        "id": "utils/pagination.py::paginate::n12",
+        "kind": "statement",
+        "label": "break",
+        "line": 18,
+        "end_line": 18
+      },
+      {
+        "id": "utils/pagination.py::paginate::n13",
+        "kind": "statement",
+        "label": "page_items.append(item)",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "utils/pagination.py::paginate::n14",
+        "kind": "statement",
+        "label": "total_pages = (len(items) + page_size - 1) // page_size if items else 1",
+        "line": 21,
+        "end_line": 21
+      },
+      {
+        "id": "utils/pagination.py::paginate::n15",
+        "kind": "return",
+        "label": "return {'items': page_items, 'page': page, 'total_pages': total_pages, 'has_next': page < total_pages}",
+        "line": 22,
+        "end_line": 27
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/pagination.py::paginate::n1",
+        "target": "utils/pagination.py::paginate::n2",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n3",
+        "target": "utils/pagination.py::paginate::n4",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n1",
+        "target": "utils/pagination.py::paginate::n3",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n3",
+        "target": "utils/pagination.py::paginate::n5",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n5",
+        "target": "utils/pagination.py::paginate::n6",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n6",
+        "target": "utils/pagination.py::paginate::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n10",
+        "target": "utils/pagination.py::paginate::n8",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n9",
+        "target": "utils/pagination.py::paginate::n10",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n11",
+        "target": "utils/pagination.py::paginate::n12",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n9",
+        "target": "utils/pagination.py::paginate::n11",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n11",
+        "target": "utils/pagination.py::paginate::n13",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n8",
+        "target": "utils/pagination.py::paginate::n9",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n13",
+        "target": "utils/pagination.py::paginate::n8",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n7",
+        "target": "utils/pagination.py::paginate::n8",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n8",
+        "target": "utils/pagination.py::paginate::n14",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "utils/pagination.py::paginate::n12",
+        "target": "utils/pagination.py::paginate::n14",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n14",
+        "target": "utils/pagination.py::paginate::n15",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/pagination.py::paginate::n0",
+        "target": "utils/pagination.py::paginate::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/validation.py::sanitize_string": {
+    "target": "utils/validation.py::sanitize_string",
+    "entry": "utils/validation.py::sanitize_string::n0",
+    "nodes": [
+      {
+        "id": "utils/validation.py::sanitize_string::n0",
+        "kind": "entry",
+        "label": "def sanitize_string(value, max_length=200):",
+        "line": 16,
+        "end_line": 16
+      },
+      {
+        "id": "utils/validation.py::sanitize_string::n1",
+        "kind": "decision",
+        "label": "if value is None",
+        "line": 17,
+        "end_line": 18
+      },
+      {
+        "id": "utils/validation.py::sanitize_string::n2",
+        "kind": "return",
+        "label": "return ''",
+        "line": 18,
+        "end_line": 18
+      },
+      {
+        "id": "utils/validation.py::sanitize_string::n3",
+        "kind": "statement",
+        "label": "cleaned = value.strip()",
+        "line": 19,
+        "end_line": 19
+      },
+      {
+        "id": "utils/validation.py::sanitize_string::n4",
+        "kind": "decision",
+        "label": "if len(cleaned) > max_length",
+        "line": 20,
+        "end_line": 21
+      },
+      {
+        "id": "utils/validation.py::sanitize_string::n5",
+        "kind": "return",
+        "label": "return cleaned[:max_length]",
+        "line": 21,
+        "end_line": 21
+      },
+      {
+        "id": "utils/validation.py::sanitize_string::n6",
+        "kind": "return",
+        "label": "return cleaned",
+        "line": 22,
+        "end_line": 22
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/validation.py::sanitize_string::n1",
+        "target": "utils/validation.py::sanitize_string::n2",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::sanitize_string::n1",
+        "target": "utils/validation.py::sanitize_string::n3",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/validation.py::sanitize_string::n4",
+        "target": "utils/validation.py::sanitize_string::n5",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::sanitize_string::n3",
+        "target": "utils/validation.py::sanitize_string::n4",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/validation.py::sanitize_string::n4",
+        "target": "utils/validation.py::sanitize_string::n6",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/validation.py::sanitize_string::n0",
+        "target": "utils/validation.py::sanitize_string::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/validation.py::validate_email": {
+    "target": "utils/validation.py::validate_email",
+    "entry": "utils/validation.py::validate_email::n0",
+    "nodes": [
+      {
+        "id": "utils/validation.py::validate_email::n0",
+        "kind": "entry",
+        "label": "def validate_email(email):",
+        "line": 10,
+        "end_line": 10
+      },
+      {
+        "id": "utils/validation.py::validate_email::n1",
+        "kind": "decision",
+        "label": "if not email",
+        "line": 11,
+        "end_line": 12
+      },
+      {
+        "id": "utils/validation.py::validate_email::n2",
+        "kind": "return",
+        "label": "return False",
+        "line": 12,
+        "end_line": 12
+      },
+      {
+        "id": "utils/validation.py::validate_email::n3",
+        "kind": "return",
+        "label": "return bool(_EMAIL_RE.match(email))",
+        "line": 13,
+        "end_line": 13
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/validation.py::validate_email::n1",
+        "target": "utils/validation.py::validate_email::n2",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::validate_email::n1",
+        "target": "utils/validation.py::validate_email::n3",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/validation.py::validate_email::n0",
+        "target": "utils/validation.py::validate_email::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  },
+  "utils/validation.py::validate_order_payload": {
+    "target": "utils/validation.py::validate_order_payload",
+    "entry": "utils/validation.py::validate_order_payload::n0",
+    "nodes": [
+      {
+        "id": "utils/validation.py::validate_order_payload::n0",
+        "kind": "entry",
+        "label": "def validate_order_payload(payload):",
+        "line": 25,
+        "end_line": 25
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n1",
+        "kind": "statement",
+        "label": "errors = []",
+        "line": 26,
+        "end_line": 26
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n2",
+        "kind": "loop",
+        "label": "for field in REQUIRED_ORDER_FIELDS",
+        "line": 28,
+        "end_line": 30
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n3",
+        "kind": "decision",
+        "label": "if field not in payload or payload[field] in (None, '')",
+        "line": 29,
+        "end_line": 30
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n4",
+        "kind": "statement",
+        "label": "errors.append(f'missing field: {field}')",
+        "line": 30,
+        "end_line": 30
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n5",
+        "kind": "decision",
+        "label": "if 'amount' in payload",
+        "line": 32,
+        "end_line": 39
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n6",
+        "kind": "statement",
+        "label": "try: \u2026",
+        "line": 33,
+        "end_line": 39
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n7",
+        "kind": "decision",
+        "label": "if 'customer_id' in payload and payload['customer_id'] is not None",
+        "line": 41,
+        "end_line": 43
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n8",
+        "kind": "decision",
+        "label": "if not isinstance(payload['customer_id'], int)",
+        "line": 42,
+        "end_line": 43
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n9",
+        "kind": "statement",
+        "label": "errors.append('customer_id must be an integer')",
+        "line": 43,
+        "end_line": 43
+      },
+      {
+        "id": "utils/validation.py::validate_order_payload::n10",
+        "kind": "return",
+        "label": "return errors",
+        "line": 45,
+        "end_line": 45
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils/validation.py::validate_order_payload::n3",
+        "target": "utils/validation.py::validate_order_payload::n4",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n2",
+        "target": "utils/validation.py::validate_order_payload::n3",
+        "kind": "flow",
+        "label": "Loop"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n4",
+        "target": "utils/validation.py::validate_order_payload::n2",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n3",
+        "target": "utils/validation.py::validate_order_payload::n2",
+        "kind": "loop_back",
+        "label": null
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n1",
+        "target": "utils/validation.py::validate_order_payload::n2",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n5",
+        "target": "utils/validation.py::validate_order_payload::n6",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n2",
+        "target": "utils/validation.py::validate_order_payload::n5",
+        "kind": "flow",
+        "label": "Done"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n8",
+        "target": "utils/validation.py::validate_order_payload::n9",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n7",
+        "target": "utils/validation.py::validate_order_payload::n8",
+        "kind": "true",
+        "label": "Yes"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n6",
+        "target": "utils/validation.py::validate_order_payload::n7",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n5",
+        "target": "utils/validation.py::validate_order_payload::n7",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n9",
+        "target": "utils/validation.py::validate_order_payload::n10",
+        "kind": "flow",
+        "label": null
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n8",
+        "target": "utils/validation.py::validate_order_payload::n10",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n7",
+        "target": "utils/validation.py::validate_order_payload::n10",
+        "kind": "false",
+        "label": "No"
+      },
+      {
+        "source": "utils/validation.py::validate_order_payload::n0",
+        "target": "utils/validation.py::validate_order_payload::n1",
+        "kind": "flow",
+        "label": null
+      }
+    ]
+  }
+}

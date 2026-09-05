@@ -149,6 +149,9 @@ interface DetailsPanelProps {
    * and the data-source pane's ingest calls. */
   repoPath: string
   onDataSourceIngestComplete: () => void
+  /** See `DataSourcePane`'s prop of the same name -- passed through
+   * unchanged, `undefined` outside the static demo build. */
+  dataSourceDefaultManifestPath?: string
   collapsed?: boolean
   onToggleCollapsed?: () => void
   /** Current panel width in px, and the callback fired once (on drag
@@ -181,6 +184,7 @@ export function DetailsPanel({
   onDismissDocSaveNotice,
   repoPath,
   onDataSourceIngestComplete,
+  dataSourceDefaultManifestPath,
   collapsed = false,
   onToggleCollapsed = () => {},
   width = 320,
@@ -362,7 +366,11 @@ export function DetailsPanel({
       {pane?.kind === 'dataSource' && (
         <div style={{ marginTop: spacing.lg }}>
           <PaneHeader title="Add tables & models" onClose={onClosePane} />
-          <DataSourcePane path={repoPath} onIngestComplete={onDataSourceIngestComplete} />
+          <DataSourcePane
+            path={repoPath}
+            onIngestComplete={onDataSourceIngestComplete}
+            defaultManifestPath={dataSourceDefaultManifestPath}
+          />
         </div>
       )}
     </aside>

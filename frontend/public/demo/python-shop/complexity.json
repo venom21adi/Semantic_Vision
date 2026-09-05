@@ -1,0 +1,292 @@
+{
+  "scores": [
+    {
+      "node_id": "api/routes.py::advance_order_status_endpoint",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::cancel_order_endpoint",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::create_order_endpoint",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::get_customer_endpoint",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::high_value_customers_endpoint",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::list_orders_endpoint",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::revenue_report_endpoint",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "api/routes.py::top_customers_endpoint",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "db.py::init_db",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "db.py::session_scope",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "jobs/cleanup.py::archive_old_payments",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "jobs/cleanup.py::purge_stale_orders",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "jobs/scheduler.py::retry_with_backoff",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "jobs/scheduler.py::run_nightly_jobs",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "models.py::Customer.full_name",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "models.py::Order.is_terminal",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "models.py::today",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/customers.py::flag_high_value_customers",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "services/customers.py::get_customer",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/customers.py::get_customer_summary",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/customers.py::merge_duplicate_customers",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/notifications.py::_send_email",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/notifications.py::_send_sms",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/notifications.py::batch_notify",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/notifications.py::notify_customer",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/notifications.py::render_template",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/orders.py::cancel_order",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/orders.py::compute_order_total",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/orders.py::create_order",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/orders.py::list_orders_for_customer",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/orders.py::transition_order_status",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/payments.py::process_payment",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/payments.py::reconcile_payment_methods",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/payments.py::refund_payment",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/payments.py::validate_payment_method",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/reporting.py::customer_lifetime_value",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/reporting.py::monthly_revenue_report",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 1,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "services/reporting.py::order_status_breakdown",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "services/reporting.py::raw_high_value_customers",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "services/reporting.py::top_customers_by_spend",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/formatting.py::format_currency",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/formatting.py::format_customer_name",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/formatting.py::humanize_status",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/pagination.py::build_page_links",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/pagination.py::paginate",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/validation.py::sanitize_string",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/validation.py::validate_email",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils/validation.py::validate_order_payload",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    }
+  ]
+}

@@ -1,0 +1,3103 @@
+{
+  "nodes": [
+    {
+      "id": "api",
+      "kind": "directory",
+      "label": "api",
+      "file": "api",
+      "line_start": 0,
+      "line_end": 0,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/__init__.py",
+      "kind": "file",
+      "label": "__init__.py",
+      "file": "api/__init__.py",
+      "line_start": 1,
+      "line_end": 1,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py",
+      "kind": "file",
+      "label": "routes.py",
+      "file": "api/routes.py",
+      "line_start": 1,
+      "line_end": 77,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::advance_order_status_endpoint",
+      "kind": "function",
+      "label": "advance_order_status_endpoint",
+      "file": "api/routes.py",
+      "line_start": 44,
+      "line_end": 51,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::cancel_order_endpoint",
+      "kind": "function",
+      "label": "cancel_order_endpoint",
+      "file": "api/routes.py",
+      "line_start": 34,
+      "line_end": 41,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::create_order_endpoint",
+      "kind": "function",
+      "label": "create_order_endpoint",
+      "file": "api/routes.py",
+      "line_start": 26,
+      "line_end": 31,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::get_customer_endpoint",
+      "kind": "function",
+      "label": "get_customer_endpoint",
+      "file": "api/routes.py",
+      "line_start": 19,
+      "line_end": 23,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::high_value_customers_endpoint",
+      "kind": "function",
+      "label": "high_value_customers_endpoint",
+      "file": "api/routes.py",
+      "line_start": 64,
+      "line_end": 66,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::list_orders_endpoint",
+      "kind": "function",
+      "label": "list_orders_endpoint",
+      "file": "api/routes.py",
+      "line_start": 54,
+      "line_end": 61,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::revenue_report_endpoint",
+      "kind": "function",
+      "label": "revenue_report_endpoint",
+      "file": "api/routes.py",
+      "line_start": 69,
+      "line_end": 71,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "api/routes.py::top_customers_endpoint",
+      "kind": "function",
+      "label": "top_customers_endpoint",
+      "file": "api/routes.py",
+      "line_start": 74,
+      "line_end": 77,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "column::customers.customer_id",
+      "kind": "column",
+      "label": "customer_id",
+      "file": "models.py",
+      "line_start": 19,
+      "line_end": 19,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::customers.first_name",
+      "kind": "column",
+      "label": "first_name",
+      "file": "models.py",
+      "line_start": 20,
+      "line_end": 20,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::customers.last_name",
+      "kind": "column",
+      "label": "last_name",
+      "file": "models.py",
+      "line_start": 21,
+      "line_end": 21,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.amount",
+      "kind": "column",
+      "label": "amount",
+      "file": "models.py",
+      "line_start": 36,
+      "line_end": 36,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.bank_transfer_amount",
+      "kind": "column",
+      "label": "bank_transfer_amount",
+      "file": "models.py",
+      "line_start": 39,
+      "line_end": 39,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.coupon_amount",
+      "kind": "column",
+      "label": "coupon_amount",
+      "file": "models.py",
+      "line_start": 38,
+      "line_end": 38,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.credit_card_amount",
+      "kind": "column",
+      "label": "credit_card_amount",
+      "file": "models.py",
+      "line_start": 37,
+      "line_end": 37,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.customer_id",
+      "kind": "column",
+      "label": "customer_id",
+      "file": "models.py",
+      "line_start": 33,
+      "line_end": 33,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.gift_card_amount",
+      "kind": "column",
+      "label": "gift_card_amount",
+      "file": "models.py",
+      "line_start": 40,
+      "line_end": 40,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.order_date",
+      "kind": "column",
+      "label": "order_date",
+      "file": "models.py",
+      "line_start": 34,
+      "line_end": 34,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.order_id",
+      "kind": "column",
+      "label": "order_id",
+      "file": "models.py",
+      "line_start": 32,
+      "line_end": 32,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "column::orders.status",
+      "kind": "column",
+      "label": "status",
+      "file": "models.py",
+      "line_start": 35,
+      "line_end": 35,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "db.py",
+      "kind": "file",
+      "label": "db.py",
+      "file": "db.py",
+      "line_start": 1,
+      "line_end": 28,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "db.py::init_db",
+      "kind": "function",
+      "label": "init_db",
+      "file": "db.py",
+      "line_start": 14,
+      "line_end": 15,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "db.py::session_scope",
+      "kind": "function",
+      "label": "session_scope",
+      "file": "db.py",
+      "line_start": 19,
+      "line_end": 28,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs",
+      "kind": "directory",
+      "label": "jobs",
+      "file": "jobs",
+      "line_start": 0,
+      "line_end": 0,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/__init__.py",
+      "kind": "file",
+      "label": "__init__.py",
+      "file": "jobs/__init__.py",
+      "line_start": 1,
+      "line_end": 1,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/cleanup.py",
+      "kind": "file",
+      "label": "cleanup.py",
+      "file": "jobs/cleanup.py",
+      "line_start": 1,
+      "line_end": 40,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/cleanup.py::archive_old_payments",
+      "kind": "function",
+      "label": "archive_old_payments",
+      "file": "jobs/cleanup.py",
+      "line_start": 25,
+      "line_end": 40,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/cleanup.py::purge_stale_orders",
+      "kind": "function",
+      "label": "purge_stale_orders",
+      "file": "jobs/cleanup.py",
+      "line_start": 8,
+      "line_end": 22,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/scheduler.py",
+      "kind": "file",
+      "label": "scheduler.py",
+      "file": "jobs/scheduler.py",
+      "line_start": 1,
+      "line_end": 48,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/scheduler.py::retry_with_backoff",
+      "kind": "function",
+      "label": "retry_with_backoff",
+      "file": "jobs/scheduler.py",
+      "line_start": 9,
+      "line_end": 29,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "jobs/scheduler.py::run_nightly_jobs",
+      "kind": "function",
+      "label": "run_nightly_jobs",
+      "file": "jobs/scheduler.py",
+      "line_start": 32,
+      "line_end": 48,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "models.py",
+      "kind": "file",
+      "label": "models.py",
+      "file": "models.py",
+      "line_start": 1,
+      "line_end": 53,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "models.py::Customer",
+      "kind": "class",
+      "label": "Customer",
+      "file": "models.py",
+      "line_start": 16,
+      "line_end": 26,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "models.py::Customer.full_name",
+      "kind": "function",
+      "label": "full_name",
+      "file": "models.py",
+      "line_start": 25,
+      "line_end": 26,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "models.py::Order",
+      "kind": "class",
+      "label": "Order",
+      "file": "models.py",
+      "line_start": 29,
+      "line_end": 45,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "models.py::Order.is_terminal",
+      "kind": "function",
+      "label": "is_terminal",
+      "file": "models.py",
+      "line_start": 44,
+      "line_end": 45,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "models.py::today",
+      "kind": "function",
+      "label": "today",
+      "file": "models.py",
+      "line_start": 52,
+      "line_end": 53,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services",
+      "kind": "directory",
+      "label": "services",
+      "file": "services",
+      "line_start": 0,
+      "line_end": 0,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/__init__.py",
+      "kind": "file",
+      "label": "__init__.py",
+      "file": "services/__init__.py",
+      "line_start": 1,
+      "line_end": 1,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/customers.py",
+      "kind": "file",
+      "label": "customers.py",
+      "file": "services/customers.py",
+      "line_start": 1,
+      "line_end": 75,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/customers.py::flag_high_value_customers",
+      "kind": "function",
+      "label": "flag_high_value_customers",
+      "file": "services/customers.py",
+      "line_start": 43,
+      "line_end": 59,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/customers.py::get_customer",
+      "kind": "function",
+      "label": "get_customer",
+      "file": "services/customers.py",
+      "line_start": 7,
+      "line_end": 8,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/customers.py::get_customer_summary",
+      "kind": "function",
+      "label": "get_customer_summary",
+      "file": "services/customers.py",
+      "line_start": 11,
+      "line_end": 40,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/customers.py::merge_duplicate_customers",
+      "kind": "function",
+      "label": "merge_duplicate_customers",
+      "file": "services/customers.py",
+      "line_start": 62,
+      "line_end": 75,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/notifications.py",
+      "kind": "file",
+      "label": "notifications.py",
+      "file": "services/notifications.py",
+      "line_start": 1,
+      "line_end": 48,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/notifications.py::_send_email",
+      "kind": "function",
+      "label": "_send_email",
+      "file": "services/notifications.py",
+      "line_start": 43,
+      "line_end": 44,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/notifications.py::_send_sms",
+      "kind": "function",
+      "label": "_send_sms",
+      "file": "services/notifications.py",
+      "line_start": 47,
+      "line_end": 48,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/notifications.py::batch_notify",
+      "kind": "function",
+      "label": "batch_notify",
+      "file": "services/notifications.py",
+      "line_start": 31,
+      "line_end": 40,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/notifications.py::notify_customer",
+      "kind": "function",
+      "label": "notify_customer",
+      "file": "services/notifications.py",
+      "line_start": 18,
+      "line_end": 28,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/notifications.py::render_template",
+      "kind": "function",
+      "label": "render_template",
+      "file": "services/notifications.py",
+      "line_start": 11,
+      "line_end": 15,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/orders.py",
+      "kind": "file",
+      "label": "orders.py",
+      "file": "services/orders.py",
+      "line_start": 1,
+      "line_end": 107,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/orders.py::cancel_order",
+      "kind": "function",
+      "label": "cancel_order",
+      "file": "services/orders.py",
+      "line_start": 67,
+      "line_end": 76,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/orders.py::compute_order_total",
+      "kind": "function",
+      "label": "compute_order_total",
+      "file": "services/orders.py",
+      "line_start": 79,
+      "line_end": 93,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/orders.py::create_order",
+      "kind": "function",
+      "label": "create_order",
+      "file": "services/orders.py",
+      "line_start": 18,
+      "line_end": 36,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/orders.py::list_orders_for_customer",
+      "kind": "function",
+      "label": "list_orders_for_customer",
+      "file": "services/orders.py",
+      "line_start": 96,
+      "line_end": 107,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/orders.py::transition_order_status",
+      "kind": "function",
+      "label": "transition_order_status",
+      "file": "services/orders.py",
+      "line_start": 39,
+      "line_end": 64,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/payments.py",
+      "kind": "file",
+      "label": "payments.py",
+      "file": "services/payments.py",
+      "line_start": 1,
+      "line_end": 75,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/payments.py::process_payment",
+      "kind": "function",
+      "label": "process_payment",
+      "file": "services/payments.py",
+      "line_start": 17,
+      "line_end": 31,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/payments.py::reconcile_payment_methods",
+      "kind": "function",
+      "label": "reconcile_payment_methods",
+      "file": "services/payments.py",
+      "line_start": 50,
+      "line_end": 75,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/payments.py::refund_payment",
+      "kind": "function",
+      "label": "refund_payment",
+      "file": "services/payments.py",
+      "line_start": 34,
+      "line_end": 47,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/payments.py::validate_payment_method",
+      "kind": "function",
+      "label": "validate_payment_method",
+      "file": "services/payments.py",
+      "line_start": 13,
+      "line_end": 14,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/reporting.py",
+      "kind": "file",
+      "label": "reporting.py",
+      "file": "services/reporting.py",
+      "line_start": 1,
+      "line_end": 75,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/reporting.py::customer_lifetime_value",
+      "kind": "function",
+      "label": "customer_lifetime_value",
+      "file": "services/reporting.py",
+      "line_start": 14,
+      "line_end": 23,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/reporting.py::monthly_revenue_report",
+      "kind": "function",
+      "label": "monthly_revenue_report",
+      "file": "services/reporting.py",
+      "line_start": 36,
+      "line_end": 54,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/reporting.py::order_status_breakdown",
+      "kind": "function",
+      "label": "order_status_breakdown",
+      "file": "services/reporting.py",
+      "line_start": 57,
+      "line_end": 65,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/reporting.py::raw_high_value_customers",
+      "kind": "function",
+      "label": "raw_high_value_customers",
+      "file": "services/reporting.py",
+      "line_start": 68,
+      "line_end": 75,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "services/reporting.py::top_customers_by_spend",
+      "kind": "function",
+      "label": "top_customers_by_spend",
+      "file": "services/reporting.py",
+      "line_start": 26,
+      "line_end": 33,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "table::customers",
+      "kind": "table",
+      "label": "customers",
+      "file": "models.py",
+      "line_start": 16,
+      "line_end": 26,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "table::orders",
+      "kind": "table",
+      "label": "orders",
+      "file": "models.py",
+      "line_start": 29,
+      "line_end": 45,
+      "source": "orm_model",
+      "accessor_kind": null
+    },
+    {
+      "id": "utils",
+      "kind": "directory",
+      "label": "utils",
+      "file": "utils",
+      "line_start": 0,
+      "line_end": 0,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/__init__.py",
+      "kind": "file",
+      "label": "__init__.py",
+      "file": "utils/__init__.py",
+      "line_start": 1,
+      "line_end": 1,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/formatting.py",
+      "kind": "file",
+      "label": "formatting.py",
+      "file": "utils/formatting.py",
+      "line_start": 1,
+      "line_end": 19,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/formatting.py::format_currency",
+      "kind": "function",
+      "label": "format_currency",
+      "file": "utils/formatting.py",
+      "line_start": 4,
+      "line_end": 7,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/formatting.py::format_customer_name",
+      "kind": "function",
+      "label": "format_customer_name",
+      "file": "utils/formatting.py",
+      "line_start": 10,
+      "line_end": 12,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/formatting.py::humanize_status",
+      "kind": "function",
+      "label": "humanize_status",
+      "file": "utils/formatting.py",
+      "line_start": 15,
+      "line_end": 19,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/pagination.py",
+      "kind": "file",
+      "label": "pagination.py",
+      "file": "utils/pagination.py",
+      "line_start": 1,
+      "line_end": 36,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/pagination.py::build_page_links",
+      "kind": "function",
+      "label": "build_page_links",
+      "file": "utils/pagination.py",
+      "line_start": 30,
+      "line_end": 36,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/pagination.py::paginate",
+      "kind": "function",
+      "label": "paginate",
+      "file": "utils/pagination.py",
+      "line_start": 4,
+      "line_end": 27,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/validation.py",
+      "kind": "file",
+      "label": "validation.py",
+      "file": "utils/validation.py",
+      "line_start": 1,
+      "line_end": 45,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/validation.py::sanitize_string",
+      "kind": "function",
+      "label": "sanitize_string",
+      "file": "utils/validation.py",
+      "line_start": 16,
+      "line_end": 22,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/validation.py::validate_email",
+      "kind": "function",
+      "label": "validate_email",
+      "file": "utils/validation.py",
+      "line_start": 10,
+      "line_end": 13,
+      "source": null,
+      "accessor_kind": null
+    },
+    {
+      "id": "utils/validation.py::validate_order_payload",
+      "kind": "function",
+      "label": "validate_order_payload",
+      "file": "utils/validation.py",
+      "line_start": 25,
+      "line_end": 45,
+      "source": null,
+      "accessor_kind": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "api",
+      "target": "api/__init__.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api",
+      "target": "api/routes.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::advance_order_status_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::cancel_order_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::create_order_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::get_customer_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::high_value_customers_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::list_orders_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::revenue_report_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "api/routes.py::top_customers_endpoint",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/customers.py::flag_high_value_customers",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/customers.py::get_customer_summary",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/orders.py::cancel_order",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/orders.py::create_order",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/orders.py::list_orders_for_customer",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/orders.py::transition_order_status",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/reporting.py::monthly_revenue_report",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "services/reporting.py::top_customers_by_spend",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py",
+      "target": "utils/pagination.py::paginate",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::advance_order_status_endpoint",
+      "target": "external::builtins.str",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::advance_order_status_endpoint",
+      "target": "services/orders.py::transition_order_status",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::cancel_order_endpoint",
+      "target": "external::builtins.str",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::cancel_order_endpoint",
+      "target": "services/orders.py::cancel_order",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::create_order_endpoint",
+      "target": "external::builtins.str",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::create_order_endpoint",
+      "target": "services/orders.py::create_order",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::get_customer_endpoint",
+      "target": "services/customers.py::get_customer_summary",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::high_value_customers_endpoint",
+      "target": "services/customers.py::flag_high_value_customers",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::list_orders_endpoint",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::list_orders_endpoint",
+      "target": "services/orders.py::list_orders_for_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::list_orders_endpoint",
+      "target": "unresolved::s.strip",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "api/routes.py::list_orders_endpoint",
+      "target": "unresolved::s.strip",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "api/routes.py::list_orders_endpoint",
+      "target": "unresolved::status.split",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "api/routes.py::list_orders_endpoint",
+      "target": "utils/pagination.py::paginate",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::revenue_report_endpoint",
+      "target": "services/reporting.py::monthly_revenue_report",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "api/routes.py::top_customers_endpoint",
+      "target": "services/reporting.py::top_customers_by_spend",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "db.py",
+      "target": "db.py::init_db",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "db.py",
+      "target": "db.py::session_scope",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "db.py",
+      "target": "external::contextlib.contextmanager",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "db.py",
+      "target": "external::sqlalchemy.create_engine",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "db.py",
+      "target": "external::sqlalchemy.orm.sessionmaker",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "db.py",
+      "target": "models.py",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "db.py::init_db",
+      "target": "unresolved::Base.metadata.create_all",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "db.py::session_scope",
+      "target": "unresolved::_SessionLocal",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "db.py::session_scope",
+      "target": "unresolved::session.close",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "db.py::session_scope",
+      "target": "unresolved::session.commit",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "db.py::session_scope",
+      "target": "unresolved::session.rollback",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs",
+      "target": "jobs/__init__.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs",
+      "target": "jobs/cleanup.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs",
+      "target": "jobs/scheduler.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py",
+      "target": "external::datetime.date",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py",
+      "target": "external::datetime.timedelta",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py",
+      "target": "jobs/cleanup.py::archive_old_payments",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py",
+      "target": "jobs/cleanup.py::purge_stale_orders",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py",
+      "target": "models.py::Order",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py::archive_old_payments",
+      "target": "unresolved::archived.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/cleanup.py::archive_old_payments",
+      "target": "unresolved::retained.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/cleanup.py::archive_old_payments",
+      "target": "unresolved::retained.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/cleanup.py::purge_stale_orders",
+      "target": "external::datetime.date.today",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py::purge_stale_orders",
+      "target": "external::datetime.timedelta",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py::purge_stale_orders",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/cleanup.py::purge_stale_orders",
+      "target": "unresolved::dynamic@jobs/cleanup.py:13",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/cleanup.py::purge_stale_orders",
+      "target": "unresolved::dynamic@jobs/cleanup.py:13",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/cleanup.py::purge_stale_orders",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/scheduler.py",
+      "target": "external::time",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py",
+      "target": "jobs/cleanup.py::purge_stale_orders",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py",
+      "target": "jobs/scheduler.py::retry_with_backoff",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py",
+      "target": "jobs/scheduler.py::run_nightly_jobs",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py",
+      "target": "services/notifications.py::batch_notify",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::retry_with_backoff",
+      "target": "external::builtins.RuntimeError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::retry_with_backoff",
+      "target": "external::time.sleep",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::retry_with_backoff",
+      "target": "unresolved::fn",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "jobs/scheduler.py::run_nightly_jobs",
+      "target": "external::builtins.str",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::run_nightly_jobs",
+      "target": "jobs/cleanup.py::purge_stale_orders",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::run_nightly_jobs",
+      "target": "jobs/scheduler.py::retry_with_backoff",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::run_nightly_jobs",
+      "target": "services/notifications.py::batch_notify",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "jobs/scheduler.py::run_nightly_jobs",
+      "target": "unresolved::jobs.items",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "models.py",
+      "target": "external::datetime.date",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.Column",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.Date",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.ForeignKey",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.Integer",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.Numeric",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.String",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.orm.declarative_base",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "external::sqlalchemy.orm.relationship",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "models.py::Customer",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "models.py::Order",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py",
+      "target": "models.py::today",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py::Customer",
+      "target": "models.py::Customer.full_name",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py::Customer",
+      "target": "table::customers",
+      "kind": "maps_to",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py::Customer.full_name",
+      "target": "unresolved::dynamic@models.py:26",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "models.py::Order",
+      "target": "models.py::Order.is_terminal",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py::Order",
+      "target": "table::orders",
+      "kind": "maps_to",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "models.py::today",
+      "target": "external::datetime.date.today",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services",
+      "target": "services/__init__.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services",
+      "target": "services/customers.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services",
+      "target": "services/notifications.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services",
+      "target": "services/orders.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services",
+      "target": "services/payments.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services",
+      "target": "services/reporting.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "models.py::Customer",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "models.py::Order",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "services/customers.py::flag_high_value_customers",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "services/customers.py::get_customer",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "services/customers.py::get_customer_summary",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "services/customers.py::merge_duplicate_customers",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py",
+      "target": "utils/formatting.py::format_currency",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::flag_high_value_customers",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::flag_high_value_customers",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::flag_high_value_customers",
+      "target": "unresolved::dynamic@services/customers.py:51",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::flag_high_value_customers",
+      "target": "unresolved::flagged.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::flag_high_value_customers",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::get_customer",
+      "target": "unresolved::dynamic@services/customers.py:8",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer",
+      "target": "unresolved::dynamic@services/customers.py:8",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "external::builtins.len",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "services/customers.py::get_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "unresolved::customer.full_name",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "unresolved::customer.full_name",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "unresolved::dynamic@services/customers.py:17",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "unresolved::dynamic@services/customers.py:17",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "utils/formatting.py::format_currency",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::get_customer_summary",
+      "target": "utils/formatting.py::format_currency",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::merge_duplicate_customers",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::merge_duplicate_customers",
+      "target": "external::builtins.list",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::merge_duplicate_customers",
+      "target": "services/customers.py::get_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::merge_duplicate_customers",
+      "target": "services/customers.py::get_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/customers.py::merge_duplicate_customers",
+      "target": "unresolved::session.delete",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/notifications.py",
+      "target": "services/notifications.py::_send_email",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py",
+      "target": "services/notifications.py::_send_sms",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py",
+      "target": "services/notifications.py::batch_notify",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py",
+      "target": "services/notifications.py::render_template",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::_send_email",
+      "target": "external::builtins.print",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::_send_sms",
+      "target": "external::builtins.print",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::batch_notify",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::batch_notify",
+      "target": "unresolved::failed.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/notifications.py::notify_customer",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::notify_customer",
+      "target": "services/notifications.py::_send_email",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::notify_customer",
+      "target": "services/notifications.py::_send_sms",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::notify_customer",
+      "target": "services/notifications.py::render_template",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/notifications.py::render_template",
+      "target": "unresolved::_TEMPLATES.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/notifications.py::render_template",
+      "target": "unresolved::template.format",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py",
+      "target": "external::datetime.date",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "models.py",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py",
+      "target": "models.py::Order",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "services/orders.py::cancel_order",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "services/orders.py::compute_order_total",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "services/orders.py::create_order",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "services/orders.py::list_orders_for_customer",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "services/orders.py::transition_order_status",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py",
+      "target": "utils/validation.py::validate_order_payload",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::cancel_order",
+      "target": "external::builtins.LookupError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::cancel_order",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::cancel_order",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::cancel_order",
+      "target": "unresolved::dynamic@services/orders.py:68",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::cancel_order",
+      "target": "unresolved::dynamic@services/orders.py:68",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::cancel_order",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::compute_order_total",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.amount",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.bank_transfer_amount",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.coupon_amount",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.credit_card_amount",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.customer_id",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.gift_card_amount",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.order_date",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "column::orders.status",
+      "kind": "writes",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "external::datetime.date.today",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "models.py::Order",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::dynamic@services/orders.py:21",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::payload.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::payload.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::payload.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::payload.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::payload.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::session.add",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "unresolved::session.flush",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::create_order",
+      "target": "utils/validation.py::validate_order_payload",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::list_orders_for_customer",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::list_orders_for_customer",
+      "target": "unresolved::dynamic@services/orders.py:97",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::list_orders_for_customer",
+      "target": "unresolved::matched.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::list_orders_for_customer",
+      "target": "unresolved::query.all",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::list_orders_for_customer",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "external::builtins.LookupError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "services/notifications.py::notify_customer",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "unresolved::_ALLOWED_TRANSITIONS.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "unresolved::dynamic@services/orders.py:44",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "unresolved::dynamic@services/orders.py:44",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/orders.py::transition_order_status",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py",
+      "target": "models.py",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py",
+      "target": "models.py::Order",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py",
+      "target": "services/payments.py::process_payment",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py",
+      "target": "services/payments.py::reconcile_payment_methods",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py",
+      "target": "services/payments.py::refund_payment",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py",
+      "target": "services/payments.py::validate_payment_method",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "external::builtins.LookupError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "external::builtins.getattr",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "external::builtins.setattr",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "services/payments.py::validate_payment_method",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "unresolved::dynamic@services/payments.py:23",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "unresolved::dynamic@services/payments.py:23",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::process_payment",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "external::builtins.LookupError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "external::builtins.getattr",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "external::builtins.round",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "unresolved::dynamic@services/payments.py:57",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "unresolved::dynamic@services/payments.py:57",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::reconcile_payment_methods",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.LookupError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.getattr",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.max",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.min",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "external::builtins.setattr",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "table::orders",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "unresolved::_COLUMN_BY_METHOD.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "unresolved::dynamic@services/payments.py:35",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "unresolved::dynamic@services/payments.py:35",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/payments.py::refund_payment",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "external::collections.defaultdict",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "models.py",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "models.py::Customer",
+      "kind": "imports",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "services/reporting.py::customer_lifetime_value",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "services/reporting.py::monthly_revenue_report",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "services/reporting.py::order_status_breakdown",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "services/reporting.py::raw_high_value_customers",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py",
+      "target": "services/reporting.py::top_customers_by_spend",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::customer_lifetime_value",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::customer_lifetime_value",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::customer_lifetime_value",
+      "target": "unresolved::dynamic@services/reporting.py:15",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::customer_lifetime_value",
+      "target": "unresolved::dynamic@services/reporting.py:15",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::customer_lifetime_value",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "external::builtins.range",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "external::builtins.round",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "external::collections.defaultdict",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "unresolved::by_month.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "unresolved::dynamic@services/reporting.py:40",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "unresolved::report.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::monthly_revenue_report",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::order_status_breakdown",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::order_status_breakdown",
+      "target": "unresolved::counts.get",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::order_status_breakdown",
+      "target": "unresolved::dynamic@services/reporting.py:59",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::order_status_breakdown",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::raw_high_value_customers",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::raw_high_value_customers",
+      "target": "unresolved::cursor.execute",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::raw_high_value_customers",
+      "target": "unresolved::cursor.fetchall",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::top_customers_by_spend",
+      "target": "services/reporting.py::customer_lifetime_value",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::top_customers_by_spend",
+      "target": "table::customers",
+      "kind": "reads",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "services/reporting.py::top_customers_by_spend",
+      "target": "unresolved::dynamic@services/reporting.py:28",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::top_customers_by_spend",
+      "target": "unresolved::session.query",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::top_customers_by_spend",
+      "target": "unresolved::totals.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "services/reporting.py::top_customers_by_spend",
+      "target": "unresolved::totals.sort",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "table::customers",
+      "target": "column::customers.customer_id",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::customers",
+      "target": "column::customers.first_name",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::customers",
+      "target": "column::customers.last_name",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.amount",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.bank_transfer_amount",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.coupon_amount",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.credit_card_amount",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.customer_id",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.gift_card_amount",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.order_date",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.order_id",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "column::orders.status",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "table::orders",
+      "target": "table::customers",
+      "kind": "foreign_key",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils",
+      "target": "utils/__init__.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils",
+      "target": "utils/formatting.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils",
+      "target": "utils/pagination.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils",
+      "target": "utils/validation.py",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/formatting.py",
+      "target": "utils/formatting.py::format_currency",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/formatting.py",
+      "target": "utils/formatting.py::format_customer_name",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/formatting.py",
+      "target": "utils/formatting.py::humanize_status",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/formatting.py::format_customer_name",
+      "target": "unresolved::dynamic@utils/formatting.py:12",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/formatting.py::humanize_status",
+      "target": "unresolved::dynamic@utils/formatting.py:19",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/formatting.py::humanize_status",
+      "target": "unresolved::status.split",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/formatting.py::humanize_status",
+      "target": "unresolved::word.capitalize",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/pagination.py",
+      "target": "utils/pagination.py::build_page_links",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/pagination.py",
+      "target": "utils/pagination.py::paginate",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/pagination.py::paginate",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/pagination.py::paginate",
+      "target": "external::builtins.ValueError",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/pagination.py::paginate",
+      "target": "external::builtins.enumerate",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/pagination.py::paginate",
+      "target": "external::builtins.len",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/pagination.py::paginate",
+      "target": "unresolved::page_items.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/validation.py",
+      "target": "external::re",
+      "kind": "imports",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py",
+      "target": "utils/validation.py::sanitize_string",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py",
+      "target": "utils/validation.py::validate_email",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py",
+      "target": "utils/validation.py::validate_order_payload",
+      "kind": "defines",
+      "external": false,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py::sanitize_string",
+      "target": "external::builtins.len",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py::sanitize_string",
+      "target": "unresolved::value.strip",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/validation.py::validate_email",
+      "target": "external::builtins.bool",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py::validate_email",
+      "target": "unresolved::_EMAIL_RE.match",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/validation.py::validate_order_payload",
+      "target": "external::builtins.float",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py::validate_order_payload",
+      "target": "external::builtins.isinstance",
+      "kind": "calls",
+      "external": true,
+      "ambiguous": false
+    },
+    {
+      "source": "utils/validation.py::validate_order_payload",
+      "target": "unresolved::errors.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/validation.py::validate_order_payload",
+      "target": "unresolved::errors.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/validation.py::validate_order_payload",
+      "target": "unresolved::errors.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    },
+    {
+      "source": "utils/validation.py::validate_order_payload",
+      "target": "unresolved::errors.append",
+      "kind": "calls",
+      "external": false,
+      "ambiguous": true
+    }
+  ]
+}

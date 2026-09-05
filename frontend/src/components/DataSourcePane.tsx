@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { ApiError, ingestDbConnection, ingestDbtManifest } from '../api/client'
+import { ApiError, DEMO_MODE, ingestDbConnection, ingestDbtManifest } from '../api/client'
 import { colors, radius, spacing } from '../theme'
 
 interface DataSourcePaneProps {
@@ -9,6 +9,11 @@ interface DataSourcePaneProps {
    * backend's cached `ParseResult` until then, not yet in this app's own
    * `nodes`/`edges` state. */
   onIngestComplete: () => void
+  /** Pre-fills the manifest-path field -- used by the static demo build to
+   * show the real, frozen sample manifest's path as an honest hint (the
+   * demo only ever has that one manifest to ingest) rather than leaving
+   * the field blank. Ignored by the real backend-connected app. */
+  defaultManifestPath?: string
 }
 
 type IngestState =
@@ -33,11 +38,12 @@ function columnsClause(result: { columns_reconciled: number; columns_created: nu
   return ` — ${total} column${total === 1 ? '' : 's'}`
 }
 
-export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) {
-  const [manifestPath, setManifestPath] = useState('')
+export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: DataSourcePaneProps) {
+  const [manifestPath, setManifestPath] = useState(defaultManifestPath ?? '')
   const [manifestState, setManifestState] = useState<IngestState>({ status: 'idle' })
   const [connectionString, setConnectionString] = useState('')
   const [connectionState, setConnectionState] = useState<IngestState>({ status: 'idle' })
+  const [showRecording, setShowRecording] = useState(false)
 
   async function handleManifestSubmit(event: FormEvent) {
     event.preventDefault()
@@ -205,9 +211,37 @@ export function DataSourcePane({ path, onIngestComplete }: DataSourcePaneProps) 
           </p>
         )}
         {connectionState.status === 'error' && (
-          <p role="alert" style={{ margin: `${spacing.xs}px 0 0`, fontSize: 11, color: colors.danger }}>
-            {connectionState.message}
-          </p>
+          <>
+            <p role="alert" style={{ margin: `${spacing.xs}px 0 0`, fontSize: 11, color: colors.danger }}>
+              {connectionState.message}
+            </p>
+            {DEMO_MODE && (
+              <div style={{ marginTop: spacing.xs }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRecording((prev) => !prev)}
+                  className="sv-interactive"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: colors.accent,
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {showRecording ? '▾ Hide recording' : '▸ Watch data lineage connect on a real repo'}
+                </button>
+                {showRecording && (
+                  <img
+                    src={`${import.meta.env.BASE_URL}demo/media/data-lineage.gif`}
+                    alt="Connecting a dbt manifest and a live database to a repo, watching new table nodes join the graph"
+                    style={{ marginTop: spacing.xs, width: '100%', borderRadius: radius.sm }}
+                  />
+                )}
+              </div>
+            )}
+          </>
         )}
       </form>
 

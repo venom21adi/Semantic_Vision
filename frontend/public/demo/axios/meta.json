@@ -1,0 +1,17 @@
+{
+  "slug": "axios",
+  "displayName": "JavaScript: axios",
+  "language": "javascript",
+  "description": "The real axios HTTP client source -- adapters, interceptors, and config merging.",
+  "nodeCount": 312,
+  "edgeCount": 1801,
+  "hasDataLineage": false,
+  "showcaseDocIds": [
+    "core/Axios.js::Axios._request",
+    "adapters/http.js::setProxy",
+    "utils.js::merge",
+    "helpers/shouldBypassProxy.js::shouldBypassProxy",
+    "helpers/resolveConfig.js::resolveConfig",
+    "core/dispatchRequest.js::dispatchRequest"
+  ]
+}

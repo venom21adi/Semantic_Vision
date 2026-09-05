@@ -1,0 +1,338 @@
+{
+  "api/routes.py::advance_order_status_endpoint": {
+    "id": "api/routes.py::advance_order_status_endpoint",
+    "file": "api/routes.py",
+    "line_start": 44,
+    "line_end": 51,
+    "source": "def advance_order_status_endpoint(session, order_id, new_status):\n    try:\n        order = transition_order_status(session, order_id, new_status)\n    except LookupError:\n        return {\"status\": 404, \"body\": {\"error\": \"order not found\"}}\n    except ValueError as exc:\n        return {\"status\": 409, \"body\": {\"error\": str(exc)}}\n    return {\"status\": 200, \"body\": {\"order_id\": order.order_id, \"status\": order.status}}"
+  },
+  "api/routes.py::cancel_order_endpoint": {
+    "id": "api/routes.py::cancel_order_endpoint",
+    "file": "api/routes.py",
+    "line_start": 34,
+    "line_end": 41,
+    "source": "def cancel_order_endpoint(session, order_id):\n    try:\n        order = cancel_order(session, order_id)\n    except LookupError:\n        return {\"status\": 404, \"body\": {\"error\": \"order not found\"}}\n    except ValueError as exc:\n        return {\"status\": 409, \"body\": {\"error\": str(exc)}}\n    return {\"status\": 200, \"body\": {\"order_id\": order.order_id, \"status\": order.status}}"
+  },
+  "api/routes.py::create_order_endpoint": {
+    "id": "api/routes.py::create_order_endpoint",
+    "file": "api/routes.py",
+    "line_start": 26,
+    "line_end": 31,
+    "source": "def create_order_endpoint(session, payload):\n    try:\n        order = create_order(session, payload)\n    except ValueError as exc:\n        return {\"status\": 400, \"body\": {\"error\": str(exc)}}\n    return {\"status\": 201, \"body\": {\"order_id\": order.order_id}}"
+  },
+  "api/routes.py::get_customer_endpoint": {
+    "id": "api/routes.py::get_customer_endpoint",
+    "file": "api/routes.py",
+    "line_start": 19,
+    "line_end": 23,
+    "source": "def get_customer_endpoint(session, customer_id):\n    summary = get_customer_summary(session, customer_id)\n    if summary is None:\n        return {\"status\": 404, \"body\": {\"error\": \"customer not found\"}}\n    return {\"status\": 200, \"body\": summary}"
+  },
+  "api/routes.py::high_value_customers_endpoint": {
+    "id": "api/routes.py::high_value_customers_endpoint",
+    "file": "api/routes.py",
+    "line_start": 64,
+    "line_end": 66,
+    "source": "def high_value_customers_endpoint(session, threshold=1000):\n    ids = flag_high_value_customers(session, threshold=threshold)\n    return {\"status\": 200, \"body\": {\"customer_ids\": ids}}"
+  },
+  "api/routes.py::list_orders_endpoint": {
+    "id": "api/routes.py::list_orders_endpoint",
+    "file": "api/routes.py",
+    "line_start": 54,
+    "line_end": 61,
+    "source": "def list_orders_endpoint(session, customer_id, page=1, page_size=20, status=None):\n    statuses = None\n    if status:\n        statuses = [s.strip() for s in status.split(\",\") if s.strip()]\n\n    orders = list_orders_for_customer(session, customer_id, statuses=statuses)\n    rows = [{\"order_id\": o.order_id, \"status\": o.status, \"amount\": float(o.amount or 0)} for o in orders]\n    return {\"status\": 200, \"body\": paginate(rows, page=page, page_size=page_size)}"
+  },
+  "api/routes.py::revenue_report_endpoint": {
+    "id": "api/routes.py::revenue_report_endpoint",
+    "file": "api/routes.py",
+    "line_start": 69,
+    "line_end": 71,
+    "source": "def revenue_report_endpoint(session, year):\n    report = monthly_revenue_report(session, year)\n    return {\"status\": 200, \"body\": {\"year\": year, \"months\": report}}"
+  },
+  "api/routes.py::top_customers_endpoint": {
+    "id": "api/routes.py::top_customers_endpoint",
+    "file": "api/routes.py",
+    "line_start": 74,
+    "line_end": 77,
+    "source": "def top_customers_endpoint(session, limit=10):\n    rows = top_customers_by_spend(session, limit=limit)\n    body = [{\"customer_id\": cid, \"lifetime_value\": value} for cid, value in rows]\n    return {\"status\": 200, \"body\": body}"
+  },
+  "db.py::init_db": {
+    "id": "db.py::init_db",
+    "file": "db.py",
+    "line_start": 14,
+    "line_end": 15,
+    "source": "def init_db() -> None:\n    Base.metadata.create_all(_engine)"
+  },
+  "db.py::session_scope": {
+    "id": "db.py::session_scope",
+    "file": "db.py",
+    "line_start": 19,
+    "line_end": 28,
+    "source": "def session_scope():\n    session = _SessionLocal()\n    try:\n        yield session\n        session.commit()\n    except Exception:\n        session.rollback()\n        raise\n    finally:\n        session.close()"
+  },
+  "jobs/cleanup.py::archive_old_payments": {
+    "id": "jobs/cleanup.py::archive_old_payments",
+    "file": "jobs/cleanup.py",
+    "line_start": 25,
+    "line_end": 40,
+    "source": "def archive_old_payments(session, orders, cutoff_year):\n    \"\"\"Split orders into (archived, retained) by year, for cold storage.\"\"\"\n    archived = []\n    retained = []\n\n    for order in orders:\n        if order.order_date is None:\n            retained.append(order)\n            continue\n\n        if order.order_date.year < cutoff_year:\n            archived.append(order)\n        else:\n            retained.append(order)\n\n    return archived, retained"
+  },
+  "jobs/cleanup.py::purge_stale_orders": {
+    "id": "jobs/cleanup.py::purge_stale_orders",
+    "file": "jobs/cleanup.py",
+    "line_start": 8,
+    "line_end": 22,
+    "source": "def purge_stale_orders(session, older_than_days=90):\n    \"\"\"Cancel-out any `placed` order that's been sitting untouched too long.\"\"\"\n    cutoff = date.today() - timedelta(days=older_than_days)\n    purged = 0\n\n    for order in session.query(Order).filter_by(status=\"placed\").all():\n        if order.order_date is None:\n            continue\n        if order.order_date > cutoff:\n            continue\n\n        order.status = \"return_pending\"\n        purged += 1\n\n    return purged"
+  },
+  "jobs/scheduler.py::retry_with_backoff": {
+    "id": "jobs/scheduler.py::retry_with_backoff",
+    "file": "jobs/scheduler.py",
+    "line_start": 9,
+    "line_end": 29,
+    "source": "def retry_with_backoff(fn, *, max_attempts=3, base_delay=0.0):\n    \"\"\"Run `fn`, retrying on any exception with exponential backoff.\n\n    `base_delay=0.0` in this demo repo so nightly-job traces don't actually\n    sleep; a real deployment would pass a real delay.\n    \"\"\"\n    attempt = 0\n    last_error = None\n\n    while attempt < max_attempts:\n        try:\n            return fn()\n        except Exception as exc:\n            last_error = exc\n            attempt += 1\n            if attempt >= max_attempts:\n                break\n            time.sleep(base_delay * (2 ** attempt))\n            continue\n\n    raise RuntimeError(f\"gave up after {attempt} attempts\") from last_error"
+  },
+  "jobs/scheduler.py::run_nightly_jobs": {
+    "id": "jobs/scheduler.py::run_nightly_jobs",
+    "file": "jobs/scheduler.py",
+    "line_start": 32,
+    "line_end": 48,
+    "source": "def run_nightly_jobs(session, notify_customer_ids=None):\n    \"\"\"Run each nightly job in turn, collecting failures instead of aborting.\"\"\"\n    results = {}\n    jobs = {\n        \"purge_stale_orders\": lambda: purge_stale_orders(session),\n    }\n\n    for name, job in jobs.items():\n        try:\n            results[name] = retry_with_backoff(job)\n        except RuntimeError as exc:\n            results[name] = {\"error\": str(exc)}\n\n    if notify_customer_ids:\n        results[\"notifications\"] = batch_notify(notify_customer_ids, \"nightly_digest\")\n\n    return results"
+  },
+  "models.py::Customer.full_name": {
+    "id": "models.py::Customer.full_name",
+    "file": "models.py",
+    "line_start": 25,
+    "line_end": 26,
+    "source": "    def full_name(self) -> str:\n        return f\"{self.first_name} {self.last_name}\".strip()"
+  },
+  "models.py::Order.is_terminal": {
+    "id": "models.py::Order.is_terminal",
+    "file": "models.py",
+    "line_start": 44,
+    "line_end": 45,
+    "source": "    def is_terminal(self) -> bool:\n        return self.status in (\"completed\", \"returned\")"
+  },
+  "models.py::today": {
+    "id": "models.py::today",
+    "file": "models.py",
+    "line_start": 52,
+    "line_end": 53,
+    "source": "def today() -> date:\n    return date.today()"
+  },
+  "services/customers.py::flag_high_value_customers": {
+    "id": "services/customers.py::flag_high_value_customers",
+    "file": "services/customers.py",
+    "line_start": 43,
+    "line_end": 59,
+    "source": "def flag_high_value_customers(session, threshold=1000):\n    \"\"\"Return customer ids whose lifetime spend crosses `threshold`.\n\n    Walks every customer once rather than pushing the aggregation into SQL,\n    since this demo store also wants a function with a real loop + branch\n    for the complexity/flowchart views.\n    \"\"\"\n    flagged = []\n    for customer in session.query(Customer).all():\n        total = 0\n        for order in customer.orders:\n            if order.amount is None:\n                continue\n            total += float(order.amount)\n        if total > threshold:\n            flagged.append(customer.customer_id)\n    return flagged"
+  },
+  "services/customers.py::get_customer": {
+    "id": "services/customers.py::get_customer",
+    "file": "services/customers.py",
+    "line_start": 7,
+    "line_end": 8,
+    "source": "def get_customer(session, customer_id):\n    return session.query(Customer).filter_by(customer_id=customer_id).first()"
+  },
+  "services/customers.py::get_customer_summary": {
+    "id": "services/customers.py::get_customer_summary",
+    "file": "services/customers.py",
+    "line_start": 11,
+    "line_end": 40,
+    "source": "def get_customer_summary(session, customer_id):\n    \"\"\"Fetch a customer plus the order stats a support agent actually needs.\"\"\"\n    customer = get_customer(session, customer_id)\n    if customer is None:\n        return None\n\n    orders = session.query(Order).filter_by(customer_id=customer_id).all()\n    if not orders:\n        return {\n            \"customer_id\": customer_id,\n            \"name\": customer.full_name(),\n            \"order_count\": 0,\n            \"lifetime_value\": format_currency(0),\n        }\n\n    total = 0\n    completed = 0\n    for order in orders:\n        if order.status == \"completed\":\n            completed += 1\n        if order.amount is not None:\n            total += float(order.amount)\n\n    return {\n        \"customer_id\": customer_id,\n        \"name\": customer.full_name(),\n        \"order_count\": len(orders),\n        \"completed_orders\": completed,\n        \"lifetime_value\": format_currency(total),\n    }"
+  },
+  "services/customers.py::merge_duplicate_customers": {
+    "id": "services/customers.py::merge_duplicate_customers",
+    "file": "services/customers.py",
+    "line_start": 62,
+    "line_end": 75,
+    "source": "def merge_duplicate_customers(session, keep_id, duplicate_id):\n    \"\"\"Reassign a duplicate customer's orders onto the record to keep.\"\"\"\n    keep = get_customer(session, keep_id)\n    duplicate = get_customer(session, duplicate_id)\n    if keep is None or duplicate is None:\n        raise ValueError(\"both customers must exist to merge\")\n\n    moved = 0\n    for order in list(duplicate.orders):\n        order.customer_id = keep.customer_id\n        moved += 1\n\n    session.delete(duplicate)\n    return moved"
+  },
+  "services/notifications.py::_send_email": {
+    "id": "services/notifications.py::_send_email",
+    "file": "services/notifications.py",
+    "line_start": 43,
+    "line_end": 44,
+    "source": "def _send_email(customer_id, message):\n    print(f\"[email -> customer {customer_id}] {message}\")"
+  },
+  "services/notifications.py::_send_sms": {
+    "id": "services/notifications.py::_send_sms",
+    "file": "services/notifications.py",
+    "line_start": 47,
+    "line_end": 48,
+    "source": "def _send_sms(customer_id, message):\n    print(f\"[sms -> customer {customer_id}] {message}\")"
+  },
+  "services/notifications.py::batch_notify": {
+    "id": "services/notifications.py::batch_notify",
+    "file": "services/notifications.py",
+    "line_start": 31,
+    "line_end": 40,
+    "source": "def batch_notify(customer_ids, event, **context):\n    sent = 0\n    failed = []\n    for customer_id in customer_ids:\n        try:\n            notify_customer(customer_id, event, **context)\n            sent += 1\n        except Exception:\n            failed.append(customer_id)\n    return {\"sent\": sent, \"failed\": failed}"
+  },
+  "services/notifications.py::notify_customer": {
+    "id": "services/notifications.py::notify_customer",
+    "file": "services/notifications.py",
+    "line_start": 18,
+    "line_end": 28,
+    "source": "def notify_customer(customer_id, event, channel=\"email\", **context):\n    message = render_template(event, **context)\n\n    if channel == \"email\":\n        _send_email(customer_id, message)\n    elif channel == \"sms\":\n        _send_sms(customer_id, message)\n    else:\n        raise ValueError(f\"unknown channel: {channel}\")\n\n    return message"
+  },
+  "services/notifications.py::render_template": {
+    "id": "services/notifications.py::render_template",
+    "file": "services/notifications.py",
+    "line_start": 11,
+    "line_end": 15,
+    "source": "def render_template(event, **context):\n    template = _TEMPLATES.get(event)\n    if template is None:\n        return f\"Update on your account (event: {event})\"\n    return template.format(**context)"
+  },
+  "services/orders.py::cancel_order": {
+    "id": "services/orders.py::cancel_order",
+    "file": "services/orders.py",
+    "line_start": 67,
+    "line_end": 76,
+    "source": "def cancel_order(session, order_id):\n    order = session.query(Order).filter_by(order_id=order_id).first()\n    if order is None:\n        raise LookupError(f\"no such order: {order_id}\")\n\n    if order.status not in (\"placed\", \"shipped\"):\n        raise ValueError(f\"order {order_id} can no longer be cancelled\")\n\n    order.status = \"return_pending\"\n    return order"
+  },
+  "services/orders.py::compute_order_total": {
+    "id": "services/orders.py::compute_order_total",
+    "file": "services/orders.py",
+    "line_start": 79,
+    "line_end": 93,
+    "source": "def compute_order_total(order):\n    \"\"\"Cross-check the four payment-method columns against `amount`.\"\"\"\n    parts = [\n        order.credit_card_amount,\n        order.coupon_amount,\n        order.bank_transfer_amount,\n        order.gift_card_amount,\n    ]\n\n    total = 0\n    for part in parts:\n        if part is not None:\n            total += float(part)\n\n    return total"
+  },
+  "services/orders.py::create_order": {
+    "id": "services/orders.py::create_order",
+    "file": "services/orders.py",
+    "line_start": 18,
+    "line_end": 36,
+    "source": "def create_order(session, payload):\n    errors = validate_order_payload(payload)\n    if errors:\n        raise ValueError(f\"invalid order payload: {', '.join(errors)}\")\n\n    order = Order(\n        customer_id=payload[\"customer_id\"],\n        order_date=payload.get(\"order_date\", date.today()),\n        status=\"placed\",\n        amount=payload[\"amount\"],\n        credit_card_amount=payload.get(\"credit_card_amount\", 0),\n        coupon_amount=payload.get(\"coupon_amount\", 0),\n        bank_transfer_amount=payload.get(\"bank_transfer_amount\", 0),\n        gift_card_amount=payload.get(\"gift_card_amount\", 0),\n    )\n    session.add(order)\n    session.flush()\n    notify_customer(order.customer_id, \"order_placed\", order_id=order.order_id)\n    return order"
+  },
+  "services/orders.py::list_orders_for_customer": {
+    "id": "services/orders.py::list_orders_for_customer",
+    "file": "services/orders.py",
+    "line_start": 96,
+    "line_end": 107,
+    "source": "def list_orders_for_customer(session, customer_id, statuses=None):\n    query = session.query(Order).filter_by(customer_id=customer_id)\n    orders = query.all()\n\n    if statuses is None:\n        return orders\n\n    matched = []\n    for order in orders:\n        if order.status in statuses:\n            matched.append(order)\n    return matched"
+  },
+  "services/orders.py::transition_order_status": {
+    "id": "services/orders.py::transition_order_status",
+    "file": "services/orders.py",
+    "line_start": 39,
+    "line_end": 64,
+    "source": "def transition_order_status(session, order_id, new_status):\n    \"\"\"Move an order to `new_status`, enforcing the allowed transition graph.\"\"\"\n    if new_status not in ORDER_STATUSES:\n        raise ValueError(f\"unknown status: {new_status}\")\n\n    order = session.query(Order).filter_by(order_id=order_id).first()\n    if order is None:\n        raise LookupError(f\"no such order: {order_id}\")\n\n    allowed = _ALLOWED_TRANSITIONS.get(order.status, ())\n    if new_status not in allowed:\n        raise ValueError(\n            f\"cannot move order {order_id} from {order.status} to {new_status}\"\n        )\n\n    previous = order.status\n    order.status = new_status\n\n    if new_status == \"shipped\":\n        notify_customer(order.customer_id, \"order_shipped\", order_id=order_id)\n    elif new_status == \"completed\":\n        notify_customer(order.customer_id, \"order_completed\", order_id=order_id)\n    elif new_status == \"returned\" and previous != \"returned\":\n        notify_customer(order.customer_id, \"return_processed\", order_id=order_id)\n\n    return order"
+  },
+  "services/payments.py::process_payment": {
+    "id": "services/payments.py::process_payment",
+    "file": "services/payments.py",
+    "line_start": 17,
+    "line_end": 31,
+    "source": "def process_payment(session, order_id, method, amount):\n    if not validate_payment_method(method):\n        raise ValueError(f\"unsupported payment method: {method}\")\n    if amount <= 0:\n        raise ValueError(\"payment amount must be positive\")\n\n    order = session.query(Order).filter_by(order_id=order_id).first()\n    if order is None:\n        raise LookupError(f\"no such order: {order_id}\")\n\n    column = _COLUMN_BY_METHOD[method]\n    current = getattr(order, column) or 0\n    setattr(order, column, float(current) + amount)\n    order.amount = (order.amount or 0) + amount\n    return order"
+  },
+  "services/payments.py::reconcile_payment_methods": {
+    "id": "services/payments.py::reconcile_payment_methods",
+    "file": "services/payments.py",
+    "line_start": 50,
+    "line_end": 75,
+    "source": "def reconcile_payment_methods(session, order_id):\n    \"\"\"Recompute `amount` from the four per-method columns, method by method.\n\n    Surfaces any drift (an order whose columns no longer sum to `amount`,\n    e.g. after a partial refund rounding error) instead of trusting the\n    cached total blindly.\n    \"\"\"\n    order = session.query(Order).filter_by(order_id=order_id).first()\n    if order is None:\n        raise LookupError(f\"no such order: {order_id}\")\n\n    recomputed = 0.0\n    breakdown = {}\n    for method in PAYMENT_METHODS:\n        column = _COLUMN_BY_METHOD[method]\n        value = getattr(order, column)\n        if value is None:\n            continue\n        recomputed += float(value)\n        breakdown[method] = float(value)\n\n    drift = round(recomputed - float(order.amount or 0), 2)\n    if drift != 0:\n        order.amount = recomputed\n\n    return {\"order_id\": order_id, \"breakdown\": breakdown, \"drift\": drift}"
+  },
+  "services/payments.py::refund_payment": {
+    "id": "services/payments.py::refund_payment",
+    "file": "services/payments.py",
+    "line_start": 34,
+    "line_end": 47,
+    "source": "def refund_payment(session, order_id, method, amount):\n    order = session.query(Order).filter_by(order_id=order_id).first()\n    if order is None:\n        raise LookupError(f\"no such order: {order_id}\")\n\n    column = _COLUMN_BY_METHOD.get(method)\n    if column is None:\n        raise ValueError(f\"unsupported payment method: {method}\")\n\n    current = getattr(order, column) or 0\n    refundable = min(float(current), amount)\n    setattr(order, column, float(current) - refundable)\n    order.amount = max(0.0, (order.amount or 0) - refundable)\n    return refundable"
+  },
+  "services/payments.py::validate_payment_method": {
+    "id": "services/payments.py::validate_payment_method",
+    "file": "services/payments.py",
+    "line_start": 13,
+    "line_end": 14,
+    "source": "def validate_payment_method(method):\n    return method in PAYMENT_METHODS"
+  },
+  "services/reporting.py::customer_lifetime_value": {
+    "id": "services/reporting.py::customer_lifetime_value",
+    "file": "services/reporting.py",
+    "line_start": 14,
+    "line_end": 23,
+    "source": "def customer_lifetime_value(session, customer_id):\n    customer = session.query(Customer).filter_by(customer_id=customer_id).first()\n    if customer is None:\n        return 0.0\n\n    total = 0.0\n    for order in customer.orders:\n        if order.amount is not None:\n            total += float(order.amount)\n    return total"
+  },
+  "services/reporting.py::monthly_revenue_report": {
+    "id": "services/reporting.py::monthly_revenue_report",
+    "file": "services/reporting.py",
+    "line_start": 36,
+    "line_end": 54,
+    "source": "def monthly_revenue_report(session, year):\n    \"\"\"Bucket every completed order's amount by month, for one year.\"\"\"\n    by_month = defaultdict(float)\n\n    for customer in session.query(Customer).all():\n        for order in customer.orders:\n            if order.order_date is None or order.order_date.year != year:\n                continue\n            if order.status != \"completed\":\n                continue\n\n            month = order.order_date.month\n            if order.amount is not None:\n                by_month[month] += float(order.amount)\n\n    report = []\n    for month in range(1, 13):\n        report.append({\"month\": month, \"revenue\": round(by_month.get(month, 0.0), 2)})\n    return report"
+  },
+  "services/reporting.py::order_status_breakdown": {
+    "id": "services/reporting.py::order_status_breakdown",
+    "file": "services/reporting.py",
+    "line_start": 57,
+    "line_end": 65,
+    "source": "def order_status_breakdown(session):\n    counts = {status: 0 for status in ORDER_STATUSES}\n    for customer in session.query(Customer).all():\n        for order in customer.orders:\n            if order.status in counts:\n                counts[order.status] += 1\n            else:\n                counts[order.status] = counts.get(order.status, 0) + 1\n    return counts"
+  },
+  "services/reporting.py::raw_high_value_customers": {
+    "id": "services/reporting.py::raw_high_value_customers",
+    "file": "services/reporting.py",
+    "line_start": 68,
+    "line_end": 75,
+    "source": "def raw_high_value_customers(cursor, threshold=1000):\n    \"\"\"Same intent as `flag_high_value_customers`, via a raw cursor query.\"\"\"\n    cursor.execute(\n        \"SELECT customer_id, first_name, last_name, total_order_amount \"\n        \"FROM customers WHERE total_order_amount > ?\",\n        (threshold,),\n    )\n    return cursor.fetchall()"
+  },
+  "services/reporting.py::top_customers_by_spend": {
+    "id": "services/reporting.py::top_customers_by_spend",
+    "file": "services/reporting.py",
+    "line_start": 26,
+    "line_end": 33,
+    "source": "def top_customers_by_spend(session, limit=10):\n    totals = []\n    for customer in session.query(Customer).all():\n        value = customer_lifetime_value(session, customer.customer_id)\n        totals.append((customer.customer_id, value))\n\n    totals.sort(key=lambda row: row[1], reverse=True)\n    return totals[:limit]"
+  },
+  "utils/formatting.py::format_currency": {
+    "id": "utils/formatting.py::format_currency",
+    "file": "utils/formatting.py",
+    "line_start": 4,
+    "line_end": 7,
+    "source": "def format_currency(amount, currency=\"AUD\"):\n    if amount is None:\n        amount = 0\n    return f\"{currency} {amount:,.2f}\""
+  },
+  "utils/formatting.py::format_customer_name": {
+    "id": "utils/formatting.py::format_customer_name",
+    "file": "utils/formatting.py",
+    "line_start": 10,
+    "line_end": 12,
+    "source": "def format_customer_name(first_name, last_name):\n    parts = [part for part in (first_name, last_name) if part]\n    return \" \".join(parts) if parts else \"Unknown customer\""
+  },
+  "utils/formatting.py::humanize_status": {
+    "id": "utils/formatting.py::humanize_status",
+    "file": "utils/formatting.py",
+    "line_start": 15,
+    "line_end": 19,
+    "source": "def humanize_status(status):\n    if not status:\n        return \"Unknown\"\n    words = status.split(\"_\")\n    return \" \".join(word.capitalize() for word in words)"
+  },
+  "utils/pagination.py::build_page_links": {
+    "id": "utils/pagination.py::build_page_links",
+    "file": "utils/pagination.py",
+    "line_start": 30,
+    "line_end": 36,
+    "source": "def build_page_links(base_url, page, total_pages):\n    links = {}\n    if page > 1:\n        links[\"prev\"] = f\"{base_url}?page={page - 1}\"\n    if page < total_pages:\n        links[\"next\"] = f\"{base_url}?page={page + 1}\"\n    return links"
+  },
+  "utils/pagination.py::paginate": {
+    "id": "utils/pagination.py::paginate",
+    "file": "utils/pagination.py",
+    "line_start": 4,
+    "line_end": 27,
+    "source": "def paginate(items, page=1, page_size=20):\n    if page < 1:\n        raise ValueError(\"page must be >= 1\")\n    if page_size < 1:\n        raise ValueError(\"page_size must be >= 1\")\n\n    start = (page - 1) * page_size\n    end = start + page_size\n\n    page_items = []\n    for index, item in enumerate(items):\n        if index < start:\n            continue\n        if index >= end:\n            break\n        page_items.append(item)\n\n    total_pages = (len(items) + page_size - 1) // page_size if items else 1\n    return {\n        \"items\": page_items,\n        \"page\": page,\n        \"total_pages\": total_pages,\n        \"has_next\": page < total_pages,\n    }"
+  },
+  "utils/validation.py::sanitize_string": {
+    "id": "utils/validation.py::sanitize_string",
+    "file": "utils/validation.py",
+    "line_start": 16,
+    "line_end": 22,
+    "source": "def sanitize_string(value, max_length=200):\n    if value is None:\n        return \"\"\n    cleaned = value.strip()\n    if len(cleaned) > max_length:\n        return cleaned[:max_length]\n    return cleaned"
+  },
+  "utils/validation.py::validate_email": {
+    "id": "utils/validation.py::validate_email",
+    "file": "utils/validation.py",
+    "line_start": 10,
+    "line_end": 13,
+    "source": "def validate_email(email):\n    if not email:\n        return False\n    return bool(_EMAIL_RE.match(email))"
+  },
+  "utils/validation.py::validate_order_payload": {
+    "id": "utils/validation.py::validate_order_payload",
+    "file": "utils/validation.py",
+    "line_start": 25,
+    "line_end": 45,
+    "source": "def validate_order_payload(payload):\n    errors = []\n\n    for field in REQUIRED_ORDER_FIELDS:\n        if field not in payload or payload[field] in (None, \"\"):\n            errors.append(f\"missing field: {field}\")\n\n    if \"amount\" in payload:\n        try:\n            amount = float(payload[\"amount\"])\n        except (TypeError, ValueError):\n            errors.append(\"amount must be numeric\")\n        else:\n            if amount <= 0:\n                errors.append(\"amount must be positive\")\n\n    if \"customer_id\" in payload and payload[\"customer_id\"] is not None:\n        if not isinstance(payload[\"customer_id\"], int):\n            errors.append(\"customer_id must be an integer\")\n\n    return errors"
+  }
+}

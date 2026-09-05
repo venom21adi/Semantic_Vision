@@ -1,0 +1,1318 @@
+{
+  "scores": [
+    {
+      "node_id": "adapters/adapters.js::getAdapter",
+      "cyclomatic_complexity": 13,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/adapters.js::isResolvedHandle",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/adapters.js::renderReason",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/fetch.js::decodeURIComponentSafe",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/fetch.js::encodeUTF8",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/fetch.js::factory",
+      "cyclomatic_complexity": 155,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/fetch.js::getFetch",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/fetch.js::maybeWithAuthCredentials",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/fetch.js::test",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::buildAddressEntry",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::decodeURIComponentSafe",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::dispatchBeforeRedirect",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::flushOnFinish",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::getProxyEnvAgent",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::getTunnelingAgent",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::handleSocketError",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::isNodeEnvProxyEnabled",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::isNodeNativeEnvProxySupported",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::isSameOriginRedirect",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::normalizeLookup",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::resolveFamily",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::setProxy",
+      "cyclomatic_complexity": 55,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::stripMatchingHeaders",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "adapters/http.js::wrapAsync",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "axios.js::createInstance",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.constructor",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.source",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.subscribe",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.throwIfRequested",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.toAbortSignal",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.unsubscribe",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/CanceledError.js::CanceledError.constructor",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "cancel/isCancel.js::isCancel",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/Axios.js::Axios._request",
+      "cyclomatic_complexity": 30,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/Axios.js::Axios.constructor",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/Axios.js::Axios.getUri",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/Axios.js::Axios.request",
+      "cyclomatic_complexity": 12,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::AxiosError.constructor",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::AxiosError.from",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::AxiosError.toJSON",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::aggregateErrorMessage",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::hasOwnOrPrototypeToJSON",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::redactConfig",
+      "cyclomatic_complexity": 13,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosError.js::stringifySafely",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.iterator]",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.toStringTag]#get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.accessor",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.clear",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.concat",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.delete",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.from",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.get",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.has",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.set",
+      "cyclomatic_complexity": 13,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.toJSON",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::buildAccessors",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::decodeQuotedString",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::formatHeader",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::isValidHeaderName",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::matchHeaderValue",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::normalizeHeader",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::normalizeValue",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::parseParameters",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::parseTokens",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::trimOWS",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.clear",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.constructor",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.eject",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.forEach",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.use",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::countHandlers",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::syncHandlerEntries",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/InterceptorManager.js::trimHandlers",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/buildFullPath.js::assertValidHttpProtocolURL",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/buildFullPath.js::buildFullPath",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/buildFullPath.js::redactFragment",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/buildFullPath.js::redactSensitiveURLParts",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/dispatchRequest.js::dispatchRequest",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/dispatchRequest.js::throwIfCancellationRequested",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/mergeConfig.js::headersToObject",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/mergeConfig.js::mergeConfig",
+      "cyclomatic_complexity": 15,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/mergeConfig.js::ownEnumerableKeys",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/setFormDataHeaders.js::setFormDataHeaders",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/settle.js::settle",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "core/transformData.js::transformData",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "defaults/index.js::own",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "defaults/index.js::stringifySafely",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/AxiosTransformStream.js::AxiosTransformStream._read",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/AxiosTransformStream.js::AxiosTransformStream._transform",
+      "cyclomatic_complexity": 17,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/AxiosTransformStream.js::AxiosTransformStream.constructor",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/AxiosURLSearchParams.js::AxiosURLSearchParams",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/AxiosURLSearchParams.js::encode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/Http2Sessions.js::Http2Sessions.constructor",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/Http2Sessions.js::Http2Sessions.getSession",
+      "cyclomatic_complexity": 16,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream.__transform",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream._transform",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/bind.js::bind",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/buildURL.js::buildURL",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/buildURL.js::encode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/callbackify.js::callbackify",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/combineURLs.js::combineURLs",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/composeSignals.js::composeSignals",
+      "cyclomatic_complexity": 14,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/deprecatedMethod.js::deprecatedMethod",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::base64Bytes",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimateBase64BufferAllocation",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+      "cyclomatic_complexity": 16,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+      "cyclomatic_complexity": 13,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::hexValue",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::isBase64Char",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::isBase64Whitespace",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::isHexDigit",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToJSON.js::arrayToObject",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToJSON.js::formDataToJSON",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToJSON.js::parsePropPath",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToJSON.js::throwIfDepthExceeded",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::FormDataPart.constructor",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::FormDataPart.encode",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::FormDataPart.escapeName",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::formDataToStream",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/fromDataURI.js::fromDataURI",
+      "cyclomatic_complexity": 15,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/isAbsoluteURL.js::isAbsoluteURL",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/isAxiosError.js::isAxiosError",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/normalizeURLForProtocolCheck.js::normalizeURLForProtocolCheck",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/parseProtocol.js::parseProtocol",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/progressEventReducer.js::asyncDecorator",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/progressEventReducer.js::progressEventDecorator",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/progressEventReducer.js::progressEventReducer",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/readBlob.js::readBlob",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/resolveConfig.js::encodeUTF8",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/resolveConfig.js::resolveConfig",
+      "cyclomatic_complexity": 20,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/sanitizeHeaderValue.js::trimSPorHTAB",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::ipToBytes",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::ipv4ToBytes",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::ipv6ToBytes",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isIPv4Loopback",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isIPv6Loopback",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isIPv6Unspecified",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isIPv6ZeroGroup",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isInSubnet",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isLoopback",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+      "cyclomatic_complexity": 15,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+      "cyclomatic_complexity": 21,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::parseIPv4Octet",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::parseNoProxyEntry",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+      "cyclomatic_complexity": 21,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::trimTrailingDots",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::unmapIPv4MappedIPv6",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/speedometer.js::speedometer",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/spread.js::spread",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/throttle.js::throttle",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/toFormData.js::isFlatArray",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/toFormData.js::isVisitable",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/toFormData.js::removeBrackets",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/toFormData.js::renderKey",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/toFormData.js::toFormData",
+      "cyclomatic_complexity": 11,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/toURLEncodedForm.js::toURLEncodedForm",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/trackStream.js::readBytes",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/trackStream.js::readStream",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/trackStream.js::streamChunk",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/trackStream.js::trackStream",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "helpers/validator.js::assertOptions",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "platform/node/index.js::generateString",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::endsWith",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::extend",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::findKey",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::forEach",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::forEachEntry",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::freezeMethods",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::getGlobal",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::getSafeProp",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::hasOwnInPrototypeChain",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::inherits",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isArrayBufferView",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isBoolean",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isBuffer",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isContextDefined",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isEmptyObject",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isFormData",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isIterable",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isObject",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isPlainObject",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isPrototypeBoundary",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isReactNative",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isReactNativeBlob",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isSafeAndFullyMutable",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isSafeIterable",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isSpecCompliantForm",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isStream",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isThenable",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::isUnsafeObjectKey",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::kindOfTest",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::matchAll",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::merge",
+      "cyclomatic_complexity": 23,
+      "call_chain_depth": 3,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "utils.js::noop",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::reduceDescriptors",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::stripBOM",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::toArray",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::toCamelCase",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::toFiniteNumber",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::toFlatObject",
+      "cyclomatic_complexity": 12,
+      "call_chain_depth": 1,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "utils.js::toJSONObject",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::toObjectSet",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::toSafeFlatObject",
+      "cyclomatic_complexity": 14,
+      "call_chain_depth": 2,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "utils.js::trim",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "utils.js::typeOfTest",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import type {
   OllamaModelsResponse,
   ParseRepoResponse,
 } from './types'
+import * as demoClient from './demoClient'
 
 declare global {
   interface Window {
@@ -26,6 +27,13 @@ declare global {
     __SEMANTIC_VISION_API_BASE__?: string
   }
 }
+
+/** Build-time flag for the static, backend-free demo deploy (`vite build
+ * --mode demo`, see frontend/.env.demo) -- every exported function below
+ * switches to `demoClient`'s fixture-backed implementation when this is
+ * set, so every consumer (App.tsx, DocPane, DataSourcePane, ...) works
+ * unchanged in either build. */
+export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 const API_BASE_URL: string =
   window.__SEMANTIC_VISION_API_BASE__ ?? import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
@@ -56,7 +64,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function parseRepo(
+function realParseRepo(
   path: string,
   docRoot?: string,
   language?: string,
@@ -67,28 +75,28 @@ export function parseRepo(
   })
 }
 
-export function updateDocRoot(path: string, docRoot: string): Promise<DocRootResponse> {
+function realUpdateDocRoot(path: string, docRoot: string): Promise<DocRootResponse> {
   return request<DocRootResponse>(`/api/doc-root?path=${encodeURIComponent(path)}`, {
     method: 'PUT',
     body: JSON.stringify({ doc_root: docRoot }),
   })
 }
 
-export function getGraph(path: string): Promise<GraphResponse> {
+function realGetGraph(path: string): Promise<GraphResponse> {
   return request<GraphResponse>(`/api/graph?path=${encodeURIComponent(path)}`)
 }
 
-export function getFunctionSource(path: string, id: string): Promise<FunctionSourceResponse> {
+function realGetFunctionSource(path: string, id: string): Promise<FunctionSourceResponse> {
   return request<FunctionSourceResponse>(
     `/api/function-source?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
   )
 }
 
-export function getGraphState(path: string): Promise<GraphStateResponse> {
+function realGetGraphState(path: string): Promise<GraphStateResponse> {
   return request<GraphStateResponse>(`/api/graph-state?path=${encodeURIComponent(path)}`)
 }
 
-export function saveGraphState(
+function realSaveGraphState(
   path: string,
   positions: Record<string, NodePosition>,
 ): Promise<GraphStateResponse> {
@@ -98,44 +106,44 @@ export function saveGraphState(
   })
 }
 
-export function getDocsIndex(path: string): Promise<DocIndexResponse> {
+function realGetDocsIndex(path: string): Promise<DocIndexResponse> {
   return request<DocIndexResponse>(`/api/docs?path=${encodeURIComponent(path)}`)
 }
 
-export function getDoc(path: string, id: string): Promise<DocResponse> {
+function realGetDoc(path: string, id: string): Promise<DocResponse> {
   return request<DocResponse>(
     `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
   )
 }
 
-export function getImpact(path: string, id: string, maxDepth?: number): Promise<ImpactResponse> {
+function realGetImpact(path: string, id: string, maxDepth?: number): Promise<ImpactResponse> {
   const params = new URLSearchParams({ path, id })
   if (maxDepth !== undefined) params.set('max_depth', String(maxDepth))
   return request<ImpactResponse>(`/api/impact?${params.toString()}`)
 }
 
-export function saveDoc(path: string, id: string, markdown: string): Promise<DocResponse> {
+function realSaveDoc(path: string, id: string, markdown: string): Promise<DocResponse> {
   return request<DocResponse>(
     `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
     { method: 'POST', body: JSON.stringify({ markdown }) },
   )
 }
 
-export function getComplexity(path: string): Promise<ComplexityResponse> {
+function realGetComplexity(path: string): Promise<ComplexityResponse> {
   return request<ComplexityResponse>(`/api/complexity?path=${encodeURIComponent(path)}`)
 }
 
-export function getFlowchart(path: string, id: string): Promise<FlowchartResponse> {
+function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
   return request<FlowchartResponse>(
     `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
   )
 }
 
-export function getOllamaModels(): Promise<OllamaModelsResponse> {
+function realGetOllamaModels(): Promise<OllamaModelsResponse> {
   return request<OllamaModelsResponse>('/api/ollama-models')
 }
 
-export function ingestDbtManifest(
+function realIngestDbtManifest(
   path: string,
   manifestPath: string,
 ): Promise<DbtManifestIngestResponse> {
@@ -145,7 +153,7 @@ export function ingestDbtManifest(
   )
 }
 
-export function ingestDbConnection(
+function realIngestDbConnection(
   path: string,
   connectionString: string,
 ): Promise<DbConnectionIngestResponse> {
@@ -155,7 +163,7 @@ export function ingestDbConnection(
   )
 }
 
-export async function* streamDoc(
+async function* realStreamDoc(
   path: string,
   id: string,
   provider: DocProvider,
@@ -189,3 +197,20 @@ export async function* streamDoc(
     yield decoder.decode(value, { stream: true })
   }
 }
+
+export const parseRepo = DEMO_MODE ? demoClient.parseRepo : realParseRepo
+export const updateDocRoot = DEMO_MODE ? demoClient.updateDocRoot : realUpdateDocRoot
+export const getGraph = DEMO_MODE ? demoClient.getGraph : realGetGraph
+export const getFunctionSource = DEMO_MODE ? demoClient.getFunctionSource : realGetFunctionSource
+export const getGraphState = DEMO_MODE ? demoClient.getGraphState : realGetGraphState
+export const saveGraphState = DEMO_MODE ? demoClient.saveGraphState : realSaveGraphState
+export const getDocsIndex = DEMO_MODE ? demoClient.getDocsIndex : realGetDocsIndex
+export const getDoc = DEMO_MODE ? demoClient.getDoc : realGetDoc
+export const getImpact = DEMO_MODE ? demoClient.getImpact : realGetImpact
+export const saveDoc = DEMO_MODE ? demoClient.saveDoc : realSaveDoc
+export const getComplexity = DEMO_MODE ? demoClient.getComplexity : realGetComplexity
+export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
+export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
+export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest
+export const ingestDbConnection = DEMO_MODE ? demoClient.ingestDbConnection : realIngestDbConnection
+export const streamDoc = DEMO_MODE ? demoClient.streamDoc : realStreamDoc

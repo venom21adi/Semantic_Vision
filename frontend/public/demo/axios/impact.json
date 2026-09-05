@@ -1,0 +1,4748 @@
+{
+  "adapters/adapters.js::getAdapter": {
+    "target": "adapters/adapters.js::getAdapter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/adapters.js::isResolvedHandle": {
+    "target": "adapters/adapters.js::isResolvedHandle",
+    "callers": [
+      {
+        "id": "adapters/adapters.js::getAdapter",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/adapters.js::getAdapter",
+        "target": "adapters/adapters.js::isResolvedHandle",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/adapters.js::renderReason": {
+    "target": "adapters/adapters.js::renderReason",
+    "callers": [
+      {
+        "id": "adapters/adapters.js::getAdapter",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/adapters.js::getAdapter",
+        "target": "adapters/adapters.js::renderReason",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/fetch.js::decodeURIComponentSafe": {
+    "target": "adapters/fetch.js::decodeURIComponentSafe",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "adapters/fetch.js::decodeURIComponentSafe",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/fetch.js::encodeUTF8": {
+    "target": "adapters/fetch.js::encodeUTF8",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "adapters/fetch.js::encodeUTF8",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/fetch.js::factory": {
+    "target": "adapters/fetch.js::factory",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/fetch.js::getFetch": {
+    "target": "adapters/fetch.js::getFetch",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/fetch.js::maybeWithAuthCredentials": {
+    "target": "adapters/fetch.js::maybeWithAuthCredentials",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "adapters/fetch.js::maybeWithAuthCredentials",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/fetch.js::test": {
+    "target": "adapters/fetch.js::test",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "adapters/fetch.js::test",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/http.js::buildAddressEntry": {
+    "target": "adapters/http.js::buildAddressEntry",
+    "callers": [
+      {
+        "id": "adapters/http.js::normalizeLookup",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/http.js::normalizeLookup",
+        "target": "adapters/http.js::buildAddressEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/http.js::decodeURIComponentSafe": {
+    "target": "adapters/http.js::decodeURIComponentSafe",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::dispatchBeforeRedirect": {
+    "target": "adapters/http.js::dispatchBeforeRedirect",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::flushOnFinish": {
+    "target": "adapters/http.js::flushOnFinish",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::getProxyEnvAgent": {
+    "target": "adapters/http.js::getProxyEnvAgent",
+    "callers": [
+      {
+        "id": "adapters/http.js::setProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::getProxyEnvAgent",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::setProxy",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ]
+    ]
+  },
+  "adapters/http.js::getTunnelingAgent": {
+    "target": "adapters/http.js::getTunnelingAgent",
+    "callers": [
+      {
+        "id": "adapters/http.js::setProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::getTunnelingAgent",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::setProxy",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ]
+    ]
+  },
+  "adapters/http.js::handleSocketError": {
+    "target": "adapters/http.js::handleSocketError",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::isNodeEnvProxyEnabled": {
+    "target": "adapters/http.js::isNodeEnvProxyEnabled",
+    "callers": [
+      {
+        "id": "adapters/http.js::setProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::isNodeEnvProxyEnabled",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::setProxy",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ],
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ]
+    ]
+  },
+  "adapters/http.js::isNodeNativeEnvProxySupported": {
+    "target": "adapters/http.js::isNodeNativeEnvProxySupported",
+    "callers": [
+      {
+        "id": "adapters/http.js::isNodeEnvProxyEnabled",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/http.js::setProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/http.js::isNodeEnvProxyEnabled",
+        "target": "adapters/http.js::isNodeNativeEnvProxySupported",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::isNodeEnvProxyEnabled",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::setProxy",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ],
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ]
+    ]
+  },
+  "adapters/http.js::isSameOriginRedirect": {
+    "target": "adapters/http.js::isSameOriginRedirect",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::normalizeLookup": {
+    "target": "adapters/http.js::normalizeLookup",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::resolveFamily": {
+    "target": "adapters/http.js::resolveFamily",
+    "callers": [
+      {
+        "id": "adapters/http.js::buildAddressEntry",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/http.js::normalizeLookup",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/http.js::buildAddressEntry",
+        "target": "adapters/http.js::resolveFamily",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/http.js::normalizeLookup",
+        "target": "adapters/http.js::buildAddressEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "adapters/http.js::setProxy": {
+    "target": "adapters/http.js::setProxy",
+    "callers": [],
+    "edges": [
+      {
+        "source": "adapters/http.js::setProxy",
+        "target": "adapters/http.js::setProxy",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "adapters/http.js::setProxy",
+        "adapters/http.js::setProxy"
+      ]
+    ]
+  },
+  "adapters/http.js::stripMatchingHeaders": {
+    "target": "adapters/http.js::stripMatchingHeaders",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "adapters/http.js::wrapAsync": {
+    "target": "adapters/http.js::wrapAsync",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "axios.js::createInstance": {
+    "target": "axios.js::createInstance",
+    "callers": [],
+    "edges": [
+      {
+        "source": "axios.js::createInstance",
+        "target": "axios.js::createInstance",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "axios.js::createInstance",
+        "axios.js::createInstance"
+      ]
+    ]
+  },
+  "cancel/CancelToken.js::CancelToken.constructor": {
+    "target": "cancel/CancelToken.js::CancelToken.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "cancel/CancelToken.js::CancelToken.source": {
+    "target": "cancel/CancelToken.js::CancelToken.source",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "cancel/CancelToken.js::CancelToken.subscribe": {
+    "target": "cancel/CancelToken.js::CancelToken.subscribe",
+    "callers": [
+      {
+        "id": "cancel/CancelToken.js::CancelToken.toAbortSignal",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "cancel/CancelToken.js::CancelToken.toAbortSignal",
+        "target": "cancel/CancelToken.js::CancelToken.subscribe",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "cancel/CancelToken.js::CancelToken.throwIfRequested": {
+    "target": "cancel/CancelToken.js::CancelToken.throwIfRequested",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "cancel/CancelToken.js::CancelToken.toAbortSignal": {
+    "target": "cancel/CancelToken.js::CancelToken.toAbortSignal",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "cancel/CancelToken.js::CancelToken.unsubscribe": {
+    "target": "cancel/CancelToken.js::CancelToken.unsubscribe",
+    "callers": [
+      {
+        "id": "cancel/CancelToken.js::CancelToken.toAbortSignal",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "cancel/CancelToken.js::CancelToken.toAbortSignal",
+        "target": "cancel/CancelToken.js::CancelToken.unsubscribe",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "cancel/CanceledError.js::CanceledError.constructor": {
+    "target": "cancel/CanceledError.js::CanceledError.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "cancel/isCancel.js::isCancel": {
+    "target": "cancel/isCancel.js::isCancel",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/Axios.js::Axios._request": {
+    "target": "core/Axios.js::Axios._request",
+    "callers": [
+      {
+        "id": "core/Axios.js::Axios.request",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/Axios.js::Axios.request",
+        "target": "core/Axios.js::Axios._request",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/Axios.js::Axios.constructor": {
+    "target": "core/Axios.js::Axios.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/Axios.js::Axios.getUri": {
+    "target": "core/Axios.js::Axios.getUri",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/Axios.js::Axios.request": {
+    "target": "core/Axios.js::Axios.request",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosError.js::AxiosError.constructor": {
+    "target": "core/AxiosError.js::AxiosError.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosError.js::AxiosError.from": {
+    "target": "core/AxiosError.js::AxiosError.from",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosError.js::AxiosError.toJSON": {
+    "target": "core/AxiosError.js::AxiosError.toJSON",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosError.js::aggregateErrorMessage": {
+    "target": "core/AxiosError.js::aggregateErrorMessage",
+    "callers": [
+      {
+        "id": "core/AxiosError.js::AxiosError.from",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosError.js::AxiosError.from",
+        "target": "core/AxiosError.js::aggregateErrorMessage",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosError.js::hasOwnOrPrototypeToJSON": {
+    "target": "core/AxiosError.js::hasOwnOrPrototypeToJSON",
+    "callers": [
+      {
+        "id": "core/AxiosError.js::redactConfig",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosError.js::AxiosError.toJSON",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosError.js::redactConfig",
+        "target": "core/AxiosError.js::hasOwnOrPrototypeToJSON",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosError.js::AxiosError.toJSON",
+        "target": "core/AxiosError.js::redactConfig",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosError.js::redactConfig": {
+    "target": "core/AxiosError.js::redactConfig",
+    "callers": [
+      {
+        "id": "core/AxiosError.js::AxiosError.toJSON",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosError.js::AxiosError.toJSON",
+        "target": "core/AxiosError.js::redactConfig",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosError.js::stringifySafely": {
+    "target": "core/AxiosError.js::stringifySafely",
+    "callers": [
+      {
+        "id": "core/AxiosError.js::aggregateErrorMessage",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosError.js::AxiosError.from",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosError.js::aggregateErrorMessage",
+        "target": "core/AxiosError.js::stringifySafely",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosError.js::AxiosError.from",
+        "target": "core/AxiosError.js::aggregateErrorMessage",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.[Symbol.iterator]": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.iterator]",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.[Symbol.toStringTag]#get": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.toStringTag]#get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.accessor": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.accessor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.clear": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.clear",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.concat": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.concat",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.constructor": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.delete": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.delete",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.from": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.from",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.get": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.get",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.getSetCookie": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.has": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.has",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.normalize": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.parseParameters": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.set": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.toJSON": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.toJSON",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.iterator]",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.toString",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.iterator]",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.toJSON",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.toString",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.toJSON",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::AxiosHeaders.toString": {
+    "target": "core/AxiosHeaders.js::AxiosHeaders.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::buildAccessors": {
+    "target": "core/AxiosHeaders.js::buildAccessors",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.accessor",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.accessor",
+        "target": "core/AxiosHeaders.js::buildAccessors",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::decodeQuotedString": {
+    "target": "core/AxiosHeaders.js::decodeQuotedString",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::parseParameters",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::parseParameters",
+        "target": "core/AxiosHeaders.js::decodeQuotedString",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+        "target": "core/AxiosHeaders.js::parseParameters",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::formatHeader": {
+    "target": "core/AxiosHeaders.js::formatHeader",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "target": "core/AxiosHeaders.js::formatHeader",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::isValidHeaderName": {
+    "target": "core/AxiosHeaders.js::isValidHeaderName",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "target": "core/AxiosHeaders.js::isValidHeaderName",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::matchHeaderValue": {
+    "target": "core/AxiosHeaders.js::matchHeaderValue",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.clear",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.delete",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.has",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.clear",
+        "target": "core/AxiosHeaders.js::matchHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.delete",
+        "target": "core/AxiosHeaders.js::matchHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.has",
+        "target": "core/AxiosHeaders.js::matchHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::normalizeHeader": {
+    "target": "core/AxiosHeaders.js::normalizeHeader",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.accessor",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.delete",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.has",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.accessor",
+        "target": "core/AxiosHeaders.js::normalizeHeader",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.delete",
+        "target": "core/AxiosHeaders.js::normalizeHeader",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "target": "core/AxiosHeaders.js::normalizeHeader",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.has",
+        "target": "core/AxiosHeaders.js::normalizeHeader",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "target": "core/AxiosHeaders.js::normalizeHeader",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::normalizeValue": {
+    "target": "core/AxiosHeaders.js::normalizeValue",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::parseParameters": {
+    "target": "core/AxiosHeaders.js::parseParameters",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+        "target": "core/AxiosHeaders.js::parseParameters",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::parseTokens": {
+    "target": "core/AxiosHeaders.js::parseTokens",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "target": "core/AxiosHeaders.js::parseTokens",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.get",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/AxiosHeaders.js::trimOWS": {
+    "target": "core/AxiosHeaders.js::trimOWS",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::parseParameters",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::parseParameters",
+        "target": "core/AxiosHeaders.js::trimOWS",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.parseParameters",
+        "target": "core/AxiosHeaders.js::parseParameters",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::InterceptorManager.clear": {
+    "target": "core/InterceptorManager.js::InterceptorManager.clear",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::InterceptorManager.constructor": {
+    "target": "core/InterceptorManager.js::InterceptorManager.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::InterceptorManager.eject": {
+    "target": "core/InterceptorManager.js::InterceptorManager.eject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::InterceptorManager.forEach": {
+    "target": "core/InterceptorManager.js::InterceptorManager.forEach",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::InterceptorManager.use": {
+    "target": "core/InterceptorManager.js::InterceptorManager.use",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::countHandlers": {
+    "target": "core/InterceptorManager.js::countHandlers",
+    "callers": [
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/InterceptorManager.js::syncHandlerEntries",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.clear",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.eject",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.use",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "target": "core/InterceptorManager.js::countHandlers",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::syncHandlerEntries",
+        "target": "core/InterceptorManager.js::countHandlers",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.clear",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.eject",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.use",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::syncHandlerEntries": {
+    "target": "core/InterceptorManager.js::syncHandlerEntries",
+    "callers": [
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.clear",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.eject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.use",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.clear",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.eject",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.use",
+        "target": "core/InterceptorManager.js::syncHandlerEntries",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/InterceptorManager.js::trimHandlers": {
+    "target": "core/InterceptorManager.js::trimHandlers",
+    "callers": [
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.eject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.eject",
+        "target": "core/InterceptorManager.js::trimHandlers",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/InterceptorManager.js::InterceptorManager.forEach",
+        "target": "core/InterceptorManager.js::trimHandlers",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/buildFullPath.js::assertValidHttpProtocolURL": {
+    "target": "core/buildFullPath.js::assertValidHttpProtocolURL",
+    "callers": [
+      {
+        "id": "core/buildFullPath.js::buildFullPath",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/buildFullPath.js::buildFullPath",
+        "target": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/buildFullPath.js::buildFullPath": {
+    "target": "core/buildFullPath.js::buildFullPath",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/buildFullPath.js::redactFragment": {
+    "target": "core/buildFullPath.js::redactFragment",
+    "callers": [
+      {
+        "id": "core/buildFullPath.js::redactSensitiveURLParts",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/buildFullPath.js::buildFullPath",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/buildFullPath.js::redactSensitiveURLParts",
+        "target": "core/buildFullPath.js::redactFragment",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "target": "core/buildFullPath.js::redactSensitiveURLParts",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/buildFullPath.js::buildFullPath",
+        "target": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/buildFullPath.js::redactSensitiveURLParts": {
+    "target": "core/buildFullPath.js::redactSensitiveURLParts",
+    "callers": [
+      {
+        "id": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/buildFullPath.js::buildFullPath",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "target": "core/buildFullPath.js::redactSensitiveURLParts",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/buildFullPath.js::buildFullPath",
+        "target": "core/buildFullPath.js::assertValidHttpProtocolURL",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/dispatchRequest.js::dispatchRequest": {
+    "target": "core/dispatchRequest.js::dispatchRequest",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/dispatchRequest.js::throwIfCancellationRequested": {
+    "target": "core/dispatchRequest.js::throwIfCancellationRequested",
+    "callers": [
+      {
+        "id": "core/dispatchRequest.js::dispatchRequest",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/dispatchRequest.js::dispatchRequest",
+        "target": "core/dispatchRequest.js::throwIfCancellationRequested",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/mergeConfig.js::headersToObject": {
+    "target": "core/mergeConfig.js::headersToObject",
+    "callers": [
+      {
+        "id": "core/mergeConfig.js::mergeConfig",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/mergeConfig.js::mergeConfig",
+        "target": "core/mergeConfig.js::headersToObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/mergeConfig.js::mergeConfig": {
+    "target": "core/mergeConfig.js::mergeConfig",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/mergeConfig.js::ownEnumerableKeys": {
+    "target": "core/mergeConfig.js::ownEnumerableKeys",
+    "callers": [
+      {
+        "id": "core/mergeConfig.js::mergeConfig",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/mergeConfig.js::mergeConfig",
+        "target": "core/mergeConfig.js::ownEnumerableKeys",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "core/setFormDataHeaders.js::setFormDataHeaders": {
+    "target": "core/setFormDataHeaders.js::setFormDataHeaders",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/settle.js::settle": {
+    "target": "core/settle.js::settle",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "core/transformData.js::transformData": {
+    "target": "core/transformData.js::transformData",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "defaults/index.js::own": {
+    "target": "defaults/index.js::own",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "defaults/index.js::stringifySafely": {
+    "target": "defaults/index.js::stringifySafely",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/AxiosTransformStream.js::AxiosTransformStream._read": {
+    "target": "helpers/AxiosTransformStream.js::AxiosTransformStream._read",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/AxiosTransformStream.js::AxiosTransformStream._transform": {
+    "target": "helpers/AxiosTransformStream.js::AxiosTransformStream._transform",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/AxiosTransformStream.js::AxiosTransformStream.constructor": {
+    "target": "helpers/AxiosTransformStream.js::AxiosTransformStream.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/AxiosURLSearchParams.js::AxiosURLSearchParams": {
+    "target": "helpers/AxiosURLSearchParams.js::AxiosURLSearchParams",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/AxiosURLSearchParams.js::encode": {
+    "target": "helpers/AxiosURLSearchParams.js::encode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/Http2Sessions.js::Http2Sessions.constructor": {
+    "target": "helpers/Http2Sessions.js::Http2Sessions.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/Http2Sessions.js::Http2Sessions.getSession": {
+    "target": "helpers/Http2Sessions.js::Http2Sessions.getSession",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream.__transform": {
+    "target": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream.__transform",
+    "callers": [
+      {
+        "id": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream._transform",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream._transform",
+        "target": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream.__transform",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream._transform": {
+    "target": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream._transform",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/bind.js::bind": {
+    "target": "helpers/bind.js::bind",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/buildURL.js::buildURL": {
+    "target": "helpers/buildURL.js::buildURL",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/buildURL.js::encode": {
+    "target": "helpers/buildURL.js::encode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/callbackify.js::callbackify": {
+    "target": "helpers/callbackify.js::callbackify",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/combineURLs.js::combineURLs": {
+    "target": "helpers/combineURLs.js::combineURLs",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/composeSignals.js::composeSignals": {
+    "target": "helpers/composeSignals.js::composeSignals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/deprecatedMethod.js::deprecatedMethod": {
+    "target": "helpers/deprecatedMethod.js::deprecatedMethod",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::base64Bytes": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::base64Bytes",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::base64Bytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::estimateBase64BufferAllocation": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::estimateBase64BufferAllocation",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateBase64BufferAllocation",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::hexValue": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::hexValue",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::hexValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::isBase64Char": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::isBase64Char",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isBase64Char",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::isBase64Whitespace": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::isBase64Whitespace",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isBase64Whitespace",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::isHexDigit": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::isHexDigit",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isHexDigit",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte": {
+    "target": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+    "callers": [
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::isPercentEncodedByte",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes",
+        "target": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/formDataToJSON.js::arrayToObject": {
+    "target": "helpers/formDataToJSON.js::arrayToObject",
+    "callers": [
+      {
+        "id": "helpers/formDataToJSON.js::formDataToJSON",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/formDataToJSON.js::formDataToJSON",
+        "target": "helpers/formDataToJSON.js::arrayToObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/formDataToJSON.js::formDataToJSON": {
+    "target": "helpers/formDataToJSON.js::formDataToJSON",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/formDataToJSON.js::parsePropPath": {
+    "target": "helpers/formDataToJSON.js::parsePropPath",
+    "callers": [
+      {
+        "id": "helpers/formDataToJSON.js::formDataToJSON",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/formDataToJSON.js::formDataToJSON",
+        "target": "helpers/formDataToJSON.js::parsePropPath",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/formDataToJSON.js::throwIfDepthExceeded": {
+    "target": "helpers/formDataToJSON.js::throwIfDepthExceeded",
+    "callers": [
+      {
+        "id": "helpers/formDataToJSON.js::formDataToJSON",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/formDataToJSON.js::parsePropPath",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/formDataToJSON.js::formDataToJSON",
+        "target": "helpers/formDataToJSON.js::throwIfDepthExceeded",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/formDataToJSON.js::parsePropPath",
+        "target": "helpers/formDataToJSON.js::throwIfDepthExceeded",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/formDataToJSON.js::formDataToJSON",
+        "target": "helpers/formDataToJSON.js::parsePropPath",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/formDataToStream.js::FormDataPart.constructor": {
+    "target": "helpers/formDataToStream.js::FormDataPart.constructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/formDataToStream.js::FormDataPart.encode": {
+    "target": "helpers/formDataToStream.js::FormDataPart.encode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/formDataToStream.js::FormDataPart.escapeName": {
+    "target": "helpers/formDataToStream.js::FormDataPart.escapeName",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/formDataToStream.js::formDataToStream": {
+    "target": "helpers/formDataToStream.js::formDataToStream",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/fromDataURI.js::fromDataURI": {
+    "target": "helpers/fromDataURI.js::fromDataURI",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/isAbsoluteURL.js::isAbsoluteURL": {
+    "target": "helpers/isAbsoluteURL.js::isAbsoluteURL",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/isAxiosError.js::isAxiosError": {
+    "target": "helpers/isAxiosError.js::isAxiosError",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/normalizeURLForProtocolCheck.js::normalizeURLForProtocolCheck": {
+    "target": "helpers/normalizeURLForProtocolCheck.js::normalizeURLForProtocolCheck",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/parseProtocol.js::parseProtocol": {
+    "target": "helpers/parseProtocol.js::parseProtocol",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/progressEventReducer.js::asyncDecorator": {
+    "target": "helpers/progressEventReducer.js::asyncDecorator",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/progressEventReducer.js::asyncDecorator",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/progressEventReducer.js::progressEventDecorator": {
+    "target": "helpers/progressEventReducer.js::progressEventDecorator",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/progressEventReducer.js::progressEventDecorator",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/progressEventReducer.js::progressEventReducer": {
+    "target": "helpers/progressEventReducer.js::progressEventReducer",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/progressEventReducer.js::progressEventReducer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/readBlob.js::readBlob": {
+    "target": "helpers/readBlob.js::readBlob",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/resolveConfig.js::encodeUTF8": {
+    "target": "helpers/resolveConfig.js::encodeUTF8",
+    "callers": [
+      {
+        "id": "helpers/resolveConfig.js::resolveConfig",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/resolveConfig.js::resolveConfig",
+        "target": "helpers/resolveConfig.js::encodeUTF8",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/resolveConfig.js::resolveConfig": {
+    "target": "helpers/resolveConfig.js::resolveConfig",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue": {
+    "target": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+    "callers": [
+      {
+        "id": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue": {
+    "target": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+    "callers": [
+      {
+        "id": "core/AxiosHeaders.js::normalizeValue",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "core/AxiosHeaders.js::normalizeValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/sanitizeHeaderValue.js::sanitizeValue": {
+    "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+    "callers": [
+      {
+        "id": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "core/AxiosHeaders.js::normalizeValue",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 4,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 4,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::normalizeValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "helpers/sanitizeHeaderValue.js::sanitizeValue"
+      ]
+    ]
+  },
+  "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject": {
+    "target": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/sanitizeHeaderValue.js::trimSPorHTAB": {
+    "target": "helpers/sanitizeHeaderValue.js::trimSPorHTAB",
+    "callers": [
+      {
+        "id": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::normalizeValue",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 4,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "depth": 4,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "depth": 4,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 5,
+        "direct": false
+      },
+      {
+        "id": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "depth": 5,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "target": "helpers/sanitizeHeaderValue.js::trimSPorHTAB",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::normalizeValue",
+        "target": "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/sanitizeHeaderValue.js::toByteStringHeaderObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.normalize",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "target": "core/AxiosHeaders.js::normalizeValue",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "core/AxiosHeaders.js::AxiosHeaders.constructor",
+        "target": "core/AxiosHeaders.js::AxiosHeaders.set",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "helpers/sanitizeHeaderValue.js::sanitizeValue",
+        "helpers/sanitizeHeaderValue.js::sanitizeValue"
+      ]
+    ]
+  },
+  "helpers/shouldBypassProxy.js::ipToBytes": {
+    "target": "helpers/shouldBypassProxy.js::ipToBytes",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::ipToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::ipToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::ipv4ToBytes": {
+    "target": "helpers/shouldBypassProxy.js::ipv4ToBytes",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::ipToBytes",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::ipToBytes",
+        "target": "helpers/shouldBypassProxy.js::ipv4ToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "target": "helpers/shouldBypassProxy.js::ipv4ToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::ipToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::ipToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::ipv6ToBytes": {
+    "target": "helpers/shouldBypassProxy.js::ipv6ToBytes",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::ipToBytes",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::ipToBytes",
+        "target": "helpers/shouldBypassProxy.js::ipv6ToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::ipToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::ipToBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::isIPv4Loopback": {
+    "target": "helpers/shouldBypassProxy.js::isIPv4Loopback",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::isIPv6Loopback",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::isLoopback",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::isIPv6Loopback",
+        "target": "helpers/shouldBypassProxy.js::isIPv4Loopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::isLoopback",
+        "target": "helpers/shouldBypassProxy.js::isIPv4Loopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::isLoopback",
+        "target": "helpers/shouldBypassProxy.js::isIPv6Loopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::isLoopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::isIPv6Loopback": {
+    "target": "helpers/shouldBypassProxy.js::isIPv6Loopback",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::isLoopback",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::isLoopback",
+        "target": "helpers/shouldBypassProxy.js::isIPv6Loopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::isLoopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::isIPv6Unspecified": {
+    "target": "helpers/shouldBypassProxy.js::isIPv6Unspecified",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::isLoopback",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::isLoopback",
+        "target": "helpers/shouldBypassProxy.js::isIPv6Unspecified",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::isLoopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::isIPv6ZeroGroup": {
+    "target": "helpers/shouldBypassProxy.js::isIPv6ZeroGroup",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::isInSubnet": {
+    "target": "helpers/shouldBypassProxy.js::isInSubnet",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::isInSubnet",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::isLoopback": {
+    "target": "helpers/shouldBypassProxy.js::isLoopback",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::isLoopback",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::normalizeCidrBase": {
+    "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::normalizeIPAddress": {
+    "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::normalizeNoProxyHost": {
+    "target": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::parseCidrEntry": {
+    "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::parseIPv4Octet": {
+    "target": "helpers/shouldBypassProxy.js::parseIPv4Octet",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "target": "helpers/shouldBypassProxy.js::parseIPv4Octet",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::parseNoProxyEntry": {
+    "target": "helpers/shouldBypassProxy.js::parseNoProxyEntry",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseNoProxyEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::shouldBypassProxy": {
+    "target": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::trimTrailingDots": {
+    "target": "helpers/shouldBypassProxy.js::trimTrailingDots",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "target": "helpers/shouldBypassProxy.js::trimTrailingDots",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "target": "helpers/shouldBypassProxy.js::trimTrailingDots",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "target": "helpers/shouldBypassProxy.js::normalizeIPAddress",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/shouldBypassProxy.js::unmapIPv4MappedIPv6": {
+    "target": "helpers/shouldBypassProxy.js::unmapIPv4MappedIPv6",
+    "callers": [
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "target": "helpers/shouldBypassProxy.js::unmapIPv4MappedIPv6",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "target": "helpers/shouldBypassProxy.js::unmapIPv4MappedIPv6",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "target": "helpers/shouldBypassProxy.js::normalizeCidrBase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::normalizeNoProxyHost",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/shouldBypassProxy.js::shouldBypassProxy",
+        "target": "helpers/shouldBypassProxy.js::parseCidrEntry",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/speedometer.js::speedometer": {
+    "target": "helpers/speedometer.js::speedometer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/spread.js::spread": {
+    "target": "helpers/spread.js::spread",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/throttle.js::throttle": {
+    "target": "helpers/throttle.js::throttle",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/toFormData.js::isFlatArray": {
+    "target": "helpers/toFormData.js::isFlatArray",
+    "callers": [
+      {
+        "id": "helpers/toFormData.js::toFormData",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/toFormData.js::toFormData",
+        "target": "helpers/toFormData.js::isFlatArray",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/toFormData.js::isVisitable": {
+    "target": "helpers/toFormData.js::isVisitable",
+    "callers": [
+      {
+        "id": "helpers/toFormData.js::toFormData",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/toFormData.js::toFormData",
+        "target": "helpers/toFormData.js::isVisitable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/toFormData.js::removeBrackets": {
+    "target": "helpers/toFormData.js::removeBrackets",
+    "callers": [
+      {
+        "id": "helpers/toFormData.js::renderKey",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/toFormData.js::toFormData",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/toFormData.js::renderKey",
+        "target": "helpers/toFormData.js::removeBrackets",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/toFormData.js::toFormData",
+        "target": "helpers/toFormData.js::removeBrackets",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/toFormData.js::toFormData",
+        "target": "helpers/toFormData.js::renderKey",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/toFormData.js::renderKey": {
+    "target": "helpers/toFormData.js::renderKey",
+    "callers": [
+      {
+        "id": "helpers/toFormData.js::toFormData",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/toFormData.js::toFormData",
+        "target": "helpers/toFormData.js::renderKey",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/toFormData.js::toFormData": {
+    "target": "helpers/toFormData.js::toFormData",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/toURLEncodedForm.js::toURLEncodedForm": {
+    "target": "helpers/toURLEncodedForm.js::toURLEncodedForm",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "helpers/trackStream.js::readBytes": {
+    "target": "helpers/trackStream.js::readBytes",
+    "callers": [
+      {
+        "id": "helpers/trackStream.js::trackStream",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/trackStream.js::trackStream",
+        "target": "helpers/trackStream.js::readBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/trackStream.js::trackStream",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/trackStream.js::readStream": {
+    "target": "helpers/trackStream.js::readStream",
+    "callers": [
+      {
+        "id": "helpers/trackStream.js::readBytes",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/trackStream.js::trackStream",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 4,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/trackStream.js::readBytes",
+        "target": "helpers/trackStream.js::readStream",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/trackStream.js::trackStream",
+        "target": "helpers/trackStream.js::readBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/trackStream.js::trackStream",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/trackStream.js::streamChunk": {
+    "target": "helpers/trackStream.js::streamChunk",
+    "callers": [
+      {
+        "id": "helpers/trackStream.js::readBytes",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "helpers/trackStream.js::trackStream",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 4,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "helpers/trackStream.js::readBytes",
+        "target": "helpers/trackStream.js::streamChunk",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "helpers/trackStream.js::trackStream",
+        "target": "helpers/trackStream.js::readBytes",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/trackStream.js::trackStream",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/trackStream.js::trackStream": {
+    "target": "helpers/trackStream.js::trackStream",
+    "callers": [
+      {
+        "id": "adapters/fetch.js::factory",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "adapters/fetch.js::getFetch",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "adapters/fetch.js::factory",
+        "target": "helpers/trackStream.js::trackStream",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "adapters/fetch.js::getFetch",
+        "target": "adapters/fetch.js::factory",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "helpers/validator.js::assertOptions": {
+    "target": "helpers/validator.js::assertOptions",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "platform/node/index.js::generateString": {
+    "target": "platform/node/index.js::generateString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::endsWith": {
+    "target": "utils.js::endsWith",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::extend": {
+    "target": "utils.js::extend",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::findKey": {
+    "target": "utils.js::findKey",
+    "callers": [
+      {
+        "id": "utils.js::merge",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::findKey",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::forEach": {
+    "target": "utils.js::forEach",
+    "callers": [
+      {
+        "id": "utils.js::extend",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::merge",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::reduceDescriptors",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::toJSONObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::freezeMethods",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::extend",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::reduceDescriptors",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toJSONObject",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::freezeMethods",
+        "target": "utils.js::reduceDescriptors",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::forEachEntry": {
+    "target": "utils.js::forEachEntry",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::freezeMethods": {
+    "target": "utils.js::freezeMethods",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::getGlobal": {
+    "target": "utils.js::getGlobal",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::getSafeProp": {
+    "target": "utils.js::getSafeProp",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::hasOwnInPrototypeChain": {
+    "target": "utils.js::hasOwnInPrototypeChain",
+    "callers": [
+      {
+        "id": "utils.js::getSafeProp",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::isPlainObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::isSafeIterable",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::merge",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::getSafeProp",
+        "target": "utils.js::hasOwnInPrototypeChain",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isPlainObject",
+        "target": "utils.js::hasOwnInPrototypeChain",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isSafeIterable",
+        "target": "utils.js::hasOwnInPrototypeChain",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::isPlainObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::inherits": {
+    "target": "utils.js::inherits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isArrayBufferView": {
+    "target": "utils.js::isArrayBufferView",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isBoolean": {
+    "target": "utils.js::isBoolean",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isBuffer": {
+    "target": "utils.js::isBuffer",
+    "callers": [
+      {
+        "id": "utils.js::findKey",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::forEach",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::isEmptyObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::merge",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::toJSONObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::extend",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "utils.js::reduceDescriptors",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "utils.js::freezeMethods",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::findKey",
+        "target": "utils.js::isBuffer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::forEach",
+        "target": "utils.js::isBuffer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isEmptyObject",
+        "target": "utils.js::isBuffer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::isBuffer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toJSONObject",
+        "target": "utils.js::isBuffer",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::findKey",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::extend",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::reduceDescriptors",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toJSONObject",
+        "target": "utils.js::forEach",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::freezeMethods",
+        "target": "utils.js::reduceDescriptors",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::isContextDefined": {
+    "target": "utils.js::isContextDefined",
+    "callers": [
+      {
+        "id": "utils.js::merge",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::isContextDefined",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::isEmptyObject": {
+    "target": "utils.js::isEmptyObject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isFormData": {
+    "target": "utils.js::isFormData",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isIterable": {
+    "target": "utils.js::isIterable",
+    "callers": [
+      {
+        "id": "utils.js::isSafeIterable",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::isSafeIterable",
+        "target": "utils.js::isIterable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils.js::isObject": {
+    "target": "utils.js::isObject",
+    "callers": [
+      {
+        "id": "utils.js::isEmptyObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::isPlainObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::isStream",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::isThenable",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::toJSONObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::merge",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::isEmptyObject",
+        "target": "utils.js::isObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isPlainObject",
+        "target": "utils.js::isObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isStream",
+        "target": "utils.js::isObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isThenable",
+        "target": "utils.js::isObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toJSONObject",
+        "target": "utils.js::isObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::isPlainObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::isPlainObject": {
+    "target": "utils.js::isPlainObject",
+    "callers": [
+      {
+        "id": "utils.js::merge",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::isPlainObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::isPrototypeBoundary": {
+    "target": "utils.js::isPrototypeBoundary",
+    "callers": [
+      {
+        "id": "utils.js::hasOwnInPrototypeChain",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::toSafeFlatObject",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::getSafeProp",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "utils.js::isPlainObject",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "utils.js::isSafeIterable",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "utils.js::merge",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::hasOwnInPrototypeChain",
+        "target": "utils.js::isPrototypeBoundary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toSafeFlatObject",
+        "target": "utils.js::isPrototypeBoundary",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::getSafeProp",
+        "target": "utils.js::hasOwnInPrototypeChain",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isPlainObject",
+        "target": "utils.js::hasOwnInPrototypeChain",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::isSafeIterable",
+        "target": "utils.js::hasOwnInPrototypeChain",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::isPlainObject",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::isReactNative": {
+    "target": "utils.js::isReactNative",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isReactNativeBlob": {
+    "target": "utils.js::isReactNativeBlob",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isSafeAndFullyMutable": {
+    "target": "utils.js::isSafeAndFullyMutable",
+    "callers": [
+      {
+        "id": "utils.js::toSafeFlatObject",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::toSafeFlatObject",
+        "target": "utils.js::isSafeAndFullyMutable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils.js::isSafeIterable": {
+    "target": "utils.js::isSafeIterable",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isSpecCompliantForm": {
+    "target": "utils.js::isSpecCompliantForm",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isStream": {
+    "target": "utils.js::isStream",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isThenable": {
+    "target": "utils.js::isThenable",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::isUnsafeObjectKey": {
+    "target": "utils.js::isUnsafeObjectKey",
+    "callers": [
+      {
+        "id": "utils.js::isSafeAndFullyMutable",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "utils.js::toSafeFlatObject",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::isSafeAndFullyMutable",
+        "target": "utils.js::isUnsafeObjectKey",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toSafeFlatObject",
+        "target": "utils.js::isUnsafeObjectKey",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "utils.js::toSafeFlatObject",
+        "target": "utils.js::isSafeAndFullyMutable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils.js::kindOfTest": {
+    "target": "utils.js::kindOfTest",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::matchAll": {
+    "target": "utils.js::matchAll",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::merge": {
+    "target": "utils.js::merge",
+    "callers": [],
+    "edges": [
+      {
+        "source": "utils.js::merge",
+        "target": "utils.js::merge",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": [
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ],
+      [
+        "utils.js::merge",
+        "utils.js::merge"
+      ]
+    ]
+  },
+  "utils.js::noop": {
+    "target": "utils.js::noop",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::reduceDescriptors": {
+    "target": "utils.js::reduceDescriptors",
+    "callers": [
+      {
+        "id": "utils.js::freezeMethods",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "utils.js::freezeMethods",
+        "target": "utils.js::reduceDescriptors",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "utils.js::stripBOM": {
+    "target": "utils.js::stripBOM",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toArray": {
+    "target": "utils.js::toArray",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toCamelCase": {
+    "target": "utils.js::toCamelCase",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toFiniteNumber": {
+    "target": "utils.js::toFiniteNumber",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toFlatObject": {
+    "target": "utils.js::toFlatObject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toJSONObject": {
+    "target": "utils.js::toJSONObject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toObjectSet": {
+    "target": "utils.js::toObjectSet",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::toSafeFlatObject": {
+    "target": "utils.js::toSafeFlatObject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::trim": {
+    "target": "utils.js::trim",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "utils.js::typeOfTest": {
+    "target": "utils.js::typeOfTest",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  }
+}

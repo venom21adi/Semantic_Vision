@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
+import { DEMO_MODE } from '../api/client'
 import type { DocProvider } from '../api/types'
 import { colors, font, radius, spacing } from '../theme'
 import type { ActivePane } from './DetailsPanel'
@@ -64,6 +65,7 @@ export function DocPane({
   const generateLabel = pane.status === 'loaded' ? 'Regenerate' : 'Generate'
 
   const [isEditing, setIsEditing] = useState(false)
+  const [showRecording, setShowRecording] = useState(false)
 
   // Mirrors RepoLoader's "adjust state when a prop changes" pattern: a
   // fresh generation replaces whatever was being edited, so drop back to
@@ -177,9 +179,37 @@ export function DocPane({
       )}
 
       {pane.status === 'error' && (
-        <p role="alert" style={{ color: colors.danger }}>
-          {pane.message}
-        </p>
+        <>
+          <p role="alert" style={{ color: colors.danger }}>
+            {pane.message}
+          </p>
+          {DEMO_MODE && pane.message.includes('precomputed for a handful') && (
+            <div style={{ marginTop: spacing.sm }}>
+              <button
+                type="button"
+                onClick={() => setShowRecording((prev) => !prev)}
+                className="sv-interactive"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  color: colors.accent,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                }}
+              >
+                {showRecording ? '▾ Hide recording' : '▸ Watch AI docs generate on a real repo'}
+              </button>
+              {showRecording && (
+                <img
+                  src={`${import.meta.env.BASE_URL}demo/media/ai-doc-generation.gif`}
+                  alt="AI documentation streaming in for a function in the real app"
+                  style={{ marginTop: spacing.xs, width: '100%', borderRadius: radius.sm }}
+                />
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {hasContent && (
