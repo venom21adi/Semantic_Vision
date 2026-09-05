@@ -238,10 +238,14 @@ describe('DetailsPanel', () => {
       />,
     )
 
-    expect(screen.getByText('Direct callers')).toBeInTheDocument()
-    expect(screen.getByText('Transitive callers')).toBeInTheDocument()
-    expect(screen.getByText(/a\.py::caller_direct/)).toBeInTheDocument()
-    expect(screen.getByText(/b\.py::caller_transitive/)).toBeInTheDocument()
+    expect(screen.getByText(/Direct callers/)).toBeInTheDocument()
+    expect(screen.getByText(/Transitive callers/)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'View caller a.py::caller_direct' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'View caller b.py::caller_transitive' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent(/circular call chain/i)
   })
 
@@ -264,7 +268,7 @@ describe('DetailsPanel', () => {
       />,
     )
 
-    await user.click(screen.getByText(/a\.py::caller_direct/))
+    await user.click(screen.getByRole('button', { name: 'View caller a.py::caller_direct' }))
 
     expect(onSelectCaller).toHaveBeenCalledWith('a.py::caller_direct')
   })

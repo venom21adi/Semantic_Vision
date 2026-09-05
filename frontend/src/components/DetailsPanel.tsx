@@ -7,7 +7,7 @@ import {
 } from 'react'
 import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
-import { colors, radius, spacing } from '../theme'
+import { colors, font, radius, spacing } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
@@ -475,6 +475,19 @@ function ImpactCallers({
           Circular call chain detected.
         </p>
       )}
+      <p
+        style={{
+          margin: `0 0 ${spacing.sm}px`,
+          padding: `6px ${spacing.sm}px`,
+          borderRadius: radius.sm,
+          background: colors.infoBg,
+          color: colors.infoText,
+          fontSize: 11.5,
+        }}
+      >
+        Click a caller below to bring it onto the canvas — everything else dims so the blast
+        radius stands out.
+      </p>
       {direct.length > 0 && (
         <CallerGroup title="Direct callers" callers={direct} onSelectCaller={onSelectCaller} />
       )}
@@ -487,6 +500,17 @@ function ImpactCallers({
       )}
     </div>
   )
+}
+
+/** Caller ids are `<file-or-kind>::<name>` (e.g. `app.py::get_user`,
+ * `column::users.id`) -- split for a two-line row (name bold, its file/kind
+ * muted underneath) instead of one long raw id. Falls back to the whole id
+ * as the name for anything that doesn't match (defensive, not expected to
+ * hit in practice: every id this renders came straight from `getImpact`). */
+function splitCallerId(id: string): { name: string; context: string | null } {
+  const sep = id.indexOf('::')
+  if (sep === -1) return { name: id, context: null }
+  return { name: id.slice(sep + 2), context: id.slice(0, sep) }
 }
 
 function CallerGroup({
@@ -508,32 +532,91 @@ function CallerGroup({
           margin: `0 0 ${spacing.xs}px`,
         }}
       >
-        {title}
+        {title} <span style={{ color: colors.textDim }}>({callers.length})</span>
       </h4>
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {callers.map((caller) => (
-          <li key={caller.id}>
-            <button
-              type="button"
-              aria-label={`View caller ${caller.id}`}
-              onClick={() => onSelectCaller(caller.id)}
-              className="sv-interactive"
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                background: 'transparent',
-                border: 'none',
-                color: colors.textPrimary,
-                padding: `${spacing.xs}px 0`,
-                cursor: 'pointer',
-                fontSize: 12,
-              }}
-            >
-              {caller.id} <span style={{ color: colors.textDim }}>(depth {caller.depth})</span>
-            </button>
-          </li>
-        ))}
+      <ul
+        style={{
+          listStyle: 'none',
+          margin: 0,
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+        }}
+      >
+        {callers.map((caller) => {
+          const { name, context } = splitCallerId(caller.id)
+          return (
+            <li key={caller.id}>
+              <button
+                type="button"
+                aria-label={`View caller ${caller.id}`}
+                onClick={() => onSelectCaller(caller.id)}
+                className="sv-interactive"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: spacing.sm,
+                  width: '100%',
+                  textAlign: 'left',
+                  background: colors.bgPanel,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: radius.sm,
+                  padding: `6px ${spacing.sm}px`,
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ minWidth: 0 }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      color: colors.textPrimary,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {name}
+                  </span>
+                  {context && (
+                    <span
+                      title={caller.id}
+                      style={{
+                        display: 'block',
+                        fontSize: 10.5,
+                        fontFamily: font.mono,
+                        color: colors.textDim,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginTop: 2,
+                      }}
+                    >
+                      {context}
+                    </span>
+                  )}
+                </span>
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontSize: 10.5,
+                    fontFamily: font.mono,
+                    color: colors.textDim,
+                    background: colors.bgPage,
+                    border: `1px solid ${colors.borderSubtle}`,
+                    borderRadius: radius.full,
+                    padding: '2px 7px',
+                  }}
+                >
+                  depth {caller.depth}
+                </span>
+              </button>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

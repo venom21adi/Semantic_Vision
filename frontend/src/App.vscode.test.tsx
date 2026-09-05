@@ -167,7 +167,7 @@ describe('App inside the VS Code extension webview', () => {
 
     window.postMessage({ command: 'runImpactAnalysis', nodeId: 'app.py::Greeter.greet' }, '*')
 
-    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Direct callers/)).toBeInTheDocument())
     expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
   }, TEST_TIMEOUT_MS)
 })

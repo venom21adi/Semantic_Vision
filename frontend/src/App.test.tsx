@@ -312,7 +312,7 @@ describe('App', () => {
     fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
     await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
 
-    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Direct callers/)).toBeInTheDocument())
     expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
 
     await user.click(screen.getByRole('button', { name: 'View caller app.py' }))
@@ -331,7 +331,7 @@ describe('App', () => {
     const user = await loadSampleRepo()
     fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
     await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
-    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Direct callers/)).toBeInTheDocument())
 
     // Regression: previously there was no way to dismiss the Impact
     // Analysis pane/highlight once opened. Clicking empty canvas space
@@ -340,7 +340,7 @@ describe('App', () => {
     expect(pane).not.toBeNull()
     fireEvent.click(pane as Element)
 
-    expect(screen.queryByText('Direct callers')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Direct callers/)).not.toBeInTheDocument()
     // Exact text, not a substring regex: React Flow renders its own
     // hidden a11y description ("Press enter or space to select a node...")
     // which would otherwise also match a loose /select a node/i pattern.
@@ -358,11 +358,11 @@ describe('App', () => {
     const user = await loadSampleRepo()
     fireEvent.contextMenu(screen.getByTestId('rf__node-app.py::Greeter.greet'))
     await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
-    await waitFor(() => expect(screen.getByText('Direct callers')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Direct callers/)).toBeInTheDocument())
 
     await user.click(screen.getByRole('button', { name: 'Close Impact Analysis panel' }))
 
-    expect(screen.queryByText('Direct callers')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Direct callers/)).not.toBeInTheDocument()
     // The node itself stays selected -- only the pane closed.
     expect(screen.getByRole('heading', { name: 'greet' })).toBeInTheDocument()
   })
