@@ -350,6 +350,58 @@
     box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
   }
   .feature-shot img { width: 100%; height: auto; display: block; }
+  .feature-shot img, .hero-shot img { cursor: zoom-in; transition: filter 0.15s ease; }
+  .feature-shot img:hover, .hero-shot img:hover { filter: brightness(1.06); }
+
+  /* ---------- Lightbox ---------- */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(16px, 4vw, 56px);
+    background: rgba(6, 6, 8, 0.86);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    cursor: zoom-out;
+  }
+  .lightbox.is-open { display: flex; }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.75);
+    cursor: default;
+  }
+  .lightbox-close {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    color: var(--text-faint);
+    font-size: 20px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .lightbox-close:hover { color: var(--text); border-color: var(--text-dim); }
+  .lightbox-hint {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
 
   /* ---------- Trio (VS Code / local-private / persistence) ---------- */
   .trio {
@@ -803,6 +855,12 @@
   </div>
 </footer>
 
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged screenshot">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close">×</button>
+  <img id="lightbox-img" src="" alt="" />
+  <div class="lightbox-hint">Click anywhere, or press Esc, to close</div>
+</div>
+
 <script>
 (function () {
   var els = document.querySelectorAll('[data-reveal]');
@@ -816,6 +874,40 @@
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   els.forEach(function (el) { io.observe(el); });
+})();
+
+(function () {
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightbox-img');
+  var closeBtn = document.getElementById('lightbox-close');
+  var lastFocused = null;
+
+  function open(img) {
+    lastFocused = document.activeElement;
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt || '';
+    lightbox.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+
+  function close() {
+    lightbox.classList.remove('is-open');
+    lightboxImg.src = '';
+    document.body.style.overflow = '';
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+
+  document.querySelectorAll('.feature-shot img, .hero-shot img').forEach(function (img) {
+    img.addEventListener('click', function () { open(img); });
+  });
+
+  lightbox.addEventListener('click', close);
+  closeBtn.addEventListener('click', function (e) { e.stopPropagation(); close(); });
+  lightboxImg.addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && lightbox.classList.contains('is-open')) close();
+  });
 })();
 </script>
 </body>
