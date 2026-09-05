@@ -44,7 +44,6 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
   const [manifestState, setManifestState] = useState<IngestState>({ status: 'idle' })
   const [connectionString, setConnectionString] = useState('')
   const [connectionState, setConnectionState] = useState<IngestState>({ status: 'idle' })
-  const [showRecording, setShowRecording] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
   async function handleManifestSubmit(event: FormEvent) {
@@ -221,7 +220,7 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
               <div style={{ marginTop: spacing.xs }}>
                 <button
                   type="button"
-                  onClick={() => setShowRecording((prev) => !prev)}
+                  onClick={() => setLightboxOpen(true)}
                   className="sv-interactive"
                   style={{
                     background: 'none',
@@ -232,21 +231,8 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
                     cursor: 'pointer',
                   }}
                 >
-                  {showRecording ? '▾ Hide recording' : '▸ Watch data lineage connect on a real repo'}
+                  ▸ Watch data lineage connect on a real repo
                 </button>
-                {showRecording && (
-                  <img
-                    src={`${import.meta.env.BASE_URL}demo/media/data-lineage.gif`}
-                    alt="Connecting a dbt manifest and a live database to a repo, watching new table nodes join the graph"
-                    onClick={() => setLightboxOpen(true)}
-                    style={{
-                      marginTop: spacing.xs,
-                      width: '100%',
-                      borderRadius: radius.sm,
-                      cursor: 'zoom-in',
-                    }}
-                  />
-                )}
                 {lightboxOpen && (
                   <RecordingLightbox
                     src={`${import.meta.env.BASE_URL}demo/media/data-lineage.gif`}

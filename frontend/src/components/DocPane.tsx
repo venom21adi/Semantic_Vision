@@ -66,7 +66,6 @@ export function DocPane({
   const generateLabel = pane.status === 'loaded' ? 'Regenerate' : 'Generate'
 
   const [isEditing, setIsEditing] = useState(false)
-  const [showRecording, setShowRecording] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
   // Mirrors RepoLoader's "adjust state when a prop changes" pattern: a
@@ -189,7 +188,7 @@ export function DocPane({
             <div style={{ marginTop: spacing.sm }}>
               <button
                 type="button"
-                onClick={() => setShowRecording((prev) => !prev)}
+                onClick={() => setLightboxOpen(true)}
                 className="sv-interactive"
                 style={{
                   background: 'none',
@@ -200,21 +199,8 @@ export function DocPane({
                   cursor: 'pointer',
                 }}
               >
-                {showRecording ? '▾ Hide recording' : '▸ Watch AI docs generate on a real repo'}
+                ▸ Watch AI docs generate on a real repo
               </button>
-              {showRecording && (
-                <img
-                  src={`${import.meta.env.BASE_URL}demo/media/ai-doc-generation.gif`}
-                  alt="AI documentation streaming in for a function in the real app"
-                  onClick={() => setLightboxOpen(true)}
-                  style={{
-                    marginTop: spacing.xs,
-                    width: '100%',
-                    borderRadius: radius.sm,
-                    cursor: 'zoom-in',
-                  }}
-                />
-              )}
               {lightboxOpen && (
                 <RecordingLightbox
                   src={`${import.meta.env.BASE_URL}demo/media/ai-doc-generation.gif`}
