@@ -33,3 +33,5 @@ vscode-extension/bin/
 # Local runtime logs, and Docker's local env overrides
 *.log
 .env
+
+vercel.json
