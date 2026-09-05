@@ -9,8 +9,8 @@ import {
   getGraph,
   getGraphState,
   getImpact,
+  getImpactShowcaseIds,
   getOllamaModels,
-  getShowcaseFunctionIds,
   parseRepo,
   saveDoc,
   saveGraphState,
@@ -378,7 +378,7 @@ export default function App() {
             : new Set(),
       )
       setExpandBlockedNotice(null)
-      setShowcaseIds(DEMO_MODE ? await getShowcaseFunctionIds(parseResult.path) : [])
+      setShowcaseIds(DEMO_MODE ? await getImpactShowcaseIds(parseResult.path) : [])
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {

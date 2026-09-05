@@ -214,7 +214,7 @@ export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetO
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest
 export const ingestDbConnection = DEMO_MODE ? demoClient.ingestDbConnection : realIngestDbConnection
 export const streamDoc = DEMO_MODE ? demoClient.streamDoc : realStreamDoc
-/** Demo-only: no real-backend concept of a "showcase" function exists, so
- * the real app always gets an empty list rather than a second code path
- * every consumer has to branch on. */
-export const getShowcaseFunctionIds = DEMO_MODE ? demoClient.getShowcaseFunctionIds : async () => []
+/** Demo-only: no real-backend concept of an impact-analysis "showcase"
+ * function exists, so the real app always gets an empty list rather than
+ * a second code path every consumer has to branch on. */
+export const getImpactShowcaseIds = DEMO_MODE ? demoClient.getImpactShowcaseIds : async () => []

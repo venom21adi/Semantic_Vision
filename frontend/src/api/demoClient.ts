@@ -82,18 +82,38 @@ export function loadDemoRepoList(): Promise<DemoRepoMeta[]> {
   return Promise.all(DEMO_SLUGS.map((slug) => loadMeta(slug)))
 }
 
-/** The same handful of functions curated for AI-doc generation (real
- * callers, real branching, worth looking at) double as good impact-
- * analysis examples -- a function picked at random is as likely as not
- * to have zero callers in a ~90-node demo repo (a dead end that reads as
- * "this feature doesn't do anything" rather than the small-repo artifact
- * it actually is). `App.tsx` uses this to point a first-time visitor at
- * one that actually shows something. Cached via `loadMeta`, so this is
- * never a second network round trip once `meta.json` has loaded once. */
-export async function getShowcaseFunctionIds(path: string): Promise<string[]> {
+const MAX_IMPACT_SHOWCASE_IDS = 6
+
+/** Functions worth suggesting to a first-time visitor for Impact Analysis
+ * specifically -- guaranteed to have at least one real caller, so "click
+ * one of these" can't itself land on the "No callers found" dead end it
+ * exists to avoid. Prefers the functions already curated for AI-doc
+ * generation (real branching, worth looking at) when they qualify, but
+ * doesn't assume they always do: `meta.json`'s `showcaseDocIds` was picked
+ * for doc-generation quality alone, and for axios specifically, 5 of its
+ * 6 picks genuinely have zero callers in this trimmed-subset repo
+ * (confirmed live) -- likely called from real axios source that didn't
+ * make the cut into this demo's smaller file set. Tops up from every
+ * other function with real callers, ranked by caller count, whenever a
+ * repo's own showcase picks don't supply enough on their own.
+ *
+ * `App.tsx` uses this to populate the empty details panel's suggestions.
+ * Reuses `loadBundle`'s cache -- by the time App.tsx calls this (after
+ * `parseRepo`, which already awaits `loadBundle`), the impact data is
+ * already in memory, so this never costs a second fetch. */
+export async function getImpactShowcaseIds(path: string): Promise<string[]> {
   if (!isDemoSlug(path)) return []
-  const meta = await loadMeta(path)
-  return meta.showcaseDocIds
+  const bundle = await loadBundle(path)
+
+  const hasCallers = (id: string) => (bundle.impact[id]?.callers.length ?? 0) > 0
+  const fromDocShowcase = bundle.meta.showcaseDocIds.filter(hasCallers)
+
+  const rankedByCallerCount = Object.entries(bundle.impact)
+    .filter(([id, result]) => result.callers.length > 0 && !fromDocShowcase.includes(id))
+    .sort(([, a], [, b]) => b.callers.length - a.callers.length)
+    .map(([id]) => id)
+
+  return [...fromDocShowcase, ...rankedByCallerCount].slice(0, MAX_IMPACT_SHOWCASE_IDS)
 }
 
 const bundleCache = new Map<string, Promise<DemoBundle>>()
