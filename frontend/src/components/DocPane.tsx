@@ -6,6 +6,7 @@ import { DEMO_MODE } from '../api/client'
 import type { DocProvider } from '../api/types'
 import { colors, font, radius, spacing } from '../theme'
 import type { ActivePane } from './DetailsPanel'
+import { RecordingLightbox } from './RecordingLightbox'
 
 type DocActivePane = Extract<ActivePane, { kind: 'doc' }>
 
@@ -66,6 +67,7 @@ export function DocPane({
 
   const [isEditing, setIsEditing] = useState(false)
   const [showRecording, setShowRecording] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   // Mirrors RepoLoader's "adjust state when a prop changes" pattern: a
   // fresh generation replaces whatever was being edited, so drop back to
@@ -204,7 +206,20 @@ export function DocPane({
                 <img
                   src={`${import.meta.env.BASE_URL}demo/media/ai-doc-generation.gif`}
                   alt="AI documentation streaming in for a function in the real app"
-                  style={{ marginTop: spacing.xs, width: '100%', borderRadius: radius.sm }}
+                  onClick={() => setLightboxOpen(true)}
+                  style={{
+                    marginTop: spacing.xs,
+                    width: '100%',
+                    borderRadius: radius.sm,
+                    cursor: 'zoom-in',
+                  }}
+                />
+              )}
+              {lightboxOpen && (
+                <RecordingLightbox
+                  src={`${import.meta.env.BASE_URL}demo/media/ai-doc-generation.gif`}
+                  alt="AI documentation streaming in for a function in the real app"
+                  onClose={() => setLightboxOpen(false)}
                 />
               )}
             </div>

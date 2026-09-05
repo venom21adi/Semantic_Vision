@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { ApiError, DEMO_MODE, ingestDbConnection, ingestDbtManifest } from '../api/client'
 import { colors, radius, spacing } from '../theme'
+import { RecordingLightbox } from './RecordingLightbox'
 
 interface DataSourcePaneProps {
   path: string
@@ -44,6 +45,7 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
   const [connectionString, setConnectionString] = useState('')
   const [connectionState, setConnectionState] = useState<IngestState>({ status: 'idle' })
   const [showRecording, setShowRecording] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   async function handleManifestSubmit(event: FormEvent) {
     event.preventDefault()
@@ -236,7 +238,20 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
                   <img
                     src={`${import.meta.env.BASE_URL}demo/media/data-lineage.gif`}
                     alt="Connecting a dbt manifest and a live database to a repo, watching new table nodes join the graph"
-                    style={{ marginTop: spacing.xs, width: '100%', borderRadius: radius.sm }}
+                    onClick={() => setLightboxOpen(true)}
+                    style={{
+                      marginTop: spacing.xs,
+                      width: '100%',
+                      borderRadius: radius.sm,
+                      cursor: 'zoom-in',
+                    }}
+                  />
+                )}
+                {lightboxOpen && (
+                  <RecordingLightbox
+                    src={`${import.meta.env.BASE_URL}demo/media/data-lineage.gif`}
+                    alt="Connecting a dbt manifest and a live database to a repo, watching new table nodes join the graph"
+                    onClose={() => setLightboxOpen(false)}
                   />
                 )}
               </div>
