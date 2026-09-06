@@ -2,6 +2,8 @@ import pytest
 
 from semantic_vision.languages import LanguageAdapter, ParseSyntaxError, get_adapter, register
 from semantic_vision.languages import registry as registry_module
+from semantic_vision.languages.java import JAVA_ADAPTER
+from semantic_vision.languages.java import parse_file as java_parse_file
 from semantic_vision.languages.javascript import JAVASCRIPT_ADAPTER
 from semantic_vision.languages.javascript import parse_file as js_parse_file
 from semantic_vision.languages.python import PYTHON_ADAPTER, dotted_module_path, parse_file
@@ -87,3 +89,27 @@ def test_js_parse_file_raises_parse_syntax_error_with_line_on_broken_source():
 
     assert exc_info.value.line == 3
     assert "bad.ts" in exc_info.value.message
+
+
+def test_get_adapter_resolves_the_registered_java_adapter():
+    assert get_adapter("java") is JAVA_ADAPTER
+
+
+def test_java_adapter_file_extensions_and_language_id():
+    assert JAVA_ADAPTER.language_id == "java"
+    assert JAVA_ADAPTER.file_extensions == frozenset({".java"})
+
+
+def test_java_parse_file_extracts_a_raw_module_from_valid_source():
+    raw = java_parse_file("class A {\n    void f() {}\n}\n", "A.java")
+
+    assert raw.rel_path == "A.java"
+    assert [cls.name for cls in raw.classes] == ["A"]
+
+
+def test_java_parse_file_raises_parse_syntax_error_with_line_on_broken_source():
+    with pytest.raises(ParseSyntaxError) as exc_info:
+        java_parse_file("class A {}\n\nclass B {\n", "bad.java")
+
+    assert exc_info.value.line == 3
+    assert "bad.java" in exc_info.value.message

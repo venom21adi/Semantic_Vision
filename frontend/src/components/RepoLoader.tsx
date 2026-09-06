@@ -173,6 +173,7 @@ export function RepoLoader({
               >
                 <option value="python">Python</option>
                 <option value="javascript">JavaScript / TypeScript</option>
+                <option value="java">Java</option>
               </select>
             </div>
             <button

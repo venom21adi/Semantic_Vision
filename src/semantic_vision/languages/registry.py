@@ -5,6 +5,7 @@ constructing one `LanguageAdapter` and calling `register` here.
 from __future__ import annotations
 
 from semantic_vision.languages.base import LanguageAdapter
+from semantic_vision.languages.java import JAVA_ADAPTER
 from semantic_vision.languages.javascript import JAVASCRIPT_ADAPTER
 from semantic_vision.languages.python import PYTHON_ADAPTER
 
@@ -35,3 +36,4 @@ def get_adapter(language_id: str) -> LanguageAdapter:
 
 register(PYTHON_ADAPTER)
 register(JAVASCRIPT_ADAPTER)
+register(JAVA_ADAPTER)

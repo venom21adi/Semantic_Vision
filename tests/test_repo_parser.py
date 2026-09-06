@@ -209,6 +209,185 @@ def test_javascript_repo_symbols_and_edges_match_exactly():
     assert result.edges == expected_edges
 
 
+def test_java_repo_symbols_and_edges_match_exactly():
+    """The Java counterpart to `test_javascript_repo_symbols_and_edges_match_exactly`:
+    a package-qualified import resolving to a real class, a cross-file
+    constructor call, a `this.method()` call, an import-bound external
+    call, and a bare `java.lang` builtin construction -- exact node/edge
+    assertions."""
+    result = parse_repository(FIXTURES / "java_repo", language="java")
+
+    assert result.root == (FIXTURES / "java_repo").resolve().as_posix()
+    assert result.parse_errors == []
+    assert result.variables == []
+
+    expected_nodes = [
+        Node(id="src", kind=NodeKind.DIRECTORY, label="src", file="src", line_start=0, line_end=0),
+        Node(
+            id="src/com",
+            kind=NodeKind.DIRECTORY,
+            label="com",
+            file="src/com",
+            line_start=0,
+            line_end=0,
+        ),
+        Node(
+            id="src/com/example",
+            kind=NodeKind.DIRECTORY,
+            label="example",
+            file="src/com/example",
+            line_start=0,
+            line_end=0,
+        ),
+        Node(
+            id="src/com/example/Greeter.java",
+            kind=NodeKind.FILE,
+            label="Greeter.java",
+            file="src/com/example/Greeter.java",
+            line_start=1,
+            line_end=16,
+        ),
+        Node(
+            id="src/com/example/Greeter.java::Greeter",
+            kind=NodeKind.CLASS,
+            label="Greeter",
+            file="src/com/example/Greeter.java",
+            line_start=6,
+            line_end=16,
+        ),
+        Node(
+            id="src/com/example/Greeter.java::Greeter.clean",
+            kind=NodeKind.FUNCTION,
+            label="clean",
+            file="src/com/example/Greeter.java",
+            line_start=13,
+            line_end=15,
+        ),
+        Node(
+            id="src/com/example/Greeter.java::Greeter.greet",
+            kind=NodeKind.FUNCTION,
+            label="greet",
+            file="src/com/example/Greeter.java",
+            line_start=7,
+            line_end=11,
+        ),
+        Node(
+            id="src/com/example/util",
+            kind=NodeKind.DIRECTORY,
+            label="util",
+            file="src/com/example/util",
+            line_start=0,
+            line_end=0,
+        ),
+        Node(
+            id="src/com/example/util/Formatter.java",
+            kind=NodeKind.FILE,
+            label="Formatter.java",
+            file="src/com/example/util/Formatter.java",
+            line_start=1,
+            line_end=10,
+        ),
+        Node(
+            id="src/com/example/util/Formatter.java::Formatter",
+            kind=NodeKind.CLASS,
+            label="Formatter",
+            file="src/com/example/util/Formatter.java",
+            line_start=3,
+            line_end=10,
+        ),
+        Node(
+            id="src/com/example/util/Formatter.java::Formatter.format",
+            kind=NodeKind.FUNCTION,
+            label="format",
+            file="src/com/example/util/Formatter.java",
+            line_start=4,
+            line_end=9,
+        ),
+    ]
+    assert result.nodes == expected_nodes
+
+    expected_edges = [
+        Edge(source="src", target="src/com", kind=EdgeKind.DEFINES),
+        Edge(source="src/com", target="src/com/example", kind=EdgeKind.DEFINES),
+        Edge(
+            source="src/com/example",
+            target="src/com/example/Greeter.java",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(source="src/com/example", target="src/com/example/util", kind=EdgeKind.DEFINES),
+        Edge(
+            source="src/com/example/Greeter.java",
+            target="external::java.util.Objects",
+            kind=EdgeKind.IMPORTS,
+            external=True,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java",
+            target="src/com/example/Greeter.java::Greeter",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java",
+            target="src/com/example/util/Formatter.java::Formatter",
+            kind=EdgeKind.IMPORTS,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java::Greeter",
+            target="src/com/example/Greeter.java::Greeter.clean",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java::Greeter",
+            target="src/com/example/Greeter.java::Greeter.greet",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java::Greeter.clean",
+            target="external::java.util.Objects.requireNonNull",
+            kind=EdgeKind.CALLS,
+            external=True,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java::Greeter.greet",
+            target="src/com/example/Greeter.java::Greeter.clean",
+            kind=EdgeKind.CALLS,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java::Greeter.greet",
+            target="src/com/example/util/Formatter.java::Formatter",
+            kind=EdgeKind.CALLS,
+        ),
+        Edge(
+            source="src/com/example/Greeter.java::Greeter.greet",
+            target="unresolved::formatter.format",
+            kind=EdgeKind.CALLS,
+            ambiguous=True,
+        ),
+        Edge(
+            source="src/com/example/util",
+            target="src/com/example/util/Formatter.java",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/com/example/util/Formatter.java",
+            target="src/com/example/util/Formatter.java::Formatter",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/com/example/util/Formatter.java::Formatter",
+            target="src/com/example/util/Formatter.java::Formatter.format",
+            kind=EdgeKind.DEFINES,
+        ),
+        Edge(
+            source="src/com/example/util/Formatter.java::Formatter.format",
+            target="external::java.lang.IllegalArgumentException",
+            kind=EdgeKind.CALLS,
+            external=True,
+        ),
+    ]
+    assert result.edges == expected_edges
+
+
 def test_star_import_and_unresolved_call_are_ambiguous():
     result = parse_repository(FIXTURES / "star_repo")
 
