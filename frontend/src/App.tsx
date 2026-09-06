@@ -616,7 +616,19 @@ export default function App() {
       if (vscodeApi) {
         const node = repo.nodes.find((candidate) => candidate.id === nodeId)
         if (node) {
-          vscodeApi.postMessage({ command: 'openSource', file: node.file, line: node.line_start })
+          // `repo.path` is the actual root the currently-loaded graph was
+          // parsed from -- not necessarily the VS Code workspace folder,
+          // since the repo-path field above lets a user point this same
+          // webview at any local checkout. The extension host must resolve
+          // `node.file` against *this* root, not assume its own workspace
+          // root, or "View Source" opens a nonexistent path whenever the
+          // two differ.
+          vscodeApi.postMessage({
+            command: 'openSource',
+            path: repo.path,
+            file: node.file,
+            line: node.line_start,
+          })
         }
         return
       }

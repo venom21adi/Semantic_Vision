@@ -124,6 +124,7 @@ describe('App inside the VS Code extension webview', () => {
 
     expect(postMessage).toHaveBeenCalledWith({
       command: 'openSource',
+      path: '/repo',
       file: 'app.py',
       line: 6,
     })

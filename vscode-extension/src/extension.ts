@@ -1,3 +1,4 @@
+import { type ChildProcess, spawn } from 'child_process'
 import * as path from 'path'
 import * as vscode from 'vscode'
 import {
@@ -45,6 +46,38 @@ let cachedGraphRoot: string | null = null
  * racing two `uvicorn` processes for the same port. */
 let ensureBackendPromise: Promise<boolean> | null = null
 
+/** The backend process this activation spawned itself (`backendPath` or the
+ * bundled binary), if any -- never set for a backend `isBackendReachable`
+ * merely found already running, since that one isn't this extension's to
+ * kill. Tracked so `deactivate` can terminate it: without this, the process
+ * outlives every VS Code restart *and* every extension update, since
+ * `doEnsureBackendRunning` only checks that *something* answers on the
+ * configured port, not that it's a healthy or current build -- confirmed as
+ * a real, not hypothetical, failure mode: a `v1.0.0` bundled backend was
+ * found still running and still serving `v1.1.1`'s webview, wedged after a
+ * failed streaming request, surviving repeated window reloads because
+ * nothing ever told it to stop. */
+let spawnedBackendProcess: ChildProcess | undefined
+
+/** `ChildProcess#kill()` only terminates the process Node directly spawned.
+ * That's fine for `spawnBackend`'s plain `uv run uvicorn`, but the bundled
+ * one-file PyInstaller binary (`spawnBundledBackend`) launches a bootloader
+ * that extracts itself and execs the real backend as its own child --
+ * `kill()` on Windows (`TerminateProcess`, no descendant semantics) would
+ * stop only that bootloader shell, leaving the actual backend running and
+ * still bound to the port, i.e. reproducing the exact orphan this comment
+ * exists to prevent. `taskkill /t` kills the whole tree; POSIX platforms
+ * don't have this split-process shape, so a plain `kill()` is enough there. */
+function killSpawnedBackend(): void {
+  if (!spawnedBackendProcess || spawnedBackendProcess.pid === undefined) return
+  if (process.platform === 'win32') {
+    spawn('taskkill', ['/pid', String(spawnedBackendProcess.pid), '/t', '/f'])
+  } else {
+    spawnedBackendProcess.kill()
+  }
+  spawnedBackendProcess = undefined
+}
+
 interface Config {
   backendUrl: string
   backendPath: string
@@ -71,7 +104,7 @@ async function doEnsureBackendRunning(
 
   if (config.backendPath) {
     progress.report({ message: `Starting the backend from ${config.backendPath}...` })
-    spawnBackend(config.backendPath, resolvePort(config.backendUrl), (error) => {
+    spawnedBackendProcess = spawnBackend(config.backendPath, resolvePort(config.backendUrl), (error) => {
       void vscode.window.showErrorMessage(
         `Semantic Vision: failed to start the backend from ${config.backendPath}: ${error.message}. ` +
           'Check that "uv" is on PATH and that this path is a real Semantic Vision checkout.',
@@ -96,7 +129,7 @@ async function doEnsureBackendRunning(
   const bundledPath = resolveBundledBackendPath(extensionPath)
   if (bundledPath) {
     progress.report({ message: 'Starting the backend...' })
-    spawnBundledBackend(bundledPath, resolvePort(config.backendUrl), (error) => {
+    spawnedBackendProcess = spawnBundledBackend(bundledPath, resolvePort(config.backendUrl), (error) => {
       void vscode.window.showErrorMessage(
         `Semantic Vision: failed to start the bundled backend: ${error.message}.`,
       )
@@ -200,13 +233,19 @@ function ensurePanel(context: vscode.ExtensionContext, backendUrl: string): vsco
   panel.webview.html = buildWebviewHtml(panel.webview, distDir, backendUrl)
 
   context.subscriptions.push(
-    panel.webview.onDidReceiveMessage((message: { command?: string; file?: string; line?: number }) => {
-      const root = workspaceRoot()
-      if (!root) return
-      if (message.command === 'openSource' && message.file && typeof message.line === 'number') {
+    panel.webview.onDidReceiveMessage(
+      (message: { command?: string; path?: string; file?: string; line?: number }) => {
+        if (message.command !== 'openSource' || !message.file || typeof message.line !== 'number') return
+        // `message.path` is the root the webview actually loaded this graph
+        // from -- it can differ from the VS Code workspace folder (the
+        // in-app repo-path field lets a user point the same webview at any
+        // local checkout), so it takes priority; `workspaceRoot()` is only
+        // a fallback for a stale webview bundle that predates this field.
+        const root = message.path ?? workspaceRoot()
+        if (!root) return
         void openSource(root, message.file, message.line)
-      }
-    }),
+      },
+    ),
   )
 
   panel.onDidDispose(() => {
@@ -316,6 +355,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+  killSpawnedBackend()
   panel = undefined
   cachedGraph = null
   cachedGraphRoot = null
