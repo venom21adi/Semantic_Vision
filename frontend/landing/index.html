@@ -11,6 +11,24 @@
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#121317" />
 <link rel="icon" type="image/png" href="./img/favicon.png" />
+<script>
+(function () {
+  // Runs before the stylesheet paints anything, so the right theme is
+  // applied from the first frame -- no flash of the wrong theme while a
+  // later script reads localStorage. Falls back to the OS/browser
+  // preference on a first visit, same convention as `prefers-reduced-
+  // motion` below.
+  try {
+    var stored = localStorage.getItem('sv-theme');
+    var theme = stored === 'light' || stored === 'dark'
+      ? stored
+      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -37,6 +55,43 @@
     --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
     --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
     --radius: 14px;
+    /* Values below this line vary enough between themes (direction of a
+       gradient tint, whether grid lines need to be light-on-dark or
+       dark-on-light) that they don't fit the same light/dark pair the
+       tokens above use -- named on their own so the light override block
+       only has to redeclare exactly what changes. */
+    --nav-bg: rgba(12, 13, 16, 0.78);
+    --grid-line: rgba(255, 255, 255, 0.035);
+    --hero-glow: rgba(142, 111, 243, 0.3);
+    --featured-tint: rgba(47, 37, 82, 0.22);
+    --featured-border: rgba(142, 111, 243, 0.5);
+    --cta-tint: rgba(47, 37, 82, 0.28);
+  }
+
+  /* ---------- Light theme ---------- */
+  :root[data-theme='light'] {
+    --bg: #ffffff;
+    --bg-panel: #f5f6f8;
+    --bg-panel-raised: #ffffff;
+    --border: #e1e3e9;
+    --border-subtle: #ececf0;
+    --text: #14151a;
+    --text-faint: #34363d;
+    --text-muted: #5a5d66;
+    --text-dim: #82848d;
+    --accent: #7449e0;
+    --accent-strong: #5c34c9;
+    --accent-soft-bg: #efe9fd;
+    --accent-text: #6836d1;
+    --teal-light: #0e8b8b;
+    --green: #178a45;
+    --nav-bg: rgba(255, 255, 255, 0.78);
+    --grid-line: rgba(20, 21, 26, 0.05);
+    --hero-glow: rgba(116, 73, 224, 0.14);
+    --featured-tint: rgba(116, 73, 224, 0.08);
+    --featured-border: rgba(116, 73, 224, 0.35);
+    --cta-tint: rgba(116, 73, 224, 0.1);
+    color-scheme: light;
   }
 
   * { box-sizing: border-box; }
@@ -49,6 +104,7 @@
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   img { max-width: 100%; display: block; }
   a { color: inherit; }
@@ -79,7 +135,7 @@
     position: sticky;
     top: 0;
     z-index: 40;
-    background: rgba(12, 13, 16, 0.78);
+    background: var(--nav-bg);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border-subtle);
@@ -127,6 +183,27 @@
   }
   .navmenu-toggle { display: none; }
 
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .theme-toggle:hover { border-color: var(--text-dim); background: var(--bg-panel); }
+  .theme-toggle svg { width: 16px; height: 16px; }
+  .theme-toggle .icon-sun { display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme='light'] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme='light'] .theme-toggle .icon-moon { display: block; }
+
   /* ---------- Buttons ---------- */
   .btn {
     display: inline-flex;
@@ -172,7 +249,7 @@
     width: 900px;
     height: 620px;
     background:
-      radial-gradient(closest-side, rgba(142, 111, 243, 0.3), transparent 70%);
+      radial-gradient(closest-side, var(--hero-glow), transparent 70%);
     filter: blur(10px);
     pointer-events: none;
   }
@@ -181,8 +258,8 @@
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
     background-size: 42px 42px;
     -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, black 40%, transparent 85%);
     mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, black 40%, transparent 85%);
@@ -463,8 +540,8 @@
     gap: 14px;
   }
   .path-card.featured {
-    border-color: rgba(142, 111, 243, 0.5);
-    background: linear-gradient(180deg, rgba(47, 37, 82, 0.22), var(--bg-panel) 60%);
+    border-color: var(--featured-border);
+    background: linear-gradient(180deg, var(--featured-tint), var(--bg-panel) 60%);
   }
   .path-tag {
     font-size: 11.5px;
@@ -500,7 +577,7 @@
   /* ---------- CTA banner ---------- */
   .cta-banner {
     text-align: center;
-    background: linear-gradient(180deg, rgba(47, 37, 82, 0.28), transparent);
+    background: linear-gradient(180deg, var(--cta-tint), transparent);
     border: 1px solid var(--border-subtle);
     border-radius: 24px;
     padding: 72px 32px;
@@ -554,6 +631,10 @@
       <a href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">GitHub</a>
     </div>
     <div class="nav-cta">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
       <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">★ Star</a>
       <a class="btn btn-primary btn-sm" href="./app/">Try the demo</a>
     </div>
@@ -562,14 +643,14 @@
 
 <header class="hero" id="top">
   <div class="container hero-inner">
-    <div class="eyebrow"><span class="dot"></span> Live static demo — explore two real repos, no install</div>
+    <div class="eyebrow"><span class="dot"></span> Live static demo explore two real repos, no install</div>
     <h1>See what your AI agent's edit <span class="grad">will break, before you merge it.</span></h1>
     <p class="lede">
-      Impact analysis for AI-assisted coding — every direct and transitive
-      caller, every circular call chain flagged, the whole blast radius lit
-      up on the graph before you approve the diff. Also does call graphs,
-      execution flowcharts, complexity hotspots, AI-generated docs, and
-      code-to-data lineage, if you're just here to understand a codebase.
+    Impact analysis for AI-assisted coding. See every direct and transitive caller, detect circular call chains, 
+    and visualize the full blast radius before approving a change. 
+    Explore interactive call graphs, trace execution with flowcharts, 
+    identify complexity hotspots, generate context-aware AI documentation, 
+    and follow dependencies from code to tables and columns with code-to-data lineage.
     </p>
     <div class="hero-ctas">
       <a class="btn btn-primary" href="./app/">Try the live demo →</a>
@@ -579,7 +660,7 @@
       <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg>100% local &amp; private</span>
       <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="1.6"/></svg>Python 3.12+ · Node 20+</span>
       <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" stroke="currentColor" stroke-width="1.6"/></svg>MIT licensed</span>
-      <span><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Static analysis only — code never runs</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Static analysis code never runs</span>
     </div>
 
     <div class="hero-shot" data-reveal>
@@ -889,6 +970,27 @@
 </div>
 
 <script>
+(function () {
+  var root = document.documentElement;
+  var toggle = document.getElementById('theme-toggle');
+  var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (!toggle) return;
+
+  function syncLabelAndMeta() {
+    var isLight = root.getAttribute('data-theme') === 'light';
+    toggle.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', isLight ? '#ffffff' : '#121317');
+  }
+  syncLabelAndMeta();
+
+  toggle.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('sv-theme', next); } catch (e) {}
+    syncLabelAndMeta();
+  });
+})();
+
 (function () {
   var els = document.querySelectorAll('[data-reveal]');
   if (!('IntersectionObserver' in window) || !els.length) return;
