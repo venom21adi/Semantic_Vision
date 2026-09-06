@@ -12,6 +12,22 @@ import { findNodeAtCursor, type GraphNodeLike } from './graphLookup'
 import { isWithinRoot, toRelativePath } from './paths'
 import { buildWebviewHtml } from './webviewContent'
 
+/** Backs the `semanticVision.sidebar` Activity Bar view -- there's nothing
+ * to show in it (the graph itself renders in `panel`, not here), but VS
+ * Code requires a real view to attach an Activity Bar icon to. Revealing
+ * it (see `activate`'s `onDidChangeVisibility` listener) is what actually
+ * triggers `openGraph`, giving the extension a single visible entry point
+ * without changing anything about how `openGraph` itself works. */
+class EmptySidebarProvider implements vscode.TreeDataProvider<never> {
+  getTreeItem(element: never): vscode.TreeItem {
+    return element
+  }
+
+  getChildren(): never[] {
+    return []
+  }
+}
+
 let panel: vscode.WebviewPanel | undefined
 
 /** The last-fetched graph, cached per workspace root so
@@ -277,7 +293,15 @@ async function impactAnalysisAtCursor(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  const sidebar = vscode.window.createTreeView('semanticVision.sidebar', {
+    treeDataProvider: new EmptySidebarProvider(),
+  })
+
   context.subscriptions.push(
+    sidebar,
+    sidebar.onDidChangeVisibility((event) => {
+      if (event.visible) void openGraph(context)
+    }),
     vscode.commands.registerCommand('semanticVision.openGraph', () => openGraph(context)),
     vscode.commands.registerCommand('semanticVision.impactAnalysisAtCursor', () =>
       impactAnalysisAtCursor(context),

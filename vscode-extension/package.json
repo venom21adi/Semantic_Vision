@@ -23,7 +23,7 @@
     "commands": [
       {
         "command": "semanticVision.openGraph",
-        "title": "Semantic Vision: Open Graph"
+        "title": "Semantic Vision: Open Call Graph"
       },
       {
         "command": "semanticVision.impactAnalysisAtCursor",
@@ -53,7 +53,30 @@
           "description": "Absolute path to a Semantic Vision checkout (the directory containing pyproject.toml). When set, the extension runs 'uv run uvicorn semantic_vision.api.app:app' from this directory to start the backend automatically if it isn't already reachable at semanticVision.backendUrl. Leave empty to start the backend yourself."
         }
       }
-    }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "semanticVision",
+          "title": "Semantic Vision",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "semanticVision": [
+        {
+          "id": "semanticVision.sidebar",
+          "name": "Semantic Vision"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "semanticVision.sidebar",
+        "contents": "[Open Call Graph](command:semanticVision.openGraph)"
+      }
+    ]
   },
   "scripts": {
     "copy-frontend": "node ./scripts/copy-frontend.mjs",
