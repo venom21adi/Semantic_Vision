@@ -2,7 +2,7 @@
   "name": "semantic-vision",
   "displayName": "Semantic Vision",
   "description": "See what an edit will break before you merge it: impact analysis, interactive call graphs, execution flowcharts, complexity reports, AI-generated docs, and code-to-data lineage for Python, JS, and TS.",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "publisher": "venom21adi",
   "icon": "media/icon.png",
   "repository": {
