@@ -46,13 +46,15 @@ function workspaceRoot(): string | undefined {
   return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 }
 
-async function doEnsureBackendRunning(config: Config, extensionPath: string): Promise<boolean> {
+async function doEnsureBackendRunning(
+  config: Config,
+  extensionPath: string,
+  progress: vscode.Progress<{ message?: string }>,
+): Promise<boolean> {
   if (await isBackendReachable(config.backendUrl)) return true
 
   if (config.backendPath) {
-    void vscode.window.showInformationMessage(
-      `Starting the Semantic Vision backend from ${config.backendPath}...`,
-    )
+    progress.report({ message: `Starting the backend from ${config.backendPath}...` })
     spawnBackend(config.backendPath, resolvePort(config.backendUrl), (error) => {
       void vscode.window.showErrorMessage(
         `Semantic Vision: failed to start the backend from ${config.backendPath}: ${error.message}. ` +
@@ -60,6 +62,7 @@ async function doEnsureBackendRunning(config: Config, extensionPath: string): Pr
       )
     })
 
+    progress.report({ message: 'Waiting for the backend to become reachable...' })
     const reachable = await waitForBackend(config.backendUrl)
     if (!reachable) {
       void vscode.window.showErrorMessage(
@@ -76,7 +79,7 @@ async function doEnsureBackendRunning(config: Config, extensionPath: string): Pr
   // to set up Python at all.
   const bundledPath = resolveBundledBackendPath(extensionPath)
   if (bundledPath) {
-    void vscode.window.showInformationMessage('Starting the Semantic Vision backend...')
+    progress.report({ message: 'Starting the backend...' })
     spawnBundledBackend(bundledPath, resolvePort(config.backendUrl), (error) => {
       void vscode.window.showErrorMessage(
         `Semantic Vision: failed to start the bundled backend: ${error.message}.`,
@@ -91,6 +94,7 @@ async function doEnsureBackendRunning(config: Config, extensionPath: string): Pr
     // isn't enough here, so this path gets a longer one. This is a one-time
     // cost per backend launch, not per command -- the process stays up
     // across subsequent `openGraph`/`impactAnalysisAtCursor` calls.
+    progress.report({ message: 'Waiting for the backend to finish starting (first launch can take up to 30s)...' })
     const reachable = await waitForBackend(config.backendUrl, 45, 1000)
     if (!reachable) {
       void vscode.window.showErrorMessage(
@@ -121,9 +125,13 @@ async function doEnsureBackendRunning(config: Config, extensionPath: string): Pr
  * `docs/PHASE-2-BUILD-PLAN.md` Milestone 16 and this session's research:
  * there's no console-script entry point, so `cwd` must be a real Semantic
  * Vision checkout with `uv sync` already run there). */
-async function ensureBackendRunning(config: Config, extensionPath: string): Promise<boolean> {
+async function ensureBackendRunning(
+  config: Config,
+  extensionPath: string,
+  progress: vscode.Progress<{ message?: string }>,
+): Promise<boolean> {
   if (ensureBackendPromise) return ensureBackendPromise
-  ensureBackendPromise = doEnsureBackendRunning(config, extensionPath).finally(() => {
+  ensureBackendPromise = doEnsureBackendRunning(config, extensionPath, progress).finally(() => {
     ensureBackendPromise = null
   })
   return ensureBackendPromise
@@ -200,16 +208,27 @@ async function openGraph(context: vscode.ExtensionContext) {
   }
 
   const config = getConfig()
-  const ready = await ensureBackendRunning(config, context.extensionPath)
-  if (!ready) return
+  let ready = false
 
-  await fetch(`${config.backendUrl}/api/parse-repo`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path: root }),
-  })
-  cachedGraph = await fetchGraph(config.backendUrl, root)
-  cachedGraphRoot = root
+  await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: 'Semantic Vision' },
+    async (progress) => {
+      ready = await ensureBackendRunning(config, context.extensionPath, progress)
+      if (!ready) return
+
+      progress.report({ message: 'Parsing repository...' })
+      await fetch(`${config.backendUrl}/api/parse-repo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: root }),
+      })
+
+      progress.report({ message: 'Loading graph...' })
+      cachedGraph = await fetchGraph(config.backendUrl, root)
+      cachedGraphRoot = root
+    },
+  )
+  if (!ready) return
 
   ensurePanel(context, config.backendUrl)
 
@@ -226,10 +245,19 @@ async function impactAnalysisAtCursor(context: vscode.ExtensionContext) {
 
   const config = getConfig()
   if (!cachedGraph || cachedGraphRoot !== root) {
-    const ready = await ensureBackendRunning(config, context.extensionPath)
+    let ready = false
+    await vscode.window.withProgress(
+      { location: vscode.ProgressLocation.Notification, title: 'Semantic Vision' },
+      async (progress) => {
+        ready = await ensureBackendRunning(config, context.extensionPath, progress)
+        if (!ready) return
+
+        progress.report({ message: 'Loading graph...' })
+        cachedGraph = await fetchGraph(config.backendUrl, root)
+        cachedGraphRoot = root
+      },
+    )
     if (!ready) return
-    cachedGraph = await fetchGraph(config.backendUrl, root)
-    cachedGraphRoot = root
   }
   if (!cachedGraph) {
     void vscode.window.showErrorMessage('Semantic Vision: could not load the graph for this workspace.')
