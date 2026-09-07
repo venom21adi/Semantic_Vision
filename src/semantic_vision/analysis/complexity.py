@@ -18,19 +18,27 @@ from pathlib import Path
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, ts_locate
+from semantic_vision import ast_locate, java_locate, ts_locate
 from semantic_vision.ast_locate import locate
 from semantic_vision.models import Edge, EdgeKind, NodeKind, ParseResult
-from semantic_vision.parser import javascript_extractor
+from semantic_vision.parser import java_extractor, javascript_extractor
+from semantic_vision.parser.java_extractor import (
+    _TYPE_DECLARATION_TYPES as _JAVA_TYPE_DECLARATION_TYPES,
+)
 from semantic_vision.parser.javascript_extractor import (
     _CLASS_DECLARATION_TYPES,
 )
 
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
+_JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
     return file.endswith(tuple(_JS_EXTENSIONS))
+
+
+def _is_java_file(file: str) -> bool:
+    return file.endswith(tuple(_JAVA_EXTENSIONS))
 
 
 # Matches `analysis.impact.DEFAULT_MAX_DEPTH`, for consistency across the
@@ -256,6 +264,84 @@ def _ts_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
     return complexity, max_loop_depth >= 2
 
 
+_JAVA_DECISION_TYPES = frozenset(
+    {
+        "if_statement",
+        "ternary_expression",  # `cond ? a : b` -- confirmed live to share
+        # the exact node type name JS/TS's own ternary uses.
+        "for_statement",
+        "enhanced_for_statement",  # Java's for-each -- a distinct node type
+        # from `for_statement`, unlike JS's single `for_in_statement`
+        # covering both `for...in`/`for...of` -- confirmed live.
+        "while_statement",
+        "do_statement",
+        "catch_clause",
+    }
+)
+_JAVA_LOOP_TYPES = frozenset(
+    {"for_statement", "enhanced_for_statement", "while_statement", "do_statement"}
+)
+# `&&`/`||` share Java's `binary_expression` node type with every
+# comparison operator too -- confirmed live, same overloaded-node-type
+# situation as JS/TS's own `binary_expression`. Java has no `??`
+# (nullish coalescing) and no `&&=`/`||=` logical-assignment operators,
+# so this stop set is simpler than TS's own `_LOGICAL_OPERATORS`.
+_JAVA_LOGICAL_OPERATORS = frozenset({"&&", "||"})
+# A local class's own methods are scored separately as their own nodes
+# (see `resolver/symbol_table.py`) -- must not be double-counted into the
+# enclosing method's score. `method_declaration`/`constructor_declaration`
+# are included for defensive symmetry with `_TS_NESTED_SCOPE_TYPES`, even
+# though Java's grammar has no way to nest one directly inside another
+# method's body (only a local class can appear there).
+_JAVA_NESTED_SCOPE_TYPES = _JAVA_TYPE_DECLARATION_TYPES | {
+    "method_declaration",
+    "constructor_declaration",
+}
+
+
+def _java_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
+    """The Java analogue of `_ts_cyclomatic_complexity`: +1 per
+    `if`/ternary/`for`/`enhanced_for`/`while`/`do...while`/`catch`, +1 per
+    `&&`/`||` (via `binary_expression`'s overloaded operator field,
+    checked by operator text), and +1 per non-`default` `switch_label`
+    inside a `switch_expression` (one point per case value, mirroring how
+    a plain `if`/`elif` chain counts one point per branch rather than one
+    per `switch` as a whole)."""
+    complexity = 1
+    loop_depth = 0
+    max_loop_depth = 0
+
+    def visit(node: tree_sitter.Node) -> None:
+        nonlocal complexity, loop_depth, max_loop_depth
+        is_loop = node.type in _JAVA_LOOP_TYPES
+
+        if node.type in _JAVA_DECISION_TYPES:
+            complexity += 1
+        elif node.type == "binary_expression":
+            operator = node.child_by_field_name("operator")
+            if operator is not None and operator.text.decode("utf-8") in _JAVA_LOGICAL_OPERATORS:
+                complexity += 1
+        elif node.type == "switch_label" and not any(c.type == "default" for c in node.children):
+            complexity += 1
+
+        if is_loop:
+            loop_depth += 1
+            max_loop_depth = max(max_loop_depth, loop_depth)
+
+        for child in node.children:
+            if child.type not in _JAVA_NESTED_SCOPE_TYPES:
+                visit(child)
+
+        if is_loop:
+            loop_depth -= 1
+
+    for child in def_node.children:
+        if child.type not in _JAVA_NESTED_SCOPE_TYPES:
+            visit(child)
+
+    return complexity, max_loop_depth >= 2
+
+
 def build_complexity_index(
     result: ParseResult, max_call_chain_depth: int = DEFAULT_MAX_CALL_CHAIN_DEPTH
 ) -> dict[str, ComplexityScore]:
@@ -268,6 +354,8 @@ def build_complexity_index(
     ast_indices: dict[str, ast_locate.DefIndex] = {}
     ts_trees: dict[str, tree_sitter.Tree | None] = {}
     ts_indices: dict[str, ts_locate.DefIndex] = {}
+    java_trees: dict[str, tree_sitter.Tree | None] = {}
+    java_indices: dict[str, java_locate.DefIndex] = {}
     forward_index = build_forward_call_index(result.edges)
 
     scores: dict[str, ComplexityScore] = {}
@@ -281,6 +369,17 @@ def build_complexity_index(
             ts_def_node = ts_locate.locate(root, node, ts_trees, ts_indices)
             if ts_def_node is not None:
                 complexity, has_nested_loops = _ts_cyclomatic_complexity(ts_def_node)
+                scores[node.id] = ComplexityScore(
+                    node_id=node.id,
+                    cyclomatic_complexity=complexity,
+                    call_chain_depth=depth,
+                    has_nested_loops=has_nested_loops,
+                )
+                continue
+        elif _is_java_file(node.file):
+            java_def_node = java_locate.locate(root, node, java_trees, java_indices)
+            if java_def_node is not None:
+                complexity, has_nested_loops = _java_cyclomatic_complexity(java_def_node)
                 scores[node.id] = ComplexityScore(
                     node_id=node.id,
                     cyclomatic_complexity=complexity,

@@ -395,3 +395,121 @@ def test_js_var_and_let_declared_arrow_functions_keep_their_real_keyword():
 
     assert _render_ts_signature(var_node, "oldStyle", strip_decorators=True).startswith("var ")
     assert _render_ts_signature(let_node, "midStyle", strip_decorators=True).startswith("let ")
+
+
+# --- Java (tree-sitter) -- mirrors the JS cases above. Java has no
+# top-level functions (everything lives in a class), so the fixture uses
+# a static-method "free function" analogue (`Helper.helper`) in place of
+# JS's/Python's real module-level function.
+
+
+def _parse_java(name: str):
+    return parse_repository(str(FIXTURES / name), language="java")
+
+
+def test_java_target_source_and_signature_are_real_not_a_placeholder():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Service.run")
+
+    assert "int run(int value)" in context.prompt
+    assert "int result = Helper.helper(value);" in context.prompt
+
+
+def test_java_target_uses_a_language_aware_code_fence():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Service.run")
+
+    assert "```java" in context.prompt
+    assert "```python" not in context.prompt
+
+
+def test_java_direct_callee_signature_is_included_and_external_call_excluded():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Service.run")
+
+    assert "## Direct callees" in context.prompt
+    callees_section = context.prompt.split("## Direct callees")[1].split("## ")[0]
+    assert "- `int helper(int x)`" in callees_section
+    assert "requireNonNull" not in callees_section
+
+
+def test_java_direct_caller_signature_is_included():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Service.run")
+
+    assert "## Direct callers" in context.prompt
+    callers_section = context.prompt.split("## Direct callers")[1].split("## ")[0]
+    assert "- `int execute(int value)`" in callers_section
+
+
+def test_java_parent_class_header_present_for_a_method():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Service.run")
+
+    assert "## Parent class" in context.prompt
+    assert "`class Service`" in context.prompt.split("## Parent class")[1]
+
+
+def test_java_no_callees_or_callers_sections_when_there_are_none():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Standalone.value")
+
+    assert "## Direct callees" not in context.prompt
+    assert "## Direct callers" not in context.prompt
+    assert context.omitted == []
+
+
+def test_java_annotation_is_included_in_target_source_and_signature_but_not_parent():
+    """Unlike a JS decorator, a Java annotation is an ordinary child fully
+    inside the method's own span (no `_decorators_of`-style span
+    adjustment needed) -- this exercises that it still shows up in both
+    the rendered signature and the fenced source, and is correctly
+    excluded from the (unrelated) parent-class header."""
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_context(result, "Service.java::Standalone.value")
+
+    target_block = context.prompt.split("## Target function")[1].split("## Parent class")[0]
+    assert target_block.count("@Deprecated") == 2
+
+    parent_block = context.prompt.split("## Parent class")[1]
+    assert "@Deprecated" not in parent_block
+    assert "`class Standalone`" in parent_block
+
+
+def test_java_file_context_lists_top_level_defines_with_methods_nested_under_their_class():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_file_context(result, "Service.java")
+
+    assert context.kind == "file"
+    assert "`Service.java`" in context.prompt
+    defines_section = context.prompt.split("## Defines")[1]
+    assert "- `class Service`" in defines_section
+    assert "  - `int run(int value)`" in defines_section
+    assert "  - `int execute(int value)`" in defines_section
+    assert "- `class Helper`" in defines_section
+    assert "  - `int helper(int x)`" in defines_section
+    assert "- `class Standalone`" in defines_section
+    assert "  - `int value(int x)`" in defines_section
+    # The annotation is stripped in this list, same as callee/caller
+    # signatures -- it's a one-liner index, not the target's own header.
+    assert "@Deprecated" not in defines_section
+
+    imports_section = context.prompt.split("## Imports")[1].split("## ")[0]
+    assert "- `java.util.Objects`" in imports_section
+
+
+def test_java_file_context_never_inlines_a_method_body():
+    result = _parse_java("doc_context_repo_java")
+
+    context = assemble_file_context(result, "Service.java")
+
+    assert "Helper.helper(value)" not in context.prompt
+    assert "requireNonNull" not in context.prompt

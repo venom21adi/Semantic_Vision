@@ -266,3 +266,118 @@ def test_js_call_chain_depth_cap_is_honored_on_a_cyclic_chain():
     score = _js_score("cyclic0")
 
     assert score.call_chain_depth == 5
+
+
+# --- Java (tree-sitter) -- mirrors the subset of the Python/JS cases
+# above that has a real Java equivalent (Java has no comprehension,
+# match-guard, nullish-coalescing/logical-assignment, or lambda-vs-
+# nested-def analogue -- it has no bare top-level functions at all, so
+# every case here lives inside one class's methods instead).
+
+JAVA_FIXTURES = Path(__file__).parent / "fixtures" / "complexity_repo_java"
+
+
+def _java_scores(max_call_chain_depth: int = 5) -> dict[str, ComplexityScore]:
+    result = parse_repository(str(JAVA_FIXTURES), language="java")
+    return build_complexity_index(result, max_call_chain_depth=max_call_chain_depth)
+
+
+def _java_score(
+    node_id: str, scores: dict[str, ComplexityScore] | None = None
+) -> ComplexityScore:
+    return (scores or _java_scores())[f"Widget.java::Widget.{node_id}"]
+
+
+def test_java_trivial_method_has_complexity_one():
+    score = _java_score("trivial")
+
+    assert score.cyclomatic_complexity == 1
+    assert score.call_chain_depth == 0
+    assert score.has_nested_loops is False
+
+
+def test_java_if_else_if_else_counts_each_decision():
+    score = _java_score("nestedIfElseIf")
+
+    assert score.cyclomatic_complexity == 3
+
+
+def test_java_enhanced_for_with_boolean_condition_counts_loop_if_and_logical_operator():
+    score = _java_score("loopWithBooleanCondition")
+
+    # base(1) + enhanced-for(1) + if(1) + "&&"(1) = 4
+    assert score.cyclomatic_complexity == 4
+    assert score.has_nested_loops is False
+
+
+def test_java_nested_loop_is_flagged_separately_from_the_complexity_count():
+    score = _java_score("nestedLoop")
+
+    # base(1) + outer enhanced-for(1) + inner enhanced-for(1) = 3
+    assert score.cyclomatic_complexity == 3
+    assert score.has_nested_loops is True
+
+
+def test_java_plain_for_loop_counts_as_a_decision_point():
+    score = _java_score("plainForLoop")
+
+    assert score.cyclomatic_complexity == 2
+
+
+def test_java_switch_counts_non_default_cases_only():
+    score = _java_score("switchExample")
+
+    # base(1) + `case 1`(1) + `case 2`(1); `default` is excluded
+    assert score.cyclomatic_complexity == 3
+
+
+def test_java_ternary_expression_counts_as_a_decision_point():
+    score = _java_score("ternaryExpression")
+
+    assert score.cyclomatic_complexity == 2
+
+
+def test_java_catch_clause_counts_as_a_decision_point():
+    score = _java_score("tryCatchExample")
+
+    assert score.cyclomatic_complexity == 2
+
+
+def test_java_while_and_do_while_each_count_as_a_loop():
+    score = _java_score("whileAndDoWhile")
+
+    assert score.cyclomatic_complexity == 3
+
+
+def test_java_sibling_loops_are_not_flagged_as_nested():
+    score = _java_score("siblingLoops")
+
+    # base(1) + 2 independent enhanced-for loops = 3
+    assert score.cyclomatic_complexity == 3
+    assert score.has_nested_loops is False
+
+
+def test_java_three_term_logical_chain_counts_each_nested_binary_expression():
+    score = _java_score("tripleLogicalChain")
+
+    # `a && b && c` nests as two `binary_expression` nodes in this
+    # grammar too (confirmed live) -- base(1) + 2 = 3.
+    assert score.cyclomatic_complexity == 3
+
+
+def test_java_long_call_chain_with_no_branches_still_scores_complexity_one():
+    score = _java_score("chainStep0")
+
+    assert score.cyclomatic_complexity == 1
+
+
+def test_java_call_chain_depth_counts_the_real_hop_count_when_unbounded():
+    score = _java_score("chainStep0", _java_scores(max_call_chain_depth=10))
+
+    assert score.call_chain_depth == 6
+
+
+def test_java_call_chain_depth_cap_is_honored_on_a_cyclic_chain():
+    score = _java_score("cyclic0")
+
+    assert score.call_chain_depth == 5

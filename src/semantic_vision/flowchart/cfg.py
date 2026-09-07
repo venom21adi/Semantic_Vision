@@ -25,10 +25,10 @@ from pathlib import Path
 
 import tree_sitter
 
-from semantic_vision import ast_locate, ts_locate
-from semantic_vision.ai.context import _render_ts_signature
+from semantic_vision import ast_locate, java_locate, ts_locate
+from semantic_vision.ai.context import _render_java_signature, _render_ts_signature
 from semantic_vision.ast_locate import DefNode, locate
-from semantic_vision.flowchart import ts_cfg
+from semantic_vision.flowchart import java_cfg, ts_cfg
 from semantic_vision.flowchart.model import (
     Builder as _Builder,
 )
@@ -46,6 +46,8 @@ from semantic_vision.flowchart.model import (
     PendingExit as _PendingExit,
 )
 from semantic_vision.models import Node, NodeKind, ParseResult
+from semantic_vision.parser.java_extractor import FILE_EXTENSIONS as _JAVA_EXTENSIONS
+from semantic_vision.parser.java_extractor import _end_line as _java_end_line
 from semantic_vision.parser.javascript_extractor import GRAMMAR_BY_EXTENSION
 from semantic_vision.parser.javascript_extractor import _end_line as _ts_end_line
 
@@ -63,6 +65,10 @@ _JS_EXTENSIONS = frozenset(GRAMMAR_BY_EXTENSION)
 
 def _is_js_file(file: str) -> bool:
     return file.endswith(tuple(_JS_EXTENSIONS))
+
+
+def _is_java_file(file: str) -> bool:
+    return file.endswith(tuple(_JAVA_EXTENSIONS))
 
 
 _IO_BUILTIN_NAMES = {"print", "input", "open"}
@@ -324,6 +330,33 @@ def _build_js_flowchart(
     return FlowchartResult(target=node_id, entry=entry_id, nodes=builder.nodes, edges=builder.edges)
 
 
+def _build_java_flowchart(
+    builder: _Builder,
+    result: ParseResult,
+    node_id: str,
+    node: Node,
+    def_node: tree_sitter.Node,
+) -> FlowchartResult:
+    entry_label = _render_java_signature(def_node, strip_decorators=True)
+    entry_id = builder.add_node(
+        FlowNodeKind.ENTRY,
+        entry_label or f"void {node.label}(...)",
+        node.line_start,
+        node.line_start,
+    )
+    same_file_functions = _index_same_file_functions(result, node.file)
+
+    body_first, pending = java_cfg.build_java_flowchart(builder, def_node, same_file_functions)
+    builder.add_edge(entry_id, body_first)
+
+    if pending:
+        end_line = _java_end_line(def_node)
+        return_id = builder.add_node(FlowNodeKind.RETURN, "return (implicit)", end_line, end_line)
+        builder.connect(pending, return_id)
+
+    return FlowchartResult(target=node_id, entry=entry_id, nodes=builder.nodes, edges=builder.edges)
+
+
 def build_flowchart(result: ParseResult, node_id: str) -> FlowchartResult:
     """Assumes `node_id` refers to an existing `FUNCTION` node -- callers
     (the `/api/flowchart` route) are expected to validate that first, the
@@ -341,6 +374,12 @@ def build_flowchart(result: ParseResult, node_id: str) -> FlowchartResult:
         ts_def_node = ts_locate.locate(root, node, ts_trees, ts_indices)
         if ts_def_node is not None:
             return _build_js_flowchart(builder, result, node_id, node, ts_def_node)
+    elif _is_java_file(node.file):
+        java_trees: dict[str, tree_sitter.Tree | None] = {}
+        java_indices: dict[str, java_locate.DefIndex] = {}
+        java_def_node = java_locate.locate(root, node, java_trees, java_indices)
+        if java_def_node is not None:
+            return _build_java_flowchart(builder, result, node_id, node, java_def_node)
     else:
         ast_trees: dict[str, ast.Module | None] = {}
         ast_indices: dict[str, ast_locate.DefIndex] = {}

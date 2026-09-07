@@ -231,18 +231,11 @@ What works today, per language:
 | Search | ✅ | ✅ | ✅ |
 | Persisted layout & view state | ✅ | ✅ | ✅ |
 | Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ |
-| Complexity report | ✅ | ✅ | ⚠️ |
-| AI-generated documentation | ✅ | ✅ | ⚠️ |
-| Execution flowcharts | ✅ | ✅ | ⚠️ |
+| Complexity report | ✅ | ✅ | ✅ |
+| AI-generated documentation | ✅ | ✅ | ✅ |
+| Execution flowcharts | ✅ | ✅ | ✅ |
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |
 | Docker packaging / one-command setup | ✅ | ✅ | ✅ |
-
-⚠️ Java support currently covers the call graph, search, and impact analysis in full — these are
-pure graph traversal, unaffected by language. Complexity scoring and execution flowcharts don't
-yet have a Java-specific implementation and silently under-report (no branches/loops detected)
-rather than analyzing real control flow; AI documentation sends the real Java source but with a
-Python-styled generated header. See [benchmarks/guava.md](benchmarks/guava.md) for how this was
-found and confirmed.
 
 Select Python, JavaScript / TypeScript, or Java in the language selector to set the parsing scope.
 
@@ -362,9 +355,8 @@ Linux.
   file.
 
 Every other feature below — flowcharts, the complexity report, AI docs,
-code-to-data lineage — works the same way inside that panel (see the
-[Status](#-status) table above for Java's current caveats on three of
-those). See [vscode-extension/README.md](vscode-extension/README.md) for
+code-to-data lineage — works the same way inside that panel. See
+[vscode-extension/README.md](vscode-extension/README.md) for
 configuration details (e.g. pointing it at an already-running backend
 instead of the bundled one). Prefer running the backend and frontend
 yourself, or via Docker? Both remain fully supported below.

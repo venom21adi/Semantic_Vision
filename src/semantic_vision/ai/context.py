@@ -17,9 +17,9 @@ from typing import Literal
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, ts_locate
+from semantic_vision import ast_locate, java_locate, ts_locate
 from semantic_vision.models import EdgeKind, Node, NodeKind, ParseResult
-from semantic_vision.parser import javascript_extractor
+from semantic_vision.parser import java_extractor, javascript_extractor
 from semantic_vision.parser.javascript_extractor import _CLASS_DECLARATION_TYPES
 
 MAX_CONTEXT_TOKENS = 2000
@@ -27,10 +27,15 @@ MAX_CONTEXT_TOKENS = 2000
 AnyDefNode = ast_locate.DefNode | tree_sitter.Node
 
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
+_JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
     return file.endswith(tuple(_JS_EXTENSIONS))
+
+
+def _is_java_file(file: str) -> bool:
+    return file.endswith(tuple(_JAVA_EXTENSIONS))
 
 
 _FENCE_LANGUAGE_BY_EXTENSION = {
@@ -43,6 +48,7 @@ _FENCE_LANGUAGE_BY_EXTENSION = {
     ".jsx": "javascript",
     ".mjs": "javascript",
     ".cjs": "javascript",
+    ".java": "java",
 }
 
 
@@ -229,8 +235,49 @@ def _render_ts_signature(
     return f"{decorator_lines}\n{header}"
 
 
-def _render_signature(def_node: AnyDefNode, label: str, *, strip_decorators: bool) -> str | None:
+def _render_java_signature(def_node: tree_sitter.Node, *, strip_decorators: bool) -> str | None:
+    """The Java analogue of `_render_ts_signature`: slices the real header
+    text straight out of the source, same rationale (tree-sitter preserves
+    exact source text, so slicing is always exact, unlike Python's
+    `ast.unparse` reconstruction).
+
+    Structurally simpler than the JS/TS version: every Java def node
+    (`method_declaration`/`constructor_declaration`/a class/interface/enum
+    declaration) already carries its own `name` textually within its own
+    span -- Java has no field-bound or variable-declarator-bound anonymous
+    function/class value the way JS does, so no synthetic `label`
+    parameter is needed to reconstruct a missing name. Annotations
+    (`@Override`, etc.) live inside a `modifiers` node that is an ordinary
+    child fully inside `def_node`'s own span (confirmed live) -- unlike a
+    JS decorator, which can sit *outside* the def node's span on a
+    wrapping `export_statement`, so no span-adjustment dance is needed
+    either: stripping them for a compact callee/caller entry is just
+    slicing from just past that one child instead of from the node start.
+    """
+    core_start = def_node.start_byte
+    if strip_decorators:
+        modifiers = next((c for c in def_node.children if c.type == "modifiers"), None)
+        if modifiers is not None:
+            core_start = modifiers.end_byte
+
+    body = def_node.child_by_field_name("body")
+    end = body.start_byte if body is not None else def_node.end_byte
+    header_bytes = def_node.text[core_start - def_node.start_byte : end - def_node.start_byte]
+    header = " ".join(header_bytes.decode("utf-8").split())
+    return header or None
+
+
+def _render_signature(
+    def_node: AnyDefNode, label: str, file: str, *, strip_decorators: bool
+) -> str | None:
+    # A Java def node is also a `tree_sitter.Node` (same as JS's), so
+    # `isinstance` alone can't tell the two grammars apart -- dispatch on
+    # the owning file's language instead. Every node in a single parsed
+    # repo is the same language (`parse_repository` takes one `language`
+    # for the whole repo), so `file`'s extension is always authoritative.
     if isinstance(def_node, tree_sitter.Node):
+        if _is_java_file(file):
+            return _render_java_signature(def_node, strip_decorators=strip_decorators)
         return _render_ts_signature(def_node, label, strip_decorators=strip_decorators)
     return _render_py_signature(def_node, strip_decorators=strip_decorators)
 
@@ -240,11 +287,15 @@ def _locate(
     node: Node,
     ast_trees: dict[str, ast.Module | None],
     ts_trees: dict[str, tree_sitter.Tree | None],
+    java_trees: dict[str, tree_sitter.Tree | None],
     ast_indices: dict[str, ast_locate.DefIndex],
     ts_indices: dict[str, ts_locate.DefIndex],
+    java_indices: dict[str, java_locate.DefIndex],
 ) -> AnyDefNode | None:
     if _is_js_file(node.file):
         return ts_locate.locate(root, node, ts_trees, ts_indices)
+    if _is_java_file(node.file):
+        return java_locate.locate(root, node, java_trees, java_indices)
     return ast_locate.locate(root, node, ast_trees, ast_indices)
 
 
@@ -253,15 +304,19 @@ def _signature(
     node: Node,
     ast_trees: dict[str, ast.Module | None],
     ts_trees: dict[str, tree_sitter.Tree | None],
+    java_trees: dict[str, tree_sitter.Tree | None],
     ast_indices: dict[str, ast_locate.DefIndex],
     ts_indices: dict[str, ts_locate.DefIndex],
+    java_indices: dict[str, java_locate.DefIndex],
     *,
     strip_decorators: bool = True,
 ) -> str | None:
-    def_node = _locate(root, node, ast_trees, ts_trees, ast_indices, ts_indices)
+    def_node = _locate(
+        root, node, ast_trees, ts_trees, java_trees, ast_indices, ts_indices, java_indices
+    )
     if def_node is None:
         return None
-    return _render_signature(def_node, node.label, strip_decorators=strip_decorators)
+    return _render_signature(def_node, node.label, node.file, strip_decorators=strip_decorators)
 
 
 def _parent_class(result: ParseResult, node: Node, nodes_by_id: dict[str, Node]) -> Node | None:
@@ -299,8 +354,10 @@ def _render_define_entry(
     nodes_by_id: dict[str, Node],
     ast_trees: dict[str, ast.Module | None],
     ts_trees: dict[str, tree_sitter.Tree | None],
+    java_trees: dict[str, tree_sitter.Tree | None],
     ast_indices: dict[str, ast_locate.DefIndex],
     ts_indices: dict[str, ts_locate.DefIndex],
+    java_indices: dict[str, java_locate.DefIndex],
     *,
     depth: int = 0,
 ) -> str:
@@ -311,7 +368,9 @@ def _render_define_entry(
     `DEFINES` edge from the file at all and so is out of scope here, same
     as any other function-local name)."""
     sig = (
-        _signature(root, node, ast_trees, ts_trees, ast_indices, ts_indices)
+        _signature(
+            root, node, ast_trees, ts_trees, java_trees, ast_indices, ts_indices, java_indices
+        )
         or _fallback_signature(node)
     )
     lines = [f"{'  ' * depth}- `{sig}`"]
@@ -325,8 +384,10 @@ def _render_define_entry(
                     nodes_by_id,
                     ast_trees,
                     ts_trees,
+                    java_trees,
                     ast_indices,
                     ts_indices,
+                    java_indices,
                     depth=depth + 1,
                 )
             )
@@ -387,6 +448,11 @@ def _direct_related(
 def _fallback_signature(node: Node) -> str:
     if node.kind == NodeKind.CLASS:
         return f"class {node.label}:"
+    if _is_java_file(node.file):
+        # No fake `def`/`function` keyword -- Java's return type isn't
+        # recoverable here, and there's no single keyword that fits every
+        # method the way `def`/`function` do for Python/JS.
+        return f"{node.label}(...)"
     keyword = "function" if _is_js_file(node.file) else "def"
     return f"{keyword} {node.label}(...):"
 
@@ -404,17 +470,24 @@ def assemble_context(
     node = nodes_by_id[node_id]
     ast_trees: dict[str, ast.Module | None] = {}
     ts_trees: dict[str, tree_sitter.Tree | None] = {}
+    java_trees: dict[str, tree_sitter.Tree | None] = {}
     ast_indices: dict[str, ast_locate.DefIndex] = {}
     ts_indices: dict[str, ts_locate.DefIndex] = {}
+    java_indices: dict[str, java_locate.DefIndex] = {}
 
     budget = max_tokens
     sections: list[str] = []
     omitted: list[str] = []
 
-    target_def_node = _locate(root, node, ast_trees, ts_trees, ast_indices, ts_indices)
+    target_def_node = _locate(
+        root, node, ast_trees, ts_trees, java_trees, ast_indices, ts_indices, java_indices
+    )
     source = _read_source(root, node, target_def_node) or ""
     signature = (
-        (target_def_node and _render_signature(target_def_node, node.label, strip_decorators=False))
+        (
+            target_def_node
+            and _render_signature(target_def_node, node.label, node.file, strip_decorators=False)
+        )
         or _fallback_signature(node)
     )
     fence = _fence_language(node.file)
@@ -434,7 +507,14 @@ def assemble_context(
         dropped = 0
         for related_node in related:
             sig = _signature(
-                root, related_node, ast_trees, ts_trees, ast_indices, ts_indices
+                root,
+                related_node,
+                ast_trees,
+                ts_trees,
+                java_trees,
+                ast_indices,
+                ts_indices,
+                java_indices,
             ) or _fallback_signature(related_node)
             if _approx_tokens(sig) <= budget:
                 lines.append(sig)
@@ -452,7 +532,14 @@ def assemble_context(
 
     if parent_node is not None:
         header = _signature(
-            root, parent_node, ast_trees, ts_trees, ast_indices, ts_indices
+            root,
+            parent_node,
+            ast_trees,
+            ts_trees,
+            java_trees,
+            ast_indices,
+            ts_indices,
+            java_indices,
         ) or _fallback_signature(parent_node)
         block = f"## Parent class\n\n`{header}`"
         if _approx_tokens(block) <= budget:
@@ -487,8 +574,10 @@ def assemble_file_context(
     node = nodes_by_id[node_id]
     ast_trees: dict[str, ast.Module | None] = {}
     ts_trees: dict[str, tree_sitter.Tree | None] = {}
+    java_trees: dict[str, tree_sitter.Tree | None] = {}
     ast_indices: dict[str, ast_locate.DefIndex] = {}
     ts_indices: dict[str, ts_locate.DefIndex] = {}
+    java_indices: dict[str, java_locate.DefIndex] = {}
 
     budget = max_tokens
     sections: list[str] = []
@@ -520,7 +609,16 @@ def assemble_file_context(
     header_charged = False
     for child in top_level:
         entry = _render_define_entry(
-            result, root, child, nodes_by_id, ast_trees, ts_trees, ast_indices, ts_indices
+            result,
+            root,
+            child,
+            nodes_by_id,
+            ast_trees,
+            ts_trees,
+            java_trees,
+            ast_indices,
+            ts_indices,
+            java_indices,
         )
         # The header is only charged against the budget once, the first
         # time it would actually be included -- mirrors the `Imports`
