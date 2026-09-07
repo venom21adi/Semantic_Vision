@@ -740,6 +740,143 @@ def test_complexity_diff_baseline_survives_a_reparse_where_complexity_was_never_
     assert changed_by_id["app.py::original"]["after"]["cyclomatic_complexity"] == 2
 
 
+def _init_git_repo(root: Path) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init"], cwd=root, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test"], cwd=root, check=True, capture_output=True
+    )
+
+
+def _git_commit(root: Path, message: str) -> None:
+    import subprocess
+
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", message], cwd=root, check=True, capture_output=True, text=True
+    )
+
+
+def test_git_refs_reports_is_git_repo_false_for_a_non_git_path(tmp_path: Path):
+    resp = client.get("/api/git/refs", params={"path": str(tmp_path)})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["is_git_repo"] is False
+    assert body["branches"] == []
+    assert body["commits"] == []
+
+
+def test_git_refs_lists_branches_and_commits_for_a_git_repo(tmp_path: Path):
+    _init_git_repo(tmp_path)
+    (tmp_path / "a.txt").write_text("one", encoding="utf-8")
+    _git_commit(tmp_path, "first commit")
+
+    resp = client.get("/api/git/refs", params={"path": str(tmp_path)})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["is_git_repo"] is True
+    assert len(body["branches"]) >= 1
+    assert [c["subject"] for c in body["commits"]] == ["first commit"]
+
+
+def test_complexity_diff_ref_requires_prior_parse():
+    resp = client.get(
+        "/api/complexity/diff-ref", params={"path": str(FIXTURES / "simple_repo"), "ref": "HEAD"}
+    )
+
+    assert resp.status_code == 404
+
+
+def test_complexity_diff_ref_returns_400_for_a_non_git_repo(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/diff-ref", params={"path": repo_path, "ref": "HEAD"})
+
+    assert resp.status_code == 400
+
+
+def test_complexity_diff_ref_returns_400_for_an_unknown_ref(tmp_path: Path):
+    _init_git_repo(tmp_path)
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    _git_commit(tmp_path, "first commit")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/complexity/diff-ref", params={"path": repo_path, "ref": "does-not-exist"}
+    )
+
+    assert resp.status_code == 400
+
+
+def test_complexity_diff_ref_reports_added_removed_changed_against_an_older_commit(tmp_path: Path):
+    _init_git_repo(tmp_path)
+    app_py = tmp_path / "app.py"
+    app_py.write_text(
+        "def stays_same():\n"
+        "    return 1\n"
+        "\n"
+        "\n"
+        "def to_be_removed():\n"
+        "    return 2\n"
+        "\n"
+        "\n"
+        "def to_be_changed():\n"
+        "    return 3\n",
+        encoding="utf-8",
+    )
+    _git_commit(tmp_path, "baseline commit")
+    repo_path = str(tmp_path)
+
+    # Edit on disk *without* committing -- diff-ref compares this
+    # uncommitted current state against the committed baseline ref.
+    app_py.write_text(
+        "def stays_same():\n"
+        "    return 1\n"
+        "\n"
+        "\n"
+        "def to_be_changed():\n"
+        "    if True:\n"
+        "        return 3\n"
+        "    return 4\n"
+        "\n"
+        "\n"
+        "def newly_added():\n"
+        "    return 5\n",
+        encoding="utf-8",
+    )
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/diff-ref", params={"path": repo_path, "ref": "HEAD"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ref"] == "HEAD"
+    assert body["available"] is True
+
+    added_ids = {s["node_id"] for s in body["added"]}
+    removed_ids = {s["node_id"] for s in body["removed"]}
+    changed_by_id = {c["node_id"]: c for c in body["changed"]}
+
+    assert added_ids == {"app.py::newly_added"}
+    assert removed_ids == {"app.py::to_be_removed"}
+    assert set(changed_by_id) == {"app.py::to_be_changed"}
+    assert changed_by_id["app.py::to_be_changed"]["before"]["cyclomatic_complexity"] == 1
+    assert changed_by_id["app.py::to_be_changed"]["after"]["cyclomatic_complexity"] == 2
+    assert "app.py::stays_same" not in added_ids | removed_ids | set(changed_by_id)
+
+
 def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisition(monkeypatch):
     """`get_current_and_previous_complexity_index` exists specifically so
     `current` and `previous` are read as one atomic operation: reading them

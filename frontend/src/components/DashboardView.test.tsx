@@ -1,11 +1,15 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { ComplexityDiffResponse, ComplexityScore } from '../api/types'
+import type { ComplexityDiffResponse, ComplexityRefDiffResponse, ComplexityScore, GraphNode } from '../api/types'
 import { DashboardView } from './DashboardView'
 
 const scores: ComplexityScore[] = [
   { node_id: 'app.py::handler', cyclomatic_complexity: 4, call_chain_depth: 1, has_nested_loops: false },
+]
+
+const graphNodes: GraphNode[] = [
+  { id: 'app.py::handler', kind: 'function', label: 'handler', file: 'app.py', line_start: 1, line_end: 2 },
 ]
 
 function renderDashboard(overrides: Partial<React.ComponentProps<typeof DashboardView>> = {}) {
@@ -16,6 +20,11 @@ function renderDashboard(overrides: Partial<React.ComponentProps<typeof Dashboar
     onBack: vi.fn(),
     diff: null,
     onCompare: vi.fn(),
+    gitRefs: null,
+    onCompareToRef: vi.fn(),
+    graphNodes,
+    graphEdges: [],
+    selectedNodeId: null,
     ...overrides,
   }
   return { ...render(<DashboardView {...props} />), props }
@@ -39,6 +48,19 @@ describe('DashboardView', () => {
 
     expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument()
     expect(screen.getByText(/app\.py::handler/)).toBeInTheDocument()
+  })
+
+  it('renders the summary stats header when loaded', () => {
+    renderDashboard()
+
+    expect(screen.getByText('Functions scored')).toBeInTheDocument()
+    expect(screen.getByText('Max call depth')).toBeInTheDocument()
+  })
+
+  it('renders the mini call graph pane', () => {
+    renderDashboard()
+
+    expect(screen.getByText('handler')).toBeInTheDocument()
   })
 
   it('calls onBack when "Back to graph" is clicked', async () => {
@@ -65,37 +87,53 @@ describe('DashboardView', () => {
     expect(props.onCompare).toHaveBeenCalledTimes(1)
   })
 
-  it('disables Compare and shows a comparing label while a compare is in flight', () => {
-    renderDashboard({ diff: { status: 'loading' } })
+  it('disables Compare and shows a comparing label while a last-look compare is in flight', () => {
+    renderDashboard({ diff: { status: 'loading', mode: { kind: 'last-look' } } })
 
     const button = screen.getByRole('button', { name: 'Comparing…' })
     expect(button).toBeDisabled()
   })
 
   it('shows a comparing message in the results area while loading', () => {
-    renderDashboard({ diff: { status: 'loading' } })
+    renderDashboard({ diff: { status: 'loading', mode: { kind: 'last-look' } } })
 
     expect(screen.getAllByText('Comparing…').length).toBeGreaterThan(0)
   })
 
   it('shows a diff error message', () => {
-    renderDashboard({ diff: { status: 'error', message: 'diff boom' } })
+    renderDashboard({ diff: { status: 'error', mode: { kind: 'last-look' }, message: 'diff boom' } })
 
     expect(screen.getByRole('alert')).toHaveTextContent('diff boom')
   })
 
   it('shows a no-baseline note when the diff is unavailable', () => {
     const result: ComplexityDiffResponse = { available: false, current: scores, added: [], removed: [], changed: [] }
-    renderDashboard({ diff: { status: 'loaded', result } })
+    renderDashboard({ diff: { status: 'loaded', mode: { kind: 'last-look' }, result } })
 
     expect(screen.getByText(/No earlier snapshot/)).toBeInTheDocument()
   })
 
   it('shows a no-changes message when nothing changed', () => {
     const result: ComplexityDiffResponse = { available: true, current: scores, added: [], removed: [], changed: [] }
-    renderDashboard({ diff: { status: 'loaded', result } })
+    renderDashboard({ diff: { status: 'loaded', mode: { kind: 'last-look' }, result } })
 
-    expect(screen.getByText('No changes since the last look.')).toBeInTheDocument()
+    expect(screen.getByText('No changes vs last look.')).toBeInTheDocument()
+  })
+
+  it('shows a ref-labeled no-changes message when comparing against a commit', () => {
+    const result: ComplexityRefDiffResponse = {
+      ref: 'abc1234',
+      available: true,
+      current: scores,
+      added: [],
+      removed: [],
+      changed: [],
+    }
+    renderDashboard({
+      diff: { status: 'loaded', mode: { kind: 'ref', ref: 'abc1234', label: 'abc1234 fix it' }, result },
+    })
+
+    expect(screen.getByText('No changes vs abc1234 fix it.')).toBeInTheDocument()
   })
 
   it('renders added, removed, and changed sections and only removed rows are non-clickable', async () => {
@@ -117,7 +155,7 @@ describe('DashboardView', () => {
         },
       ],
     }
-    const { props } = renderDashboard({ diff: { status: 'loaded', result } })
+    const { props } = renderDashboard({ diff: { status: 'loaded', mode: { kind: 'last-look' }, result } })
 
     expect(screen.getByText(/Added/)).toBeInTheDocument()
     expect(screen.getByText(/Removed/)).toBeInTheDocument()
@@ -130,5 +168,23 @@ describe('DashboardView', () => {
 
     await user.click(screen.getByRole('button', { name: /new_fn/ }))
     expect(props.onSelectNode).toHaveBeenCalledWith('app.py::new_fn')
+  })
+
+  it('does not render the ref picker when the loaded repo is not a git repo', () => {
+    renderDashboard({ gitRefs: { status: 'loaded', refs: { is_git_repo: false, branches: [], commits: [] } } })
+
+    expect(screen.queryByRole('button', { name: 'Compare to commit' })).not.toBeInTheDocument()
+  })
+
+  it('renders the ref picker and calls onCompareToRef', async () => {
+    const user = userEvent.setup()
+    const { props } = renderDashboard({
+      gitRefs: { status: 'loaded', refs: { is_git_repo: true, branches: ['main'], commits: [] } },
+    })
+
+    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
+    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+
+    expect(props.onCompareToRef).toHaveBeenCalledWith('main', 'main')
   })
 })

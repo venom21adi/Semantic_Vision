@@ -4,10 +4,12 @@ import {
   DEMO_MODE,
   getComplexity,
   getComplexityDiff,
+  getComplexityDiffRef,
   getDefaultVisibleIds,
   getDoc,
   getFlowchart,
   getFunctionSource,
+  getGitRefs,
   getGraph,
   getGraphState,
   getImpact,
@@ -28,7 +30,8 @@ import type {
   NodePosition,
   ParseErrorInfo,
 } from './api/types'
-import { DashboardView, type DashboardState, type DiffState } from './components/DashboardView'
+import { DashboardView, type DashboardState, type DiffMode, type DiffState } from './components/DashboardView'
+import type { GitRefsState } from './components/RefPicker'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { DemoRepoPicker } from './components/DemoRepoPicker'
 import { DemoRepoPill } from './components/DemoRepoPill'
@@ -198,6 +201,10 @@ export default function App() {
   // managed state slices rather than one growing mega-object. See
   // `handleCompareDashboard` and `closeDashboard` below.
   const [dashboardDiff, setDashboardDiff] = useState<DiffState | null>(null)
+  // Branches + recent commits for the "compare to commit" ref picker
+  // (Idea 3a) -- fetched once when the dashboard opens, alongside the
+  // scores fetch, and cleared by the same `closeDashboard` chokepoint.
+  const [gitRefs, setGitRefs] = useState<GitRefsState | null>(null)
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -322,6 +329,7 @@ export default function App() {
     dashboardDiffRequestIdRef.current += 1
     setDashboard(null)
     setDashboardDiff(null)
+    setGitRefs(null)
   }, [])
 
   useEffect(() => {
@@ -872,6 +880,7 @@ export default function App() {
     setDashboardDiff(null)
     dashboardDiffRequestIdRef.current += 1
     setDashboard({ status: 'loading' })
+    setGitRefs({ status: 'loading' })
     const requestId = ++dashboardRequestIdRef.current
     try {
       const result = await getComplexity(repo.path)
@@ -880,6 +889,17 @@ export default function App() {
     } catch (error) {
       if (dashboardRequestIdRef.current !== requestId) return
       setDashboard({ status: 'error', message: errorMessage(error) })
+    }
+    // Independent of the scores fetch above (same `requestId` guard, but
+    // its own try/catch) -- a slow or failed refs lookup shouldn't block
+    // or fail the scores the ranked list actually needs to render.
+    try {
+      const refs = await getGitRefs(repo.path)
+      if (dashboardRequestIdRef.current !== requestId) return
+      setGitRefs({ status: 'loaded', refs })
+    } catch (error) {
+      if (dashboardRequestIdRef.current !== requestId) return
+      setGitRefs({ status: 'error', message: errorMessage(error) })
     }
   }, [repo, dashboard, cancelGeneration, closeDashboard])
 
@@ -894,7 +914,8 @@ export default function App() {
   const handleCompareDashboard = useCallback(async () => {
     if (!repo || dashboard?.status !== 'loaded') return
     const requestId = ++dashboardDiffRequestIdRef.current
-    setDashboardDiff({ status: 'loading' })
+    const mode: DiffMode = { kind: 'last-look' }
+    setDashboardDiff({ status: 'loading', mode })
     try {
       // `getLastRepoPath()`, not `repo.path` -- `setRememberedLanguage` was
       // written under the *raw* path passed to `handleLoad`, but `repo.path`
@@ -929,7 +950,7 @@ export default function App() {
       const diffResult = await getComplexityDiff(repo.path)
       if (dashboardDiffRequestIdRef.current !== requestId) return
       setDashboard({ status: 'loaded', scores: diffResult.current })
-      setDashboardDiff({ status: 'loaded', result: diffResult })
+      setDashboardDiff({ status: 'loaded', mode, result: diffResult })
       // Mirrors `handleDataSourceIngestComplete`'s existing precedent of
       // auto-revealing nodes the user has no other way to discover -- a
       // function only in `added` is exactly that; `changed` entries already
@@ -940,9 +961,33 @@ export default function App() {
       }
     } catch (error) {
       if (dashboardDiffRequestIdRef.current !== requestId) return
-      setDashboardDiff({ status: 'error', message: errorMessage(error) })
+      setDashboardDiff({ status: 'error', mode, message: errorMessage(error) })
     }
   }, [repo, dashboard])
+
+  // The Idea 3a counterpart to `handleCompareDashboard` above: diffs the
+  // repo's already-current on-disk complexity against one arbitrary git
+  // ref instead of "the last time this dashboard fetched it." Unlike
+  // `handleCompareDashboard`, this never reparses `repo` -- diff-ref
+  // compares state already reflected in `dashboard`/`repo` against `ref`,
+  // there's nothing to refresh on the "current" side.
+  const handleCompareDashboardToRef = useCallback(
+    async (ref: string, label: string) => {
+      if (!repo || dashboard?.status !== 'loaded') return
+      const requestId = ++dashboardDiffRequestIdRef.current
+      const mode: DiffMode = { kind: 'ref', ref, label }
+      setDashboardDiff({ status: 'loading', mode })
+      try {
+        const result = await getComplexityDiffRef(repo.path, ref)
+        if (dashboardDiffRequestIdRef.current !== requestId) return
+        setDashboardDiff({ status: 'loaded', mode, result })
+      } catch (error) {
+        if (dashboardDiffRequestIdRef.current !== requestId) return
+        setDashboardDiff({ status: 'error', mode, message: errorMessage(error) })
+      }
+    },
+    [repo, dashboard],
+  )
 
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
@@ -1290,6 +1335,11 @@ export default function App() {
             onBack={handleToggleDashboard}
             diff={dashboardDiff}
             onCompare={handleCompareDashboard}
+            gitRefs={gitRefs}
+            onCompareToRef={handleCompareDashboardToRef}
+            graphNodes={repo.nodes}
+            graphEdges={repo.edges}
+            selectedNodeId={selectedNodeId}
           />
         ) : (
           <>

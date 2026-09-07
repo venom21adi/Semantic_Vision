@@ -162,6 +162,26 @@ export interface ComplexityDiffResponse {
   changed: ComplexityChange[]
 }
 
+export interface GitCommitInfo {
+  sha: string
+  subject: string
+}
+
+export interface GitRefsResponse {
+  is_git_repo: boolean
+  branches: string[]
+  commits: GitCommitInfo[]
+}
+
+export interface ComplexityRefDiffResponse {
+  ref: string
+  available: boolean
+  current: ComplexityScore[]
+  added: ComplexityScore[]
+  removed: ComplexityScore[]
+  changed: ComplexityChange[]
+}
+
 export interface DbtManifestIngestResponse {
   models_ingested: number
   tables_reconciled: number

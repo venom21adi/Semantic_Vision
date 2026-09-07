@@ -31,6 +31,8 @@ vi.mock('./api/client', async (importOriginal) => {
     getFlowchart: vi.fn(),
     getComplexity: vi.fn(),
     getComplexityDiff: vi.fn(),
+    getGitRefs: vi.fn(),
+    getComplexityDiffRef: vi.fn(),
     ingestDbtManifest: vi.fn(),
     ingestDbConnection: vi.fn(),
   }
@@ -94,6 +96,7 @@ beforeEach(() => {
   })
   mockedClient.getGraph.mockResolvedValue(sampleGraph)
   mockedClient.getOllamaModels.mockResolvedValue({ models: [] })
+  mockedClient.getGitRefs.mockResolvedValue({ is_git_repo: false, branches: [], commits: [] })
 })
 
 describe('App', () => {
@@ -1354,7 +1357,7 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
     await waitFor(() => expect(mockedClient.getComplexityDiff).toHaveBeenCalledTimes(2))
-    await waitFor(() => expect(screen.getByText('No changes since the last look.')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('No changes vs last look.')).toBeInTheDocument())
 
     // The first (stale) compare's diff resolves only now -- it must not
     // overwrite the second, current session's result.
@@ -1369,8 +1372,126 @@ describe('App', () => {
     })
     await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(screen.getByText('No changes since the last look.')).toBeInTheDocument()
+    expect(screen.getByText('No changes vs last look.')).toBeInTheDocument()
     expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
+  })
+
+  it('runs a compare-to-ref and shows the diff results labeled with the ref', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getGitRefs.mockResolvedValue({
+      is_git_repo: true,
+      branches: ['main'],
+      commits: [{ sha: 'abc1234', subject: 'earlier commit' }],
+    })
+    mockedClient.getComplexityDiffRef.mockResolvedValue({
+      ref: 'abc1234',
+      available: true,
+      current: [],
+      added: [],
+      removed: [],
+      changed: [],
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    await user.type(screen.getByLabelText('Git ref to compare against'), 'abc1234')
+    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+
+    await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith('/repo', 'abc1234'))
+    // Never reparses -- diff-ref compares state already reflected in
+    // `repo`/`dashboard` against the ref, unlike "Compare to last look".
+    // The one call already happened during `loadSampleRepo()`'s initial load.
+    expect(mockedClient.parseRepo).toHaveBeenCalledTimes(1)
+    await waitFor(() =>
+      expect(screen.getByText('No changes vs abc1234 earlier commit.')).toBeInTheDocument(),
+    )
+  })
+
+  // Mirrors the existing "ignores a stale compare response..." test above,
+  // for the ref-diff variant: the ref-picker's own Compare button disables
+  // itself while a compare is in flight (`compareDisabled` in
+  // `DashboardView`), so two overlapping ref compares can't actually be
+  // triggered by clicking it twice -- the reachable variant is a stale
+  // response resolving after the dashboard was closed and reopened.
+  it('ignores a stale ref-diff response that resolves after closing and reopening the dashboard', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getGitRefs.mockResolvedValue({ is_git_repo: true, branches: ['main'], commits: [] })
+    let resolveFirstRefDiff: (value: Awaited<ReturnType<typeof client.getComplexityDiffRef>>) => void =
+      () => {}
+    mockedClient.getComplexityDiffRef
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstRefDiff = resolve)))
+      .mockResolvedValueOnce({ ref: 'main', available: true, current: [], added: [], removed: [], changed: [] })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
+    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+    await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledTimes(1))
+
+    // Close, then reopen a fresh dashboard session while the first ref
+    // compare is still in flight, and run a second ref compare in it.
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
+    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+    await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText('No changes vs main.')).toBeInTheDocument())
+
+    // The first (stale) ref compare's diff resolves only now -- it must
+    // not overwrite the second, current session's result. Distinguished
+    // via a non-empty `added` bucket (not just a different `current`,
+    // which `handleCompareDashboardToRef` never feeds into anything
+    // rendered) so an unguarded overwrite is actually observable.
+    resolveFirstRefDiff({
+      ref: 'main',
+      available: true,
+      current: [],
+      added: [
+        { node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
+      ],
+      removed: [],
+      changed: [],
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.getByText('No changes vs main.')).toBeInTheDocument()
+    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
+  })
+
+  it('ignores a stale git-refs response that resolves after closing and reopening the dashboard', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    let resolveFirstRefs: (value: Awaited<ReturnType<typeof client.getGitRefs>>) => void = () => {}
+    mockedClient.getGitRefs
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstRefs = resolve)))
+      .mockResolvedValueOnce({ is_git_repo: true, branches: ['second-session-branch'], commits: [] })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    // Close, then reopen a fresh dashboard session while the first
+    // session's git-refs fetch is still in flight.
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        Array.from(document.body.querySelectorAll('option')).map((o) => o.value),
+      ).toEqual(['second-session-branch']),
+    )
+
+    // The first (stale) session's refs resolve only now -- must not
+    // overwrite the second, current session's ref-picker data.
+    resolveFirstRefs({ is_git_repo: true, branches: ['first-session-branch'], commits: [] })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(Array.from(document.body.querySelectorAll('option')).map((o) => o.value)).toEqual([
+      'second-session-branch',
+    ])
   })
 
   it('opens and closes the Add tables & models panel via the sidebar toggle', async () => {

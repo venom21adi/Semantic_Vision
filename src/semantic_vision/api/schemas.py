@@ -123,6 +123,30 @@ class ComplexityDiffResponse(BaseModel):
     changed: list[ComplexityChange] = []
 
 
+class GitCommitInfo(BaseModel):
+    sha: str
+    subject: str
+
+
+class GitRefsResponse(BaseModel):
+    is_git_repo: bool
+    branches: list[str] = []
+    commits: list[GitCommitInfo] = []
+
+
+class ComplexityRefDiffResponse(BaseModel):
+    ref: str
+    available: bool
+    """Kept for shape parity with `ComplexityDiffResponse`; in practice
+    always `True` once the ref parses successfully -- `/complexity/diff-ref`
+    returns a 400 rather than `available=False` for anything that would
+    prevent a comparison (no git repo, unknown ref)."""
+    current: list[ComplexityScore]
+    added: list[ComplexityScore] = []
+    removed: list[ComplexityScore] = []
+    changed: list[ComplexityChange] = []
+
+
 class DbtManifestIngestRequest(BaseModel):
     path: str
     """Absolute path to a `manifest.json` the user produced themselves

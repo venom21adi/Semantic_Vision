@@ -9,12 +9,19 @@ from fastapi.responses import StreamingResponse
 from semantic_vision.ai.context import assemble_context, assemble_file_context
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
 from semantic_vision.analysis.complexity import diff_complexity_indexes
+from semantic_vision.analysis.git_ops import (
+    GitError,
+    build_ref_complexity_index,
+    find_git_root,
+    list_refs,
+)
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.host_path import translate_host_path
 from semantic_vision.api.repo_cache_sync import sync_to_fast_cache
 from semantic_vision.api.schemas import (
     ComplexityDiffResponse,
+    ComplexityRefDiffResponse,
     ComplexityResponse,
     DbConnectionIngestRequest,
     DbConnectionIngestResponse,
@@ -26,6 +33,8 @@ from semantic_vision.api.schemas import (
     FlowchartResponse,
     FunctionSourceResponse,
     GenerateDocRequest,
+    GitCommitInfo,
+    GitRefsResponse,
     GraphResponse,
     GraphStateResponse,
     HealthResponse,
@@ -396,6 +405,75 @@ def get_complexity_diff(path: str = Query(...)) -> ComplexityDiffResponse:
         return ComplexityDiffResponse(available=False, current=list(current.values()))
     added, removed, changed = diff_complexity_indexes(previous, current)
     return ComplexityDiffResponse(
+        available=True,
+        current=list(current.values()),
+        added=added,
+        removed=removed,
+        changed=changed,
+    )
+
+
+@router.get("/git/refs", response_model=GitRefsResponse)
+def get_git_refs(path: str = Query(...)) -> GitRefsResponse:
+    """Lists local branches + recent commits for the compare-to-ref
+    picker. Never 500s for a non-git path -- reports `is_git_repo=False`
+    instead, so the frontend can hide the ref-diff feature gracefully."""
+    root = find_git_root(translate_host_path(path))
+    if root is None:
+        return GitRefsResponse(is_git_repo=False)
+    try:
+        branches, commits = list_refs(root)
+    except GitError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return GitRefsResponse(
+        is_git_repo=True,
+        branches=[b.name for b in branches],
+        commits=[GitCommitInfo(sha=c.sha, subject=c.subject) for c in commits],
+    )
+
+
+@router.get("/complexity/diff-ref", response_model=ComplexityRefDiffResponse)
+def get_complexity_diff_ref(
+    path: str = Query(...), ref: str = Query(...), language: str = Query("python")
+) -> ComplexityRefDiffResponse:
+    """Diffs the repo's *current on-disk* complexity against one arbitrary
+    git ref, checked out into a scratch worktree and parsed fresh on every
+    call -- see `analysis.git_ops` for why this isn't cached. Lets a
+    caller (e.g. judging an AI coding agent's session) compare the
+    current state against any commit/branch, not just the last time this
+    path's complexity happened to be looked at (that's `/complexity/diff`).
+
+    Known limitation: node ids are `file::qualname`-shaped with no rename
+    tracking, so a function or file renamed between `ref` and now shows as
+    a spurious added+removed pair rather than "changed" -- not solved
+    here, see docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md's Idea 3a.
+    """
+    current_result = _get_cached(path)
+    current = cache.get_or_build_complexity_index(path)
+
+    git_root = find_git_root(current_result.root)
+    if git_root is None:
+        raise HTTPException(status_code=400, detail=f"Not a git repository: {path}")
+
+    try:
+        adapter = get_adapter(language)
+    except UnknownLanguageError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        ref_index = build_ref_complexity_index(git_root, ref, current_result.root, language=adapter)
+    except GitError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (NotADirectoryError, PermissionError) as exc:
+        # `parse_repository` on the checked-out worktree hit the same
+        # "not a directory" / "not readable" guard `POST /api/parse-repo`
+        # has for the current on-disk path -- report it the same way
+        # rather than letting it fall through as a raw 500.
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    added, removed, changed = diff_complexity_indexes(ref_index, current)
+    return ComplexityRefDiffResponse(
+        ref=ref,
         available=True,
         current=list(current.values()),
         added=added,

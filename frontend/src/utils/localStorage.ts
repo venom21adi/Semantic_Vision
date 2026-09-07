@@ -143,3 +143,23 @@ export function setDetailsWidth(width: number): void {
     // Best-effort only.
   }
 }
+
+const DASHBOARD_SPLIT_WIDTH_KEY = 'semantic-vision:dashboard-split-width'
+
+export function getDashboardSplitWidth(): number | null {
+  try {
+    const raw = localStorage.getItem(DASHBOARD_SPLIT_WIDTH_KEY)
+    const parsed = raw === null ? NaN : Number(raw)
+    return Number.isFinite(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+export function setDashboardSplitWidth(width: number): void {
+  try {
+    localStorage.setItem(DASHBOARD_SPLIT_WIDTH_KEY, String(width))
+  } catch {
+    // Best-effort only.
+  }
+}

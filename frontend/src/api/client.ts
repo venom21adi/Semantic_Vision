@@ -1,5 +1,6 @@
 import type {
   ComplexityDiffResponse,
+  ComplexityRefDiffResponse,
   ComplexityResponse,
   DbConnectionIngestResponse,
   DbtManifestIngestResponse,
@@ -9,6 +10,7 @@ import type {
   DocRootResponse,
   FlowchartResponse,
   FunctionSourceResponse,
+  GitRefsResponse,
   GraphResponse,
   GraphStateResponse,
   ImpactResponse,
@@ -138,6 +140,16 @@ function realGetComplexityDiff(path: string): Promise<ComplexityDiffResponse> {
   return request<ComplexityDiffResponse>(`/api/complexity/diff?path=${encodeURIComponent(path)}`)
 }
 
+function realGetGitRefs(path: string): Promise<GitRefsResponse> {
+  return request<GitRefsResponse>(`/api/git/refs?path=${encodeURIComponent(path)}`)
+}
+
+function realGetComplexityDiffRef(path: string, ref: string): Promise<ComplexityRefDiffResponse> {
+  return request<ComplexityRefDiffResponse>(
+    `/api/complexity/diff-ref?path=${encodeURIComponent(path)}&ref=${encodeURIComponent(ref)}`,
+  )
+}
+
 function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
   return request<FlowchartResponse>(
     `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
@@ -227,6 +239,22 @@ export const getComplexityDiff = DEMO_MODE
       return { available: false, current: scores, added: [], removed: [], changed: [] }
     }
   : realGetComplexityDiff
+/** Demo-only: the static public demo has no real git history to diff
+ * against -- always report `is_git_repo: false` so the ref-picker UI
+ * hides itself entirely, the same "never attempt a call the demo backend
+ * can't meaningfully answer" precedent as every other demo stub here. */
+export const getGitRefs = DEMO_MODE
+  ? async (): Promise<GitRefsResponse> => ({ is_git_repo: false, branches: [], commits: [] })
+  : realGetGitRefs
+/** Demo-only: unreachable in practice since the ref-picker never renders
+ * when `getGitRefs` reports `is_git_repo: false` -- throwing here (rather
+ * than fabricating a fake diff) matches how this file treats every other
+ * demo-unreachable call. */
+export const getComplexityDiffRef = DEMO_MODE
+  ? async (): Promise<ComplexityRefDiffResponse> => {
+      throw new Error('Git ref comparison is not available in demo mode')
+    }
+  : realGetComplexityDiffRef
 export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
 export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest
