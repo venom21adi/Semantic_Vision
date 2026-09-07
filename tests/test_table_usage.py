@@ -62,7 +62,9 @@ def test_construction_keyword_not_matching_any_known_column_falls_back_to_table_
     computed field, a typo) -- not guessed at as a column touch, so this
     falls back to the same table-level edge as a plain `User()` would."""
     edges = _detect("def create_user(session):\n    User(extra=1)\n", MODEL_COLUMNS)
-    assert edges == [Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)]
+    assert edges == [
+        Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)
+    ]
 
 
 def test_construction_with_no_columns_known_stays_table_level():
@@ -71,7 +73,9 @@ def test_construction_with_no_columns_known_stays_table_level():
     default `_detect` helper) -- must behave exactly as it did before
     column-level tracking existed, not silently produce zero edges."""
     edges = _detect("def create_user(session, name):\n    User(name=name)\n")
-    assert edges == [Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)]
+    assert edges == [
+        Edge(source="app.py::create_user", target="table::users", kind=EdgeKind.WRITES)
+    ]
 
 
 def test_construction_with_multiple_matching_keywords_produces_one_edge_per_column():

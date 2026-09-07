@@ -18,14 +18,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from fastapi.testclient import TestClient  # noqa: E402
-
-from semantic_vision.api.app import create_app  # noqa: E402
 from build_demo_fixtures import (  # noqa: E402
     AXIOS_SHOWCASE_DOCS,
     PYTHON_SHOP_PATH,
     PYTHON_SHOP_SHOWCASE_DOCS,
 )
+from fastapi.testclient import TestClient  # noqa: E402
+
+from semantic_vision.api.app import create_app  # noqa: E402
 
 OUT_ROOT = REPO_ROOT / "frontend" / "public" / "demo"
 MODEL = "qwen2.5-coder:3b"
@@ -33,7 +33,9 @@ MODEL = "qwen2.5-coder:3b"
 
 def generate_docs(client: TestClient, *, slug: str, repo_path: str, ids: list[str]) -> None:
     language = "python" if slug == "python-shop" else "javascript"
-    client.post("/api/parse-repo", json={"path": repo_path, "language": language}).raise_for_status()
+    client.post(
+        "/api/parse-repo", json={"path": repo_path, "language": language}
+    ).raise_for_status()
 
     docs: dict[str, str] = {}
     for node_id in ids:

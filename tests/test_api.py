@@ -1079,13 +1079,15 @@ def test_dbt_manifest_ingest_retracts_a_stale_column_on_re_ingest(tmp_path: Path
     client.post(
         "/api/dataflow/dbt-manifest", params={"path": repo_path}, json={"path": str(manifest_a)}
     )
-    first_node_ids = {n["id"] for n in client.get("/api/graph", params={"path": repo_path}).json()["nodes"]}
+    first_graph = client.get("/api/graph", params={"path": repo_path}).json()
+    first_node_ids = {n["id"] for n in first_graph["nodes"]}
     assert "column::x.old_col" in first_node_ids
 
     client.post(
         "/api/dataflow/dbt-manifest", params={"path": repo_path}, json={"path": str(manifest_b)}
     )
-    second_node_ids = {n["id"] for n in client.get("/api/graph", params={"path": repo_path}).json()["nodes"]}
+    second_graph = client.get("/api/graph", params={"path": repo_path}).json()
+    second_node_ids = {n["id"] for n in second_graph["nodes"]}
     assert "column::x.new_col" in second_node_ids
     assert "column::x.old_col" not in second_node_ids
 

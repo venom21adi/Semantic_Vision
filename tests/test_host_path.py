@@ -1,6 +1,10 @@
 import pytest
 
-from semantic_vision.api.host_path import CONTAINER_REPO_ROOT, HOST_REPO_PATH_ENV, translate_host_path
+from semantic_vision.api.host_path import (
+    CONTAINER_REPO_ROOT,
+    HOST_REPO_PATH_ENV,
+    translate_host_path,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -49,4 +53,5 @@ def test_similar_but_unrelated_sibling_path_unchanged(monkeypatch):
     """`.../projects-old` must not match a prefix check against
     `.../projects` -- a naive `startswith` (no trailing slash) would."""
     monkeypatch.setenv(HOST_REPO_PATH_ENV, "C:/Users/you/projects")
-    assert translate_host_path("C:/Users/you/projects-old/my-api") == "C:/Users/you/projects-old/my-api"
+    unrelated = "C:/Users/you/projects-old/my-api"
+    assert translate_host_path(unrelated) == unrelated

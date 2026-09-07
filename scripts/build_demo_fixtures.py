@@ -178,7 +178,9 @@ def main() -> None:
         language="javascript",
         showcase_doc_ids=AXIOS_SHOWCASE_DOCS,
         display_name="JavaScript: axios",
-        description="The real axios HTTP client source -- adapters, interceptors, and config merging.",
+        description=(
+            "The real axios HTTP client source -- adapters, interceptors, and config merging."
+        ),
     )
 
 
