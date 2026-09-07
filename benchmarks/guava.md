@@ -31,8 +31,8 @@ below for what including everything actually looks like.
 | `POST /api/parse-repo` | 2.14s |
 | `GET /api/graph` | 0.14s |
 | Graph payload | 12,994.4 KB |
-| Browser: time to data | not measured — see [Browser tier note](#browser-tier-not-measured) |
-| Browser: time to render | not measured — see [Browser tier note](#browser-tier-not-measured) |
+| Browser: time to data | 4.21–7.10s |
+| Browser: time to render | 4.73–7.63s |
 
 ## Notes
 
@@ -91,13 +91,31 @@ also caught and fixed while adding overload support, via a new `ambiguous_method
 `ModuleIndex` that remembers a name is ambiguous permanently once detected, regardless of how many
 more same-named siblings arrive after it.
 
-### Browser tier: not measured
+### Browser tier: root-caused and fixed in a follow-up pass
 
-The Playwright browser-tier benchmark (`frontend/scripts/benchmark-load.js`) did not complete this
-session for *any* repo, including a sanity-check re-run of the previously-reliable "medium" (this
-project's own repo) case — ruling out a Java-specific cause. This is a benchmark-harness/
-environment issue in this specific session, not a finding about app behavior, and is recorded
-here as an honest gap rather than a fabricated or guessed number.
+The Playwright browser-tier benchmark (`frontend/scripts/benchmark-load.js`) didn't complete for
+*any* repo in the session Java was added, including a sanity-check re-run of the previously-
+reliable "medium" (this project's own repo) case — ruling out a Java-specific cause at the time,
+correctly recorded as an honest gap rather than a fabricated number.
+
+Root cause, found in a follow-up pass: the script waits for `[data-testid="repo-status"]` to
+appear as its "data has loaded" signal, but that testid had gone dead. It lived on
+`RepoLoader.tsx`'s own post-load status line, which only renders when its `stats` prop is
+non-null — and by the time a real load succeeds, `App.tsx` has already swapped `RepoLoader` out
+for `RepoPill` (the compact "current repo" pill in the header), which hard-codes `stats={null}`
+into the now-hidden `RepoLoader` instance it keeps around for its own popover. The one place the
+old testid could still appear was inside that popover's nested `RepoLoader`, reachable only by
+clicking the pill open again — something no benchmark run ever does. So the selector had been
+genuinely unreachable on the real post-load path for some time, unrelated to Java, the browser,
+or this machine; every prior "didn't complete" result was this same dead hook expiring on its
+timeout, not real render slowness.
+
+Fixed by moving `data-testid="repo-status"` onto `RepoPill`'s own always-visible button (which
+already renders the exact node/edge count text the benchmark script displays), so the harness
+needed no changes of its own. Re-run against this same `guava/` scope three times post-fix:
+**4.21s / 4.99s / 7.10s** to data, **4.73s / 5.53s / 7.63s** to first render — folded into the
+table above as a range, the same way every other repo's browser-tier number in this project is
+reported.
 
 ### Full-repo case study
 

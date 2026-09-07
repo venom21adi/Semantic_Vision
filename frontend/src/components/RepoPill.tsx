@@ -61,6 +61,7 @@ export function RepoPill({
     <div ref={containerRef} style={{ position: 'relative', flexShrink: 1, minWidth: 0 }}>
       <button
         type="button"
+        data-testid="repo-status"
         aria-expanded={open}
         aria-label={`Current repository: ${repoName}. Click to change.`}
         title="Click to change the repository, language, or save location"

@@ -251,14 +251,13 @@ fixtures — one per supported language:
 | Python | [fastapi/fastapi](benchmarks/fastapi.md) | 1,138 | 23.25 | 4.08 | 7.20–7.84 |
 | JavaScript | [three.js](benchmarks/threejs.md) | 752 | 29.33 | 1.98 | 4.88–5.01 |
 | TypeScript | [nestjs/nest](benchmarks/nest.md) | 1,907 | 39.68 | 2.48 | 6.85–6.88 |
-| Java | [google/guava](benchmarks/guava.md) | 615 | 9.83 | 2.52 | not measured* |
+| Java | [google/guava](benchmarks/guava.md) | 615 | 9.83 | 2.52 | 4.73–7.63 |
 
 *"Cold" is the first read of a fresh clone this machine has never touched; "warm" is a second parse
 of the identical files immediately after — the only variable that changes is OS file-cache state.
 Every language shows a large cold/warm gap (3.9x–16x); it isn't specific to any one parser or
 language. Warm-to-warm, TypeScript actually parses faster than Python, and Java is right alongside
-it. \*The browser-tier benchmark didn't complete for any repo in the session Java was added —
-see [benchmarks/guava.md](benchmarks/guava.md) for why.*
+it.*
 
 See the [`benchmarks/`](benchmarks/README.md) folder for the full methodology, a webpack case
 study on what happens when a repo's default view doesn't collapse much, and the reasoning behind

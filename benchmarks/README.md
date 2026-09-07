@@ -20,11 +20,7 @@ supported language:
 | Python | [fastapi/fastapi](fastapi.md) | full repo | 1,138 | 6,650 | 25,145 | 0 | 23.25 | 4.08 | 9.29 | 6.58–7.07 | 7.20–7.84 |
 | JavaScript | [three.js](threejs.md) | `src/` only | 752 | 6,014 | 27,316 | 0 | 29.33 | 1.98 | 3.12 | 3.21–3.50 | 4.88–5.01 |
 | TypeScript | [nestjs/nest](nest.md) | full repo | 1,907 | 6,848 | 24,528 | 2 | 39.68 | 2.48 | 5.32 | 5.69–5.76 | 6.85–6.88 |
-| Java | [google/guava](guava.md) | `guava/` only | 615 | 14,087 | 47,390 | 5 | 9.83 | 2.52 | 2.14 | not measured* | not measured* |
-
-*\* The Playwright browser tier didn't complete for any repo in this session, including a
-re-check of the previously-reliable Python entry — a benchmark-harness issue this session, not a
-finding about Java or app behavior. See [guava.md](guava.md#browser-tier-not-measured).*
+| Java | [google/guava](guava.md) | `guava/` only | 615 | 14,087 | 47,390 | 5 | 9.83 | 2.52 | 2.14 | 4.21–7.10 | 4.73–7.63 |
 
 *"Backend parse — cold" is the first read of a fresh shallow clone at the pinned commit (below),
 never before touched by this machine's OS file cache. "— warm" is a second parse of the exact same
@@ -180,4 +176,7 @@ Every repo here except nest required a scoping decision, made explicit rather th
 | [apache/superset](https://github.com/apache/superset) (case study) | `1c8d58a77bda36f892cc27298ed87ded43e6ef9f` | 2026-08-29 |
 
 Benchmarked 2026-08-28 against Semantic Vision v0.2.0. Java (guava) added 2026-09-07 following
-Milestone 12 (Java language support) — same v0.2.0, same methodology.
+Milestone 12 (Java language support) — same v0.2.0, same methodology. Java's browser-tier numbers
+were filled in 2026-09-07 in a follow-up pass, after root-causing why the harness wasn't
+completing for any repo that session (a dead `data-testid` selector left behind by an unrelated
+UI change, not a performance issue) — see [guava.md](guava.md) for the fix.

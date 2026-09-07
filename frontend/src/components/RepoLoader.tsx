@@ -250,7 +250,6 @@ export function RepoLoader({
 
       {stats && (
         <div
-          data-testid="repo-status"
           style={{ margin: `${spacing.sm}px 0 0`, fontSize: 12, color: colors.textMuted }}
         >
           {stats.path} — {stats.nodeCount} nodes, {stats.edgeCount} edges
