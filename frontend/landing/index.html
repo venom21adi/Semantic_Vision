@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Semantic Vision — Understand any codebase in minutes</title>
-<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, AI-generated documentation, and code-to-data lineage for Python, JavaScript, and TypeScript. 100% local and private — try the live demo, no install." />
+<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, AI-generated documentation, and code-to-data lineage for Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
 <meta property="og:title" content="Semantic Vision" />
-<meta property="og:description" content="Understand any Python, JavaScript, or TypeScript codebase in minutes, not days." />
+<meta property="og:description" content="Understand any Python, JavaScript, TypeScript, or Java codebase in minutes, not days." />
 <meta property="og:image" content="./img/Banner.png" />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#121317" />
@@ -643,7 +643,7 @@
 
 <header class="hero" id="top">
   <div class="container hero-inner">
-    <div class="eyebrow"><span class="dot"></span> Live static demo explore two real repos, no install</div>
+    <div class="eyebrow"><span class="dot"></span> Live static demo explore three real repos, no install</div>
     <h1>See what your AI agent's edit <span class="grad">will break, before you merge it.</span></h1>
     <p class="lede">
     Impact analysis for AI-assisted coding. See every direct and transitive caller, detect circular call chains, 
@@ -743,7 +743,7 @@
           back-edge, I/O calls, and calls out to other functions in the
           repo — each in its own conventional flowchart shape.
         </p>
-        <p>Works for both Python and JS/TS, including <code>switch</code> fallthrough, <code>do...while</code>'s bottom-condition check, and labeled <code>break</code>/<code>continue</code>.</p>
+        <p>Works for Python, JS/TS, and Java, including <code>switch</code> fallthrough, <code>do...while</code>'s bottom-condition check, and labeled <code>break</code>/<code>continue</code>.</p>
       </div>
       <div class="feature-shot"><img src="./img/execution-flowchart.png" alt="An execution flowchart with branches, a loop back-edge, and an I/O call" loading="lazy" width="1600" height="960" /></div>
     </div>
@@ -854,7 +854,7 @@
       <div class="trio-card" data-reveal>
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <h4>Fast, local, and private</h4>
-        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS. No account, no cloud, no telemetry. Code is never executed, and nothing leaves your machine unless you explicitly ask for AI docs.</p>
+        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS and Java. No account, no cloud, no telemetry. Code is never executed, and nothing leaves your machine unless you explicitly ask for AI docs.</p>
       </div>
     </div>
   </div>
@@ -876,6 +876,7 @@
           <tr><td class="lang">Python</td><td>fastapi/fastapi</td><td class="num">1,138</td><td class="num">23.25s</td><td class="warm">4.08s</td><td class="num">7.20–7.84s</td></tr>
           <tr><td class="lang">JavaScript</td><td>three.js</td><td class="num">752</td><td class="num">29.33s</td><td class="warm">1.98s</td><td class="num">4.88–5.01s</td></tr>
           <tr><td class="lang">TypeScript</td><td>nestjs/nest</td><td class="num">1,907</td><td class="num">39.68s</td><td class="warm">2.48s</td><td class="num">6.85–6.88s</td></tr>
+          <tr><td class="lang">Java</td><td>google/guava</td><td class="num">615</td><td class="num">9.83s</td><td class="warm">2.52s</td><td class="num">4.73–7.63s</td></tr>
         </tbody>
       </table>
       <div class="bench-foot">"Cold" is the first read of a fresh clone; "warm" is a second parse of the identical files right after — the only variable that changes is OS file-cache state. Full methodology on <a href="https://github.com/venom21adi/Semantic_Vision/tree/master/benchmarks" target="_blank" rel="noopener" style="color: var(--accent-text)">GitHub</a>.</div>
@@ -889,15 +890,15 @@
     </div>
     <div class="matrix-wrap" data-reveal>
       <table class="matrix">
-        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th></tr></thead>
+        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th><th>Java</th></tr></thead>
         <tbody>
-          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Complexity report</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td></tr>
-          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Complexity report</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -914,13 +915,13 @@
       <div class="path-card featured" data-reveal>
         <span class="path-tag">Zero install</span>
         <h4>Try the live demo</h4>
-        <p>Explore two real, precomputed repos — one Python, one TypeScript — right in your browser. No backend, no account, nothing to set up.</p>
+        <p>Explore three real, precomputed repos — Python, JavaScript, and Java — right in your browser. No backend, no account, nothing to set up.</p>
         <a class="btn btn-primary" href="./app/">Open the demo →</a>
       </div>
       <div class="path-card" data-reveal>
         <span class="path-tag">Fastest for real use</span>
         <h4>VS Code extension</h4>
-        <p>Install from the Marketplace and open any Python or JS/TS repo. The backend ships bundled — no Python or Node toolchain required.</p>
+        <p>Install from the Marketplace and open any Python, JS/TS, or Java repo. The backend ships bundled — no Python or Node toolchain required.</p>
         <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">View on Marketplace →</a>
       </div>
       <div class="path-card" data-reveal>
