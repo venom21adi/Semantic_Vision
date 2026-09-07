@@ -136,9 +136,13 @@ class GitRefsResponse(BaseModel):
 
 class ComplexityRefDiffResponse(BaseModel):
     ref: str
+    to_ref: str | None = None
+    """`None` means the comparison's "after" side was the current on-disk
+    state (the default); otherwise it's this second arbitrary ref, both
+    sides checked out into their own scratch worktree."""
     available: bool
     """Kept for shape parity with `ComplexityDiffResponse`; in practice
-    always `True` once the ref parses successfully -- `/complexity/diff-ref`
+    always `True` once both refs parse successfully -- `/complexity/diff-ref`
     returns a 400 rather than `available=False` for anything that would
     prevent a comparison (no git repo, unknown ref)."""
     current: list[ComplexityScore]

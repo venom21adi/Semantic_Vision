@@ -965,20 +965,22 @@ export default function App() {
     }
   }, [repo, dashboard])
 
-  // The Idea 3a counterpart to `handleCompareDashboard` above: diffs the
-  // repo's already-current on-disk complexity against one arbitrary git
-  // ref instead of "the last time this dashboard fetched it." Unlike
-  // `handleCompareDashboard`, this never reparses `repo` -- diff-ref
-  // compares state already reflected in `dashboard`/`repo` against `ref`,
-  // there's nothing to refresh on the "current" side.
+  // The Idea 3a counterpart to `handleCompareDashboard` above: diffs one
+  // arbitrary git ref's complexity against either the repo's already-
+  // current on-disk state (`toRef` omitted -- the common case) or a
+  // second arbitrary ref (`toRef` given, comparing two historical points
+  // against each other with no dependency on current disk state at all).
+  // Unlike `handleCompareDashboard`, this never reparses `repo` -- when
+  // `toRef` is omitted, diff-ref compares state already reflected in
+  // `dashboard`/`repo` against `ref`, so there's nothing to refresh.
   const handleCompareDashboardToRef = useCallback(
-    async (ref: string, label: string) => {
+    async (ref: string, label: string, toRef?: string, toLabel?: string) => {
       if (!repo || dashboard?.status !== 'loaded') return
       const requestId = ++dashboardDiffRequestIdRef.current
-      const mode: DiffMode = { kind: 'ref', ref, label }
+      const mode: DiffMode = { kind: 'ref', ref, label, toRef, toLabel }
       setDashboardDiff({ status: 'loading', mode })
       try {
-        const result = await getComplexityDiffRef(repo.path, ref)
+        const result = await getComplexityDiffRef(repo.path, ref, toRef)
         if (dashboardDiffRequestIdRef.current !== requestId) return
         setDashboardDiff({ status: 'loaded', mode, result })
       } catch (error) {

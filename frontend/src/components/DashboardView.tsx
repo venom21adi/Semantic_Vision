@@ -32,7 +32,9 @@ export type DashboardState =
  * dashboard-scoped state slice not wired into every close/invalidate
  * call site is exactly the shape of bug this dashboard has shipped
  * twice already (see App.tsx's `closeDashboard`). */
-export type DiffMode = { kind: 'last-look' } | { kind: 'ref'; ref: string; label: string }
+export type DiffMode =
+  | { kind: 'last-look' }
+  | { kind: 'ref'; ref: string; label: string; toRef?: string; toLabel?: string }
 
 export type DiffState =
   | { status: 'loading'; mode: DiffMode }
@@ -47,7 +49,7 @@ interface DashboardViewProps {
   diff: DiffState | null
   onCompare: () => void
   gitRefs: GitRefsState | null
-  onCompareToRef: (ref: string, label: string) => void
+  onCompareToRef: (ref: string, label: string, toRef?: string, toLabel?: string) => void
   graphNodes: GraphNode[]
   graphEdges: GraphEdge[]
   selectedNodeId: string | null
@@ -263,7 +265,8 @@ export function DashboardView({
 }
 
 function diffModeLabel(mode: DiffMode): string {
-  return mode.kind === 'ref' ? `vs ${mode.label}` : 'vs last look'
+  if (mode.kind === 'last-look') return 'vs last look'
+  return mode.toLabel ? `${mode.label} → ${mode.toLabel}` : `vs ${mode.label}`
 }
 
 function DiffPanel({ diff, onSelectNode }: { diff: DiffState; onSelectNode: (nodeId: string) => void }) {

@@ -1385,6 +1385,7 @@ describe('App', () => {
     })
     mockedClient.getComplexityDiffRef.mockResolvedValue({
       ref: 'abc1234',
+      to_ref: null,
       available: true,
       current: [],
       added: [],
@@ -1397,9 +1398,11 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
 
     await user.type(screen.getByLabelText('Git ref to compare against'), 'abc1234')
-    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+    await user.click(screen.getByRole('button', { name: 'Compare' }))
 
-    await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith('/repo', 'abc1234'))
+    await waitFor(() =>
+      expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith('/repo', 'abc1234', undefined),
+    )
     // Never reparses -- diff-ref compares state already reflected in
     // `repo`/`dashboard` against the ref, unlike "Compare to last look".
     // The one call already happened during `loadSampleRepo()`'s initial load.
@@ -1407,6 +1410,42 @@ describe('App', () => {
     await waitFor(() =>
       expect(screen.getByText('No changes vs abc1234 earlier commit.')).toBeInTheDocument(),
     )
+  })
+
+  it('runs a ref-vs-ref compare when the optional "to" field is filled in', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getGitRefs.mockResolvedValue({
+      is_git_repo: true,
+      branches: ['main', 'feature'],
+      commits: [],
+    })
+    mockedClient.getComplexityDiffRef.mockResolvedValue({
+      ref: 'main',
+      to_ref: 'feature',
+      available: true,
+      current: [],
+      added: [],
+      removed: [],
+      changed: [],
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
+    await user.type(
+      screen.getByLabelText('Second git ref to compare against (optional, defaults to the current state)'),
+      'feature',
+    )
+    await user.click(screen.getByRole('button', { name: 'Compare' }))
+
+    await waitFor(() =>
+      expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith('/repo', 'main', 'feature'),
+    )
+    // Ref-vs-ref never touches current on-disk state either -- no reparse.
+    expect(mockedClient.parseRepo).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(screen.getByText('No changes main → feature.')).toBeInTheDocument())
   })
 
   // Mirrors the existing "ignores a stale compare response..." test above,
@@ -1422,13 +1461,21 @@ describe('App', () => {
       () => {}
     mockedClient.getComplexityDiffRef
       .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstRefDiff = resolve)))
-      .mockResolvedValueOnce({ ref: 'main', available: true, current: [], added: [], removed: [], changed: [] })
+      .mockResolvedValueOnce({
+        ref: 'main',
+        to_ref: null,
+        available: true,
+        current: [],
+        added: [],
+        removed: [],
+        changed: [],
+      })
     const user = await loadSampleRepo()
 
     await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
     await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
     await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
-    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+    await user.click(screen.getByRole('button', { name: 'Compare' }))
     await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledTimes(1))
 
     // Close, then reopen a fresh dashboard session while the first ref
@@ -1437,7 +1484,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
     await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
     await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
-    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+    await user.click(screen.getByRole('button', { name: 'Compare' }))
     await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledTimes(2))
     await waitFor(() => expect(screen.getByText('No changes vs main.')).toBeInTheDocument())
 
@@ -1448,6 +1495,7 @@ describe('App', () => {
     // rendered) so an unguarded overwrite is actually observable.
     resolveFirstRefDiff({
       ref: 'main',
+      to_ref: null,
       available: true,
       current: [],
       added: [

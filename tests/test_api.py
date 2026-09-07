@@ -820,6 +820,29 @@ def test_complexity_diff_ref_returns_400_for_an_unknown_ref(tmp_path: Path):
     assert resp.status_code == 400
 
 
+def test_complexity_diff_ref_returns_400_for_an_unknown_to_ref(tmp_path: Path):
+    import subprocess
+
+    _init_git_repo(tmp_path)
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    _git_commit(tmp_path, "first commit")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/complexity/diff-ref",
+        params={"path": repo_path, "ref": "HEAD", "to_ref": "does-not-exist"},
+    )
+
+    assert resp.status_code == 400
+    # The first (valid) ref's worktree must be cleaned up even though the
+    # second call failed.
+    worktree_list = subprocess.run(
+        ["git", "worktree", "list"], cwd=tmp_path, check=True, capture_output=True, text=True
+    ).stdout
+    assert worktree_list.strip().count("\n") == 0
+
+
 def test_complexity_diff_ref_reports_added_removed_changed_against_an_older_commit(tmp_path: Path):
     _init_git_repo(tmp_path)
     app_py = tmp_path / "app.py"
@@ -875,6 +898,75 @@ def test_complexity_diff_ref_reports_added_removed_changed_against_an_older_comm
     assert changed_by_id["app.py::to_be_changed"]["before"]["cyclomatic_complexity"] == 1
     assert changed_by_id["app.py::to_be_changed"]["after"]["cyclomatic_complexity"] == 2
     assert "app.py::stays_same" not in added_ids | removed_ids | set(changed_by_id)
+
+
+def test_complexity_diff_ref_compares_two_arbitrary_commits_when_to_ref_is_given(tmp_path: Path):
+    _init_git_repo(tmp_path)
+    app_py = tmp_path / "app.py"
+
+    app_py.write_text(
+        "def stays_same():\n"
+        "    return 1\n"
+        "\n"
+        "\n"
+        "def to_be_removed():\n"
+        "    return 2\n"
+        "\n"
+        "\n"
+        "def to_be_changed():\n"
+        "    return 3\n",
+        encoding="utf-8",
+    )
+    _git_commit(tmp_path, "first commit")
+    resp = client.get(
+        "/api/git/refs", params={"path": str(tmp_path)}
+    )  # cheap way to read back a real short sha, not hand-guessed
+    first_sha = resp.json()["commits"][0]["sha"]
+
+    app_py.write_text(
+        "def stays_same():\n"
+        "    return 1\n"
+        "\n"
+        "\n"
+        "def to_be_changed():\n"
+        "    if True:\n"
+        "        return 3\n"
+        "    return 4\n"
+        "\n"
+        "\n"
+        "def newly_added():\n"
+        "    return 5\n",
+        encoding="utf-8",
+    )
+    _git_commit(tmp_path, "second commit")
+
+    # Dirty the working tree with content matching neither commit -- the
+    # ref-vs-ref comparison below must ignore this entirely.
+    app_py.write_text("def unrelated_dirty_state():\n    return 0\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/complexity/diff-ref",
+        params={"path": repo_path, "ref": first_sha, "to_ref": "HEAD"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ref"] == first_sha
+    assert body["to_ref"] == "HEAD"
+    assert body["available"] is True
+
+    added_ids = {s["node_id"] for s in body["added"]}
+    removed_ids = {s["node_id"] for s in body["removed"]}
+    changed_by_id = {c["node_id"]: c for c in body["changed"]}
+
+    assert added_ids == {"app.py::newly_added"}
+    assert removed_ids == {"app.py::to_be_removed"}
+    assert set(changed_by_id) == {"app.py::to_be_changed"}
+    # Neither commit's content mentions `unrelated_dirty_state` -- proves
+    # the comparison used the two committed refs, not the dirty disk state.
+    assert "app.py::unrelated_dirty_state" not in added_ids | removed_ids | set(changed_by_id)
 
 
 def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisition(monkeypatch):

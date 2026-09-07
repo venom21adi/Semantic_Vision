@@ -42,7 +42,7 @@ class GitError(Exception):
 # Serializes concurrent `git worktree add`/`remove` against git repos --
 # concurrent worktree operations on one repo can conflict (git's own
 # index/lock file). One process-wide lock, not per-repo: this is an
-# explicit, infrequent user action (a "Compare to commit" click), not a
+# explicit, infrequent user action (a dashboard "Compare" click), not a
 # hot path, so correctness beats throughput here -- same tradeoff
 # `RepoCache._complexity_lock` already makes.
 _worktree_lock = threading.Lock()

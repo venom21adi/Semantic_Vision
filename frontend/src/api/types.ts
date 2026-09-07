@@ -175,6 +175,7 @@ export interface GitRefsResponse {
 
 export interface ComplexityRefDiffResponse {
   ref: string
+  to_ref: string | null
   available: boolean
   current: ComplexityScore[]
   added: ComplexityScore[]

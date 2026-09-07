@@ -123,6 +123,7 @@ describe('DashboardView', () => {
   it('shows a ref-labeled no-changes message when comparing against a commit', () => {
     const result: ComplexityRefDiffResponse = {
       ref: 'abc1234',
+      to_ref: null,
       available: true,
       current: scores,
       added: [],
@@ -134,6 +135,27 @@ describe('DashboardView', () => {
     })
 
     expect(screen.getByText('No changes vs abc1234 fix it.')).toBeInTheDocument()
+  })
+
+  it('shows an arrow-style label when comparing two arbitrary refs against each other', () => {
+    const result: ComplexityRefDiffResponse = {
+      ref: 'abc1234',
+      to_ref: 'def5678',
+      available: true,
+      current: scores,
+      added: [],
+      removed: [],
+      changed: [],
+    }
+    renderDashboard({
+      diff: {
+        status: 'loaded',
+        mode: { kind: 'ref', ref: 'abc1234', label: 'abc1234', toRef: 'def5678', toLabel: 'def5678' },
+        result,
+      },
+    })
+
+    expect(screen.getByText('No changes abc1234 → def5678.')).toBeInTheDocument()
   })
 
   it('renders added, removed, and changed sections and only removed rows are non-clickable', async () => {
@@ -173,18 +195,34 @@ describe('DashboardView', () => {
   it('does not render the ref picker when the loaded repo is not a git repo', () => {
     renderDashboard({ gitRefs: { status: 'loaded', refs: { is_git_repo: false, branches: [], commits: [] } } })
 
-    expect(screen.queryByRole('button', { name: 'Compare to commit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Compare' })).not.toBeInTheDocument()
   })
 
-  it('renders the ref picker and calls onCompareToRef', async () => {
+  it('renders the ref picker and calls onCompareToRef with just the "from" ref', async () => {
     const user = userEvent.setup()
     const { props } = renderDashboard({
       gitRefs: { status: 'loaded', refs: { is_git_repo: true, branches: ['main'], commits: [] } },
     })
 
     await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
-    await user.click(screen.getByRole('button', { name: 'Compare to commit' }))
+    await user.click(screen.getByRole('button', { name: 'Compare' }))
 
-    expect(props.onCompareToRef).toHaveBeenCalledWith('main', 'main')
+    expect(props.onCompareToRef).toHaveBeenCalledWith('main', 'main', undefined, undefined)
+  })
+
+  it('calls onCompareToRef with both refs when the optional "to" field is filled in', async () => {
+    const user = userEvent.setup()
+    const { props } = renderDashboard({
+      gitRefs: { status: 'loaded', refs: { is_git_repo: true, branches: ['main', 'feature'], commits: [] } },
+    })
+
+    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
+    await user.type(
+      screen.getByLabelText('Second git ref to compare against (optional, defaults to the current state)'),
+      'feature',
+    )
+    await user.click(screen.getByRole('button', { name: 'Compare' }))
+
+    expect(props.onCompareToRef).toHaveBeenCalledWith('main', 'main', 'feature', 'feature')
   })
 })

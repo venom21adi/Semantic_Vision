@@ -144,10 +144,14 @@ function realGetGitRefs(path: string): Promise<GitRefsResponse> {
   return request<GitRefsResponse>(`/api/git/refs?path=${encodeURIComponent(path)}`)
 }
 
-function realGetComplexityDiffRef(path: string, ref: string): Promise<ComplexityRefDiffResponse> {
-  return request<ComplexityRefDiffResponse>(
-    `/api/complexity/diff-ref?path=${encodeURIComponent(path)}&ref=${encodeURIComponent(ref)}`,
-  )
+function realGetComplexityDiffRef(
+  path: string,
+  ref: string,
+  toRef?: string,
+): Promise<ComplexityRefDiffResponse> {
+  const params = new URLSearchParams({ path, ref })
+  if (toRef) params.set('to_ref', toRef)
+  return request<ComplexityRefDiffResponse>(`/api/complexity/diff-ref?${params.toString()}`)
 }
 
 function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
@@ -251,7 +255,7 @@ export const getGitRefs = DEMO_MODE
  * than fabricating a fake diff) matches how this file treats every other
  * demo-unreachable call. */
 export const getComplexityDiffRef = DEMO_MODE
-  ? async (): Promise<ComplexityRefDiffResponse> => {
+  ? async (_path: string, _ref: string, _toRef?: string): Promise<ComplexityRefDiffResponse> => {
       throw new Error('Git ref comparison is not available in demo mode')
     }
   : realGetComplexityDiffRef
