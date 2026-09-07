@@ -12,6 +12,7 @@ from semantic_vision.ts_locate import locate
 
 FIXTURES = Path(__file__).parent / "fixtures"
 GETTER_SETTER_REPO = FIXTURES / "getter_setter_repo"
+JAVA_OVERLOAD_REPO = FIXTURES / "java_overload_repo"
 
 
 def test_getter_and_setter_get_distinct_node_ids():
@@ -80,6 +81,53 @@ def test_a_call_to_a_getter_setter_name_is_ambiguous_not_silently_wrong():
     assert len(call_edges) == 1
     edge = call_edges[0]
     assert edge.target not in ("app.ts::Box.value#get", "app.ts::Box.value#set")
+    assert edge.ambiguous is True
+
+
+def test_java_overloads_get_distinct_node_ids():
+    # Three overloads, not just two -- exercises the case a plain get/set
+    # pair never could: a third same-named sibling arriving after the
+    # first collision was already detected and removed from the lookup
+    # index (see `ambiguous_method_keys` in symbol_table.py).
+    result = parse_repository(str(JAVA_OVERLOAD_REPO), language="java")
+    function_ids = {n.id for n in result.nodes if n.kind == NodeKind.FUNCTION}
+
+    assert "Widget.java::Widget.draw#1" in function_ids
+    assert "Widget.java::Widget.draw#2" in function_ids
+    assert "Widget.java::Widget.draw#3" in function_ids
+    assert len({n.id for n in result.nodes if n.kind == NodeKind.FUNCTION}) == len(
+        [n for n in result.nodes if n.kind == NodeKind.FUNCTION]
+    )
+
+
+def test_a_plain_java_method_id_has_no_overload_suffix():
+    result = parse_repository(str(JAVA_OVERLOAD_REPO), language="java")
+    function_ids = {n.id for n in result.nodes if n.kind == NodeKind.FUNCTION}
+
+    assert "Widget.java::Widget.plain" in function_ids
+    assert not any(fid.startswith("Widget.java::Widget.plain#") for fid in function_ids)
+
+
+def test_a_call_to_an_overloaded_java_method_is_ambiguous_not_silently_wrong():
+    # `this.draw()` could mean any of the three overloads -- after the
+    # third overload arrives, `ModuleIndex.methods` must stay empty for
+    # this key rather than the third overload's insert/delete dance
+    # silently repopulating it with just itself (the exact bug
+    # `ambiguous_method_keys` exists to prevent).
+    result = parse_repository(str(JAVA_OVERLOAD_REPO), language="java")
+    call_edges = [
+        e
+        for e in result.edges
+        if e.kind == EdgeKind.CALLS and e.source == "Widget.java::Widget.useIt"
+    ]
+
+    assert len(call_edges) == 1
+    edge = call_edges[0]
+    assert edge.target not in (
+        "Widget.java::Widget.draw#1",
+        "Widget.java::Widget.draw#2",
+        "Widget.java::Widget.draw#3",
+    )
     assert edge.ambiguous is True
 
 

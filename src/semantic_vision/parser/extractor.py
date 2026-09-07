@@ -47,6 +47,16 @@ class RawFunction:
     into one graph node id (both would otherwise be named identically --
     confirmed live as a real bug: React duplicate-key warnings against a
     real getter/setter-heavy codebase)."""
+    overload_index: int | None = None
+    """Java overload marker: 1-based position among sibling methods (or
+    constructors) sharing this method's name within the same class,
+    populated only by `java_extractor.py`'s `_extract_class`. `None` when
+    the name is unique in its class (the common case, and always true for
+    Python/JS -- neither allows same-name method overloading). Same
+    disambiguation role as `accessor_kind` above (a same-name collision
+    would otherwise collapse distinct methods onto one graph node id), but
+    unbounded instead of a fixed get/set pair, since Java allows arbitrarily
+    many overloads of one name."""
 
 
 @dataclass

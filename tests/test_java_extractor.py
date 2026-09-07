@@ -152,6 +152,47 @@ def test_no_top_level_functions_or_module_variables():
     assert raw.variables == []
 
 
+def test_overloaded_methods_get_sequential_overload_index():
+    source = """
+class Widget {
+    void draw() {}
+    void draw(int x) {}
+    void draw(int x, int y) {}
+}
+"""
+    raw = extract(source)
+    assert [m.overload_index for m in raw.classes[0].methods] == [1, 2, 3]
+
+
+def test_overloaded_constructors_get_sequential_overload_index():
+    source = """
+class Widget {
+    Widget() {}
+    Widget(int x) {}
+}
+"""
+    raw = extract(source)
+    assert [m.overload_index for m in raw.classes[0].methods] == [1, 2]
+
+
+def test_non_overloaded_method_has_no_overload_index():
+    raw = extract("class Widget {\n    void draw() {}\n    void resize() {}\n}\n")
+    assert [m.overload_index for m in raw.classes[0].methods] == [None, None]
+
+
+def test_overload_index_only_disambiguates_within_its_own_name_group():
+    source = """
+class Widget {
+    void draw() {}
+    void draw(int x) {}
+    void resize() {}
+}
+"""
+    raw = extract(source)
+    by_name = {(m.name, m.overload_index) for m in raw.classes[0].methods}
+    assert by_name == {("draw", 1), ("draw", 2), ("resize", None)}
+
+
 def test_syntax_error_is_detected_via_has_error():
     tree = parse_tree("public class {{{ not java", "Bad.java")
     assert tree.root_node.has_error is True

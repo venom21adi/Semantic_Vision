@@ -214,6 +214,31 @@ def _iter_class_members(body: Node) -> list[Node]:
     return members
 
 
+def _assign_overload_indices(methods: list[RawFunction]) -> None:
+    """Java allows arbitrarily many methods -- and constructors, which all
+    share the class name -- with the same name distinguished only by
+    parameter list, something no other supported language does. Left
+    alone, every overload of `foo` would collapse onto the exact same
+    `symbol_table.py` node id (`<class>.foo`), one silently overwriting the
+    rest. There is no parameter-type info on `RawFunction` to build a real
+    signature-based id from, so this assigns each overload a stable
+    1-based position among its same-named siblings instead -- enough to
+    give every overload its own graph node, which is what actually matters
+    (a call site has no type information either, so which *specific*
+    overload a name resolves to is already unrecoverable downstream; see
+    `resolver/symbol_table.py`'s handling of `ModuleIndex.methods`).
+    Methods with a unique name in the class are left at `None`, matching
+    `accessor_kind`'s "only set when it disambiguates something" pattern."""
+    counts: dict[str, int] = {}
+    for method in methods:
+        counts[method.name] = counts.get(method.name, 0) + 1
+    seen: dict[str, int] = {}
+    for method in methods:
+        if counts[method.name] > 1:
+            seen[method.name] = seen.get(method.name, 0) + 1
+            method.overload_index = seen[method.name]
+
+
 def _extract_class(node: Node) -> RawClass:
     name_node = node.child_by_field_name("name")
     class_name = _text(name_node) or "<anonymous>"
@@ -245,6 +270,8 @@ def _extract_class(node: Node) -> RawClass:
                     )
             elif member.type in _TYPE_DECLARATION_TYPES:
                 nested_classes.append(_extract_class(member))
+
+    _assign_overload_indices(methods)
 
     return RawClass(
         name=class_name,

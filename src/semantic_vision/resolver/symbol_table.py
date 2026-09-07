@@ -25,6 +25,13 @@ class ModuleIndex:
     """Class name -> node id."""
     methods: dict[tuple[str, str], str] = field(default_factory=dict)
     """(class name, method name) -> node id."""
+    ambiguous_method_keys: set[tuple[str, str]] = field(default_factory=set)
+    """(class name, method name) pairs that named more than one distinct
+    method node (JS get/set pair, or -- unbounded -- Java overloads).
+    Tracked separately from `methods` so that once a name is known
+    ambiguous it stays that way even after a later sibling's insert/delete
+    dance would otherwise leave `methods` holding exactly one id again
+    (see `_register_class`)."""
 
 
 @dataclass
@@ -98,6 +105,11 @@ def _register_class(
             # plain-name output, so changing it here would break re-locating
             # exactly the nodes this disambiguates.
             method_id = f"{method_id}#{method.accessor_kind}"
+        if method.overload_index is not None:
+            # Java overload marker (see `RawFunction.overload_index`'s
+            # docstring) -- same collision-avoidance role as accessor_kind
+            # above, just unbounded instead of a fixed get/set pair.
+            method_id = f"{method_id}#{method.overload_index}"
         nodes.append(
             Node(
                 id=method_id,
@@ -112,23 +124,29 @@ def _register_class(
         defines_edges.append(Edge(source=class_id, target=method_id, kind=EdgeKind.DEFINES))
         if top_level:
             key = (cls.name, method.name)
-            existing_method_id = index.methods.get(key)
-            if existing_method_id is not None and existing_method_id != method_id:
-                # A second distinct method now claims a name this class's
-                # index already resolved -- only possible for a get/set pair
-                # sharing a name (a plain duplicate method name isn't valid
-                # JS/TS). Resolving `this.foo()`/`ClassName.foo()` to
-                # whichever one happened to be registered last would be a
-                # silent guess between two real, distinct nodes -- worse
-                # than before this id-disambiguation fix, when both shared
-                # one id and any resolution was trivially "correct" by
-                # construction. Removed instead, so `resolver/calls.py`'s
-                # shorthand lookup falls through to its existing unresolved/
-                # ambiguous-edge path, same as any other call it can't
-                # confidently resolve.
-                del index.methods[key]
-            else:
-                index.methods[key] = method_id
+            if key not in index.ambiguous_method_keys:
+                existing_method_id = index.methods.get(key)
+                if existing_method_id is not None and existing_method_id != method_id:
+                    # A second distinct method now claims a name this
+                    # class's index already resolved -- a get/set pair
+                    # sharing a name, or (unbounded) a Java overload group.
+                    # Resolving `this.foo()`/`ClassName.foo()` to whichever
+                    # one happened to be registered last would be a silent
+                    # guess between real, distinct nodes -- worse than
+                    # before this id-disambiguation fix, when they shared
+                    # one id and any resolution was trivially "correct" by
+                    # construction. Removed instead, so `resolver/calls.py`'s
+                    # shorthand lookup falls through to its existing
+                    # unresolved/ambiguous-edge path. `ambiguous_method_keys`
+                    # remembers this permanently for the key -- otherwise a
+                    # *third* same-named method (only possible with Java
+                    # overloads, never a plain get/set pair) would see an
+                    # empty slot here and silently re-populate `methods`
+                    # with just itself, undoing the disambiguation.
+                    del index.methods[key]
+                    index.ambiguous_method_keys.add(key)
+                else:
+                    index.methods[key] = method_id
         for nested in method.nested_classes:
             _register_class(
                 nested,

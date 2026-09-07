@@ -58,11 +58,11 @@ future fix needs either a newer `tree-sitter-java` release or a best-effort reco
 attempted here, since 5 of 615 files (99.2% success) on a narrow, specific syntax form doesn't
 block real-world usability.
 
-**A real, separate correctness bug surfaced by this benchmark, not yet fixed.** Guava's heavy use
-of method overloading (multiple methods sharing a name, differing only in parameter types — routine
-in real Java, essentially absent from this project's own Milestone 12 test fixtures, which never
-exercised it) exposed that overloaded methods collide on the exact same graph node id. Minimal
-repro:
+**A real, separate correctness bug surfaced by this benchmark — fixed in a follow-up pass.** Guava's
+heavy use of method overloading (multiple methods sharing a name, differing only in parameter
+types — routine in real Java, essentially absent from this project's own Milestone 12 test
+fixtures, which never exercised it) exposed that overloaded methods collided on the exact same
+graph node id. Minimal repro:
 
 ```java
 class Overloaded {
@@ -71,21 +71,25 @@ class Overloaded {
 }
 ```
 
-produces two `RawFunction`s both registered as `Overloaded.java::Overloaded.submit` — confirmed via
-`parse_repository` directly, not just observed as a symptom. This isn't only a rendering glitch
-(React's own "duplicate key" warning is how it first surfaced, in the sidebar tree on the full-repo
-run below): `resolver/symbol_table.py`'s `ModuleIndex.methods` dict is keyed on
-`(class_name, method_name)` with no parameter-signature disambiguation, so the *second* overload's
-node id silently overwrites the first's in the lookup index used for call resolution — a real
-mis-attribution risk for any call site resolving to whichever overload happens to be registered
-last, not necessarily the one actually being called. JS/Python don't hit this (Python has no
-same-name-multiple-methods concept; TS's overload signatures compile to one implementation), so
-this is a genuinely new, Java-specific gap. Not fixed in this pass: a proper fix needs a real
-design decision on how to disambiguate (e.g. encoding an arity/parameter-type suffix into the
-node id for overloaded methods specifically) without touching the shared, language-agnostic id
-scheme `resolver/symbol_table.py` uses for every language today — the same "don't touch the shared
-resolver" constraint Milestone 12 itself was built under. Flagged here as a confirmed, root-caused
-finding for a deliberate follow-up, not silently worked around.
+used to produce two `RawFunction`s both registered as `Overloaded.java::Overloaded.submit` — the
+*second* overload's node id silently overwrote the first's in `resolver/symbol_table.py`'s
+`ModuleIndex.methods` lookup index, a real mis-attribution risk for any call site resolving to
+whichever overload happened to be registered last. JS/Python never hit this (Python has no
+same-name-multiple-methods concept; TS's overload signatures compile to one implementation), so it
+was a genuinely new, Java-specific gap.
+
+Fixed without touching the shared, language-agnostic id scheme: `RawFunction` gained an
+`overload_index` field (`java_extractor.py`'s `_assign_overload_indices`, mirroring the existing
+`accessor_kind` mechanism JS/TS already uses to disambiguate a getter/setter pair), giving each
+overload its own node id (`Overloaded.java::Overloaded.submit#1` / `#2` / ...). Since a call site
+still carries no type information, `ModuleIndex.methods` deliberately does not resolve `this.submit(...)`-
+style shorthand calls to any specific overload — it falls through to the existing
+unresolved/ambiguous-edge path instead of guessing, the same honesty tradeoff already made for
+JS get/set pairs. A latent bug in that same collision-tracking logic (a *third* same-named sibling
+would have silently re-populated the lookup index with just itself, undoing the disambiguation) was
+also caught and fixed while adding overload support, via a new `ambiguous_method_keys` set on
+`ModuleIndex` that remembers a name is ambiguous permanently once detected, regardless of how many
+more same-named siblings arrive after it.
 
 ### Browser tier: not measured
 
