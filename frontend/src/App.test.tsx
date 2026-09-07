@@ -1060,6 +1060,140 @@ describe('App', () => {
     expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
   })
 
+  it('fetches and shows the dashboard when Open dashboard is toggled on', async () => {
+    mockedClient.getComplexity.mockResolvedValue({
+      scores: [
+        {
+          node_id: 'app.py::Greeter.greet',
+          cyclomatic_complexity: 4,
+          call_chain_depth: 0,
+          has_nested_loops: false,
+        },
+      ],
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+
+    expect(mockedClient.getComplexity).toHaveBeenCalledWith('/repo')
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    expect(screen.getByText(/app\.py::Greeter\.greet/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Close dashboard' })).toBeInTheDocument()
+  })
+
+  it('closes the dashboard and reverts the toggle when clicked again', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Close dashboard' }))
+
+    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open dashboard' })).toBeInTheDocument()
+  })
+
+  it('does not resurrect the dashboard if it is closed before the fetch resolves', async () => {
+    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
+    mockedClient.getComplexity.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveComplexity = resolve
+        }),
+    )
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    // Close it before the (still in-flight) fetch has a chance to resolve.
+    await user.click(screen.getByRole('button', { name: 'Close dashboard' }))
+    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+
+    resolveComplexity({ scores: [] })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+  })
+
+  it("does not attach a stale repo's dashboard scores after switching repos mid-fetch", async () => {
+    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
+    mockedClient.getComplexity.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveComplexity = resolve
+        }),
+    )
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    // Load a different repo while the first repo's dashboard fetch is
+    // still in flight -- App.tsx's `handleLoad` resets `dashboard` to null.
+    mockedClient.parseRepo.mockResolvedValueOnce({
+      path: '/other-repo',
+      doc_root: '/other-repo',
+      node_count: 2,
+      edge_count: 1,
+      parse_errors: [],
+    })
+    await openRepoPill(user)
+    await user.clear(screen.getByLabelText('Repository path'))
+    await user.type(screen.getByLabelText('Repository path'), '/other-repo')
+    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() => expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument())
+
+    resolveComplexity({ scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }] })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+  })
+
+  it('does not apply a stale fetch when the dashboard is closed and reopened before it resolves', async () => {
+    let resolveFirst: (value: ComplexityResponse) => void = () => {}
+    let resolveSecond: (value: ComplexityResponse) => void = () => {}
+    mockedClient.getComplexity
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirst = resolve)))
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveSecond = resolve)))
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Close dashboard' }))
+    await waitFor(() => expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    // The first (stale) fetch resolves after the second (current) one has
+    // already started -- its scores must never make it onto the screen.
+    resolveFirst({
+      scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }],
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
+
+    resolveSecond({
+      scores: [{ node_id: 'fresh', cyclomatic_complexity: 2, call_chain_depth: 0, has_nested_loops: false }],
+    })
+    await waitFor(() => expect(screen.getByText(/fresh/)).toBeInTheDocument())
+    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
+  })
+
+  it('closes the dashboard when a node is selected from the sidebar tree', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    await user.click(within(screen.getByRole('tree')).getByText('greet'))
+
+    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open dashboard' })).toBeInTheDocument()
+  })
+
   it('opens and closes the Add tables & models panel via the sidebar toggle', async () => {
     const user = await loadSampleRepo()
 

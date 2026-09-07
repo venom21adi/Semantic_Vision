@@ -27,6 +27,7 @@ import type {
   NodePosition,
   ParseErrorInfo,
 } from './api/types'
+import { DashboardView, type DashboardState } from './components/DashboardView'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { DemoRepoPicker } from './components/DemoRepoPicker'
 import { DemoRepoPill } from './components/DemoRepoPill'
@@ -183,6 +184,13 @@ export default function App() {
     isDocSaveNoticeDismissed(),
   )
   const [flowchartState, setFlowchartState] = useState<FlowchartState | null>(null)
+  // The standalone, full-width dashboard (see docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md)
+  // -- deliberately independent of `pane`/`complexityByNodeId` rather than a second
+  // consumer of `pane`'s existing `'complexity'` kind. That kind still drives the
+  // heatmap + narrow side panel exactly as before; this is a separate, later-added
+  // way to see the same ranked report full-width, with the canvas and DetailsPanel
+  // out of the way. See handleToggleDashboard below for why the two stayed separate.
+  const [dashboard, setDashboard] = useState<DashboardState | null>(null)
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -282,6 +290,24 @@ export default function App() {
     paneRef.current = pane
   }, [pane])
 
+  // Identifies *which* `getComplexity` request (from handleToggleDashboard) a
+  // response belongs to -- stronger than checking a mirrored `dashboard` ref's
+  // `status === 'loading'` alone would be (that only proves *some* request is
+  // in flight, not that it's this one). Without it, closing and reopening the
+  // dashboard fast enough would leave two requests in flight, and a
+  // status-only guard would accept whichever resolves last even if it's stale.
+  const dashboardRequestIdRef = useRef(0)
+
+  // The one place that closes the dashboard from *outside* `handleToggleDashboard`
+  // itself (a repo switch, opening a different pane) -- always bumps the request id
+  // too, or a fetch still in flight when this fires could resolve afterwards and
+  // resurrect a dashboard the user already left, exactly like a plain `setDashboard(null)`
+  // would if `handleToggleDashboard`'s own close branch didn't also bump it.
+  const closeDashboard = useCallback(() => {
+    dashboardRequestIdRef.current += 1
+    setDashboard(null)
+  }, [])
+
   useEffect(() => {
     if (!expandBlockedNotice) return
     const timer = setTimeout(() => setExpandBlockedNotice(null), 6000)
@@ -349,6 +375,7 @@ export default function App() {
       setPane(null)
       setView('codebase')
       setFlowchartState(null)
+      closeDashboard()
       setDataOnlyActive(false)
       // At or below the threshold: every node id is independently visible,
       // identical to this app's pre-collapse, pre-selection behavior (a
@@ -399,7 +426,7 @@ export default function App() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [closeDashboard])
 
   const handleChangeDocRoot = useCallback(async (newDocRoot: string) => {
     const current = repoRef.current
@@ -779,6 +806,11 @@ export default function App() {
       return
     }
     cancelGeneration()
+    // The dashboard occupies the same "Analysis" section of the sidebar and stays
+    // reachable while it's open (see handleToggleDashboard) -- without this, opening
+    // this pane while the dashboard is showing would fetch and set state invisibly
+    // behind it, then pop up the moment the dashboard closes.
+    closeDashboard()
     setPane({ kind: 'complexity', status: 'loading' })
     try {
       const result = await getComplexity(repo.path)
@@ -794,12 +826,44 @@ export default function App() {
       if (paneRef.current?.kind !== 'complexity' || paneRef.current.status !== 'loading') return
       setPane({ kind: 'complexity', status: 'error', message: errorMessage(error) })
     }
-  }, [repo, pane, cancelGeneration])
+  }, [repo, pane, cancelGeneration, closeDashboard])
 
   const complexityByNodeId = useMemo(() => {
     if (pane?.kind !== 'complexity' || pane.status !== 'loaded') return null
     return new Map<string, ComplexityScore>(pane.scores.map((score) => [score.node_id, score]))
   }, [pane])
+
+  // Separate from handleToggleComplexity above by design: the dashboard replaces
+  // the canvas + DetailsPanel entirely (see the layout below), so it can't also
+  // drive the heatmap the way `pane`'s `'complexity'` kind does -- reusing that
+  // same state would make heatmap-while-reading-the-list permanently unreachable.
+  // Cancels any in-flight doc generation and clears `pane`/`flowchartState` on open
+  // since both live in the space the dashboard is about to take over.
+  const handleToggleDashboard = useCallback(async () => {
+    if (!repo) return
+    // Bumped on every toggle, close included -- closing while a fetch is still
+    // in flight must invalidate it too, or that fetch resolving later can
+    // resurrect a dashboard the user already dismissed (the id alone wouldn't
+    // catch that: nothing else would move it forward before the response
+    // arrives).
+    const requestId = ++dashboardRequestIdRef.current
+    if (dashboard) {
+      setDashboard(null)
+      return
+    }
+    cancelGeneration()
+    setPane(null)
+    setFlowchartState(null)
+    setDashboard({ status: 'loading' })
+    try {
+      const result = await getComplexity(repo.path)
+      if (dashboardRequestIdRef.current !== requestId) return
+      setDashboard({ status: 'loaded', scores: result.scores })
+    } catch (error) {
+      if (dashboardRequestIdRef.current !== requestId) return
+      setDashboard({ status: 'error', message: errorMessage(error) })
+    }
+  }, [repo, dashboard, cancelGeneration])
 
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
@@ -808,8 +872,9 @@ export default function App() {
       return
     }
     cancelGeneration()
+    closeDashboard()
     setPane({ kind: 'dataSource' })
-  }, [repo, pane, cancelGeneration])
+  }, [repo, pane, cancelGeneration, closeDashboard])
 
   // Ingesting a dbt manifest or a live DB connection merges new
   // nodes/edges into the backend's cached `ParseResult`, not into this
@@ -889,6 +954,23 @@ export default function App() {
     [cancelGeneration],
   )
 
+  // Wraps `handleSelectNode` for the entry points that are reachable *while the
+  // dashboard is open* -- the sidebar's tree/search (it stays mounted; only the
+  // canvas + DetailsPanel are replaced) and the VS Code host's `postMessage`
+  // (can arrive at any time regardless of what's currently shown). Deliberately
+  // not folded into `handleSelectNode` itself: `DashboardView`'s own ranked list
+  // also calls `handleSelectNode` directly when a name is clicked, and should
+  // behave exactly like the narrow side-panel report always has -- silently
+  // adding the node to the canvas underneath without booting the user out of
+  // the view they're reading, not closing it on every click.
+  const handleExternalSelectNode = useCallback(
+    (nodeId: string | null) => {
+      if (dashboard) closeDashboard()
+      handleSelectNode(nodeId)
+    },
+    [dashboard, closeDashboard, handleSelectNode],
+  )
+
   // One click, from the demo's own "try these" suggestions, does what a
   // first-time visitor would otherwise need two separate discoveries for
   // (that a node can be brought onto the canvas at all, and that
@@ -903,14 +985,17 @@ export default function App() {
     [handleSelectNode, handleImpactAnalysis],
   )
 
-  // `onMessage` below needs the *latest* `handleSelectNode`/
+  // `onMessage` below needs the *latest* `handleExternalSelectNode`/
   // `handleImpactAnalysis` on every call, but re-registering the
   // `window` listener every time either identity changes (they're
-  // `useCallback`'d on `repo`/`pane`, not stable) would mean churn on
-  // most graph interactions -- a plain ref updated every render (same
-  // pattern as `repoRef` above) keeps the listener itself mounted once.
-  const messageHandlersRef = useRef({ handleSelectNode, handleImpactAnalysis })
-  messageHandlersRef.current = { handleSelectNode, handleImpactAnalysis }
+  // `useCallback`'d on `repo`/`pane`/`dashboard`, not stable) would mean
+  // churn on most graph interactions -- a plain ref updated every render
+  // (same pattern as `repoRef` above) keeps the listener itself mounted
+  // once. Uses `handleExternalSelectNode`, not `handleSelectNode` directly,
+  // since a host message is exactly the kind of external trigger that
+  // should close the dashboard if it's open (see that callback's comment).
+  const messageHandlersRef = useRef({ handleSelectNode: handleExternalSelectNode, handleImpactAnalysis })
+  messageHandlersRef.current = { handleSelectNode: handleExternalSelectNode, handleImpactAnalysis }
 
   // Bridges messages from the VS Code extension host (see
   // `vscode-extension/src/extension.ts`) into the same handlers a normal
@@ -1098,11 +1183,13 @@ export default function App() {
             nodes={repo.nodes}
             edges={repo.edges}
             selectedNodeId={selectedNodeId}
-            onSelectNode={handleSelectNode}
+            onSelectNode={handleExternalSelectNode}
             view={view}
             onViewChange={setView}
             complexityActive={pane?.kind === 'complexity'}
             onToggleComplexity={handleToggleComplexity}
+            dashboardActive={dashboard !== null}
+            onToggleDashboard={handleToggleDashboard}
             dataSourceActive={pane?.kind === 'dataSource'}
             onToggleDataSource={handleToggleDataSource}
             dataOnlyActive={dataOnlyActive}
@@ -1116,176 +1203,187 @@ export default function App() {
             onToggleCollapsed={toggleSidebarCollapsed}
           />
         )}
-        <main style={{ flex: 1, minWidth: 0 }}>
-          {!repo && !flowchartState && (
-            <div
-              style={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: spacing.lg,
-              }}
-            >
-              <LogoMark size={40} bare />
-              <div style={{ fontSize: 15, color: colors.textMuted }}>
-                Load a repository to see its codebase graph.
-              </div>
-              <div style={{ width: '100%', maxWidth: 640, padding: `0 ${spacing.md}px` }}>
-                {DEMO_MODE ? (
-                  <DemoRepoPicker onLoad={handleLoad} loading={loading} error={loadError} />
-                ) : (
-                  <RepoLoader
-                    onLoad={handleLoad}
-                    loading={loading}
-                    error={loadError}
-                    initialPath={lastRepoPath ?? undefined}
-                    initialDocRoot={rememberedDocRoot ?? undefined}
-                    initialLanguage={rememberedLanguage ?? undefined}
-                    resolvedDocRoot={null}
-                    stats={null}
-                  />
-                )}
-              </div>
-              <div
-                style={{
-                  maxWidth: 360,
-                  textAlign: 'center',
-                  fontSize: 12,
-                  color: colors.textDim,
-                  lineHeight: 1.5,
-                }}
-              >
-                Once it's in, right-click any node for docs, impact analysis, and execution
-                flowcharts — see the <strong>?</strong> in the top-right corner for a full
-                walkthrough.
-              </div>
-            </div>
-          )}
-          {repo && !flowchartState && showFileViewPlaceholder && (
-            <div style={{ padding: 24, color: colors.textMuted }}>
-              Select a file, class, or function to see its file view.
-            </div>
-          )}
-          {repo && !flowchartState && !showFileViewPlaceholder && showEmptySelectionPlaceholder && (
-            <div style={{ padding: 24, color: colors.textMuted }}>
-              Select a directory or file in the sidebar to add it to the canvas.
-            </div>
-          )}
-          {repo &&
-            !flowchartState &&
-            !showFileViewPlaceholder &&
-            !showEmptySelectionPlaceholder &&
-            (layout.status === 'idle' || layout.status === 'laying-out') && (
-              <div style={{ padding: 24, color: colors.textMuted }}>
-                Laying out {scopedGraph.nodes.length} nodes…
-              </div>
-            )}
-          {repo &&
-            !flowchartState &&
-            !showFileViewPlaceholder &&
-            !showEmptySelectionPlaceholder &&
-            layout.status === 'error' && (
-              <div style={{ padding: 24 }}>
-                <span role="alert" style={{ color: colors.danger }}>
-                  Failed to lay out the graph. Try switching views or reloading the repository.
-                </span>
-              </div>
-            )}
-          {repo &&
-            !flowchartState &&
-            !showFileViewPlaceholder &&
-            !showEmptySelectionPlaceholder &&
-            layout.status === 'ready' && (
-              <GraphCanvas
-                key={`${repo.path}:${view}:${view === 'file' ? selectedNode?.file : ''}`}
-                nodes={flowGraph.nodes}
-                edges={flowGraph.edges}
-                selectedNodeId={selectedNodeId}
-                onSelectNode={handleSelectNode}
-                onDocument={handleDocument}
-                onImpactAnalysis={handleImpactAnalysis}
-                onViewSource={handleViewSource}
-                onExecutionFlowchart={handleExecutionFlowchart}
-                onToggleContainer={handleToggleContainer}
-                containerState={view === 'codebase' ? collapsedCodebaseGraph.containerState : undefined}
-                expandBlockedNotice={view === 'codebase' ? expandBlockedNotice : null}
-                onAutoSavePositions={handleAutoSavePositions}
-                highlight={impactHighlight ?? dataLineageHighlight}
-                complexityByNodeId={complexityByNodeId}
-                hiddenEdgeKinds={hiddenEdgeKinds}
-                onToggleEdgeKind={handleToggleEdgeKind}
-              />
-            )}
-          {flowchartState?.status === 'loading' && (
-            <div style={{ padding: 24, color: colors.textMuted }}>Loading flowchart…</div>
-          )}
-          {flowchartState?.status === 'error' && (
-            <div style={{ padding: 24 }}>
-              <span role="alert" style={{ color: colors.danger }}>
-                {flowchartState.message}
-              </span>
-              <div style={{ marginTop: 12 }}>
-                <button
-                  onClick={handleBackToGraph}
-                  className="sv-interactive"
+        {dashboard && repo ? (
+          <DashboardView
+            state={dashboard}
+            path={repo.path}
+            onSelectNode={handleSelectNode}
+            onBack={handleToggleDashboard}
+          />
+        ) : (
+          <>
+            <main style={{ flex: 1, minWidth: 0 }}>
+              {!repo && !flowchartState && (
+                <div
                   style={{
-                    background: colors.bgPanel,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: 4,
-                    color: colors.textPrimary,
-                    padding: '4px 10px',
-                    fontSize: 12,
-                    cursor: 'pointer',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: spacing.lg,
                   }}
                 >
-                  Back to graph
-                </button>
-              </div>
-            </div>
-          )}
-          {flowchartState?.status === 'loaded' && flowchartGraph && (
-            <FlowchartCanvas
-              targetLabel={flowchartState.label}
-              nodes={flowchartGraph.nodes}
-              edges={flowchartGraph.edges}
-              onBack={handleBackToGraph}
+                  <LogoMark size={40} bare />
+                  <div style={{ fontSize: 15, color: colors.textMuted }}>
+                    Load a repository to see its codebase graph.
+                  </div>
+                  <div style={{ width: '100%', maxWidth: 640, padding: `0 ${spacing.md}px` }}>
+                    {DEMO_MODE ? (
+                      <DemoRepoPicker onLoad={handleLoad} loading={loading} error={loadError} />
+                    ) : (
+                      <RepoLoader
+                        onLoad={handleLoad}
+                        loading={loading}
+                        error={loadError}
+                        initialPath={lastRepoPath ?? undefined}
+                        initialDocRoot={rememberedDocRoot ?? undefined}
+                        initialLanguage={rememberedLanguage ?? undefined}
+                        resolvedDocRoot={null}
+                        stats={null}
+                      />
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      maxWidth: 360,
+                      textAlign: 'center',
+                      fontSize: 12,
+                      color: colors.textDim,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Once it's in, right-click any node for docs, impact analysis, and execution
+                    flowcharts — see the <strong>?</strong> in the top-right corner for a full
+                    walkthrough.
+                  </div>
+                </div>
+              )}
+              {repo && !flowchartState && showFileViewPlaceholder && (
+                <div style={{ padding: 24, color: colors.textMuted }}>
+                  Select a file, class, or function to see its file view.
+                </div>
+              )}
+              {repo && !flowchartState && !showFileViewPlaceholder && showEmptySelectionPlaceholder && (
+                <div style={{ padding: 24, color: colors.textMuted }}>
+                  Select a directory or file in the sidebar to add it to the canvas.
+                </div>
+              )}
+              {repo &&
+                !flowchartState &&
+                !showFileViewPlaceholder &&
+                !showEmptySelectionPlaceholder &&
+                (layout.status === 'idle' || layout.status === 'laying-out') && (
+                  <div style={{ padding: 24, color: colors.textMuted }}>
+                    Laying out {scopedGraph.nodes.length} nodes…
+                  </div>
+                )}
+              {repo &&
+                !flowchartState &&
+                !showFileViewPlaceholder &&
+                !showEmptySelectionPlaceholder &&
+                layout.status === 'error' && (
+                  <div style={{ padding: 24 }}>
+                    <span role="alert" style={{ color: colors.danger }}>
+                      Failed to lay out the graph. Try switching views or reloading the repository.
+                    </span>
+                  </div>
+                )}
+              {repo &&
+                !flowchartState &&
+                !showFileViewPlaceholder &&
+                !showEmptySelectionPlaceholder &&
+                layout.status === 'ready' && (
+                  <GraphCanvas
+                    key={`${repo.path}:${view}:${view === 'file' ? selectedNode?.file : ''}`}
+                    nodes={flowGraph.nodes}
+                    edges={flowGraph.edges}
+                    selectedNodeId={selectedNodeId}
+                    onSelectNode={handleSelectNode}
+                    onDocument={handleDocument}
+                    onImpactAnalysis={handleImpactAnalysis}
+                    onViewSource={handleViewSource}
+                    onExecutionFlowchart={handleExecutionFlowchart}
+                    onToggleContainer={handleToggleContainer}
+                    containerState={view === 'codebase' ? collapsedCodebaseGraph.containerState : undefined}
+                    expandBlockedNotice={view === 'codebase' ? expandBlockedNotice : null}
+                    onAutoSavePositions={handleAutoSavePositions}
+                    highlight={impactHighlight ?? dataLineageHighlight}
+                    complexityByNodeId={complexityByNodeId}
+                    hiddenEdgeKinds={hiddenEdgeKinds}
+                    onToggleEdgeKind={handleToggleEdgeKind}
+                  />
+                )}
+              {flowchartState?.status === 'loading' && (
+                <div style={{ padding: 24, color: colors.textMuted }}>Loading flowchart…</div>
+              )}
+              {flowchartState?.status === 'error' && (
+                <div style={{ padding: 24 }}>
+                  <span role="alert" style={{ color: colors.danger }}>
+                    {flowchartState.message}
+                  </span>
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      onClick={handleBackToGraph}
+                      className="sv-interactive"
+                      style={{
+                        background: colors.bgPanel,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 4,
+                        color: colors.textPrimary,
+                        padding: '4px 10px',
+                        fontSize: 12,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Back to graph
+                    </button>
+                  </div>
+                </div>
+              )}
+              {flowchartState?.status === 'loaded' && flowchartGraph && (
+                <FlowchartCanvas
+                  targetLabel={flowchartState.label}
+                  nodes={flowchartGraph.nodes}
+                  edges={flowchartGraph.edges}
+                  onBack={handleBackToGraph}
+                />
+              )}
+            </main>
+            <DetailsPanel
+              selectedNode={selectedNode}
+              pane={pane}
+              onSelectCaller={handleSelectNode}
+              onClosePane={handleClosePane}
+              docProvider={docProvider}
+              onDocProviderChange={setDocProvider}
+              ollamaModels={ollamaModels}
+              ollamaModelsLoading={ollamaModelsLoading}
+              ollamaModel={ollamaModel}
+              onOllamaModelChange={setOllamaModel}
+              onRefreshOllamaModels={refreshOllamaModels}
+              onGenerateDoc={handleGenerateDoc}
+              onSaveDoc={handleSaveDoc}
+              onEditDoc={handleEditDoc}
+              docRoot={repo?.docRoot ?? ''}
+              docSaveNoticeDismissed={docSaveNoticeDismissed}
+              onDismissDocSaveNotice={handleDismissDocSaveNotice}
+              repoPath={repo?.path ?? ''}
+              onDataSourceIngestComplete={handleDataSourceIngestComplete}
+              dataSourceDefaultManifestPath={
+                DEMO_MODE && repo?.path === 'python-shop'
+                  ? 'jaffle_shop/target/manifest.json (bundled with this demo)'
+                  : undefined
+              }
+              showcaseItems={showcaseItems}
+              onTryShowcase={handleTryShowcase}
+              collapsed={detailsCollapsed}
+              onToggleCollapsed={toggleDetailsCollapsed}
+              width={detailsWidth}
+              onResizeWidth={handleResizeDetailsWidth}
             />
-          )}
-        </main>
-        <DetailsPanel
-          selectedNode={selectedNode}
-          pane={pane}
-          onSelectCaller={handleSelectNode}
-          onClosePane={handleClosePane}
-          docProvider={docProvider}
-          onDocProviderChange={setDocProvider}
-          ollamaModels={ollamaModels}
-          ollamaModelsLoading={ollamaModelsLoading}
-          ollamaModel={ollamaModel}
-          onOllamaModelChange={setOllamaModel}
-          onRefreshOllamaModels={refreshOllamaModels}
-          onGenerateDoc={handleGenerateDoc}
-          onSaveDoc={handleSaveDoc}
-          onEditDoc={handleEditDoc}
-          docRoot={repo?.docRoot ?? ''}
-          docSaveNoticeDismissed={docSaveNoticeDismissed}
-          onDismissDocSaveNotice={handleDismissDocSaveNotice}
-          repoPath={repo?.path ?? ''}
-          onDataSourceIngestComplete={handleDataSourceIngestComplete}
-          dataSourceDefaultManifestPath={
-            DEMO_MODE && repo?.path === 'python-shop'
-              ? 'jaffle_shop/target/manifest.json (bundled with this demo)'
-              : undefined
-          }
-          showcaseItems={showcaseItems}
-          onTryShowcase={handleTryShowcase}
-          collapsed={detailsCollapsed}
-          onToggleCollapsed={toggleDetailsCollapsed}
-          width={detailsWidth}
-          onResizeWidth={handleResizeDetailsWidth}
-        />
+          </>
+        )}
       </div>
     </div>
   )

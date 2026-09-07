@@ -54,6 +54,8 @@ function renderSidebar(overrides: Partial<React.ComponentProps<typeof Sidebar>> 
     onViewChange: vi.fn(),
     complexityActive: false,
     onToggleComplexity: vi.fn(),
+    dashboardActive: false,
+    onToggleDashboard: vi.fn(),
     dataSourceActive: false,
     onToggleDataSource: vi.fn(),
     dataOnlyActive: false,
@@ -145,6 +147,22 @@ describe('Sidebar', () => {
     renderSidebar({ complexityActive: true })
 
     const button = screen.getByRole('button', { name: 'Hide complexity' })
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('calls onToggleDashboard when the dashboard toggle is clicked', async () => {
+    const user = userEvent.setup()
+    const { props } = renderSidebar()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+
+    expect(props.onToggleDashboard).toHaveBeenCalledTimes(1)
+  })
+
+  it('reflects the active dashboard state via aria-pressed and label', () => {
+    renderSidebar({ dashboardActive: true })
+
+    const button = screen.getByRole('button', { name: 'Close dashboard' })
     expect(button).toHaveAttribute('aria-pressed', 'true')
   })
 
