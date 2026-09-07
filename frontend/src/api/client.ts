@@ -218,3 +218,7 @@ export const streamDoc = DEMO_MODE ? demoClient.streamDoc : realStreamDoc
  * function exists, so the real app always gets an empty list rather than
  * a second code path every consumer has to branch on. */
 export const getImpactShowcaseIds = DEMO_MODE ? demoClient.getImpactShowcaseIds : async () => []
+/** Demo-only: a real repo always uses the generic root-id/threshold
+ * logic in `App.tsx`'s `handleLoad`, so the real app always gets `null`
+ * (meaning "no curated override, fall back to the generic behavior"). */
+export const getDefaultVisibleIds = DEMO_MODE ? demoClient.getDefaultVisibleIds : async () => null

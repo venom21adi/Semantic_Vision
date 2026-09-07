@@ -37,6 +37,11 @@ export interface DemoRepoMeta {
   edgeCount: number
   hasDataLineage: boolean
   showcaseDocIds: string[]
+  /** Curated root node ids to show on first load instead of every root
+   * (see `getDefaultVisibleIds`) -- absent/empty for a repo whose real
+   * directory structure already collapses to a handful of top-level
+   * items on its own. */
+  defaultVisibleIds?: string[]
 }
 
 export const DEMO_SLUGS = ['python-shop', 'axios', 'guava-base'] as const
@@ -81,6 +86,21 @@ function loadMeta(slug: string): Promise<DemoRepoMeta> {
 
 export function loadDemoRepoList(): Promise<DemoRepoMeta[]> {
   return Promise.all(DEMO_SLUGS.map((slug) => loadMeta(slug)))
+}
+
+/** A demo repo's curated first-load selection, if it has one -- see
+ * `meta.json`'s `defaultVisibleIds`. `App.tsx`'s `handleLoad` falls back
+ * to its own generic root-id computation when this is `null` (every
+ * non-demo repo, and any demo repo without a curated override). Exists
+ * specifically for a repo whose own top level doesn't collapse into a
+ * manageable handful of items on its own (e.g. a flat directory of many
+ * files with no subfolders) -- picking every root id there would dump
+ * all of them onto the canvas at once, a much busier first impression
+ * than the other demos give for free from their own directory shape. */
+export async function getDefaultVisibleIds(path: string): Promise<string[] | null> {
+  if (!isDemoSlug(path)) return null
+  const meta = await loadMeta(path)
+  return meta.defaultVisibleIds?.length ? meta.defaultVisibleIds : null
 }
 
 const MAX_IMPACT_SHOWCASE_IDS = 6

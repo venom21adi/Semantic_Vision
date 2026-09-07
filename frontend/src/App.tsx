@@ -3,6 +3,7 @@ import {
   ApiError,
   DEMO_MODE,
   getComplexity,
+  getDefaultVisibleIds,
   getDoc,
   getFlowchart,
   getFunctionSource,
@@ -369,13 +370,27 @@ export default function App() {
       // the same rollup a real user reaches by checking a few sidebar
       // boxes -- not the large-repo empty canvas either, since a first-
       // time visitor has no reason yet to know that's an available move.
+      //
+      // A repo with no real subdirectories (every file sits flat at the
+      // top level) has no natural grouping for that rollup to collapse
+      // into -- "top-level directories/files" is just "every file", the
+      // same busy-first-impression problem the threshold above exists to
+      // avoid. `getDefaultVisibleIds` returns a curated, small root-id
+      // set for exactly that case (see `guava-base`'s `meta.json`); `null`
+      // for every other demo repo, whose own directory shape already
+      // collapses fine, and always for a non-demo repo.
+      const defaultVisibleIds = DEMO_MODE ? await getDefaultVisibleIds(parseResult.path) : null
       const underThreshold = parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
       setVisibleIds(
-        DEMO_MODE
-          ? rootNodeIds(graph.nodes, graph.edges)
-          : underThreshold
-            ? new Set(graph.nodes.map((node) => node.id))
-            : new Set(),
+        defaultVisibleIds
+          ? new Set(
+              defaultVisibleIds.filter((id) => graph.nodes.some((node) => node.id === id)),
+            )
+          : DEMO_MODE
+            ? rootNodeIds(graph.nodes, graph.edges)
+            : underThreshold
+              ? new Set(graph.nodes.map((node) => node.id))
+              : new Set(),
       )
       setExpandBlockedNotice(null)
       setShowcaseIds(DEMO_MODE ? await getImpactShowcaseIds(parseResult.path) : [])

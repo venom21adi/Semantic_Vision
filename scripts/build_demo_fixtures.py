@@ -69,6 +69,22 @@ JAVA_BASE_SHOWCASE_DOCS = [
     "Ascii.java::Ascii.equalsIgnoreCase",
 ]
 
+# This scope has no subdirectories -- all 53 files sit flat, so the
+# frontend's usual "collapse to top-level directories/files" rollup has
+# nothing to collapse *into*: every file is already top-level, so a
+# first-time visitor would see all 53 as separate boxes at once. The file
+# ids here are exactly the 6 files behind JAVA_BASE_SHOWCASE_DOCS above,
+# reused as this demo's curated first-load selection (see meta.json's
+# defaultVisibleIds, read by frontend/src/api/demoClient.ts).
+JAVA_BASE_DEFAULT_VISIBLE_IDS = [
+    "Utf8.java",
+    "CharMatcher.java",
+    "Splitter.java",
+    "MoreObjects.java",
+    "Joiner.java",
+    "Ascii.java",
+]
+
 
 def dump(path: Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -77,7 +93,8 @@ def dump(path: Path, data) -> None:
 
 def build_repo_bundle(client: TestClient, *, slug: str, repo_path: str, language: str,
                        showcase_doc_ids: list[str], display_name: str, description: str,
-                       dbt_manifest_path: Path | None = None) -> None:
+                       dbt_manifest_path: Path | None = None,
+                       default_visible_ids: list[str] | None = None) -> None:
     out_dir = OUT_ROOT / slug
     print(f"\n=== {slug} ({repo_path}) ===")
 
@@ -144,6 +161,13 @@ def build_repo_bundle(client: TestClient, *, slug: str, repo_path: str, language
     if missing_showcase:
         print(f"WARNING: showcase doc ids not found in graph: {missing_showcase}")
 
+    all_node_ids = {n["id"] for n in graph_active["nodes"]}
+    missing_default_visible = [
+        vid for vid in (default_visible_ids or []) if vid not in all_node_ids
+    ]
+    if missing_default_visible:
+        print(f"WARNING: default_visible_ids not found in graph: {missing_default_visible}")
+
     meta = {
         "slug": slug,
         "displayName": display_name,
@@ -154,6 +178,8 @@ def build_repo_bundle(client: TestClient, *, slug: str, repo_path: str, language
         "hasDataLineage": dbt_manifest_path is not None,
         "showcaseDocIds": [fid for fid in showcase_doc_ids if fid in function_ids],
     }
+    if default_visible_ids:
+        meta["defaultVisibleIds"] = [vid for vid in default_visible_ids if vid in all_node_ids]
     dump(out_dir / "meta.json", meta)
 
 
@@ -226,6 +252,7 @@ def main() -> None:
                 "com.google.common.base from Google's Guava -- Splitter, Joiner, CharMatcher, "
                 "MoreObjects, and other everyday Java utility idioms."
             ),
+            default_visible_ids=JAVA_BASE_DEFAULT_VISIBLE_IDS,
         )
 
 

@@ -13,5 +13,13 @@
     "MoreObjects.java::MoreObjects.ToStringHelper.toString",
     "Joiner.java::Joiner.join#1",
     "Ascii.java::Ascii.equalsIgnoreCase"
+  ],
+  "defaultVisibleIds": [
+    "Utf8.java",
+    "CharMatcher.java",
+    "Splitter.java",
+    "MoreObjects.java",
+    "Joiner.java",
+    "Ascii.java"
   ]
 }
