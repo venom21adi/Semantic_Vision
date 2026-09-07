@@ -2,7 +2,7 @@
 
 # Semantic Vision
 
-**Understand any Python, JavaScript, or TypeScript codebase in minutes, not days.**
+**Understand any Python, JavaScript, TypeScript, or Java codebase in minutes, not days.**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -216,7 +216,7 @@ subfolder for performance — and can be changed at any time.
 
 <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> **Fast, local, and private** — a FastAPI backend statically parses
 your code (Python's own `ast` module for Python, [`tree-sitter`](https://tree-sitter.github.io/tree-sitter/)
-for JavaScript/TypeScript), a React frontend renders it. No account, no
+for JavaScript/TypeScript and Java), a React frontend renders it. No account, no
 cloud, no telemetry, nothing installed beyond a Python and a Node
 toolchain you already have.
 
@@ -224,21 +224,27 @@ toolchain you already have.
 
 What works today, per language:
 
-| Feature | Python | JavaScript / TypeScript |
-|---|:---:|:---:|
-| Call graph — imports, classes, functions, calls | ✅ | ✅ |
-| Interactive graph visualization | ✅ | ✅ |
-| Search | ✅ | ✅ |
-| Persisted layout & view state | ✅ | ✅ |
-| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ |
-| Complexity report | ✅ | ✅ |
-| AI-generated documentation | ✅ | ✅ |
-| Execution flowcharts | ✅ | ✅ |
-| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — |
-| Docker packaging / one-command setup | ✅ | ✅ |
+| Feature | Python | JavaScript / TypeScript | Java |
+|---|:---:|:---:|:---:|
+| Call graph — imports, classes, functions, calls | ✅ | ✅ | ✅ |
+| Interactive graph visualization | ✅ | ✅ | ✅ |
+| Search | ✅ | ✅ | ✅ |
+| Persisted layout & view state | ✅ | ✅ | ✅ |
+| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ |
+| Complexity report | ✅ | ✅ | ⚠️ |
+| AI-generated documentation | ✅ | ✅ | ⚠️ |
+| Execution flowcharts | ✅ | ✅ | ⚠️ |
+| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |
+| Docker packaging / one-command setup | ✅ | ✅ | ✅ |
 
+⚠️ Java support currently covers the call graph, search, and impact analysis in full — these are
+pure graph traversal, unaffected by language. Complexity scoring and execution flowcharts don't
+yet have a Java-specific implementation and silently under-report (no branches/loops detected)
+rather than analyzing real control flow; AI documentation sends the real Java source but with a
+Python-styled generated header. See [benchmarks/guava.md](benchmarks/guava.md) for how this was
+found and confirmed.
 
-Select Python or JavaScript / TypeScript in the language selector to set the parsing scope. 
+Select Python, JavaScript / TypeScript, or Java in the language selector to set the parsing scope.
 
 JS/TS uses tree-sitter for static AST resolution—including full support for JSX/TSX. To preserve precision without execution, dynamic patterns (like computed require() calls) are flagged directly in the UI rather than inferred.
 
@@ -252,11 +258,14 @@ fixtures — one per supported language:
 | Python | [fastapi/fastapi](benchmarks/fastapi.md) | 1,138 | 23.25 | 4.08 | 7.20–7.84 |
 | JavaScript | [three.js](benchmarks/threejs.md) | 752 | 29.33 | 1.98 | 4.88–5.01 |
 | TypeScript | [nestjs/nest](benchmarks/nest.md) | 1,907 | 39.68 | 2.48 | 6.85–6.88 |
+| Java | [google/guava](benchmarks/guava.md) | 615 | 9.83 | 2.52 | not measured* |
 
 *"Cold" is the first read of a fresh clone this machine has never touched; "warm" is a second parse
 of the identical files immediately after — the only variable that changes is OS file-cache state.
-Every language shows a large cold/warm gap (5.7x–16x); it isn't specific to any one parser or
-language. Warm-to-warm, TypeScript actually parses faster than Python.*
+Every language shows a large cold/warm gap (3.9x–16x); it isn't specific to any one parser or
+language. Warm-to-warm, TypeScript actually parses faster than Python, and Java is right alongside
+it. \*The browser-tier benchmark didn't complete for any repo in the session Java was added —
+see [benchmarks/guava.md](benchmarks/guava.md) for why.*
 
 See the [`benchmarks/`](benchmarks/README.md) folder for the full methodology, a webpack case
 study on what happens when a repo's default view doesn't collapse much, and the reasoning behind
@@ -281,8 +290,8 @@ npm run dev
 ```
 
 Then open `http://localhost:5173`, enter the absolute path to any local
-repository, pick **Python** or **JavaScript / TypeScript** from the
-language selector, and click **Load**.
+repository, pick **Python**, **JavaScript / TypeScript**, or **Java**
+from the language selector, and click **Load**.
 
 By default, everything Semantic Vision saves (layout, impact analysis
 state, generated docs) is written to a `.visualiser/` folder at the
@@ -339,8 +348,8 @@ changed. See ["Why the first load is slow"](guides/docker-setup.md#why-the-first
 The fastest way to try Semantic Vision: install it straight from the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
 (search **Semantic Vision**, or `ext install venom21adi.semantic-vision`)
-and open a Python or JavaScript/TypeScript repo — no Python, no `uv`,
-nothing beyond VS Code itself. The backend it needs ships bundled
+and open a Python, JavaScript/TypeScript, or Java repo — no Python, no
+`uv`, nothing beyond VS Code itself. The backend it needs ships bundled
 inside the extension for Windows, macOS (Intel and Apple Silicon), and
 Linux.
 
@@ -353,8 +362,9 @@ Linux.
   file.
 
 Every other feature below — flowcharts, the complexity report, AI docs,
-code-to-data lineage — works the same way inside that panel. See
-[vscode-extension/README.md](vscode-extension/README.md) for
+code-to-data lineage — works the same way inside that panel (see the
+[Status](#-status) table above for Java's current caveats on three of
+those). See [vscode-extension/README.md](vscode-extension/README.md) for
 configuration details (e.g. pointing it at an already-running backend
 instead of the bundled one). Prefer running the backend and frontend
 yourself, or via Docker? Both remain fully supported below.
@@ -365,9 +375,9 @@ Semantic Vision has two parts:
 
 - **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
   repository (Python's `ast` module, or `tree-sitter` for
-  JavaScript/TypeScript, chosen per load), resolves imports and call
-  sites into a graph of nodes and edges, and serves it over a small REST
-  API. Parsing is purely static: your code is never executed. AI
+  JavaScript/TypeScript and Java, chosen per load), resolves imports and
+  call sites into a graph of nodes and edges, and serves it over a small
+  REST API. Parsing is purely static: your code is never executed. AI
   documentation is generated separately, on demand, via
   [LiteLLM](https://docs.litellm.ai/) against whichever provider you
   pick. For a function, only its own source, its direct callers/callees'

@@ -89,7 +89,7 @@ unless you explicitly ask for AI-generated docs from a cloud provider.
 ## Getting started
 
 1. Install this extension.
-2. Open a file in a supported repository (Python, or JavaScript/TypeScript).
+2. Open a file in a supported repository (Python, JavaScript/TypeScript, or Java).
 3. Run **Semantic Vision: Open Graph** from the Command Palette, or
    right-click a function and choose **Semantic Vision: Impact Analysis at
    Cursor**. The bundled backend starts automatically — no extra setup.

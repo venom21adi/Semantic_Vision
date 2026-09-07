@@ -12,7 +12,7 @@ along the way), see this project's internal `docs/PERFORMANCE-REPORT.md`.
 
 ## Results
 
-Three comparable repos — similar scale, similar (nested, not flat) directory shape — one per
+Four comparable repos — similar scale, similar (nested, not flat) directory shape — one per
 supported language:
 
 | Language | Repo | Scope | Files | Nodes | Edges | Parse errors | Backend parse — cold (s) | Backend parse — warm (s) | API round trip (s) | Browser: time to data (s) | Browser: time to render (s) |
@@ -20,6 +20,11 @@ supported language:
 | Python | [fastapi/fastapi](fastapi.md) | full repo | 1,138 | 6,650 | 25,145 | 0 | 23.25 | 4.08 | 9.29 | 6.58–7.07 | 7.20–7.84 |
 | JavaScript | [three.js](threejs.md) | `src/` only | 752 | 6,014 | 27,316 | 0 | 29.33 | 1.98 | 3.12 | 3.21–3.50 | 4.88–5.01 |
 | TypeScript | [nestjs/nest](nest.md) | full repo | 1,907 | 6,848 | 24,528 | 2 | 39.68 | 2.48 | 5.32 | 5.69–5.76 | 6.85–6.88 |
+| Java | [google/guava](guava.md) | `guava/` only | 615 | 14,087 | 47,390 | 5 | 9.83 | 2.52 | 2.14 | not measured* | not measured* |
+
+*\* The Playwright browser tier didn't complete for any repo in this session, including a
+re-check of the previously-reliable Python entry — a benchmark-harness issue this session, not a
+finding about Java or app behavior. See [guava.md](guava.md#browser-tier-not-measured).*
 
 *"Backend parse — cold" is the first read of a fresh shallow clone at the pinned commit (below),
 never before touched by this machine's OS file cache. "— warm" is a second parse of the exact same
@@ -33,14 +38,23 @@ is measured from clicking Load in a real Chromium tab to the first graph node ac
 the number that matters to a person waiting on the page, not just the backend.*
 
 Click through to each repo's page for what it is, why it was picked, and what's notable about its
-numbers specifically — the three don't all tell the same story.
+numbers specifically — the four don't all tell the same story.
 
 **The headline takeaway:** once cache state is controlled for, there's no cross-language outlier.
-Every language shows a large cold/warm gap (5.7x–16x) — it's a general effect of reading hundreds
+Every language shows a large cold/warm gap (3.9x–16x) — it's a general effect of reading hundreds
 of files off disk for the first time, not something specific to any one parser or grammar. Warm,
-TypeScript (nest, 2.48s) actually parses *faster* than Python (fastapi, 4.08s). Cold, nest is the
-highest of the three (39.68s vs. 23–29s) — but nest also has the most files (1,907 vs. 752–1,138),
-a plausible, unremarkable explanation that doesn't require inventing a TypeScript-specific cause.
+TypeScript (nest, 2.48s) actually parses *faster* than Python (fastapi, 4.08s), and Java (guava,
+2.52s) is right alongside it. Cold, nest is the highest of the four (39.68s vs. 9.83–29.33s) — but
+nest also has the most files (1,907 vs. 615–1,138), a plausible, unremarkable explanation that
+doesn't require inventing a TypeScript-specific cause.
+
+Java is the one outlier worth naming plainly rather than smoothing over: guava's 615 files produced
+14,087 nodes and 47,390 edges — more than double fastapi's node/edge count from roughly half the
+files. That's a real density difference (Guava's style leans heavily on small, focused,
+heavily-documented classes with many methods each), not a parsing-cost anomaly — cold/warm timing
+for guava tracks the other three languages closely despite the larger graph. See
+[guava.md](guava.md) for a real, confirmed Java-specific correctness finding this run surfaced
+(overloaded methods colliding on one graph node id) that's unrelated to performance.
 
 ## Case study: when the default view doesn't collapse much
 
@@ -86,9 +100,9 @@ tier was intentionally skipped for this one.
   repo above the app's 300-node large-graph threshold, the canvas starts with nothing selected by
   design; the script checks every top-level sidebar item before timing the render, the same
   action a person opening a large repo would take.
-- Both scripts accept `--language python|javascript` (one adapter covers JS/TS/JSX/TSX together)
-  and `--no-report`, which was used throughout so this folder's own runs never touched the
-  project's internal `docs/PERFORMANCE-REPORT.md`.
+- Both scripts accept `--language python|javascript|java` (one JS/TS adapter covers JS/TS/JSX/TSX
+  together) and `--no-report`, which was used throughout so this folder's own runs never touched
+  the project's internal `docs/PERFORMANCE-REPORT.md`.
 - Each number above is the range across two consecutive runs on the same machine, immediately
   after each other. Absolute numbers will vary machine to machine and with ambient system load —
   treat these as indicative, not a guaranteed SLA, consistent with how this project's internal
@@ -143,6 +157,16 @@ Every repo here except nest required a scoping decision, made explicit rather th
   those two directories in that clone, while `superset/` checked out 100% intact in the same failed
   clone). Scoping to `superset/` sidesteps the failure entirely and also happens to be exactly the
   part of the repo this case study cares about (see [superset.md](superset.md)).
+- **guava** is benchmarked against `guava/` (615 files) only, not the full repo (3,267 files). This
+  is a different kind of scoping decision than webpack's or superset's — `android/`, `guava-gwt/`,
+  `guava-testlib/`, and `guava-tests/` aren't bloat or a clone failure, they're real, legitimate,
+  shipped source, but `android/` in particular is a near-complete parallel tree mirroring `guava/`
+  for older Android API compatibility. Including everything more than quadruples the node/edge
+  count without adding proportionally different real content, which would misrepresent a
+  same-scale cross-language comparison. Full-repo numbers are published as a case study in
+  [guava.md](guava.md#full-repo-case-study) rather than hidden — including a genuinely interesting
+  finding of their own (a ~106 MB graph payload, large enough to time out the browser tier on its
+  own).
 
 ## Repo versions benchmarked
 
@@ -151,7 +175,9 @@ Every repo here except nest required a scoping decision, made explicit rather th
 | [fastapi/fastapi](https://github.com/fastapi/fastapi) | `c3f316b7e814667e8ee81e03a7330d00ee61e45c` | 2026-08-19 |
 | [mrdoob/three.js](https://github.com/mrdoob/three.js) | `3744db754b77106a4b2921fcc0a77f0964b823a7` | 2026-08-27 |
 | [nestjs/nest](https://github.com/nestjs/nest) | `cd5ee129162d1d4b9cccfaf2def4cfb051bfe927` | 2026-08-28 |
+| [google/guava](https://github.com/google/guava) | `7e41f72b3e84818e3b997a4bbde5851d01c67ca3` | 2025-04-11 |
 | [webpack/webpack](https://github.com/webpack/webpack) (case study) | `0b2952e15bb1aa9a198acbbfdcb9a0dc1aabb5af` | 2026-08-27 |
 | [apache/superset](https://github.com/apache/superset) (case study) | `1c8d58a77bda36f892cc27298ed87ded43e6ef9f` | 2026-08-29 |
 
-Benchmarked 2026-08-28 against Semantic Vision v0.2.0.
+Benchmarked 2026-08-28 against Semantic Vision v0.2.0. Java (guava) added 2026-09-07 following
+Milestone 12 (Java language support) — same v0.2.0, same methodology.
