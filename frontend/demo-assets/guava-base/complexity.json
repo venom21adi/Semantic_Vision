@@ -1,0 +1,4288 @@
+{
+  "scores": [
+    {
+      "node_id": "Absent.java::Absent.Absent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.asSet",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.equals",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.isPresent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.or#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.or#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.or#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.orNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.readResolve",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.transform",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Absent.java::Absent.withType",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.AbstractIterator",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.computeNext",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.endOfData",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.hasNext",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.next",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.remove",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "AbstractIterator.java::AbstractIterator.tryToComputeNext",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.Ascii",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.equalsIgnoreCase",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.getAlphaIndex",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.isLowerCase",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.isUpperCase",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.toLowerCase#1",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 0,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "Ascii.java::Ascii.toLowerCase#2",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.toLowerCase#3",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.toUpperCase#1",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 0,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "Ascii.java::Ascii.toUpperCase#2",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.toUpperCase#3",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ascii.java::Ascii.truncate",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.CaseFormat",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.StringConverter.StringConverter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.StringConverter.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.StringConverter.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.StringConverter.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.StringConverter.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.StringConverter.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.convert",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.converterTo",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.firstCharOnlyToUpper",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.normalizeFirstWord",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.normalizeWord",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CaseFormat.java::CaseFormat.to",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.And.And",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.And.matches",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.And.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.And.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.Any",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.and",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.collapseFrom",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.countIn",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.indexIn#1",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.indexIn#2",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.lastIndexIn",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.matchesAllOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.matchesNoneOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.or",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.removeFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.replaceFrom#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.replaceFrom#2",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Any.trimFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.AnyOf.AnyOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.AnyOf.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.AnyOf.setBits",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.AnyOf.toString",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Ascii.Ascii",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Ascii.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.BitSetMatcher.BitSetMatcher",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.BitSetMatcher.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.BitSetMatcher.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.BreakingWhitespace.matches",
+      "cyclomatic_complexity": 15,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.BreakingWhitespace.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.CharMatcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Digit.Digit",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Digit.nines",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Digit.zeroes",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.FastMatcher.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.FastMatcher.precomputed",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.ForPredicate.ForPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.ForPredicate.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.ForPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.InRange.InRange",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.InRange.matches",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.InRange.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.InRange.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Invisible.Invisible",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.Is",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.and",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.or",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.replaceFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Is.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsEither.IsEither",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsEither.matches",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsEither.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsEither.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.IsNot",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.and",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.or",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.IsNot.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaDigit.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaDigit.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaIsoControl.JavaIsoControl",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaIsoControl.matches",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaLetter.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaLetter.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaLetterOrDigit.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaLetterOrDigit.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaLowerCase.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaLowerCase.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaUpperCase.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.JavaUpperCase.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.NamedFastMatcher.NamedFastMatcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.NamedFastMatcher.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.Negated",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.countIn",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.matchesAllOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.matchesNoneOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Negated.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.NegatedFastMatcher.NegatedFastMatcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.NegatedFastMatcher.precomputed",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.None",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.and",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.collapseFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.countIn",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.indexIn#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.indexIn#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.lastIndexIn",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.matchesAllOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.matchesNoneOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.or",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.removeFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.replaceFrom#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.replaceFrom#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.trimFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.trimLeadingFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.None.trimTrailingFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Or.Or",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Or.matches",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Or.setBits",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Or.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.RangesMatcher.RangesMatcher",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.RangesMatcher.matches",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.RangesMatcher.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.SingleWidth.SingleWidth",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Whitespace.Whitespace",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Whitespace.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.Whitespace.setBits",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.and",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.any",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.anyOf",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.ascii",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.breakingWhitespace",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.collapseFrom",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.countIn",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.digit",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.forPredicate",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.inRange",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.indexIn#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.indexIn#2",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.invisible",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.is",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.isEither",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.isNot",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.isSmall",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.javaDigit",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.javaIsoControl",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.javaLetter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.javaLetterOrDigit",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.javaLowerCase",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.javaUpperCase",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.lastIndexIn",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.matchesAllOf",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.matchesAnyOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.matchesNoneOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.negate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.none",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.noneOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.or",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.precomputed",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.precomputedInternal",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.precomputedPositive",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.removeFrom",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.replaceFrom#1",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.replaceFrom#2",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.retainFrom",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.setBits",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.showCharacter",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.singleWidth",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.test",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.trimFrom",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.trimLeadingFrom",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.trimTrailingFrom",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CharMatcher.java::CharMatcher.whitespace",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Charsets.java::Charsets.Charsets",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonMatcher.java::CommonMatcher.end",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonMatcher.java::CommonMatcher.find#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonMatcher.java::CommonMatcher.find#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonMatcher.java::CommonMatcher.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonMatcher.java::CommonMatcher.replaceAll",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonMatcher.java::CommonMatcher.start",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonPattern.java::CommonPattern.compile",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonPattern.java::CommonPattern.flags",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonPattern.java::CommonPattern.isPcreLike",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonPattern.java::CommonPattern.matcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonPattern.java::CommonPattern.pattern",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "CommonPattern.java::CommonPattern.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.Converter#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.Converter#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.ConverterComposition",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.correctedDoBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.correctedDoForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ConverterComposition.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.FunctionBasedConverter.FunctionBasedConverter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.FunctionBasedConverter.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.FunctionBasedConverter.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.FunctionBasedConverter.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.FunctionBasedConverter.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.FunctionBasedConverter.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.IdentityConverter.doAndThen",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.IdentityConverter.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.IdentityConverter.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.IdentityConverter.readResolve",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.IdentityConverter.reverse",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.IdentityConverter.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.ReverseConverter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.correctedDoBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.correctedDoForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.reverse",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.ReverseConverter.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.andThen",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.convert",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.convertAll",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.correctedDoBackward",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.correctedDoForward",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.doAndThen",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.equals",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.from",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.identity",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.reverse",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.unsafeDoBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Converter.java::Converter.unsafeDoForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Defaults.java::Defaults.Defaults",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Defaults.java::Defaults.defaultValue",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.Enums",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.StringConverter.StringConverter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.StringConverter.doBackward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.StringConverter.doForward",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.StringConverter.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.StringConverter.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.StringConverter.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.getEnumConstants",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.getField",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.getIfPresent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.populateCache",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Enums.java::Enums.stringConverter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Equals.doEquivalent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Equals.doHash",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Equals.readResolve",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Equivalence",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.EquivalentToPredicate.EquivalentToPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.EquivalentToPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.EquivalentToPredicate.equals",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.EquivalentToPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.EquivalentToPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Identity.doEquivalent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Identity.doHash",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Identity.readResolve",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Wrapper.Wrapper",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Wrapper.equals",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Wrapper.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Wrapper.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.Wrapper.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.doEquivalent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.doHash",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.equals",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.equivalent",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.equivalentTo",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.hash",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.identity",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.onResultOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.pairwise",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.test",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Equivalence.java::Equivalence.wrap",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizablePhantomReference.java::FinalizablePhantomReference.FinalizablePhantomReference",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReference.java::FinalizableReference.finalizeReferent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.getBaseUrl",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.loadFinalizer",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.newLoader",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DirectLoader.loadFinalizer",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.FinalizableReferenceQueue",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.FinalizerLoader.loadFinalizer",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.SystemLoader.loadFinalizer",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.cleanUp",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.close",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.getStartFinalizer",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.loadFinalizer",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableSoftReference.java::FinalizableSoftReference.FinalizableSoftReference",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FinalizableWeakReference.java::FinalizableWeakReference.FinalizableWeakReference",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Function.java::Function.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Function.java::Function.equals",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FunctionalEquivalence.java::FunctionalEquivalence.FunctionalEquivalence",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FunctionalEquivalence.java::FunctionalEquivalence.doEquivalent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FunctionalEquivalence.java::FunctionalEquivalence.doHash",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FunctionalEquivalence.java::FunctionalEquivalence.equals",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FunctionalEquivalence.java::FunctionalEquivalence.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "FunctionalEquivalence.java::FunctionalEquivalence.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ConstantFunction.ConstantFunction",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ConstantFunction.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ConstantFunction.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ConstantFunction.hashCode",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ConstantFunction.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ForMapWithDefault.ForMapWithDefault",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ForMapWithDefault.apply",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ForMapWithDefault.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ForMapWithDefault.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ForMapWithDefault.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionComposition.FunctionComposition",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionComposition.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionComposition.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionComposition.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionComposition.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionForMapNoDefault.FunctionForMapNoDefault",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionForMapNoDefault.apply",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionForMapNoDefault.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionForMapNoDefault.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.FunctionForMapNoDefault.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.Functions",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.IdentityFunction.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.IdentityFunction.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.PredicateFunction.PredicateFunction",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.PredicateFunction.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.PredicateFunction.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.PredicateFunction.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.PredicateFunction.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.SupplierFunction.SupplierFunction",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.SupplierFunction.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.SupplierFunction.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.SupplierFunction.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.SupplierFunction.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ToStringFunction.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.ToStringFunction.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.compose",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.constant",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.forMap#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.forMap#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.forPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.forSupplier",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.identity",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Functions.java::Functions.toStringFunction",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Internal.java::Internal.Internal",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Internal.java::Internal.toNanosSaturated",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Java8Compatibility.java::Java8Compatibility.Java8Compatibility",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Java8Compatibility.java::Java8Compatibility.clear",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Java8Compatibility.java::Java8Compatibility.flip",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Java8Compatibility.java::Java8Compatibility.limit",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Java8Compatibility.java::Java8Compatibility.position",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.JdkMatcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.end",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.find#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.find#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.matches",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.replaceAll",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkMatcher.start",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.JdkPattern",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.flags",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.matcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.pattern",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "JdkPattern.java::JdkPattern.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.Joiner#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.Joiner#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.MapJoiner",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.appendTo#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.appendTo#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.appendTo#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.appendTo#4",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.appendTo#5",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.appendTo#6",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.join#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.join#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.join#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.MapJoiner.useForNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#2",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#4",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#5",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#6",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#7",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.appendTo#8",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.expandedCapacity",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.iterable",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.join#1",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.join#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.join#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.join#4",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.on#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.on#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.skipNulls",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.toString",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.useForNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.withKeyValueSeparator#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Joiner.java::Joiner.withKeyValueSeparator#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.MoreObjects",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.ToStringHelper",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#4",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#5",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#6",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.add#7",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#4",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#5",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#6",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#7",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.isEmpty",
+      "cyclomatic_complexity": 10,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.omitEmptyValues",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.omitNullValues",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.ToStringHelper.toString",
+      "cyclomatic_complexity": 9,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.firstNonNull",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.toStringHelper#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.toStringHelper#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "MoreObjects.java::MoreObjects.toStringHelper#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "NullnessCasts.java::NullnessCasts.NullnessCasts",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "NullnessCasts.java::NullnessCasts.uncheckedCastNullableTToT",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.Optional",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.absent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.asSet",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.equals",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.fromJavaUtil",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.fromNullable",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.isPresent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.of",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.or#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.or#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.or#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.orNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.presentInstances",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.toJavaUtil#1",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.toJavaUtil#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Optional.java::Optional.transform",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PairwiseEquivalence.java::PairwiseEquivalence.PairwiseEquivalence",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PairwiseEquivalence.java::PairwiseEquivalence.doEquivalent",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PairwiseEquivalence.java::PairwiseEquivalence.doHash",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PairwiseEquivalence.java::PairwiseEquivalence.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PairwiseEquivalence.java::PairwiseEquivalence.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PairwiseEquivalence.java::PairwiseEquivalence.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PatternCompiler.java::PatternCompiler.compile",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "PatternCompiler.java::PatternCompiler.isPcreLike",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicate.java::Predicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicate.java::Predicate.equals",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicate.java::Predicate.test",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.AndPredicate.AndPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.AndPredicate.apply",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.AndPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.AndPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.AndPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.CompositionPredicate.CompositionPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.CompositionPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.CompositionPredicate.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.CompositionPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.CompositionPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternFromStringPredicate.ContainsPatternFromStringPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternFromStringPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternPredicate.ContainsPatternPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternPredicate.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ContainsPatternPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InPredicate.InPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InPredicate.apply",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InstanceOfPredicate.InstanceOfPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InstanceOfPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InstanceOfPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InstanceOfPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.InstanceOfPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.IsEqualToPredicate.IsEqualToPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.IsEqualToPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.IsEqualToPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.IsEqualToPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.IsEqualToPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.IsEqualToPredicate.withNarrowedType",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.NotPredicate.NotPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.NotPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.NotPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.NotPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.NotPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.ObjectPredicate.withNarrowedType",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.OrPredicate.OrPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.OrPredicate.apply",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.OrPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.OrPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.OrPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.Predicates",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.SubtypeOfPredicate.SubtypeOfPredicate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.SubtypeOfPredicate.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.SubtypeOfPredicate.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.SubtypeOfPredicate.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.SubtypeOfPredicate.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.alwaysFalse",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.alwaysTrue",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.and#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.and#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.and#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.asList",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.compose",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.contains",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.containsPattern",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.defensiveCopy#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.defensiveCopy#2",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.equalTo",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.in",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.instanceOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.isNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.not",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.notNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.or#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.or#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.or#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.subtypeOf",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Predicates.java::Predicates.toStringHelper",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.Present",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.asSet",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.isPresent",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.or#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.or#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.or#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.orNull",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Present.java::Present.transform",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.SmallCharMatcher",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.checkFilter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.chooseTableSize",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.from",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 2,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.matches",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.setBits",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SmallCharMatcher.java::SmallCharMatcher.smear",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SneakyThrows.java::SneakyThrows.SneakyThrows",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SneakyThrows.java::SneakyThrows.sneakyThrow",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "SneakyThrows.java::SneakyThrows.throwIt",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.MapSplitter.MapSplitter",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.MapSplitter.split",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.Splitter#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.Splitter#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.SplittingIterator.SplittingIterator",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.SplittingIterator.computeNext",
+      "cyclomatic_complexity": 14,
+      "call_chain_depth": 1,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "Splitter.java::Splitter.SplittingIterator.separatorEnd",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.SplittingIterator.separatorStart",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.Strategy.iterator",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.fixedLength",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.limit",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.omitEmptyStrings",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.on#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.on#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.on#3",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.on#4",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.onPattern",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.onPatternInternal",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.split",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.splitToList",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.splitToStream",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.splittingIterator",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.trimResults#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.trimResults#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.withKeyValueSeparator#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.withKeyValueSeparator#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Splitter.java::Splitter.withKeyValueSeparator#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "StandardSystemProperty.java::StandardSystemProperty.StandardSystemProperty",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "StandardSystemProperty.java::StandardSystemProperty.key",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "StandardSystemProperty.java::StandardSystemProperty.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "StandardSystemProperty.java::StandardSystemProperty.value",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.Stopwatch#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.Stopwatch#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.abbreviate",
+      "cyclomatic_complexity": 8,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.chooseUnit",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.createStarted#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.createStarted#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.createUnstarted#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.createUnstarted#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.elapsed#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.elapsed#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.elapsedNanos",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.isRunning",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.reset",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.start",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.stop",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Stopwatch.java::Stopwatch.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Supplier.java::Supplier.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.ExpiringMemoizingSupplier",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.get",
+      "cyclomatic_complexity": 5,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.readObject",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.MemoizingSupplier.MemoizingSupplier",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.MemoizingSupplier.get",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.MemoizingSupplier.readObject",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.MemoizingSupplier.toString",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.NonSerializableMemoizingSupplier",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.get",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.toString",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierComposition.SupplierComposition",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierComposition.equals",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierComposition.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierComposition.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierComposition.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierFunctionImpl.apply",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierFunctionImpl.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierOfInstance.SupplierOfInstance",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierOfInstance.equals",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierOfInstance.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierOfInstance.hashCode",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.SupplierOfInstance.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.Suppliers",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ThreadSafeSupplier.ThreadSafeSupplier",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ThreadSafeSupplier.get",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ThreadSafeSupplier.toString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.compose",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.memoize",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.memoizeWithExpiration#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.memoizeWithExpiration#2",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.ofInstance",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.supplierFunction",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Suppliers.java::Suppliers.synchronizedSupplier",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.Throwables",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getCausalChain",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getCauseAs",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getGetMethod",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getJla",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getJlaMethod",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getRootCause",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getSizeMethod",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.getStackTraceAsString",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.jlaStackTrace",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 4,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.lazyStackTrace",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 5,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.lazyStackTraceIsLazy",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.propagate",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.propagateIfInstanceOf",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.propagateIfPossible#1",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.propagateIfPossible#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.propagateIfPossible#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.throwIfInstanceOf",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Throwables.java::Throwables.throwIfUnchecked",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ticker.java::Ticker.Ticker",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ticker.java::Ticker.read",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Ticker.java::Ticker.systemTicker",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Utf8.java::Utf8.Utf8",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Utf8.java::Utf8.encodedLength",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Utf8.java::Utf8.encodedLengthGeneral",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Utf8.java::Utf8.isWellFormed#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Utf8.java::Utf8.isWellFormed#2",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "Utf8.java::Utf8.isWellFormedSlowPath",
+      "cyclomatic_complexity": 21,
+      "call_chain_depth": 0,
+      "has_nested_loops": true
+    },
+    {
+      "node_id": "Utf8.java::Utf8.unpairedSurrogateMsg",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "VerifyException.java::VerifyException.VerifyException#1",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "VerifyException.java::VerifyException.VerifyException#2",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "VerifyException.java::VerifyException.VerifyException#3",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "VerifyException.java::VerifyException.VerifyException#4",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 0,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.Finalizer",
+      "cyclomatic_complexity": 1,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.cleanUp",
+      "cyclomatic_complexity": 6,
+      "call_chain_depth": 2,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.finalizeReference",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.getBigThreadConstructor",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.getFinalizeReferentMethod",
+      "cyclomatic_complexity": 3,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.getInheritableThreadLocalsField",
+      "cyclomatic_complexity": 2,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.run",
+      "cyclomatic_complexity": 4,
+      "call_chain_depth": 3,
+      "has_nested_loops": false
+    },
+    {
+      "node_id": "internal/Finalizer.java::Finalizer.startFinalizer",
+      "cyclomatic_complexity": 7,
+      "call_chain_depth": 1,
+      "has_nested_loops": false
+    }
+  ]
+}

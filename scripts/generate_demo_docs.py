@@ -1,8 +1,8 @@
 """Generates real AI documentation for the demo repos' showcase functions.
 
 Uses the actual /api/generate-doc code path (local Ollama, qwen2.5-coder:3b)
-against the two demo repos, and writes the resulting markdown into
-frontend/public/demo/<slug>/docs.json for the static demo to replay as a
+against the demo repos, and writes the resulting markdown into
+frontend/demo-assets/<slug>/docs.json for the static demo to replay as a
 fake stream (see build_demo_fixtures.py's *_SHOWCASE_DOCS lists, which this
 script reuses so the two stay in sync).
 
@@ -11,6 +11,7 @@ Requires `ollama serve` running locally with qwen2.5-coder:3b pulled.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -20,6 +21,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from build_demo_fixtures import (  # noqa: E402
     AXIOS_SHOWCASE_DOCS,
+    JAVA_BASE_SHOWCASE_DOCS,
     PYTHON_SHOP_PATH,
     PYTHON_SHOP_SHOWCASE_DOCS,
 )
@@ -27,12 +29,14 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from semantic_vision.api.app import create_app  # noqa: E402
 
-OUT_ROOT = REPO_ROOT / "frontend" / "public" / "demo"
+OUT_ROOT = REPO_ROOT / "frontend" / "demo-assets"
 MODEL = "qwen2.5-coder:3b"
+
+LANGUAGE_BY_SLUG = {"python-shop": "python", "axios": "javascript", "guava-base": "java"}
 
 
 def generate_docs(client: TestClient, *, slug: str, repo_path: str, ids: list[str]) -> None:
-    language = "python" if slug == "python-shop" else "javascript"
+    language = LANGUAGE_BY_SLUG[slug]
     client.post(
         "/api/parse-repo", json={"path": repo_path, "language": language}
     ).raise_for_status()
@@ -58,9 +62,19 @@ def generate_docs(client: TestClient, *, slug: str, repo_path: str, ids: list[st
 
 
 def main() -> None:
-    js_repo = Path(sys.argv[1]) if len(sys.argv) > 1 else (
-        Path.home() / "AppData/Local/Temp/sv-demo-src/axios/lib"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--js-repo", default=str(Path.home() / "AppData/Local/Temp/sv-demo-src/axios/lib")
     )
+    parser.add_argument(
+        "--java-repo",
+        default=str(
+            Path.home() / "AppData/Local/Temp/sv-demo-src/guava/guava/src/com/google/common/base"
+        ),
+    )
+    args = parser.parse_args()
+    js_repo = Path(args.js_repo)
+    java_repo = Path(args.java_repo)
 
     app = create_app()
     client = TestClient(app)
@@ -76,6 +90,13 @@ def main() -> None:
         generate_docs(client, slug="axios", repo_path=str(js_repo), ids=AXIOS_SHOWCASE_DOCS)
     else:
         print(f"Skipping axios docs -- {js_repo} not found")
+
+    if java_repo.exists():
+        generate_docs(
+            client, slug="guava-base", repo_path=str(java_repo), ids=JAVA_BASE_SHOWCASE_DOCS
+        )
+    else:
+        print(f"Skipping guava-base docs -- {java_repo} not found")
 
 
 if __name__ == "__main__":

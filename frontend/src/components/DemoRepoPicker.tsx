@@ -9,7 +9,7 @@ interface DemoRepoPickerProps {
 }
 
 /** Replaces `RepoLoader` in the static demo build's empty state -- there's
- * no filesystem to type a path into, so this offers the two precomputed
+ * no filesystem to type a path into, so this offers the precomputed
  * repos as cards instead. Still calls the same `onLoad(path, docRoot,
  * language)` signature `App.tsx` already wires up, with `path` set to the
  * repo's demo slug (see `demoClient.ts`). */

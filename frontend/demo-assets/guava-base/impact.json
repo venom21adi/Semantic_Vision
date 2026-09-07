@@ -1,0 +1,6031 @@
+{
+  "Absent.java::Absent.Absent": {
+    "target": "Absent.java::Absent.Absent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.asSet": {
+    "target": "Absent.java::Absent.asSet",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.equals": {
+    "target": "Absent.java::Absent.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.get": {
+    "target": "Absent.java::Absent.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.hashCode": {
+    "target": "Absent.java::Absent.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.isPresent": {
+    "target": "Absent.java::Absent.isPresent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.or#1": {
+    "target": "Absent.java::Absent.or#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.or#2": {
+    "target": "Absent.java::Absent.or#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.or#3": {
+    "target": "Absent.java::Absent.or#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.orNull": {
+    "target": "Absent.java::Absent.orNull",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.readResolve": {
+    "target": "Absent.java::Absent.readResolve",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.toString": {
+    "target": "Absent.java::Absent.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.transform": {
+    "target": "Absent.java::Absent.transform",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Absent.java::Absent.withType": {
+    "target": "Absent.java::Absent.withType",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.AbstractIterator": {
+    "target": "AbstractIterator.java::AbstractIterator.AbstractIterator",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.computeNext": {
+    "target": "AbstractIterator.java::AbstractIterator.computeNext",
+    "callers": [
+      {
+        "id": "AbstractIterator.java::AbstractIterator.tryToComputeNext",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "AbstractIterator.java::AbstractIterator.hasNext",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "AbstractIterator.java::AbstractIterator.next",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "AbstractIterator.java::AbstractIterator.tryToComputeNext",
+        "target": "AbstractIterator.java::AbstractIterator.computeNext",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "AbstractIterator.java::AbstractIterator.hasNext",
+        "target": "AbstractIterator.java::AbstractIterator.tryToComputeNext",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "AbstractIterator.java::AbstractIterator.next",
+        "target": "AbstractIterator.java::AbstractIterator.hasNext",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.endOfData": {
+    "target": "AbstractIterator.java::AbstractIterator.endOfData",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.hasNext": {
+    "target": "AbstractIterator.java::AbstractIterator.hasNext",
+    "callers": [
+      {
+        "id": "AbstractIterator.java::AbstractIterator.next",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "AbstractIterator.java::AbstractIterator.next",
+        "target": "AbstractIterator.java::AbstractIterator.hasNext",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.next": {
+    "target": "AbstractIterator.java::AbstractIterator.next",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.remove": {
+    "target": "AbstractIterator.java::AbstractIterator.remove",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "AbstractIterator.java::AbstractIterator.tryToComputeNext": {
+    "target": "AbstractIterator.java::AbstractIterator.tryToComputeNext",
+    "callers": [
+      {
+        "id": "AbstractIterator.java::AbstractIterator.hasNext",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "AbstractIterator.java::AbstractIterator.next",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "AbstractIterator.java::AbstractIterator.hasNext",
+        "target": "AbstractIterator.java::AbstractIterator.tryToComputeNext",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "AbstractIterator.java::AbstractIterator.next",
+        "target": "AbstractIterator.java::AbstractIterator.hasNext",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.Ascii": {
+    "target": "Ascii.java::Ascii.Ascii",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.equalsIgnoreCase": {
+    "target": "Ascii.java::Ascii.equalsIgnoreCase",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.getAlphaIndex": {
+    "target": "Ascii.java::Ascii.getAlphaIndex",
+    "callers": [
+      {
+        "id": "Ascii.java::Ascii.equalsIgnoreCase",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Ascii.java::Ascii.equalsIgnoreCase",
+        "target": "Ascii.java::Ascii.getAlphaIndex",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.isLowerCase": {
+    "target": "Ascii.java::Ascii.isLowerCase",
+    "callers": [
+      {
+        "id": "Ascii.java::Ascii.toUpperCase",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Ascii.java::Ascii.toUpperCase",
+        "target": "Ascii.java::Ascii.isLowerCase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.isUpperCase": {
+    "target": "Ascii.java::Ascii.isUpperCase",
+    "callers": [
+      {
+        "id": "Ascii.java::Ascii.toLowerCase",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Ascii.java::Ascii.toLowerCase",
+        "target": "Ascii.java::Ascii.isUpperCase",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.toLowerCase#1": {
+    "target": "Ascii.java::Ascii.toLowerCase#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.toLowerCase#2": {
+    "target": "Ascii.java::Ascii.toLowerCase#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.toLowerCase#3": {
+    "target": "Ascii.java::Ascii.toLowerCase#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.toUpperCase#1": {
+    "target": "Ascii.java::Ascii.toUpperCase#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.toUpperCase#2": {
+    "target": "Ascii.java::Ascii.toUpperCase#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.toUpperCase#3": {
+    "target": "Ascii.java::Ascii.toUpperCase#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ascii.java::Ascii.truncate": {
+    "target": "Ascii.java::Ascii.truncate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.CaseFormat": {
+    "target": "CaseFormat.java::CaseFormat.CaseFormat",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.StringConverter.StringConverter": {
+    "target": "CaseFormat.java::CaseFormat.StringConverter.StringConverter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.StringConverter.doBackward": {
+    "target": "CaseFormat.java::CaseFormat.StringConverter.doBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.StringConverter.doForward": {
+    "target": "CaseFormat.java::CaseFormat.StringConverter.doForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.StringConverter.equals": {
+    "target": "CaseFormat.java::CaseFormat.StringConverter.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.StringConverter.hashCode": {
+    "target": "CaseFormat.java::CaseFormat.StringConverter.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.StringConverter.toString": {
+    "target": "CaseFormat.java::CaseFormat.StringConverter.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.convert": {
+    "target": "CaseFormat.java::CaseFormat.convert",
+    "callers": [
+      {
+        "id": "CaseFormat.java::CaseFormat.to",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CaseFormat.java::CaseFormat.to",
+        "target": "CaseFormat.java::CaseFormat.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.converterTo": {
+    "target": "CaseFormat.java::CaseFormat.converterTo",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.firstCharOnlyToUpper": {
+    "target": "CaseFormat.java::CaseFormat.firstCharOnlyToUpper",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.normalizeFirstWord": {
+    "target": "CaseFormat.java::CaseFormat.normalizeFirstWord",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.normalizeWord": {
+    "target": "CaseFormat.java::CaseFormat.normalizeWord",
+    "callers": [
+      {
+        "id": "CaseFormat.java::CaseFormat.normalizeFirstWord",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CaseFormat.java::CaseFormat.normalizeFirstWord",
+        "target": "CaseFormat.java::CaseFormat.normalizeWord",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CaseFormat.java::CaseFormat.to": {
+    "target": "CaseFormat.java::CaseFormat.to",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.And.And": {
+    "target": "CharMatcher.java::CharMatcher.And.And",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.And.matches": {
+    "target": "CharMatcher.java::CharMatcher.And.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.And.setBits": {
+    "target": "CharMatcher.java::CharMatcher.And.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.And.toString": {
+    "target": "CharMatcher.java::CharMatcher.And.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.Any": {
+    "target": "CharMatcher.java::CharMatcher.Any.Any",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.and": {
+    "target": "CharMatcher.java::CharMatcher.Any.and",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.collapseFrom": {
+    "target": "CharMatcher.java::CharMatcher.Any.collapseFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.countIn": {
+    "target": "CharMatcher.java::CharMatcher.Any.countIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.indexIn#1": {
+    "target": "CharMatcher.java::CharMatcher.Any.indexIn#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.indexIn#2": {
+    "target": "CharMatcher.java::CharMatcher.Any.indexIn#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.lastIndexIn": {
+    "target": "CharMatcher.java::CharMatcher.Any.lastIndexIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.matches": {
+    "target": "CharMatcher.java::CharMatcher.Any.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.matchesAllOf": {
+    "target": "CharMatcher.java::CharMatcher.Any.matchesAllOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.matchesNoneOf": {
+    "target": "CharMatcher.java::CharMatcher.Any.matchesNoneOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.negate": {
+    "target": "CharMatcher.java::CharMatcher.Any.negate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.or": {
+    "target": "CharMatcher.java::CharMatcher.Any.or",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.removeFrom": {
+    "target": "CharMatcher.java::CharMatcher.Any.removeFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.replaceFrom#1": {
+    "target": "CharMatcher.java::CharMatcher.Any.replaceFrom#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.replaceFrom#2": {
+    "target": "CharMatcher.java::CharMatcher.Any.replaceFrom#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Any.trimFrom": {
+    "target": "CharMatcher.java::CharMatcher.Any.trimFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.AnyOf.AnyOf": {
+    "target": "CharMatcher.java::CharMatcher.AnyOf.AnyOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.AnyOf.matches": {
+    "target": "CharMatcher.java::CharMatcher.AnyOf.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.AnyOf.setBits": {
+    "target": "CharMatcher.java::CharMatcher.AnyOf.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.AnyOf.toString": {
+    "target": "CharMatcher.java::CharMatcher.AnyOf.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Ascii.Ascii": {
+    "target": "CharMatcher.java::CharMatcher.Ascii.Ascii",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Ascii.matches": {
+    "target": "CharMatcher.java::CharMatcher.Ascii.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.BitSetMatcher.BitSetMatcher": {
+    "target": "CharMatcher.java::CharMatcher.BitSetMatcher.BitSetMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.BitSetMatcher.matches": {
+    "target": "CharMatcher.java::CharMatcher.BitSetMatcher.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.BitSetMatcher.setBits": {
+    "target": "CharMatcher.java::CharMatcher.BitSetMatcher.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.BreakingWhitespace.matches": {
+    "target": "CharMatcher.java::CharMatcher.BreakingWhitespace.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.BreakingWhitespace.toString": {
+    "target": "CharMatcher.java::CharMatcher.BreakingWhitespace.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.CharMatcher": {
+    "target": "CharMatcher.java::CharMatcher.CharMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Digit.Digit": {
+    "target": "CharMatcher.java::CharMatcher.Digit.Digit",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Digit.nines": {
+    "target": "CharMatcher.java::CharMatcher.Digit.nines",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Digit.zeroes": {
+    "target": "CharMatcher.java::CharMatcher.Digit.zeroes",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.FastMatcher.negate": {
+    "target": "CharMatcher.java::CharMatcher.FastMatcher.negate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.FastMatcher.precomputed": {
+    "target": "CharMatcher.java::CharMatcher.FastMatcher.precomputed",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.ForPredicate.ForPredicate": {
+    "target": "CharMatcher.java::CharMatcher.ForPredicate.ForPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.ForPredicate.matches": {
+    "target": "CharMatcher.java::CharMatcher.ForPredicate.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.ForPredicate.toString": {
+    "target": "CharMatcher.java::CharMatcher.ForPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.InRange.InRange": {
+    "target": "CharMatcher.java::CharMatcher.InRange.InRange",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.InRange.matches": {
+    "target": "CharMatcher.java::CharMatcher.InRange.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.InRange.setBits": {
+    "target": "CharMatcher.java::CharMatcher.InRange.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.InRange.toString": {
+    "target": "CharMatcher.java::CharMatcher.InRange.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Invisible.Invisible": {
+    "target": "CharMatcher.java::CharMatcher.Invisible.Invisible",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.Is": {
+    "target": "CharMatcher.java::CharMatcher.Is.Is",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.and": {
+    "target": "CharMatcher.java::CharMatcher.Is.and",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.matches": {
+    "target": "CharMatcher.java::CharMatcher.Is.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.negate": {
+    "target": "CharMatcher.java::CharMatcher.Is.negate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.or": {
+    "target": "CharMatcher.java::CharMatcher.Is.or",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.replaceFrom": {
+    "target": "CharMatcher.java::CharMatcher.Is.replaceFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.setBits": {
+    "target": "CharMatcher.java::CharMatcher.Is.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Is.toString": {
+    "target": "CharMatcher.java::CharMatcher.Is.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsEither.IsEither": {
+    "target": "CharMatcher.java::CharMatcher.IsEither.IsEither",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsEither.matches": {
+    "target": "CharMatcher.java::CharMatcher.IsEither.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsEither.setBits": {
+    "target": "CharMatcher.java::CharMatcher.IsEither.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsEither.toString": {
+    "target": "CharMatcher.java::CharMatcher.IsEither.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.IsNot": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.IsNot",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.and": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.and",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.matches": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.negate": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.negate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.or": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.or",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.setBits": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.IsNot.toString": {
+    "target": "CharMatcher.java::CharMatcher.IsNot.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaDigit.matches": {
+    "target": "CharMatcher.java::CharMatcher.JavaDigit.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaDigit.toString": {
+    "target": "CharMatcher.java::CharMatcher.JavaDigit.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaIsoControl.JavaIsoControl": {
+    "target": "CharMatcher.java::CharMatcher.JavaIsoControl.JavaIsoControl",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaIsoControl.matches": {
+    "target": "CharMatcher.java::CharMatcher.JavaIsoControl.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaLetter.matches": {
+    "target": "CharMatcher.java::CharMatcher.JavaLetter.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaLetter.toString": {
+    "target": "CharMatcher.java::CharMatcher.JavaLetter.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaLetterOrDigit.matches": {
+    "target": "CharMatcher.java::CharMatcher.JavaLetterOrDigit.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaLetterOrDigit.toString": {
+    "target": "CharMatcher.java::CharMatcher.JavaLetterOrDigit.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaLowerCase.matches": {
+    "target": "CharMatcher.java::CharMatcher.JavaLowerCase.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaLowerCase.toString": {
+    "target": "CharMatcher.java::CharMatcher.JavaLowerCase.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaUpperCase.matches": {
+    "target": "CharMatcher.java::CharMatcher.JavaUpperCase.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.JavaUpperCase.toString": {
+    "target": "CharMatcher.java::CharMatcher.JavaUpperCase.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.NamedFastMatcher.NamedFastMatcher": {
+    "target": "CharMatcher.java::CharMatcher.NamedFastMatcher.NamedFastMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.NamedFastMatcher.toString": {
+    "target": "CharMatcher.java::CharMatcher.NamedFastMatcher.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.Negated": {
+    "target": "CharMatcher.java::CharMatcher.Negated.Negated",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.countIn": {
+    "target": "CharMatcher.java::CharMatcher.Negated.countIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.matches": {
+    "target": "CharMatcher.java::CharMatcher.Negated.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.matchesAllOf": {
+    "target": "CharMatcher.java::CharMatcher.Negated.matchesAllOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.matchesNoneOf": {
+    "target": "CharMatcher.java::CharMatcher.Negated.matchesNoneOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.negate": {
+    "target": "CharMatcher.java::CharMatcher.Negated.negate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.setBits": {
+    "target": "CharMatcher.java::CharMatcher.Negated.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Negated.toString": {
+    "target": "CharMatcher.java::CharMatcher.Negated.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.NegatedFastMatcher.NegatedFastMatcher": {
+    "target": "CharMatcher.java::CharMatcher.NegatedFastMatcher.NegatedFastMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.NegatedFastMatcher.precomputed": {
+    "target": "CharMatcher.java::CharMatcher.NegatedFastMatcher.precomputed",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.None": {
+    "target": "CharMatcher.java::CharMatcher.None.None",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.and": {
+    "target": "CharMatcher.java::CharMatcher.None.and",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.collapseFrom": {
+    "target": "CharMatcher.java::CharMatcher.None.collapseFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.countIn": {
+    "target": "CharMatcher.java::CharMatcher.None.countIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.indexIn#1": {
+    "target": "CharMatcher.java::CharMatcher.None.indexIn#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.indexIn#2": {
+    "target": "CharMatcher.java::CharMatcher.None.indexIn#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.lastIndexIn": {
+    "target": "CharMatcher.java::CharMatcher.None.lastIndexIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.matches": {
+    "target": "CharMatcher.java::CharMatcher.None.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.matchesAllOf": {
+    "target": "CharMatcher.java::CharMatcher.None.matchesAllOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.matchesNoneOf": {
+    "target": "CharMatcher.java::CharMatcher.None.matchesNoneOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.negate": {
+    "target": "CharMatcher.java::CharMatcher.None.negate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.or": {
+    "target": "CharMatcher.java::CharMatcher.None.or",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.removeFrom": {
+    "target": "CharMatcher.java::CharMatcher.None.removeFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.replaceFrom#1": {
+    "target": "CharMatcher.java::CharMatcher.None.replaceFrom#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.replaceFrom#2": {
+    "target": "CharMatcher.java::CharMatcher.None.replaceFrom#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.trimFrom": {
+    "target": "CharMatcher.java::CharMatcher.None.trimFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.trimLeadingFrom": {
+    "target": "CharMatcher.java::CharMatcher.None.trimLeadingFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.None.trimTrailingFrom": {
+    "target": "CharMatcher.java::CharMatcher.None.trimTrailingFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Or.Or": {
+    "target": "CharMatcher.java::CharMatcher.Or.Or",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Or.matches": {
+    "target": "CharMatcher.java::CharMatcher.Or.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Or.setBits": {
+    "target": "CharMatcher.java::CharMatcher.Or.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Or.toString": {
+    "target": "CharMatcher.java::CharMatcher.Or.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.RangesMatcher.RangesMatcher": {
+    "target": "CharMatcher.java::CharMatcher.RangesMatcher.RangesMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.RangesMatcher.matches": {
+    "target": "CharMatcher.java::CharMatcher.RangesMatcher.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.RangesMatcher.toString": {
+    "target": "CharMatcher.java::CharMatcher.RangesMatcher.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.SingleWidth.SingleWidth": {
+    "target": "CharMatcher.java::CharMatcher.SingleWidth.SingleWidth",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Whitespace.Whitespace": {
+    "target": "CharMatcher.java::CharMatcher.Whitespace.Whitespace",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Whitespace.matches": {
+    "target": "CharMatcher.java::CharMatcher.Whitespace.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.Whitespace.setBits": {
+    "target": "CharMatcher.java::CharMatcher.Whitespace.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.and": {
+    "target": "CharMatcher.java::CharMatcher.and",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.any": {
+    "target": "CharMatcher.java::CharMatcher.any",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.anyOf": {
+    "target": "CharMatcher.java::CharMatcher.anyOf",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.noneOf",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.noneOf",
+        "target": "CharMatcher.java::CharMatcher.anyOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.apply": {
+    "target": "CharMatcher.java::CharMatcher.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.ascii": {
+    "target": "CharMatcher.java::CharMatcher.ascii",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.breakingWhitespace": {
+    "target": "CharMatcher.java::CharMatcher.breakingWhitespace",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.collapseFrom": {
+    "target": "CharMatcher.java::CharMatcher.collapseFrom",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.collapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.countIn": {
+    "target": "CharMatcher.java::CharMatcher.countIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.digit": {
+    "target": "CharMatcher.java::CharMatcher.digit",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.finishCollapseFrom": {
+    "target": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.collapseFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.collapseFrom",
+        "target": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.collapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.forPredicate": {
+    "target": "CharMatcher.java::CharMatcher.forPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.inRange": {
+    "target": "CharMatcher.java::CharMatcher.inRange",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.indexIn#1": {
+    "target": "CharMatcher.java::CharMatcher.indexIn#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.indexIn#2": {
+    "target": "CharMatcher.java::CharMatcher.indexIn#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.invisible": {
+    "target": "CharMatcher.java::CharMatcher.invisible",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.is": {
+    "target": "CharMatcher.java::CharMatcher.is",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.anyOf",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.noneOf",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.anyOf",
+        "target": "CharMatcher.java::CharMatcher.is",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "target": "CharMatcher.java::CharMatcher.is",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.noneOf",
+        "target": "CharMatcher.java::CharMatcher.anyOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.isEither": {
+    "target": "CharMatcher.java::CharMatcher.isEither",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.anyOf",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.noneOf",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.anyOf",
+        "target": "CharMatcher.java::CharMatcher.isEither",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "target": "CharMatcher.java::CharMatcher.isEither",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.noneOf",
+        "target": "CharMatcher.java::CharMatcher.anyOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.isNot": {
+    "target": "CharMatcher.java::CharMatcher.isNot",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.isSmall": {
+    "target": "CharMatcher.java::CharMatcher.isSmall",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "target": "CharMatcher.java::CharMatcher.isSmall",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.javaDigit": {
+    "target": "CharMatcher.java::CharMatcher.javaDigit",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.javaIsoControl": {
+    "target": "CharMatcher.java::CharMatcher.javaIsoControl",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.javaLetter": {
+    "target": "CharMatcher.java::CharMatcher.javaLetter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.javaLetterOrDigit": {
+    "target": "CharMatcher.java::CharMatcher.javaLetterOrDigit",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.javaLowerCase": {
+    "target": "CharMatcher.java::CharMatcher.javaLowerCase",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.javaUpperCase": {
+    "target": "CharMatcher.java::CharMatcher.javaUpperCase",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.lastIndexIn": {
+    "target": "CharMatcher.java::CharMatcher.lastIndexIn",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.matches": {
+    "target": "CharMatcher.java::CharMatcher.matches",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.apply",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.collapseFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.countIn",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.indexIn",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.lastIndexIn",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.matchesAllOf",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.removeFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.replaceFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.setBits",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.test",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.trimFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.trimLeadingFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.trimTrailingFrom",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.apply",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.collapseFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.countIn",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.indexIn",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.lastIndexIn",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.matchesAllOf",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.removeFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.replaceFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.setBits",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.test",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimLeadingFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimTrailingFrom",
+        "target": "CharMatcher.java::CharMatcher.matches",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.collapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.collapseFrom",
+        "target": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+        "target": "CharMatcher.java::CharMatcher.finishCollapseFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.replaceFrom",
+        "target": "CharMatcher.java::CharMatcher.removeFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.setBits",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.matchesAllOf": {
+    "target": "CharMatcher.java::CharMatcher.matchesAllOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.matchesAnyOf": {
+    "target": "CharMatcher.java::CharMatcher.matchesAnyOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.matchesNoneOf": {
+    "target": "CharMatcher.java::CharMatcher.matchesNoneOf",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.matchesAnyOf",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.matchesAnyOf",
+        "target": "CharMatcher.java::CharMatcher.matchesNoneOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.negate": {
+    "target": "CharMatcher.java::CharMatcher.negate",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.retainFrom",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.retainFrom",
+        "target": "CharMatcher.java::CharMatcher.negate",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.none": {
+    "target": "CharMatcher.java::CharMatcher.none",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.anyOf",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.noneOf",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.anyOf",
+        "target": "CharMatcher.java::CharMatcher.none",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "target": "CharMatcher.java::CharMatcher.none",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.noneOf",
+        "target": "CharMatcher.java::CharMatcher.anyOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.noneOf": {
+    "target": "CharMatcher.java::CharMatcher.noneOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.or": {
+    "target": "CharMatcher.java::CharMatcher.or",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.precomputed": {
+    "target": "CharMatcher.java::CharMatcher.precomputed",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.precomputedInternal": {
+    "target": "CharMatcher.java::CharMatcher.precomputedInternal",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.precomputedPositive": {
+    "target": "CharMatcher.java::CharMatcher.precomputedPositive",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.precomputedPositive",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.removeFrom": {
+    "target": "CharMatcher.java::CharMatcher.removeFrom",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.replaceFrom",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.replaceFrom",
+        "target": "CharMatcher.java::CharMatcher.removeFrom",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.replaceFrom#1": {
+    "target": "CharMatcher.java::CharMatcher.replaceFrom#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.replaceFrom#2": {
+    "target": "CharMatcher.java::CharMatcher.replaceFrom#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.retainFrom": {
+    "target": "CharMatcher.java::CharMatcher.retainFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.setBits": {
+    "target": "CharMatcher.java::CharMatcher.setBits",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.setBits",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.showCharacter": {
+    "target": "CharMatcher.java::CharMatcher.showCharacter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.singleWidth": {
+    "target": "CharMatcher.java::CharMatcher.singleWidth",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.test": {
+    "target": "CharMatcher.java::CharMatcher.test",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.toString": {
+    "target": "CharMatcher.java::CharMatcher.toString",
+    "callers": [
+      {
+        "id": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "CharMatcher.java::CharMatcher.precomputedInternal",
+        "target": "CharMatcher.java::CharMatcher.toString",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.trimAndCollapseFrom": {
+    "target": "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.trimFrom": {
+    "target": "CharMatcher.java::CharMatcher.trimFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.trimLeadingFrom": {
+    "target": "CharMatcher.java::CharMatcher.trimLeadingFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.trimTrailingFrom": {
+    "target": "CharMatcher.java::CharMatcher.trimTrailingFrom",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CharMatcher.java::CharMatcher.whitespace": {
+    "target": "CharMatcher.java::CharMatcher.whitespace",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Charsets.java::Charsets.Charsets": {
+    "target": "Charsets.java::Charsets.Charsets",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonMatcher.java::CommonMatcher.end": {
+    "target": "CommonMatcher.java::CommonMatcher.end",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonMatcher.java::CommonMatcher.find#1": {
+    "target": "CommonMatcher.java::CommonMatcher.find#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonMatcher.java::CommonMatcher.find#2": {
+    "target": "CommonMatcher.java::CommonMatcher.find#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonMatcher.java::CommonMatcher.matches": {
+    "target": "CommonMatcher.java::CommonMatcher.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonMatcher.java::CommonMatcher.replaceAll": {
+    "target": "CommonMatcher.java::CommonMatcher.replaceAll",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonMatcher.java::CommonMatcher.start": {
+    "target": "CommonMatcher.java::CommonMatcher.start",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonPattern.java::CommonPattern.compile": {
+    "target": "CommonPattern.java::CommonPattern.compile",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonPattern.java::CommonPattern.flags": {
+    "target": "CommonPattern.java::CommonPattern.flags",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonPattern.java::CommonPattern.isPcreLike": {
+    "target": "CommonPattern.java::CommonPattern.isPcreLike",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonPattern.java::CommonPattern.matcher": {
+    "target": "CommonPattern.java::CommonPattern.matcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonPattern.java::CommonPattern.pattern": {
+    "target": "CommonPattern.java::CommonPattern.pattern",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "CommonPattern.java::CommonPattern.toString": {
+    "target": "CommonPattern.java::CommonPattern.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.Converter#1": {
+    "target": "Converter.java::Converter.Converter#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.Converter#2": {
+    "target": "Converter.java::Converter.Converter#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.ConverterComposition": {
+    "target": "Converter.java::Converter.ConverterComposition.ConverterComposition",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.correctedDoBackward": {
+    "target": "Converter.java::Converter.ConverterComposition.correctedDoBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.correctedDoForward": {
+    "target": "Converter.java::Converter.ConverterComposition.correctedDoForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.doBackward": {
+    "target": "Converter.java::Converter.ConverterComposition.doBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.doForward": {
+    "target": "Converter.java::Converter.ConverterComposition.doForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.equals": {
+    "target": "Converter.java::Converter.ConverterComposition.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.hashCode": {
+    "target": "Converter.java::Converter.ConverterComposition.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ConverterComposition.toString": {
+    "target": "Converter.java::Converter.ConverterComposition.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.FunctionBasedConverter.FunctionBasedConverter": {
+    "target": "Converter.java::Converter.FunctionBasedConverter.FunctionBasedConverter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.FunctionBasedConverter.doBackward": {
+    "target": "Converter.java::Converter.FunctionBasedConverter.doBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.FunctionBasedConverter.doForward": {
+    "target": "Converter.java::Converter.FunctionBasedConverter.doForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.FunctionBasedConverter.equals": {
+    "target": "Converter.java::Converter.FunctionBasedConverter.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.FunctionBasedConverter.hashCode": {
+    "target": "Converter.java::Converter.FunctionBasedConverter.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.FunctionBasedConverter.toString": {
+    "target": "Converter.java::Converter.FunctionBasedConverter.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.IdentityConverter.doAndThen": {
+    "target": "Converter.java::Converter.IdentityConverter.doAndThen",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.IdentityConverter.doBackward": {
+    "target": "Converter.java::Converter.IdentityConverter.doBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.IdentityConverter.doForward": {
+    "target": "Converter.java::Converter.IdentityConverter.doForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.IdentityConverter.readResolve": {
+    "target": "Converter.java::Converter.IdentityConverter.readResolve",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.IdentityConverter.reverse": {
+    "target": "Converter.java::Converter.IdentityConverter.reverse",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.IdentityConverter.toString": {
+    "target": "Converter.java::Converter.IdentityConverter.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.ReverseConverter": {
+    "target": "Converter.java::Converter.ReverseConverter.ReverseConverter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.correctedDoBackward": {
+    "target": "Converter.java::Converter.ReverseConverter.correctedDoBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.correctedDoForward": {
+    "target": "Converter.java::Converter.ReverseConverter.correctedDoForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.doBackward": {
+    "target": "Converter.java::Converter.ReverseConverter.doBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.doForward": {
+    "target": "Converter.java::Converter.ReverseConverter.doForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.equals": {
+    "target": "Converter.java::Converter.ReverseConverter.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.hashCode": {
+    "target": "Converter.java::Converter.ReverseConverter.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.reverse": {
+    "target": "Converter.java::Converter.ReverseConverter.reverse",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.ReverseConverter.toString": {
+    "target": "Converter.java::Converter.ReverseConverter.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.andThen": {
+    "target": "Converter.java::Converter.andThen",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.apply": {
+    "target": "Converter.java::Converter.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.convert": {
+    "target": "Converter.java::Converter.convert",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.apply",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Converter.java::Converter.convertAll",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.apply",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.convertAll",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Converter.java::Converter.convertAll": {
+    "target": "Converter.java::Converter.convertAll",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.correctedDoBackward": {
+    "target": "Converter.java::Converter.correctedDoBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.correctedDoForward": {
+    "target": "Converter.java::Converter.correctedDoForward",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.convert",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Converter.java::Converter.apply",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "Converter.java::Converter.convertAll",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.convert",
+        "target": "Converter.java::Converter.correctedDoForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.apply",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.convertAll",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Converter.java::Converter.doAndThen": {
+    "target": "Converter.java::Converter.doAndThen",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.andThen",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.andThen",
+        "target": "Converter.java::Converter.doAndThen",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Converter.java::Converter.doBackward": {
+    "target": "Converter.java::Converter.doBackward",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.correctedDoBackward",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Converter.java::Converter.unsafeDoBackward",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.correctedDoBackward",
+        "target": "Converter.java::Converter.doBackward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.unsafeDoBackward",
+        "target": "Converter.java::Converter.doBackward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.correctedDoBackward",
+        "target": "Converter.java::Converter.unsafeDoBackward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Converter.java::Converter.doForward": {
+    "target": "Converter.java::Converter.doForward",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.correctedDoForward",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Converter.java::Converter.unsafeDoForward",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Converter.java::Converter.convert",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "Converter.java::Converter.apply",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "Converter.java::Converter.convertAll",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.correctedDoForward",
+        "target": "Converter.java::Converter.doForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.unsafeDoForward",
+        "target": "Converter.java::Converter.doForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.convert",
+        "target": "Converter.java::Converter.correctedDoForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.correctedDoForward",
+        "target": "Converter.java::Converter.unsafeDoForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.apply",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.convertAll",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Converter.java::Converter.equals": {
+    "target": "Converter.java::Converter.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.from": {
+    "target": "Converter.java::Converter.from",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.identity": {
+    "target": "Converter.java::Converter.identity",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.reverse": {
+    "target": "Converter.java::Converter.reverse",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Converter.java::Converter.unsafeDoBackward": {
+    "target": "Converter.java::Converter.unsafeDoBackward",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.correctedDoBackward",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.correctedDoBackward",
+        "target": "Converter.java::Converter.unsafeDoBackward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Converter.java::Converter.unsafeDoForward": {
+    "target": "Converter.java::Converter.unsafeDoForward",
+    "callers": [
+      {
+        "id": "Converter.java::Converter.correctedDoForward",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Converter.java::Converter.convert",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "Converter.java::Converter.apply",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "Converter.java::Converter.convertAll",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Converter.java::Converter.correctedDoForward",
+        "target": "Converter.java::Converter.unsafeDoForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.convert",
+        "target": "Converter.java::Converter.correctedDoForward",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.apply",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Converter.java::Converter.convertAll",
+        "target": "Converter.java::Converter.convert",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Defaults.java::Defaults.Defaults": {
+    "target": "Defaults.java::Defaults.Defaults",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Defaults.java::Defaults.defaultValue": {
+    "target": "Defaults.java::Defaults.defaultValue",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.Enums": {
+    "target": "Enums.java::Enums.Enums",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.StringConverter.StringConverter": {
+    "target": "Enums.java::Enums.StringConverter.StringConverter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.StringConverter.doBackward": {
+    "target": "Enums.java::Enums.StringConverter.doBackward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.StringConverter.doForward": {
+    "target": "Enums.java::Enums.StringConverter.doForward",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.StringConverter.equals": {
+    "target": "Enums.java::Enums.StringConverter.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.StringConverter.hashCode": {
+    "target": "Enums.java::Enums.StringConverter.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.StringConverter.toString": {
+    "target": "Enums.java::Enums.StringConverter.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.getEnumConstants": {
+    "target": "Enums.java::Enums.getEnumConstants",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.getField": {
+    "target": "Enums.java::Enums.getField",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.getIfPresent": {
+    "target": "Enums.java::Enums.getIfPresent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Enums.java::Enums.populateCache": {
+    "target": "Enums.java::Enums.populateCache",
+    "callers": [
+      {
+        "id": "Enums.java::Enums.getEnumConstants",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Enums.java::Enums.getEnumConstants",
+        "target": "Enums.java::Enums.populateCache",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Enums.java::Enums.stringConverter": {
+    "target": "Enums.java::Enums.stringConverter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Equals.doEquivalent": {
+    "target": "Equivalence.java::Equivalence.Equals.doEquivalent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Equals.doHash": {
+    "target": "Equivalence.java::Equivalence.Equals.doHash",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Equals.readResolve": {
+    "target": "Equivalence.java::Equivalence.Equals.readResolve",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Equivalence": {
+    "target": "Equivalence.java::Equivalence.Equivalence",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.EquivalentToPredicate.EquivalentToPredicate": {
+    "target": "Equivalence.java::Equivalence.EquivalentToPredicate.EquivalentToPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.EquivalentToPredicate.apply": {
+    "target": "Equivalence.java::Equivalence.EquivalentToPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.EquivalentToPredicate.equals": {
+    "target": "Equivalence.java::Equivalence.EquivalentToPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.EquivalentToPredicate.hashCode": {
+    "target": "Equivalence.java::Equivalence.EquivalentToPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.EquivalentToPredicate.toString": {
+    "target": "Equivalence.java::Equivalence.EquivalentToPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Identity.doEquivalent": {
+    "target": "Equivalence.java::Equivalence.Identity.doEquivalent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Identity.doHash": {
+    "target": "Equivalence.java::Equivalence.Identity.doHash",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Identity.readResolve": {
+    "target": "Equivalence.java::Equivalence.Identity.readResolve",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Wrapper.Wrapper": {
+    "target": "Equivalence.java::Equivalence.Wrapper.Wrapper",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Wrapper.equals": {
+    "target": "Equivalence.java::Equivalence.Wrapper.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Wrapper.get": {
+    "target": "Equivalence.java::Equivalence.Wrapper.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Wrapper.hashCode": {
+    "target": "Equivalence.java::Equivalence.Wrapper.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.Wrapper.toString": {
+    "target": "Equivalence.java::Equivalence.Wrapper.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.doEquivalent": {
+    "target": "Equivalence.java::Equivalence.doEquivalent",
+    "callers": [
+      {
+        "id": "Equivalence.java::Equivalence.equivalent",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Equivalence.java::Equivalence.test",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Equivalence.java::Equivalence.equivalent",
+        "target": "Equivalence.java::Equivalence.doEquivalent",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Equivalence.java::Equivalence.test",
+        "target": "Equivalence.java::Equivalence.equivalent",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.doHash": {
+    "target": "Equivalence.java::Equivalence.doHash",
+    "callers": [
+      {
+        "id": "Equivalence.java::Equivalence.hash",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Equivalence.java::Equivalence.hash",
+        "target": "Equivalence.java::Equivalence.doHash",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.equals": {
+    "target": "Equivalence.java::Equivalence.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.equivalent": {
+    "target": "Equivalence.java::Equivalence.equivalent",
+    "callers": [
+      {
+        "id": "Equivalence.java::Equivalence.test",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Equivalence.java::Equivalence.test",
+        "target": "Equivalence.java::Equivalence.equivalent",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.equivalentTo": {
+    "target": "Equivalence.java::Equivalence.equivalentTo",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.hash": {
+    "target": "Equivalence.java::Equivalence.hash",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.identity": {
+    "target": "Equivalence.java::Equivalence.identity",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.onResultOf": {
+    "target": "Equivalence.java::Equivalence.onResultOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.pairwise": {
+    "target": "Equivalence.java::Equivalence.pairwise",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.test": {
+    "target": "Equivalence.java::Equivalence.test",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Equivalence.java::Equivalence.wrap": {
+    "target": "Equivalence.java::Equivalence.wrap",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizablePhantomReference.java::FinalizablePhantomReference.FinalizablePhantomReference": {
+    "target": "FinalizablePhantomReference.java::FinalizablePhantomReference.FinalizablePhantomReference",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReference.java::FinalizableReference.finalizeReferent": {
+    "target": "FinalizableReference.java::FinalizableReference.finalizeReferent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.getBaseUrl": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.getBaseUrl",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.loadFinalizer": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.loadFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.newLoader": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DecoupledLoader.newLoader",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DirectLoader.loadFinalizer": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.DirectLoader.loadFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.FinalizableReferenceQueue": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.FinalizableReferenceQueue",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.FinalizerLoader.loadFinalizer": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.FinalizerLoader.loadFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.SystemLoader.loadFinalizer": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.SystemLoader.loadFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.cleanUp": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.cleanUp",
+    "callers": [
+      {
+        "id": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.close",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.close",
+        "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.cleanUp",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.close": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.close",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.getStartFinalizer": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.getStartFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableReferenceQueue.java::FinalizableReferenceQueue.loadFinalizer": {
+    "target": "FinalizableReferenceQueue.java::FinalizableReferenceQueue.loadFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableSoftReference.java::FinalizableSoftReference.FinalizableSoftReference": {
+    "target": "FinalizableSoftReference.java::FinalizableSoftReference.FinalizableSoftReference",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FinalizableWeakReference.java::FinalizableWeakReference.FinalizableWeakReference": {
+    "target": "FinalizableWeakReference.java::FinalizableWeakReference.FinalizableWeakReference",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Function.java::Function.apply": {
+    "target": "Function.java::Function.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Function.java::Function.equals": {
+    "target": "Function.java::Function.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FunctionalEquivalence.java::FunctionalEquivalence.FunctionalEquivalence": {
+    "target": "FunctionalEquivalence.java::FunctionalEquivalence.FunctionalEquivalence",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FunctionalEquivalence.java::FunctionalEquivalence.doEquivalent": {
+    "target": "FunctionalEquivalence.java::FunctionalEquivalence.doEquivalent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FunctionalEquivalence.java::FunctionalEquivalence.doHash": {
+    "target": "FunctionalEquivalence.java::FunctionalEquivalence.doHash",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FunctionalEquivalence.java::FunctionalEquivalence.equals": {
+    "target": "FunctionalEquivalence.java::FunctionalEquivalence.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FunctionalEquivalence.java::FunctionalEquivalence.hashCode": {
+    "target": "FunctionalEquivalence.java::FunctionalEquivalence.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "FunctionalEquivalence.java::FunctionalEquivalence.toString": {
+    "target": "FunctionalEquivalence.java::FunctionalEquivalence.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ConstantFunction.ConstantFunction": {
+    "target": "Functions.java::Functions.ConstantFunction.ConstantFunction",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ConstantFunction.apply": {
+    "target": "Functions.java::Functions.ConstantFunction.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ConstantFunction.equals": {
+    "target": "Functions.java::Functions.ConstantFunction.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ConstantFunction.hashCode": {
+    "target": "Functions.java::Functions.ConstantFunction.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ConstantFunction.toString": {
+    "target": "Functions.java::Functions.ConstantFunction.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ForMapWithDefault.ForMapWithDefault": {
+    "target": "Functions.java::Functions.ForMapWithDefault.ForMapWithDefault",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ForMapWithDefault.apply": {
+    "target": "Functions.java::Functions.ForMapWithDefault.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ForMapWithDefault.equals": {
+    "target": "Functions.java::Functions.ForMapWithDefault.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ForMapWithDefault.hashCode": {
+    "target": "Functions.java::Functions.ForMapWithDefault.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ForMapWithDefault.toString": {
+    "target": "Functions.java::Functions.ForMapWithDefault.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionComposition.FunctionComposition": {
+    "target": "Functions.java::Functions.FunctionComposition.FunctionComposition",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionComposition.apply": {
+    "target": "Functions.java::Functions.FunctionComposition.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionComposition.equals": {
+    "target": "Functions.java::Functions.FunctionComposition.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionComposition.hashCode": {
+    "target": "Functions.java::Functions.FunctionComposition.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionComposition.toString": {
+    "target": "Functions.java::Functions.FunctionComposition.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionForMapNoDefault.FunctionForMapNoDefault": {
+    "target": "Functions.java::Functions.FunctionForMapNoDefault.FunctionForMapNoDefault",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionForMapNoDefault.apply": {
+    "target": "Functions.java::Functions.FunctionForMapNoDefault.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionForMapNoDefault.equals": {
+    "target": "Functions.java::Functions.FunctionForMapNoDefault.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionForMapNoDefault.hashCode": {
+    "target": "Functions.java::Functions.FunctionForMapNoDefault.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.FunctionForMapNoDefault.toString": {
+    "target": "Functions.java::Functions.FunctionForMapNoDefault.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.Functions": {
+    "target": "Functions.java::Functions.Functions",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.IdentityFunction.apply": {
+    "target": "Functions.java::Functions.IdentityFunction.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.IdentityFunction.toString": {
+    "target": "Functions.java::Functions.IdentityFunction.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.PredicateFunction.PredicateFunction": {
+    "target": "Functions.java::Functions.PredicateFunction.PredicateFunction",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.PredicateFunction.apply": {
+    "target": "Functions.java::Functions.PredicateFunction.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.PredicateFunction.equals": {
+    "target": "Functions.java::Functions.PredicateFunction.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.PredicateFunction.hashCode": {
+    "target": "Functions.java::Functions.PredicateFunction.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.PredicateFunction.toString": {
+    "target": "Functions.java::Functions.PredicateFunction.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.SupplierFunction.SupplierFunction": {
+    "target": "Functions.java::Functions.SupplierFunction.SupplierFunction",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.SupplierFunction.apply": {
+    "target": "Functions.java::Functions.SupplierFunction.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.SupplierFunction.equals": {
+    "target": "Functions.java::Functions.SupplierFunction.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.SupplierFunction.hashCode": {
+    "target": "Functions.java::Functions.SupplierFunction.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.SupplierFunction.toString": {
+    "target": "Functions.java::Functions.SupplierFunction.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ToStringFunction.apply": {
+    "target": "Functions.java::Functions.ToStringFunction.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.ToStringFunction.toString": {
+    "target": "Functions.java::Functions.ToStringFunction.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.compose": {
+    "target": "Functions.java::Functions.compose",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.constant": {
+    "target": "Functions.java::Functions.constant",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.forMap#1": {
+    "target": "Functions.java::Functions.forMap#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.forMap#2": {
+    "target": "Functions.java::Functions.forMap#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.forPredicate": {
+    "target": "Functions.java::Functions.forPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.forSupplier": {
+    "target": "Functions.java::Functions.forSupplier",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.identity": {
+    "target": "Functions.java::Functions.identity",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Functions.java::Functions.toStringFunction": {
+    "target": "Functions.java::Functions.toStringFunction",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Internal.java::Internal.Internal": {
+    "target": "Internal.java::Internal.Internal",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Internal.java::Internal.toNanosSaturated": {
+    "target": "Internal.java::Internal.toNanosSaturated",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Java8Compatibility.java::Java8Compatibility.Java8Compatibility": {
+    "target": "Java8Compatibility.java::Java8Compatibility.Java8Compatibility",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Java8Compatibility.java::Java8Compatibility.clear": {
+    "target": "Java8Compatibility.java::Java8Compatibility.clear",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Java8Compatibility.java::Java8Compatibility.flip": {
+    "target": "Java8Compatibility.java::Java8Compatibility.flip",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Java8Compatibility.java::Java8Compatibility.limit": {
+    "target": "Java8Compatibility.java::Java8Compatibility.limit",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Java8Compatibility.java::Java8Compatibility.position": {
+    "target": "Java8Compatibility.java::Java8Compatibility.position",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.JdkMatcher": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.JdkMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.end": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.end",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.find#1": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.find#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.find#2": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.find#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.matches": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.replaceAll": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.replaceAll",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkMatcher.start": {
+    "target": "JdkPattern.java::JdkPattern.JdkMatcher.start",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.JdkPattern": {
+    "target": "JdkPattern.java::JdkPattern.JdkPattern",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.flags": {
+    "target": "JdkPattern.java::JdkPattern.flags",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.matcher": {
+    "target": "JdkPattern.java::JdkPattern.matcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.pattern": {
+    "target": "JdkPattern.java::JdkPattern.pattern",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "JdkPattern.java::JdkPattern.toString": {
+    "target": "JdkPattern.java::JdkPattern.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.Joiner#1": {
+    "target": "Joiner.java::Joiner.Joiner#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.Joiner#2": {
+    "target": "Joiner.java::Joiner.Joiner#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.MapJoiner": {
+    "target": "Joiner.java::Joiner.MapJoiner.MapJoiner",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.appendTo#1": {
+    "target": "Joiner.java::Joiner.MapJoiner.appendTo#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.appendTo#2": {
+    "target": "Joiner.java::Joiner.MapJoiner.appendTo#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.appendTo#3": {
+    "target": "Joiner.java::Joiner.MapJoiner.appendTo#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.appendTo#4": {
+    "target": "Joiner.java::Joiner.MapJoiner.appendTo#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.appendTo#5": {
+    "target": "Joiner.java::Joiner.MapJoiner.appendTo#5",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.appendTo#6": {
+    "target": "Joiner.java::Joiner.MapJoiner.appendTo#6",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.join#1": {
+    "target": "Joiner.java::Joiner.MapJoiner.join#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.join#2": {
+    "target": "Joiner.java::Joiner.MapJoiner.join#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.join#3": {
+    "target": "Joiner.java::Joiner.MapJoiner.join#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.MapJoiner.useForNull": {
+    "target": "Joiner.java::Joiner.MapJoiner.useForNull",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#1": {
+    "target": "Joiner.java::Joiner.appendTo#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#2": {
+    "target": "Joiner.java::Joiner.appendTo#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#3": {
+    "target": "Joiner.java::Joiner.appendTo#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#4": {
+    "target": "Joiner.java::Joiner.appendTo#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#5": {
+    "target": "Joiner.java::Joiner.appendTo#5",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#6": {
+    "target": "Joiner.java::Joiner.appendTo#6",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#7": {
+    "target": "Joiner.java::Joiner.appendTo#7",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.appendTo#8": {
+    "target": "Joiner.java::Joiner.appendTo#8",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.expandedCapacity": {
+    "target": "Joiner.java::Joiner.expandedCapacity",
+    "callers": [
+      {
+        "id": "Joiner.java::Joiner.join",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Joiner.java::Joiner.join",
+        "target": "Joiner.java::Joiner.expandedCapacity",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.iterable": {
+    "target": "Joiner.java::Joiner.iterable",
+    "callers": [
+      {
+        "id": "Joiner.java::Joiner.appendTo",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Joiner.java::Joiner.join",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Joiner.java::Joiner.appendTo",
+        "target": "Joiner.java::Joiner.iterable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Joiner.java::Joiner.join",
+        "target": "Joiner.java::Joiner.iterable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.join#1": {
+    "target": "Joiner.java::Joiner.join#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.join#2": {
+    "target": "Joiner.java::Joiner.join#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.join#3": {
+    "target": "Joiner.java::Joiner.join#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.join#4": {
+    "target": "Joiner.java::Joiner.join#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.on#1": {
+    "target": "Joiner.java::Joiner.on#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.on#2": {
+    "target": "Joiner.java::Joiner.on#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.skipNulls": {
+    "target": "Joiner.java::Joiner.skipNulls",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.toString": {
+    "target": "Joiner.java::Joiner.toString",
+    "callers": [
+      {
+        "id": "Joiner.java::Joiner.appendTo",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Joiner.java::Joiner.join",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Joiner.java::Joiner.appendTo",
+        "target": "Joiner.java::Joiner.toString",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Joiner.java::Joiner.join",
+        "target": "Joiner.java::Joiner.toString",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.useForNull": {
+    "target": "Joiner.java::Joiner.useForNull",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.withKeyValueSeparator#1": {
+    "target": "Joiner.java::Joiner.withKeyValueSeparator#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Joiner.java::Joiner.withKeyValueSeparator#2": {
+    "target": "Joiner.java::Joiner.withKeyValueSeparator#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.MoreObjects": {
+    "target": "MoreObjects.java::MoreObjects.MoreObjects",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.ToStringHelper": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.ToStringHelper",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#1": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#2": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#3": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#4": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#5": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#5",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#6": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#6",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.add#7": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.add#7",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#1": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#2": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#3": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addHolder#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#1": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#2": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#3": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addUnconditionalHolder#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#1": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#2": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#3": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#4": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#5": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#5",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#6": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#6",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.addValue#7": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.addValue#7",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.isEmpty": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.isEmpty",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.omitEmptyValues": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.omitEmptyValues",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.omitNullValues": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.omitNullValues",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.ToStringHelper.toString": {
+    "target": "MoreObjects.java::MoreObjects.ToStringHelper.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.firstNonNull": {
+    "target": "MoreObjects.java::MoreObjects.firstNonNull",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.toStringHelper#1": {
+    "target": "MoreObjects.java::MoreObjects.toStringHelper#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.toStringHelper#2": {
+    "target": "MoreObjects.java::MoreObjects.toStringHelper#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "MoreObjects.java::MoreObjects.toStringHelper#3": {
+    "target": "MoreObjects.java::MoreObjects.toStringHelper#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "NullnessCasts.java::NullnessCasts.NullnessCasts": {
+    "target": "NullnessCasts.java::NullnessCasts.NullnessCasts",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "NullnessCasts.java::NullnessCasts.uncheckedCastNullableTToT": {
+    "target": "NullnessCasts.java::NullnessCasts.uncheckedCastNullableTToT",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.Optional": {
+    "target": "Optional.java::Optional.Optional",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.absent": {
+    "target": "Optional.java::Optional.absent",
+    "callers": [
+      {
+        "id": "Optional.java::Optional.fromNullable",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Optional.java::Optional.fromJavaUtil",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Optional.java::Optional.fromNullable",
+        "target": "Optional.java::Optional.absent",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Optional.java::Optional.fromJavaUtil",
+        "target": "Optional.java::Optional.fromNullable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Optional.java::Optional.asSet": {
+    "target": "Optional.java::Optional.asSet",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.equals": {
+    "target": "Optional.java::Optional.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.fromJavaUtil": {
+    "target": "Optional.java::Optional.fromJavaUtil",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.fromNullable": {
+    "target": "Optional.java::Optional.fromNullable",
+    "callers": [
+      {
+        "id": "Optional.java::Optional.fromJavaUtil",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Optional.java::Optional.fromJavaUtil",
+        "target": "Optional.java::Optional.fromNullable",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Optional.java::Optional.get": {
+    "target": "Optional.java::Optional.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.hashCode": {
+    "target": "Optional.java::Optional.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.isPresent": {
+    "target": "Optional.java::Optional.isPresent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.of": {
+    "target": "Optional.java::Optional.of",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.or#1": {
+    "target": "Optional.java::Optional.or#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.or#2": {
+    "target": "Optional.java::Optional.or#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.or#3": {
+    "target": "Optional.java::Optional.or#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.orNull": {
+    "target": "Optional.java::Optional.orNull",
+    "callers": [
+      {
+        "id": "Optional.java::Optional.toJavaUtil",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Optional.java::Optional.toJavaUtil",
+        "target": "Optional.java::Optional.orNull",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Optional.java::Optional.presentInstances": {
+    "target": "Optional.java::Optional.presentInstances",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.toJavaUtil#1": {
+    "target": "Optional.java::Optional.toJavaUtil#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.toJavaUtil#2": {
+    "target": "Optional.java::Optional.toJavaUtil#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.toString": {
+    "target": "Optional.java::Optional.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Optional.java::Optional.transform": {
+    "target": "Optional.java::Optional.transform",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PairwiseEquivalence.java::PairwiseEquivalence.PairwiseEquivalence": {
+    "target": "PairwiseEquivalence.java::PairwiseEquivalence.PairwiseEquivalence",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PairwiseEquivalence.java::PairwiseEquivalence.doEquivalent": {
+    "target": "PairwiseEquivalence.java::PairwiseEquivalence.doEquivalent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PairwiseEquivalence.java::PairwiseEquivalence.doHash": {
+    "target": "PairwiseEquivalence.java::PairwiseEquivalence.doHash",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PairwiseEquivalence.java::PairwiseEquivalence.equals": {
+    "target": "PairwiseEquivalence.java::PairwiseEquivalence.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PairwiseEquivalence.java::PairwiseEquivalence.hashCode": {
+    "target": "PairwiseEquivalence.java::PairwiseEquivalence.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PairwiseEquivalence.java::PairwiseEquivalence.toString": {
+    "target": "PairwiseEquivalence.java::PairwiseEquivalence.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PatternCompiler.java::PatternCompiler.compile": {
+    "target": "PatternCompiler.java::PatternCompiler.compile",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "PatternCompiler.java::PatternCompiler.isPcreLike": {
+    "target": "PatternCompiler.java::PatternCompiler.isPcreLike",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicate.java::Predicate.apply": {
+    "target": "Predicate.java::Predicate.apply",
+    "callers": [
+      {
+        "id": "Predicate.java::Predicate.test",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Predicate.java::Predicate.test",
+        "target": "Predicate.java::Predicate.apply",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Predicate.java::Predicate.equals": {
+    "target": "Predicate.java::Predicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicate.java::Predicate.test": {
+    "target": "Predicate.java::Predicate.test",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.AndPredicate.AndPredicate": {
+    "target": "Predicates.java::Predicates.AndPredicate.AndPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.AndPredicate.apply": {
+    "target": "Predicates.java::Predicates.AndPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.AndPredicate.equals": {
+    "target": "Predicates.java::Predicates.AndPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.AndPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.AndPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.AndPredicate.toString": {
+    "target": "Predicates.java::Predicates.AndPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.CompositionPredicate.CompositionPredicate": {
+    "target": "Predicates.java::Predicates.CompositionPredicate.CompositionPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.CompositionPredicate.apply": {
+    "target": "Predicates.java::Predicates.CompositionPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.CompositionPredicate.equals": {
+    "target": "Predicates.java::Predicates.CompositionPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.CompositionPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.CompositionPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.CompositionPredicate.toString": {
+    "target": "Predicates.java::Predicates.CompositionPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternFromStringPredicate.ContainsPatternFromStringPredicate": {
+    "target": "Predicates.java::Predicates.ContainsPatternFromStringPredicate.ContainsPatternFromStringPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternFromStringPredicate.toString": {
+    "target": "Predicates.java::Predicates.ContainsPatternFromStringPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternPredicate.ContainsPatternPredicate": {
+    "target": "Predicates.java::Predicates.ContainsPatternPredicate.ContainsPatternPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternPredicate.apply": {
+    "target": "Predicates.java::Predicates.ContainsPatternPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternPredicate.equals": {
+    "target": "Predicates.java::Predicates.ContainsPatternPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.ContainsPatternPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ContainsPatternPredicate.toString": {
+    "target": "Predicates.java::Predicates.ContainsPatternPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InPredicate.InPredicate": {
+    "target": "Predicates.java::Predicates.InPredicate.InPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InPredicate.apply": {
+    "target": "Predicates.java::Predicates.InPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InPredicate.equals": {
+    "target": "Predicates.java::Predicates.InPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.InPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InPredicate.toString": {
+    "target": "Predicates.java::Predicates.InPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InstanceOfPredicate.InstanceOfPredicate": {
+    "target": "Predicates.java::Predicates.InstanceOfPredicate.InstanceOfPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InstanceOfPredicate.apply": {
+    "target": "Predicates.java::Predicates.InstanceOfPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InstanceOfPredicate.equals": {
+    "target": "Predicates.java::Predicates.InstanceOfPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InstanceOfPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.InstanceOfPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.InstanceOfPredicate.toString": {
+    "target": "Predicates.java::Predicates.InstanceOfPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.IsEqualToPredicate.IsEqualToPredicate": {
+    "target": "Predicates.java::Predicates.IsEqualToPredicate.IsEqualToPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.IsEqualToPredicate.apply": {
+    "target": "Predicates.java::Predicates.IsEqualToPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.IsEqualToPredicate.equals": {
+    "target": "Predicates.java::Predicates.IsEqualToPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.IsEqualToPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.IsEqualToPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.IsEqualToPredicate.toString": {
+    "target": "Predicates.java::Predicates.IsEqualToPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.IsEqualToPredicate.withNarrowedType": {
+    "target": "Predicates.java::Predicates.IsEqualToPredicate.withNarrowedType",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.NotPredicate.NotPredicate": {
+    "target": "Predicates.java::Predicates.NotPredicate.NotPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.NotPredicate.apply": {
+    "target": "Predicates.java::Predicates.NotPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.NotPredicate.equals": {
+    "target": "Predicates.java::Predicates.NotPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.NotPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.NotPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.NotPredicate.toString": {
+    "target": "Predicates.java::Predicates.NotPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.ObjectPredicate.withNarrowedType": {
+    "target": "Predicates.java::Predicates.ObjectPredicate.withNarrowedType",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.OrPredicate.OrPredicate": {
+    "target": "Predicates.java::Predicates.OrPredicate.OrPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.OrPredicate.apply": {
+    "target": "Predicates.java::Predicates.OrPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.OrPredicate.equals": {
+    "target": "Predicates.java::Predicates.OrPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.OrPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.OrPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.OrPredicate.toString": {
+    "target": "Predicates.java::Predicates.OrPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.Predicates": {
+    "target": "Predicates.java::Predicates.Predicates",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.SubtypeOfPredicate.SubtypeOfPredicate": {
+    "target": "Predicates.java::Predicates.SubtypeOfPredicate.SubtypeOfPredicate",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.SubtypeOfPredicate.apply": {
+    "target": "Predicates.java::Predicates.SubtypeOfPredicate.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.SubtypeOfPredicate.equals": {
+    "target": "Predicates.java::Predicates.SubtypeOfPredicate.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.SubtypeOfPredicate.hashCode": {
+    "target": "Predicates.java::Predicates.SubtypeOfPredicate.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.SubtypeOfPredicate.toString": {
+    "target": "Predicates.java::Predicates.SubtypeOfPredicate.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.alwaysFalse": {
+    "target": "Predicates.java::Predicates.alwaysFalse",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.alwaysTrue": {
+    "target": "Predicates.java::Predicates.alwaysTrue",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.and#1": {
+    "target": "Predicates.java::Predicates.and#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.and#2": {
+    "target": "Predicates.java::Predicates.and#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.and#3": {
+    "target": "Predicates.java::Predicates.and#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.asList": {
+    "target": "Predicates.java::Predicates.asList",
+    "callers": [
+      {
+        "id": "Predicates.java::Predicates.and",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Predicates.java::Predicates.or",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Predicates.java::Predicates.and",
+        "target": "Predicates.java::Predicates.asList",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Predicates.java::Predicates.or",
+        "target": "Predicates.java::Predicates.asList",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.compose": {
+    "target": "Predicates.java::Predicates.compose",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.contains": {
+    "target": "Predicates.java::Predicates.contains",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.containsPattern": {
+    "target": "Predicates.java::Predicates.containsPattern",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.defensiveCopy#1": {
+    "target": "Predicates.java::Predicates.defensiveCopy#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.defensiveCopy#2": {
+    "target": "Predicates.java::Predicates.defensiveCopy#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.equalTo": {
+    "target": "Predicates.java::Predicates.equalTo",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.in": {
+    "target": "Predicates.java::Predicates.in",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.instanceOf": {
+    "target": "Predicates.java::Predicates.instanceOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.isNull": {
+    "target": "Predicates.java::Predicates.isNull",
+    "callers": [
+      {
+        "id": "Predicates.java::Predicates.equalTo",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Predicates.java::Predicates.equalTo",
+        "target": "Predicates.java::Predicates.isNull",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.not": {
+    "target": "Predicates.java::Predicates.not",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.notNull": {
+    "target": "Predicates.java::Predicates.notNull",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.or#1": {
+    "target": "Predicates.java::Predicates.or#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.or#2": {
+    "target": "Predicates.java::Predicates.or#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.or#3": {
+    "target": "Predicates.java::Predicates.or#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.subtypeOf": {
+    "target": "Predicates.java::Predicates.subtypeOf",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Predicates.java::Predicates.toStringHelper": {
+    "target": "Predicates.java::Predicates.toStringHelper",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.Present": {
+    "target": "Present.java::Present.Present",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.asSet": {
+    "target": "Present.java::Present.asSet",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.equals": {
+    "target": "Present.java::Present.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.get": {
+    "target": "Present.java::Present.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.hashCode": {
+    "target": "Present.java::Present.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.isPresent": {
+    "target": "Present.java::Present.isPresent",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.or#1": {
+    "target": "Present.java::Present.or#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.or#2": {
+    "target": "Present.java::Present.or#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.or#3": {
+    "target": "Present.java::Present.or#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.orNull": {
+    "target": "Present.java::Present.orNull",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.toString": {
+    "target": "Present.java::Present.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Present.java::Present.transform": {
+    "target": "Present.java::Present.transform",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.SmallCharMatcher": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.SmallCharMatcher",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.checkFilter": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.checkFilter",
+    "callers": [
+      {
+        "id": "SmallCharMatcher.java::SmallCharMatcher.matches",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "SmallCharMatcher.java::SmallCharMatcher.matches",
+        "target": "SmallCharMatcher.java::SmallCharMatcher.checkFilter",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.chooseTableSize": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.chooseTableSize",
+    "callers": [
+      {
+        "id": "SmallCharMatcher.java::SmallCharMatcher.from",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "SmallCharMatcher.java::SmallCharMatcher.from",
+        "target": "SmallCharMatcher.java::SmallCharMatcher.chooseTableSize",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.from": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.from",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.matches": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.matches",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.setBits": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.setBits",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SmallCharMatcher.java::SmallCharMatcher.smear": {
+    "target": "SmallCharMatcher.java::SmallCharMatcher.smear",
+    "callers": [
+      {
+        "id": "SmallCharMatcher.java::SmallCharMatcher.from",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "SmallCharMatcher.java::SmallCharMatcher.matches",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "SmallCharMatcher.java::SmallCharMatcher.from",
+        "target": "SmallCharMatcher.java::SmallCharMatcher.smear",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "SmallCharMatcher.java::SmallCharMatcher.matches",
+        "target": "SmallCharMatcher.java::SmallCharMatcher.smear",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "SneakyThrows.java::SneakyThrows.SneakyThrows": {
+    "target": "SneakyThrows.java::SneakyThrows.SneakyThrows",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SneakyThrows.java::SneakyThrows.sneakyThrow": {
+    "target": "SneakyThrows.java::SneakyThrows.sneakyThrow",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "SneakyThrows.java::SneakyThrows.throwIt": {
+    "target": "SneakyThrows.java::SneakyThrows.throwIt",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.MapSplitter.MapSplitter": {
+    "target": "Splitter.java::Splitter.MapSplitter.MapSplitter",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.MapSplitter.split": {
+    "target": "Splitter.java::Splitter.MapSplitter.split",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.Splitter#1": {
+    "target": "Splitter.java::Splitter.Splitter#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.Splitter#2": {
+    "target": "Splitter.java::Splitter.Splitter#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.SplittingIterator.SplittingIterator": {
+    "target": "Splitter.java::Splitter.SplittingIterator.SplittingIterator",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.SplittingIterator.computeNext": {
+    "target": "Splitter.java::Splitter.SplittingIterator.computeNext",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.SplittingIterator.separatorEnd": {
+    "target": "Splitter.java::Splitter.SplittingIterator.separatorEnd",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.SplittingIterator.separatorStart": {
+    "target": "Splitter.java::Splitter.SplittingIterator.separatorStart",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.Strategy.iterator": {
+    "target": "Splitter.java::Splitter.Strategy.iterator",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.fixedLength": {
+    "target": "Splitter.java::Splitter.fixedLength",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.limit": {
+    "target": "Splitter.java::Splitter.limit",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.omitEmptyStrings": {
+    "target": "Splitter.java::Splitter.omitEmptyStrings",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.on#1": {
+    "target": "Splitter.java::Splitter.on#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.on#2": {
+    "target": "Splitter.java::Splitter.on#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.on#3": {
+    "target": "Splitter.java::Splitter.on#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.on#4": {
+    "target": "Splitter.java::Splitter.on#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.onPattern": {
+    "target": "Splitter.java::Splitter.onPattern",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.onPatternInternal": {
+    "target": "Splitter.java::Splitter.onPatternInternal",
+    "callers": [
+      {
+        "id": "Splitter.java::Splitter.on",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Splitter.java::Splitter.onPattern",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Splitter.java::Splitter.on",
+        "target": "Splitter.java::Splitter.onPatternInternal",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Splitter.java::Splitter.onPattern",
+        "target": "Splitter.java::Splitter.onPatternInternal",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.split": {
+    "target": "Splitter.java::Splitter.split",
+    "callers": [
+      {
+        "id": "Splitter.java::Splitter.splitToStream",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Splitter.java::Splitter.splitToStream",
+        "target": "Splitter.java::Splitter.split",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.splitToList": {
+    "target": "Splitter.java::Splitter.splitToList",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.splitToStream": {
+    "target": "Splitter.java::Splitter.splitToStream",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.splittingIterator": {
+    "target": "Splitter.java::Splitter.splittingIterator",
+    "callers": [
+      {
+        "id": "Splitter.java::Splitter.split",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Splitter.java::Splitter.splitToList",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Splitter.java::Splitter.splitToStream",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Splitter.java::Splitter.split",
+        "target": "Splitter.java::Splitter.splittingIterator",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Splitter.java::Splitter.splitToList",
+        "target": "Splitter.java::Splitter.splittingIterator",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Splitter.java::Splitter.splitToStream",
+        "target": "Splitter.java::Splitter.split",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.trimResults#1": {
+    "target": "Splitter.java::Splitter.trimResults#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.trimResults#2": {
+    "target": "Splitter.java::Splitter.trimResults#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.withKeyValueSeparator#1": {
+    "target": "Splitter.java::Splitter.withKeyValueSeparator#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.withKeyValueSeparator#2": {
+    "target": "Splitter.java::Splitter.withKeyValueSeparator#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Splitter.java::Splitter.withKeyValueSeparator#3": {
+    "target": "Splitter.java::Splitter.withKeyValueSeparator#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "StandardSystemProperty.java::StandardSystemProperty.StandardSystemProperty": {
+    "target": "StandardSystemProperty.java::StandardSystemProperty.StandardSystemProperty",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "StandardSystemProperty.java::StandardSystemProperty.key": {
+    "target": "StandardSystemProperty.java::StandardSystemProperty.key",
+    "callers": [
+      {
+        "id": "StandardSystemProperty.java::StandardSystemProperty.toString",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "StandardSystemProperty.java::StandardSystemProperty.toString",
+        "target": "StandardSystemProperty.java::StandardSystemProperty.key",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "StandardSystemProperty.java::StandardSystemProperty.toString": {
+    "target": "StandardSystemProperty.java::StandardSystemProperty.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "StandardSystemProperty.java::StandardSystemProperty.value": {
+    "target": "StandardSystemProperty.java::StandardSystemProperty.value",
+    "callers": [
+      {
+        "id": "StandardSystemProperty.java::StandardSystemProperty.toString",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "StandardSystemProperty.java::StandardSystemProperty.toString",
+        "target": "StandardSystemProperty.java::StandardSystemProperty.value",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.Stopwatch#1": {
+    "target": "Stopwatch.java::Stopwatch.Stopwatch#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.Stopwatch#2": {
+    "target": "Stopwatch.java::Stopwatch.Stopwatch#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.abbreviate": {
+    "target": "Stopwatch.java::Stopwatch.abbreviate",
+    "callers": [
+      {
+        "id": "Stopwatch.java::Stopwatch.toString",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Stopwatch.java::Stopwatch.toString",
+        "target": "Stopwatch.java::Stopwatch.abbreviate",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.chooseUnit": {
+    "target": "Stopwatch.java::Stopwatch.chooseUnit",
+    "callers": [
+      {
+        "id": "Stopwatch.java::Stopwatch.toString",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Stopwatch.java::Stopwatch.toString",
+        "target": "Stopwatch.java::Stopwatch.chooseUnit",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.createStarted#1": {
+    "target": "Stopwatch.java::Stopwatch.createStarted#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.createStarted#2": {
+    "target": "Stopwatch.java::Stopwatch.createStarted#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.createUnstarted#1": {
+    "target": "Stopwatch.java::Stopwatch.createUnstarted#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.createUnstarted#2": {
+    "target": "Stopwatch.java::Stopwatch.createUnstarted#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.elapsed#1": {
+    "target": "Stopwatch.java::Stopwatch.elapsed#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.elapsed#2": {
+    "target": "Stopwatch.java::Stopwatch.elapsed#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.elapsedNanos": {
+    "target": "Stopwatch.java::Stopwatch.elapsedNanos",
+    "callers": [
+      {
+        "id": "Stopwatch.java::Stopwatch.elapsed",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Stopwatch.java::Stopwatch.toString",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Stopwatch.java::Stopwatch.elapsed",
+        "target": "Stopwatch.java::Stopwatch.elapsedNanos",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Stopwatch.java::Stopwatch.toString",
+        "target": "Stopwatch.java::Stopwatch.elapsedNanos",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.isRunning": {
+    "target": "Stopwatch.java::Stopwatch.isRunning",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.reset": {
+    "target": "Stopwatch.java::Stopwatch.reset",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.start": {
+    "target": "Stopwatch.java::Stopwatch.start",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.stop": {
+    "target": "Stopwatch.java::Stopwatch.stop",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Stopwatch.java::Stopwatch.toString": {
+    "target": "Stopwatch.java::Stopwatch.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Supplier.java::Supplier.get": {
+    "target": "Supplier.java::Supplier.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.ExpiringMemoizingSupplier": {
+    "target": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.ExpiringMemoizingSupplier",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.get": {
+    "target": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.readObject": {
+    "target": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.readObject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.toString": {
+    "target": "Suppliers.java::Suppliers.ExpiringMemoizingSupplier.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.MemoizingSupplier.MemoizingSupplier": {
+    "target": "Suppliers.java::Suppliers.MemoizingSupplier.MemoizingSupplier",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.MemoizingSupplier.get": {
+    "target": "Suppliers.java::Suppliers.MemoizingSupplier.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.MemoizingSupplier.readObject": {
+    "target": "Suppliers.java::Suppliers.MemoizingSupplier.readObject",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.MemoizingSupplier.toString": {
+    "target": "Suppliers.java::Suppliers.MemoizingSupplier.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.NonSerializableMemoizingSupplier": {
+    "target": "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.NonSerializableMemoizingSupplier",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.get": {
+    "target": "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.toString": {
+    "target": "Suppliers.java::Suppliers.NonSerializableMemoizingSupplier.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierComposition.SupplierComposition": {
+    "target": "Suppliers.java::Suppliers.SupplierComposition.SupplierComposition",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierComposition.equals": {
+    "target": "Suppliers.java::Suppliers.SupplierComposition.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierComposition.get": {
+    "target": "Suppliers.java::Suppliers.SupplierComposition.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierComposition.hashCode": {
+    "target": "Suppliers.java::Suppliers.SupplierComposition.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierComposition.toString": {
+    "target": "Suppliers.java::Suppliers.SupplierComposition.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierFunctionImpl.apply": {
+    "target": "Suppliers.java::Suppliers.SupplierFunctionImpl.apply",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierFunctionImpl.toString": {
+    "target": "Suppliers.java::Suppliers.SupplierFunctionImpl.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierOfInstance.SupplierOfInstance": {
+    "target": "Suppliers.java::Suppliers.SupplierOfInstance.SupplierOfInstance",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierOfInstance.equals": {
+    "target": "Suppliers.java::Suppliers.SupplierOfInstance.equals",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierOfInstance.get": {
+    "target": "Suppliers.java::Suppliers.SupplierOfInstance.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierOfInstance.hashCode": {
+    "target": "Suppliers.java::Suppliers.SupplierOfInstance.hashCode",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.SupplierOfInstance.toString": {
+    "target": "Suppliers.java::Suppliers.SupplierOfInstance.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.Suppliers": {
+    "target": "Suppliers.java::Suppliers.Suppliers",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ThreadSafeSupplier.ThreadSafeSupplier": {
+    "target": "Suppliers.java::Suppliers.ThreadSafeSupplier.ThreadSafeSupplier",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ThreadSafeSupplier.get": {
+    "target": "Suppliers.java::Suppliers.ThreadSafeSupplier.get",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ThreadSafeSupplier.toString": {
+    "target": "Suppliers.java::Suppliers.ThreadSafeSupplier.toString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.compose": {
+    "target": "Suppliers.java::Suppliers.compose",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.memoize": {
+    "target": "Suppliers.java::Suppliers.memoize",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.memoizeWithExpiration#1": {
+    "target": "Suppliers.java::Suppliers.memoizeWithExpiration#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.memoizeWithExpiration#2": {
+    "target": "Suppliers.java::Suppliers.memoizeWithExpiration#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.ofInstance": {
+    "target": "Suppliers.java::Suppliers.ofInstance",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.supplierFunction": {
+    "target": "Suppliers.java::Suppliers.supplierFunction",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Suppliers.java::Suppliers.synchronizedSupplier": {
+    "target": "Suppliers.java::Suppliers.synchronizedSupplier",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.Throwables": {
+    "target": "Throwables.java::Throwables.Throwables",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getCausalChain": {
+    "target": "Throwables.java::Throwables.getCausalChain",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getCauseAs": {
+    "target": "Throwables.java::Throwables.getCauseAs",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getGetMethod": {
+    "target": "Throwables.java::Throwables.getGetMethod",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getJla": {
+    "target": "Throwables.java::Throwables.getJla",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getJlaMethod": {
+    "target": "Throwables.java::Throwables.getJlaMethod",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.getGetMethod",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Throwables.java::Throwables.getSizeMethod",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.getGetMethod",
+        "target": "Throwables.java::Throwables.getJlaMethod",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.getSizeMethod",
+        "target": "Throwables.java::Throwables.getJlaMethod",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getRootCause": {
+    "target": "Throwables.java::Throwables.getRootCause",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getSizeMethod": {
+    "target": "Throwables.java::Throwables.getSizeMethod",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.getStackTraceAsString": {
+    "target": "Throwables.java::Throwables.getStackTraceAsString",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod": {
+    "target": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.jlaStackTrace",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Throwables.java::Throwables.lazyStackTrace",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.jlaStackTrace",
+        "target": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.lazyStackTrace",
+        "target": "Throwables.java::Throwables.jlaStackTrace",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.jlaStackTrace": {
+    "target": "Throwables.java::Throwables.jlaStackTrace",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.lazyStackTrace",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.lazyStackTrace",
+        "target": "Throwables.java::Throwables.jlaStackTrace",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.lazyStackTrace": {
+    "target": "Throwables.java::Throwables.lazyStackTrace",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.lazyStackTraceIsLazy": {
+    "target": "Throwables.java::Throwables.lazyStackTraceIsLazy",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.lazyStackTrace",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.lazyStackTrace",
+        "target": "Throwables.java::Throwables.lazyStackTraceIsLazy",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.propagate": {
+    "target": "Throwables.java::Throwables.propagate",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Throwables.java::Throwables.jlaStackTrace",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "Throwables.java::Throwables.lazyStackTrace",
+        "depth": 3,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "target": "Throwables.java::Throwables.propagate",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.jlaStackTrace",
+        "target": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.lazyStackTrace",
+        "target": "Throwables.java::Throwables.jlaStackTrace",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.propagateIfInstanceOf": {
+    "target": "Throwables.java::Throwables.propagateIfInstanceOf",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.propagateIfPossible",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.propagateIfPossible",
+        "target": "Throwables.java::Throwables.propagateIfInstanceOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.propagateIfPossible#1": {
+    "target": "Throwables.java::Throwables.propagateIfPossible#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.propagateIfPossible#2": {
+    "target": "Throwables.java::Throwables.propagateIfPossible#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.propagateIfPossible#3": {
+    "target": "Throwables.java::Throwables.propagateIfPossible#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.throwIfInstanceOf": {
+    "target": "Throwables.java::Throwables.throwIfInstanceOf",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.propagateIfInstanceOf",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Throwables.java::Throwables.propagateIfPossible",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.propagateIfInstanceOf",
+        "target": "Throwables.java::Throwables.throwIfInstanceOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.propagateIfPossible",
+        "target": "Throwables.java::Throwables.propagateIfInstanceOf",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Throwables.java::Throwables.throwIfUnchecked": {
+    "target": "Throwables.java::Throwables.throwIfUnchecked",
+    "callers": [
+      {
+        "id": "Throwables.java::Throwables.propagate",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Throwables.java::Throwables.propagateIfPossible",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "depth": 2,
+        "direct": false
+      },
+      {
+        "id": "Throwables.java::Throwables.jlaStackTrace",
+        "depth": 3,
+        "direct": false
+      },
+      {
+        "id": "Throwables.java::Throwables.lazyStackTrace",
+        "depth": 4,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Throwables.java::Throwables.propagate",
+        "target": "Throwables.java::Throwables.throwIfUnchecked",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.propagateIfPossible",
+        "target": "Throwables.java::Throwables.throwIfUnchecked",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "target": "Throwables.java::Throwables.propagate",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.jlaStackTrace",
+        "target": "Throwables.java::Throwables.invokeAccessibleNonThrowingMethod",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Throwables.java::Throwables.lazyStackTrace",
+        "target": "Throwables.java::Throwables.jlaStackTrace",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Ticker.java::Ticker.Ticker": {
+    "target": "Ticker.java::Ticker.Ticker",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ticker.java::Ticker.read": {
+    "target": "Ticker.java::Ticker.read",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Ticker.java::Ticker.systemTicker": {
+    "target": "Ticker.java::Ticker.systemTicker",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.Utf8": {
+    "target": "Utf8.java::Utf8.Utf8",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.encodedLength": {
+    "target": "Utf8.java::Utf8.encodedLength",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.encodedLengthGeneral": {
+    "target": "Utf8.java::Utf8.encodedLengthGeneral",
+    "callers": [
+      {
+        "id": "Utf8.java::Utf8.encodedLength",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Utf8.java::Utf8.encodedLength",
+        "target": "Utf8.java::Utf8.encodedLengthGeneral",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.isWellFormed#1": {
+    "target": "Utf8.java::Utf8.isWellFormed#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.isWellFormed#2": {
+    "target": "Utf8.java::Utf8.isWellFormed#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.isWellFormedSlowPath": {
+    "target": "Utf8.java::Utf8.isWellFormedSlowPath",
+    "callers": [
+      {
+        "id": "Utf8.java::Utf8.isWellFormed",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "Utf8.java::Utf8.isWellFormed",
+        "target": "Utf8.java::Utf8.isWellFormedSlowPath",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "Utf8.java::Utf8.unpairedSurrogateMsg": {
+    "target": "Utf8.java::Utf8.unpairedSurrogateMsg",
+    "callers": [
+      {
+        "id": "Utf8.java::Utf8.encodedLengthGeneral",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "Utf8.java::Utf8.encodedLength",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "Utf8.java::Utf8.encodedLengthGeneral",
+        "target": "Utf8.java::Utf8.unpairedSurrogateMsg",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "Utf8.java::Utf8.encodedLength",
+        "target": "Utf8.java::Utf8.encodedLengthGeneral",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "VerifyException.java::VerifyException.VerifyException#1": {
+    "target": "VerifyException.java::VerifyException.VerifyException#1",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "VerifyException.java::VerifyException.VerifyException#2": {
+    "target": "VerifyException.java::VerifyException.VerifyException#2",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "VerifyException.java::VerifyException.VerifyException#3": {
+    "target": "VerifyException.java::VerifyException.VerifyException#3",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "VerifyException.java::VerifyException.VerifyException#4": {
+    "target": "VerifyException.java::VerifyException.VerifyException#4",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.Finalizer": {
+    "target": "internal/Finalizer.java::Finalizer.Finalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.cleanUp": {
+    "target": "internal/Finalizer.java::Finalizer.cleanUp",
+    "callers": [
+      {
+        "id": "internal/Finalizer.java::Finalizer.run",
+        "depth": 1,
+        "direct": true
+      }
+    ],
+    "edges": [
+      {
+        "source": "internal/Finalizer.java::Finalizer.run",
+        "target": "internal/Finalizer.java::Finalizer.cleanUp",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.finalizeReference": {
+    "target": "internal/Finalizer.java::Finalizer.finalizeReference",
+    "callers": [
+      {
+        "id": "internal/Finalizer.java::Finalizer.cleanUp",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "internal/Finalizer.java::Finalizer.run",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "internal/Finalizer.java::Finalizer.cleanUp",
+        "target": "internal/Finalizer.java::Finalizer.finalizeReference",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "internal/Finalizer.java::Finalizer.run",
+        "target": "internal/Finalizer.java::Finalizer.cleanUp",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.getBigThreadConstructor": {
+    "target": "internal/Finalizer.java::Finalizer.getBigThreadConstructor",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.getFinalizeReferentMethod": {
+    "target": "internal/Finalizer.java::Finalizer.getFinalizeReferentMethod",
+    "callers": [
+      {
+        "id": "internal/Finalizer.java::Finalizer.cleanUp",
+        "depth": 1,
+        "direct": true
+      },
+      {
+        "id": "internal/Finalizer.java::Finalizer.run",
+        "depth": 2,
+        "direct": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "internal/Finalizer.java::Finalizer.cleanUp",
+        "target": "internal/Finalizer.java::Finalizer.getFinalizeReferentMethod",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      },
+      {
+        "source": "internal/Finalizer.java::Finalizer.run",
+        "target": "internal/Finalizer.java::Finalizer.cleanUp",
+        "kind": "calls",
+        "external": false,
+        "ambiguous": false
+      }
+    ],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.getInheritableThreadLocalsField": {
+    "target": "internal/Finalizer.java::Finalizer.getInheritableThreadLocalsField",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.run": {
+    "target": "internal/Finalizer.java::Finalizer.run",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  },
+  "internal/Finalizer.java::Finalizer.startFinalizer": {
+    "target": "internal/Finalizer.java::Finalizer.startFinalizer",
+    "callers": [],
+    "edges": [],
+    "cycles": []
+  }
+}

@@ -1,8 +1,9 @@
 /**
  * Static, backend-free implementation of every function `client.ts`
  * exports, for the static demo build (`VITE_DEMO_MODE=true`). Serves
- * precomputed fixtures (`frontend/public/demo/<slug>/*.json`, produced by
- * `scripts/build_demo_fixtures.py` and `scripts/generate_demo_docs.py`)
+ * precomputed fixtures (`frontend/demo-assets/<slug>/*.json`, produced by
+ * `scripts/build_demo_fixtures.py` and `scripts/generate_demo_docs.py`,
+ * copied into `dist/demo/` at build time by `scripts/copy-demo-assets.mjs`)
  * instead of calling a live backend.
  *
  * `path` throughout this module is one of `DEMO_SLUGS` (the repo picker
@@ -38,7 +39,7 @@ export interface DemoRepoMeta {
   showcaseDocIds: string[]
 }
 
-export const DEMO_SLUGS = ['python-shop', 'axios'] as const
+export const DEMO_SLUGS = ['python-shop', 'axios', 'guava-base'] as const
 export type DemoSlug = (typeof DEMO_SLUGS)[number]
 
 export function isDemoSlug(path: string): path is DemoSlug {

@@ -1,14 +1,16 @@
 """Precomputes static API-response fixtures for the frontend's demo mode.
 
 Drives the real FastAPI app in-process (same pattern as tests/test_api.py)
-against the two frozen demo repos under scripts/demo_repos/ (Python) and a
-locally cloned copy of axios (JS), and writes consolidated JSON bundles
-under frontend/public/demo/<slug>/ for the static frontend build to fetch
-at runtime instead of a live backend.
+against the frozen Python demo repo under scripts/demo_repos/ and locally
+cloned copies of axios (JS) and Guava's base/ package (Java), and writes
+consolidated JSON bundles under frontend/demo-assets/<slug>/ for the
+static frontend build to copy into dist/demo/ at build time (see
+frontend/scripts/copy-demo-assets.mjs) instead of a live backend.
 
 Usage:
     .venv/Scripts/python.exe scripts/build_demo_fixtures.py
-    .venv/Scripts/python.exe scripts/build_demo_fixtures.py --js-repo <path-to-cloned-axios-lib>
+    .venv/Scripts/python.exe scripts/build_demo_fixtures.py \\
+        --js-repo <path-to-cloned-axios-lib> --java-repo <path-to-cloned-guava-base>
 """
 
 from __future__ import annotations
@@ -25,7 +27,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from semantic_vision.api.app import create_app  # noqa: E402
 
-OUT_ROOT = REPO_ROOT / "frontend" / "public" / "demo"
+OUT_ROOT = REPO_ROOT / "frontend" / "demo-assets"
 
 PYTHON_SHOP_PATH = REPO_ROOT / "scripts" / "demo_repos" / "python_shop"
 PYTHON_SHOP_MANIFEST = REPO_ROOT / "scripts" / "demo_repos" / "python_shop_manifest.json"
@@ -49,6 +51,22 @@ AXIOS_SHOWCASE_DOCS = [
     "helpers/shouldBypassProxy.js::shouldBypassProxy",
     "helpers/resolveConfig.js::resolveConfig",
     "core/dispatchRequest.js::dispatchRequest",
+]
+
+# Picked from files that parse cleanly in this scope -- `Preconditions.java`,
+# `Strings.java`, `Objects.java`, `Platform.java`, and `Verify.java` all hit
+# the known tree-sitter-java JSR-308-varargs-annotation parse error (see
+# benchmarks/guava.md), so none of their famous methods (checkArgument,
+# isNullOrEmpty, equal) are available here -- shown as 5 real parse errors
+# in the demo itself rather than hidden, the same "isolate, don't crash"
+# honesty every other language adapter here is held to.
+JAVA_BASE_SHOWCASE_DOCS = [
+    "Utf8.java::Utf8.isWellFormedSlowPath",
+    "CharMatcher.java::CharMatcher.trimAndCollapseFrom",
+    "Splitter.java::Splitter.split",
+    "MoreObjects.java::MoreObjects.ToStringHelper.toString",
+    "Joiner.java::Joiner.join#1",
+    "Ascii.java::Ascii.equalsIgnoreCase",
 ]
 
 
@@ -146,6 +164,16 @@ def main() -> None:
         default=str(Path.home() / "AppData/Local/Temp/sv-demo-src/axios/lib"),
         help="Path to a locally cloned axios lib/ directory (not committed to this repo).",
     )
+    parser.add_argument(
+        "--java-repo",
+        default=str(
+            Path.home() / "AppData/Local/Temp/sv-demo-src/guava/guava/src/com/google/common/base"
+        ),
+        help=(
+            "Path to a locally cloned Guava checkout's guava/src/com/google/common/base/ "
+            "directory (not committed to this repo)."
+        ),
+    )
     args = parser.parse_args()
 
     app = create_app()
@@ -169,19 +197,36 @@ def main() -> None:
     js_repo = Path(args.js_repo)
     if not js_repo.exists():
         print(f"\nSkipping JS/TS repo -- not found at {js_repo}. Clone axios first.")
-        return
+    else:
+        build_repo_bundle(
+            client,
+            slug="axios",
+            repo_path=str(js_repo),
+            language="javascript",
+            showcase_doc_ids=AXIOS_SHOWCASE_DOCS,
+            display_name="JavaScript: axios",
+            description=(
+                "The real axios HTTP client source -- adapters, interceptors, and config "
+                "merging."
+            ),
+        )
 
-    build_repo_bundle(
-        client,
-        slug="axios",
-        repo_path=str(js_repo),
-        language="javascript",
-        showcase_doc_ids=AXIOS_SHOWCASE_DOCS,
-        display_name="JavaScript: axios",
-        description=(
-            "The real axios HTTP client source -- adapters, interceptors, and config merging."
-        ),
-    )
+    java_repo = Path(args.java_repo)
+    if not java_repo.exists():
+        print(f"\nSkipping Java repo -- not found at {java_repo}. Clone guava first.")
+    else:
+        build_repo_bundle(
+            client,
+            slug="guava-base",
+            repo_path=str(java_repo),
+            language="java",
+            showcase_doc_ids=JAVA_BASE_SHOWCASE_DOCS,
+            display_name="Java: guava (base utilities)",
+            description=(
+                "com.google.common.base from Google's Guava -- Splitter, Joiner, CharMatcher, "
+                "MoreObjects, and other everyday Java utility idioms."
+            ),
+        )
 
 
 if __name__ == "__main__":
