@@ -111,6 +111,24 @@ direct callers (cross-referenced with their own scores), so you can
 tell a complex-but-unused function apart from a complex one half the
 codebase actually depends on.
 
+### <img src="assets/icons/complexity-report.svg" width="20" height="20" align="absmiddle" alt=""/> Code Health Dashboard: score a change, not just a snapshot
+
+Click **Open dashboard** in the sidebar for a full-width view of the
+same data — a summary of the whole repo's health at a glance, next to a
+read-only graph visualizing complexity and call depth together, kept in
+sync with the ranked list below it.
+
+The dashboard is git-aware: **Compare to last look** diffs the current
+state against whatever it showed the last time you opened it (useful
+right after an AI agent's session, or your own edit); typing a commit
+or branch into the ref picker instead diffs against any point in the
+repo's history — or fill in the second, optional field to diff two
+arbitrary commits against each other, with no dependency on what's
+currently checked out. Either way, the result is added / removed /
+changed functions, each with its before-and-after complexity, so
+"did this change make the code healthier or worse" is a glance instead
+of a manual `git diff` read-through.
+
 ## <img src="assets/icons/data-lineage.svg" width="22" height="22" align="absmiddle" alt=""/> Code-to-data lineage
 
 The sidebar's **Data lineage** section extends the graph past your code
@@ -187,6 +205,11 @@ by hand.
 <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **See which functions are worth worrying about** — a complexity
 heatmap and ranked report across the whole repo, with a one-click
 drill-down into who actually depends on each risky function.
+
+<img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **Judge a change, not just a snapshot** — the Code Health Dashboard
+compares complexity against the last time you looked, any commit or
+branch, or two arbitrary commits against each other, so "did this AI
+agent's edit help or hurt" is a glance instead of a manual diff read.
 
 <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> **Never write another docstring by hand** — right-click any function
 to generate real Markdown documentation (Purpose, Parameters, Returns,
