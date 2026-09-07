@@ -628,6 +628,167 @@ def test_complexity_index_is_not_resurrected_by_a_reparse_racing_a_build(monkeyp
     assert calls["count"] == 2
 
 
+def test_complexity_diff_requires_prior_parse():
+    resp = client.get("/api/complexity/diff", params={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 404
+
+
+def test_complexity_diff_is_unavailable_before_any_baseline_exists():
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    # Never called plain GET /api/complexity first -- there's nothing to
+    # promote into a baseline yet.
+    resp = client.get("/api/complexity/diff", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is False
+    assert len(body["current"]) > 0
+    assert body["added"] == []
+    assert body["removed"] == []
+    assert body["changed"] == []
+
+
+def test_complexity_diff_reflects_added_removed_and_changed_functions_after_an_edit(tmp_path: Path):
+    app_py = tmp_path / "app.py"
+    app_py.write_text(
+        "def stays_same():\n"
+        "    return 1\n"
+        "\n"
+        "\n"
+        "def to_be_removed():\n"
+        "    return 2\n"
+        "\n"
+        "\n"
+        "def to_be_changed():\n"
+        "    return 3\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+
+    client.post("/api/parse-repo", json={"path": repo_path})
+    client.get("/api/complexity", params={"path": repo_path})  # builds the baseline
+
+    app_py.write_text(
+        "def stays_same():\n"
+        "    return 1\n"
+        "\n"
+        "\n"
+        "def to_be_changed():\n"
+        "    if True:\n"
+        "        return 3\n"
+        "    return 4\n"
+        "\n"
+        "\n"
+        "def newly_added():\n"
+        "    return 5\n",
+        encoding="utf-8",
+    )
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/diff", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is True
+
+    added_ids = {s["node_id"] for s in body["added"]}
+    removed_ids = {s["node_id"] for s in body["removed"]}
+    changed_by_id = {c["node_id"]: c for c in body["changed"]}
+
+    assert added_ids == {"app.py::newly_added"}
+    assert removed_ids == {"app.py::to_be_removed"}
+    assert set(changed_by_id) == {"app.py::to_be_changed"}
+    change = changed_by_id["app.py::to_be_changed"]
+    assert change["before"]["cyclomatic_complexity"] == 1
+    assert change["after"]["cyclomatic_complexity"] == 2
+    # `stays_same` isn't in any bucket -- identical scores are omitted.
+    assert "app.py::stays_same" not in added_ids | removed_ids | set(changed_by_id)
+
+
+def test_complexity_diff_baseline_survives_a_reparse_where_complexity_was_never_viewed(
+    tmp_path: Path,
+):
+    app_py = tmp_path / "app.py"
+    app_py.write_text("def original():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+
+    client.post("/api/parse-repo", json={"path": repo_path})
+    client.get("/api/complexity", params={"path": repo_path})  # builds the first baseline candidate
+
+    # Reparse once -- promotes the above into `_previous_complexity_indexes`.
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    # Reparse again *without* ever calling GET /api/complexity in between --
+    # there's nothing new to promote, so the original baseline must survive
+    # rather than being cleared.
+    app_py.write_text(
+        "def original():\n    if True:\n        return 1\n    return 2\n", encoding="utf-8"
+    )
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/diff", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is True
+    changed_by_id = {c["node_id"]: c for c in body["changed"]}
+    assert "app.py::original" in changed_by_id
+    assert changed_by_id["app.py::original"]["before"]["cyclomatic_complexity"] == 1
+    assert changed_by_id["app.py::original"]["after"]["cyclomatic_complexity"] == 2
+
+
+def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisition(monkeypatch):
+    """`get_current_and_previous_complexity_index` exists specifically so
+    `current` and `previous` are read as one atomic operation: reading them
+    via two separately lock-guarded calls (an earlier version of this method
+    did exactly that) leaves a window -- between the first call releasing
+    the lock and the second re-acquiring it -- for a concurrent `set()` (a
+    reparse) to land, promoting the `current` this request just built into
+    `_previous_complexity_indexes` and making the two equal, silently
+    reporting zero changes on a real edit.
+
+    That window is a handful of bytecode instructions wide, not reliably
+    reproducible by forcing thread scheduling the way
+    `test_complexity_index_is_not_resurrected_by_a_reparse_racing_a_build`
+    above forces its own (much larger, build-duration-wide) race -- confirmed
+    empirically: reverting this method to two separate lock acquisitions and
+    re-running a timing-based version of this test still passed every time,
+    since the slow build's own lock hold already dominates the blocking
+    window regardless of whether the second read is separately locked.
+    Verified directly instead, by counting lock acquisitions during one call.
+    """
+    import threading
+
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    # `threading.Lock`'s own `acquire`/`__enter__` can't be monkeypatched
+    # directly (read-only slots on the built-in type) -- swapped for a thin
+    # context-manager wrapper around the real lock instead, counting how
+    # many times the `with cache._complexity_lock:` block is entered.
+    class _CountingLock:
+        def __init__(self, real_lock: threading.Lock) -> None:
+            self._real_lock = real_lock
+            self.enter_count = 0
+
+        def __enter__(self):
+            self.enter_count += 1
+            return self._real_lock.__enter__()
+
+        def __exit__(self, *args):
+            return self._real_lock.__exit__(*args)
+
+    counting_lock = _CountingLock(cache._complexity_lock)
+    monkeypatch.setattr(cache, "_complexity_lock", counting_lock)
+
+    cache.get_current_and_previous_complexity_index(repo_path)
+
+    assert counting_lock.enter_count == 1
+
+
 def test_impact_requires_prior_parse():
     resp = client.get(
         "/api/impact", params={"path": str(FIXTURES / "simple_repo"), "id": "app.py::Greeter.greet"}

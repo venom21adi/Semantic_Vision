@@ -1,4 +1,5 @@
 import type {
+  ComplexityDiffResponse,
   ComplexityResponse,
   DbConnectionIngestResponse,
   DbtManifestIngestResponse,
@@ -133,6 +134,10 @@ function realGetComplexity(path: string): Promise<ComplexityResponse> {
   return request<ComplexityResponse>(`/api/complexity?path=${encodeURIComponent(path)}`)
 }
 
+function realGetComplexityDiff(path: string): Promise<ComplexityDiffResponse> {
+  return request<ComplexityDiffResponse>(`/api/complexity/diff?path=${encodeURIComponent(path)}`)
+}
+
 function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
   return request<FlowchartResponse>(
     `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
@@ -209,6 +214,19 @@ export const getDoc = DEMO_MODE ? demoClient.getDoc : realGetDoc
 export const getImpact = DEMO_MODE ? demoClient.getImpact : realGetImpact
 export const saveDoc = DEMO_MODE ? demoClient.saveDoc : realSaveDoc
 export const getComplexity = DEMO_MODE ? demoClient.getComplexity : realGetComplexity
+/** Demo-only: the static demo has no real filesystem to edit, so a
+ * "compare to last look" can never have anything to report -- always
+ * "no baseline," the same shape a fresh, never-viewed real repo's
+ * `available: false` response does on the real backend (`current` still
+ * populated with the live scores, not empty -- `handleCompareDashboard`
+ * unconditionally replaces the dashboard's ranked list with `current`, so
+ * returning `[]` here would silently blank it out on every demo compare). */
+export const getComplexityDiff = DEMO_MODE
+  ? async (path: string): Promise<ComplexityDiffResponse> => {
+      const { scores } = await demoClient.getComplexity(path)
+      return { available: false, current: scores, added: [], removed: [], changed: [] }
+    }
+  : realGetComplexityDiff
 export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
 export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest

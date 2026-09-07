@@ -246,4 +246,38 @@ describe('api client', () => {
     vi.unstubAllGlobals()
     vi.resetModules()
   })
+
+  // Regression test: an earlier version of the demo-mode `getComplexityDiff`
+  // stub always returned `current: []`, silently blanking the dashboard's
+  // ranked list on every "Compare to last look" in the static public demo
+  // (`handleCompareDashboard` in App.tsx unconditionally replaces the
+  // dashboard's scores with `diffResult.current`) -- the real backend's own
+  // `available: false` response always carries the live scores in `current`,
+  // never an empty list, and the demo stub must match that shape.
+  it('getComplexityDiff in demo mode reports no baseline but keeps the current scores', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    vi.resetModules()
+    const demoScores = [
+      { node_id: 'app.py::f', cyclomatic_complexity: 2, call_chain_depth: 0, has_nested_loops: false },
+    ]
+    vi.doMock('./demoClient', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('./demoClient')>()
+      return { ...actual, getComplexity: vi.fn().mockResolvedValue({ scores: demoScores }) }
+    })
+
+    const { getComplexityDiff: demoGetComplexityDiff } = await import('./client')
+    const result = await demoGetComplexityDiff('any-path')
+
+    expect(result).toEqual({
+      available: false,
+      current: demoScores,
+      added: [],
+      removed: [],
+      changed: [],
+    })
+
+    vi.doUnmock('./demoClient')
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
 })

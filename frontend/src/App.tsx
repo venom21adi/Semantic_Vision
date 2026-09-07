@@ -3,6 +3,7 @@ import {
   ApiError,
   DEMO_MODE,
   getComplexity,
+  getComplexityDiff,
   getDefaultVisibleIds,
   getDoc,
   getFlowchart,
@@ -27,7 +28,7 @@ import type {
   NodePosition,
   ParseErrorInfo,
 } from './api/types'
-import { DashboardView, type DashboardState } from './components/DashboardView'
+import { DashboardView, type DashboardState, type DiffState } from './components/DashboardView'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { DemoRepoPicker } from './components/DemoRepoPicker'
 import { DemoRepoPill } from './components/DemoRepoPill'
@@ -191,6 +192,12 @@ export default function App() {
   // way to see the same ranked report full-width, with the canvas and DetailsPanel
   // out of the way. See handleToggleDashboard below for why the two stayed separate.
   const [dashboard, setDashboard] = useState<DashboardState | null>(null)
+  // The dashboard's "Compare to last look" result (Idea 3b of
+  // docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md) -- a sibling to `dashboard`, not
+  // nested inside it, matching this file's convention of flat, independently
+  // managed state slices rather than one growing mega-object. See
+  // `handleCompareDashboard` and `closeDashboard` below.
+  const [dashboardDiff, setDashboardDiff] = useState<DiffState | null>(null)
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -297,15 +304,24 @@ export default function App() {
   // dashboard fast enough would leave two requests in flight, and a
   // status-only guard would accept whichever resolves last even if it's stale.
   const dashboardRequestIdRef = useRef(0)
+  // Same guard, for `handleCompareDashboard`'s `getComplexityDiff` request --
+  // independent of `dashboardRequestIdRef` since a compare can be in flight
+  // (or invalidated) on its own, without the dashboard's own initial fetch
+  // being re-triggered.
+  const dashboardDiffRequestIdRef = useRef(0)
 
-  // The one place that closes the dashboard from *outside* `handleToggleDashboard`
-  // itself (a repo switch, opening a different pane) -- always bumps the request id
-  // too, or a fetch still in flight when this fires could resolve afterwards and
-  // resurrect a dashboard the user already left, exactly like a plain `setDashboard(null)`
-  // would if `handleToggleDashboard`'s own close branch didn't also bump it.
+  // The single chokepoint for closing the dashboard, whether from *outside*
+  // `handleToggleDashboard` (a repo switch, opening a different pane, an
+  // external selection) or from `handleToggleDashboard`'s own close branch,
+  // which calls this instead of duplicating the close logic inline -- always
+  // bumps *both* request-id refs and clears `dashboardDiff` too, or a fetch
+  // still in flight (the dashboard's own, or a compare's) when this fires
+  // could resolve afterwards and resurrect state the user already left.
   const closeDashboard = useCallback(() => {
     dashboardRequestIdRef.current += 1
+    dashboardDiffRequestIdRef.current += 1
     setDashboard(null)
+    setDashboardDiff(null)
   }, [])
 
   useEffect(() => {
@@ -841,20 +857,22 @@ export default function App() {
   // since both live in the space the dashboard is about to take over.
   const handleToggleDashboard = useCallback(async () => {
     if (!repo) return
-    // Bumped on every toggle, close included -- closing while a fetch is still
-    // in flight must invalidate it too, or that fetch resolving later can
-    // resurrect a dashboard the user already dismissed (the id alone wouldn't
-    // catch that: nothing else would move it forward before the response
-    // arrives).
-    const requestId = ++dashboardRequestIdRef.current
+    // Routed through `closeDashboard` (not a duplicated inline
+    // `setDashboard(null)`) so this branch also bumps `dashboardDiffRequestIdRef`
+    // and clears `dashboardDiff` -- closing the dashboard while a compare is
+    // still in flight must invalidate that too, or it can resolve afterwards
+    // and resurrect a dashboard (and diff results) the user already left.
     if (dashboard) {
-      setDashboard(null)
+      closeDashboard()
       return
     }
     cancelGeneration()
     setPane(null)
     setFlowchartState(null)
+    setDashboardDiff(null)
+    dashboardDiffRequestIdRef.current += 1
     setDashboard({ status: 'loading' })
+    const requestId = ++dashboardRequestIdRef.current
     try {
       const result = await getComplexity(repo.path)
       if (dashboardRequestIdRef.current !== requestId) return
@@ -863,7 +881,68 @@ export default function App() {
       if (dashboardRequestIdRef.current !== requestId) return
       setDashboard({ status: 'error', message: errorMessage(error) })
     }
-  }, [repo, dashboard, cancelGeneration])
+  }, [repo, dashboard, cancelGeneration, closeDashboard])
+
+  // Re-parses the repo (picking up whatever changed on disk since it was
+  // last parsed -- an AI agent's edit, or a hand edit) and diffs the fresh
+  // complexity scores against whatever was cached the last time this path's
+  // complexity was computed. Deliberately not `handleLoad`: that resets
+  // selection/view/visibleIds/etc. far beyond what a compare-while-already-
+  // in-the-dashboard action should touch -- this instead refreshes `repo` in
+  // place, the same shape `handleDataSourceIngestComplete` below already
+  // uses for "merge fresh data into state without resetting everything else."
+  const handleCompareDashboard = useCallback(async () => {
+    if (!repo || dashboard?.status !== 'loaded') return
+    const requestId = ++dashboardDiffRequestIdRef.current
+    setDashboardDiff({ status: 'loading' })
+    try {
+      // `getLastRepoPath()`, not `repo.path` -- `setRememberedLanguage` was
+      // written under the *raw* path passed to `handleLoad`, but `repo.path`
+      // is the backend-resolved one (`cache.py`'s own `Path(path).resolve()`);
+      // they can differ (Windows path separators, relative vs. resolved), so
+      // looking up by `repo.path` would silently miss and reparse with the
+      // wrong language. Mirrors exactly how `rememberedLanguage` is looked up
+      // for the initial load below.
+      const language = getRememberedLanguage(getLastRepoPath() ?? repo.path) ?? undefined
+      const parseResult = await parseRepo(repo.path, repo.docRoot, language)
+      const graph = await getGraph(parseResult.path)
+      if (dashboardDiffRequestIdRef.current !== requestId) return
+      setRepo((prev) =>
+        prev
+          ? {
+              ...prev,
+              nodes: graph.nodes,
+              edges: graph.edges,
+              nodeCount: parseResult.node_count,
+              edgeCount: parseResult.edge_count,
+              parseErrors: parseResult.parse_errors,
+            }
+          : prev,
+      )
+      // A function this compare removed can have been visible (in
+      // `visibleIds`) before the edit -- `buildVisibleGraph` already ignores
+      // an id with no matching node, so nothing renders wrong, but leaving it
+      // in place would silently inflate the sidebar's own "N on canvas" count
+      // (a plain `visibleIds.size`, `Sidebar.tsx`) forever after.
+      const freshNodeIds = new Set(graph.nodes.map((node) => node.id))
+      setVisibleIds((prev) => new Set([...prev].filter((id) => freshNodeIds.has(id))))
+      const diffResult = await getComplexityDiff(repo.path)
+      if (dashboardDiffRequestIdRef.current !== requestId) return
+      setDashboard({ status: 'loaded', scores: diffResult.current })
+      setDashboardDiff({ status: 'loaded', result: diffResult })
+      // Mirrors `handleDataSourceIngestComplete`'s existing precedent of
+      // auto-revealing nodes the user has no other way to discover -- a
+      // function only in `added` is exactly that; `changed` entries already
+      // existed, so (matching today's ranked-list behavior, which never
+      // auto-reveals) those stay click-to-select only.
+      if (diffResult.added.length > 0) {
+        setVisibleIds((prev) => new Set([...prev, ...diffResult.added.map((score) => score.node_id)]))
+      }
+    } catch (error) {
+      if (dashboardDiffRequestIdRef.current !== requestId) return
+      setDashboardDiff({ status: 'error', message: errorMessage(error) })
+    }
+  }, [repo, dashboard])
 
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
@@ -1209,6 +1288,8 @@ export default function App() {
             path={repo.path}
             onSelectNode={handleSelectNode}
             onBack={handleToggleDashboard}
+            diff={dashboardDiff}
+            onCompare={handleCompareDashboard}
           />
         ) : (
           <>

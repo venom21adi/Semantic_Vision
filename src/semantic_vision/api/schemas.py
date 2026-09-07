@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from semantic_vision.analysis.complexity import ComplexityScore
+from semantic_vision.analysis.complexity import ComplexityChange, ComplexityScore
 from semantic_vision.analysis.impact import Caller
 from semantic_vision.flowchart.cfg import FlowEdge, FlowNode
 from semantic_vision.models import Edge, Node, ParseError
@@ -113,6 +113,14 @@ class HealthResponse(BaseModel):
 
 class ComplexityResponse(BaseModel):
     scores: list[ComplexityScore]
+
+
+class ComplexityDiffResponse(BaseModel):
+    available: bool
+    current: list[ComplexityScore]
+    added: list[ComplexityScore] = []
+    removed: list[ComplexityScore] = []
+    changed: list[ComplexityChange] = []
 
 
 class DbtManifestIngestRequest(BaseModel):

@@ -148,6 +148,20 @@ export interface ComplexityResponse {
   scores: ComplexityScore[]
 }
 
+export interface ComplexityChange {
+  node_id: string
+  before: ComplexityScore
+  after: ComplexityScore
+}
+
+export interface ComplexityDiffResponse {
+  available: boolean
+  current: ComplexityScore[]
+  added: ComplexityScore[]
+  removed: ComplexityScore[]
+  changed: ComplexityChange[]
+}
+
 export interface DbtManifestIngestResponse {
   models_ingested: number
   tables_reconciled: number

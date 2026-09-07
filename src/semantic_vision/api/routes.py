@@ -8,11 +8,13 @@ from fastapi.responses import StreamingResponse
 
 from semantic_vision.ai.context import assemble_context, assemble_file_context
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
+from semantic_vision.analysis.complexity import diff_complexity_indexes
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.host_path import translate_host_path
 from semantic_vision.api.repo_cache_sync import sync_to_fast_cache
 from semantic_vision.api.schemas import (
+    ComplexityDiffResponse,
     ComplexityResponse,
     DbConnectionIngestRequest,
     DbConnectionIngestResponse,
@@ -377,6 +379,29 @@ def get_complexity(path: str = Query(...)) -> ComplexityResponse:
     _get_cached(path)
     complexity_index = cache.get_or_build_complexity_index(path)
     return ComplexityResponse(scores=list(complexity_index.values()))
+
+
+@router.get("/complexity/diff", response_model=ComplexityDiffResponse)
+def get_complexity_diff(path: str = Query(...)) -> ComplexityDiffResponse:
+    """Compares the repo's current complexity scores against whatever was
+    cached the last time this path's complexity was computed (see
+    `RepoCache.get_current_and_previous_complexity_index`) -- lets a caller
+    (e.g. after an AI coding agent's edit) see which functions got more or
+    less complex, or were added/removed, since the last look. The caller is
+    expected to have already reparsed via `POST /api/parse-repo` for
+    `current` to reflect any edits; this endpoint itself never reparses."""
+    _get_cached(path)
+    current, previous = cache.get_current_and_previous_complexity_index(path)
+    if previous is None:
+        return ComplexityDiffResponse(available=False, current=list(current.values()))
+    added, removed, changed = diff_complexity_indexes(previous, current)
+    return ComplexityDiffResponse(
+        available=True,
+        current=list(current.values()),
+        added=added,
+        removed=removed,
+        changed=changed,
+    )
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)

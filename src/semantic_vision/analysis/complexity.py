@@ -61,6 +61,12 @@ class ComplexityScore(BaseModel):
     has_nested_loops: bool
 
 
+class ComplexityChange(BaseModel):
+    node_id: str
+    before: ComplexityScore
+    after: ComplexityScore
+
+
 def build_forward_call_index(edges: list[Edge]) -> dict[str, list[str]]:
     """Maps a node id to the ids of nodes it has a `calls` edge to, i.e.
     its direct callees -- the opposite direction of
@@ -410,3 +416,40 @@ def build_complexity_index(
             has_nested_loops=False,
         )
     return scores
+
+
+def diff_complexity_indexes(
+    before: dict[str, ComplexityScore], after: dict[str, ComplexityScore]
+) -> tuple[list[ComplexityScore], list[ComplexityScore], list[ComplexityChange]]:
+    """Buckets every function into added / removed / changed relative to an
+    earlier index -- typically the previous time this repo's complexity was
+    looked at (see `RepoCache.get_current_and_previous_complexity_index`), compared
+    against a fresh reparse. A function present in both with identical
+    scores is omitted entirely, keeping the result small for the common
+    case of an edit touching only a handful of functions in a large repo.
+    """
+    before_ids = set(before)
+    after_ids = set(after)
+
+    added = sorted(
+        (after[node_id] for node_id in after_ids - before_ids),
+        key=lambda score: score.cyclomatic_complexity,
+        reverse=True,
+    )
+    removed = sorted(
+        (before[node_id] for node_id in before_ids - after_ids),
+        key=lambda score: score.cyclomatic_complexity,
+        reverse=True,
+    )
+    changed = sorted(
+        (
+            ComplexityChange(node_id=node_id, before=before[node_id], after=after[node_id])
+            for node_id in before_ids & after_ids
+            if before[node_id] != after[node_id]
+        ),
+        key=lambda change: abs(
+            change.after.cyclomatic_complexity - change.before.cyclomatic_complexity
+        ),
+        reverse=True,
+    )
+    return added, removed, changed

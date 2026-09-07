@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from semantic_vision.analysis.complexity import ComplexityScore, build_complexity_index
+from semantic_vision.analysis.complexity import (
+    ComplexityScore,
+    build_complexity_index,
+    diff_complexity_indexes,
+)
 from semantic_vision.repo_parser import parse_repository
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -381,3 +385,100 @@ def test_java_call_chain_depth_cap_is_honored_on_a_cyclic_chain():
     score = _java_score("cyclic0")
 
     assert score.call_chain_depth == 5
+
+
+def _make_score(
+    node_id: str, complexity: int = 1, depth: int = 0, nested: bool = False
+) -> ComplexityScore:
+    return ComplexityScore(
+        node_id=node_id,
+        cyclomatic_complexity=complexity,
+        call_chain_depth=depth,
+        has_nested_loops=nested,
+    )
+
+
+def test_diff_buckets_a_node_only_in_after_as_added():
+    before = {"a": _make_score("a")}
+    after = {"a": _make_score("a"), "b": _make_score("b", complexity=3)}
+
+    added, removed, changed = diff_complexity_indexes(before, after)
+
+    assert [s.node_id for s in added] == ["b"]
+    assert removed == []
+    assert changed == []
+
+
+def test_diff_buckets_a_node_only_in_before_as_removed():
+    before = {"a": _make_score("a"), "b": _make_score("b", complexity=3)}
+    after = {"a": _make_score("a")}
+
+    added, removed, changed = diff_complexity_indexes(before, after)
+
+    assert added == []
+    assert [s.node_id for s in removed] == ["b"]
+    assert changed == []
+
+
+def test_diff_buckets_a_node_with_a_differing_field_as_changed():
+    before = {"a": _make_score("a", complexity=2)}
+    after = {"a": _make_score("a", complexity=5)}
+
+    added, removed, changed = diff_complexity_indexes(before, after)
+
+    assert added == []
+    assert removed == []
+    assert len(changed) == 1
+    assert changed[0].node_id == "a"
+    assert changed[0].before.cyclomatic_complexity == 2
+    assert changed[0].after.cyclomatic_complexity == 5
+
+
+def test_diff_omits_a_node_present_in_both_with_identical_scores():
+    before = {"a": _make_score("a", complexity=2, depth=1, nested=True)}
+    after = {"a": _make_score("a", complexity=2, depth=1, nested=True)}
+
+    added, removed, changed = diff_complexity_indexes(before, after)
+
+    assert added == removed == changed == []
+
+
+def test_diff_detects_a_change_in_a_non_complexity_field_too():
+    before = {"a": _make_score("a", complexity=2, nested=False)}
+    after = {"a": _make_score("a", complexity=2, nested=True)}
+
+    _, _, changed = diff_complexity_indexes(before, after)
+
+    assert len(changed) == 1
+    assert changed[0].before.has_nested_loops is False
+    assert changed[0].after.has_nested_loops is True
+
+
+def test_diff_sorts_added_and_removed_by_complexity_descending():
+    before: dict[str, ComplexityScore] = {}
+    after = {
+        "low": _make_score("low", complexity=1),
+        "high": _make_score("high", complexity=9),
+        "mid": _make_score("mid", complexity=4),
+    }
+
+    added, _, _ = diff_complexity_indexes(before, after)
+
+    assert [s.node_id for s in added] == ["high", "mid", "low"]
+
+
+def test_diff_sorts_changed_by_absolute_complexity_delta_descending():
+    before = {
+        "small_delta": _make_score("small_delta", complexity=5),
+        "big_delta": _make_score("big_delta", complexity=1),
+        "negative_delta": _make_score("negative_delta", complexity=10),
+    }
+    after = {
+        "small_delta": _make_score("small_delta", complexity=6),  # +1
+        "big_delta": _make_score("big_delta", complexity=8),  # +7
+        "negative_delta": _make_score("negative_delta", complexity=2),  # -8
+    }
+
+    _, _, changed = diff_complexity_indexes(before, after)
+
+    assert [c.node_id for c in changed] == ["negative_delta", "big_delta", "small_delta"]
