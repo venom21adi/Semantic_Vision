@@ -969,6 +969,145 @@ def test_complexity_diff_ref_compares_two_arbitrary_commits_when_to_ref_is_given
     assert "app.py::unrelated_dirty_state" not in added_ids | removed_ids | set(changed_by_id)
 
 
+def test_complexity_hotspots_requires_prior_parse():
+    resp = client.get(
+        "/api/complexity/hotspots", params={"path": str(FIXTURES / "simple_repo")}
+    )
+
+    assert resp.status_code == 404
+
+
+def test_complexity_hotspots_reports_is_git_repo_false_for_a_non_git_path(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/hotspots", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["is_git_repo"] is False
+    assert body["scores"] == []
+
+
+def test_complexity_hotspots_ranks_by_complexity_times_change_count(tmp_path: Path):
+    _init_git_repo(tmp_path)
+    app_py = tmp_path / "app.py"
+    other_py = tmp_path / "other.py"
+
+    app_py.write_text(
+        "def rarely_touched():\n"
+        "    if True:\n"
+        "        if True:\n"
+        "            if True:\n"
+        "                return 1\n"
+        "    return 2\n",
+        encoding="utf-8",
+    )
+    other_py.write_text("def simple():\n    return 1\n", encoding="utf-8")
+    _git_commit(tmp_path, "first commit")
+
+    # `other.py::simple` gets touched twice more -- low complexity but high
+    # churn should still be able to outrank a higher-complexity function
+    # that was only ever committed once.
+    other_py.write_text("def simple():\n    return 2\n", encoding="utf-8")
+    _git_commit(tmp_path, "second commit")
+    other_py.write_text("def simple():\n    return 3\n", encoding="utf-8")
+    _git_commit(tmp_path, "third commit")
+
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/hotspots", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["is_git_repo"] is True
+    assert body["window_days"] == 90
+    by_id = {s["node_id"]: s for s in body["scores"]}
+
+    assert by_id["app.py::rarely_touched"]["change_count"] == 1
+    assert by_id["app.py::rarely_touched"]["cyclomatic_complexity"] == 4
+    assert by_id["app.py::rarely_touched"]["hotspot_score"] == 4
+
+    assert by_id["other.py::simple"]["change_count"] == 3
+    assert by_id["other.py::simple"]["cyclomatic_complexity"] == 1
+    assert by_id["other.py::simple"]["hotspot_score"] == 3
+
+    # Backend returns scores pre-sorted, descending by hotspot_score.
+    assert [s["node_id"] for s in body["scores"]] == ["app.py::rarely_touched", "other.py::simple"]
+
+
+def test_complexity_hotspots_window_days_excludes_older_commits(tmp_path: Path):
+    import os
+    import subprocess
+
+    _init_git_repo(tmp_path)
+    app_py = tmp_path / "app.py"
+    app_py.write_text("def f():\n    return 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True, capture_output=True)
+    old_date = "2000-01-01T00:00:00"
+    subprocess.run(
+        ["git", "commit", "-m", "old commit"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "GIT_AUTHOR_DATE": old_date, "GIT_COMMITTER_DATE": old_date},
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get(
+        "/api/complexity/hotspots", params={"path": repo_path, "window_days": 30}
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["window_days"] == 30
+    by_id = {s["node_id"]: s for s in body["scores"]}
+    assert by_id["app.py::f"]["change_count"] == 0
+    assert by_id["app.py::f"]["hotspot_score"] == 0
+
+
+def test_complexity_hotspots_offsets_churn_correctly_for_a_subdirectory_parse(tmp_path: Path):
+    # The exact node-id-misalignment bug class caught by a prior review of
+    # the ref-diff feature: when the parsed path is a *subdirectory* of the
+    # git root, node ids come out relative to that subdirectory (`app.py::f`)
+    # but `git log --numstat` reports paths relative to the git root
+    # (`backend/app.py`) -- the route has to bridge the two via `offset`.
+    _init_git_repo(tmp_path)
+    (tmp_path / "backend").mkdir()
+    backend_app = tmp_path / "backend" / "app.py"
+    backend_app.write_text("def f():\n    return 1\n", encoding="utf-8")
+    (tmp_path / "unrelated.txt").write_text("outside the parsed subdirectory", encoding="utf-8")
+    _git_commit(tmp_path, "first commit")
+
+    backend_app.write_text("def f():\n    return 2\n", encoding="utf-8")
+    _git_commit(tmp_path, "second commit touching backend/app.py")
+
+    (tmp_path / "unrelated.txt").write_text(
+        "changed, but outside the parsed subtree", encoding="utf-8"
+    )
+    _git_commit(tmp_path, "third commit touching only unrelated.txt")
+
+    repo_path = str(tmp_path / "backend")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/complexity/hotspots", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["is_git_repo"] is True
+    by_id = {s["node_id"]: s for s in body["scores"]}
+    # Node id is relative to the parsed subdirectory ("app.py::f", not
+    # "backend/app.py::f"), but its churn count must reflect the 2 commits
+    # that touched "backend/app.py" at the git-root-relative path -- not 0
+    # (offset computed wrong, nothing matches) and not 3 (the unrelated
+    # top-level commit incorrectly folded in).
+    assert by_id["app.py::f"]["change_count"] == 2
+
+
 def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisition(monkeypatch):
     """`get_current_and_previous_complexity_index` exists specifically so
     `current` and `previous` are read as one atomic operation: reading them

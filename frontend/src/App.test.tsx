@@ -33,6 +33,7 @@ vi.mock('./api/client', async (importOriginal) => {
     getComplexityDiff: vi.fn(),
     getGitRefs: vi.fn(),
     getComplexityDiffRef: vi.fn(),
+    getComplexityHotspots: vi.fn(),
     ingestDbtManifest: vi.fn(),
     ingestDbConnection: vi.fn(),
   }
@@ -1540,6 +1541,156 @@ describe('App', () => {
     expect(Array.from(document.body.querySelectorAll('option')).map((o) => o.value)).toEqual([
       'second-session-branch',
     ])
+  })
+
+  it('lazily loads hotspots only when the Hotspots tab is first opened', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getComplexityHotspots.mockResolvedValue({
+      is_git_repo: true,
+      scores: [{ node_id: 'app.py::hot', cyclomatic_complexity: 3, change_count: 4, hotspot_score: 12 }],
+      window_days: 90,
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    expect(mockedClient.getComplexityHotspots).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledWith('/repo', 90))
+    await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
+  })
+
+  it('loads hotspots even when clicked before the complexity fetch has resolved', async () => {
+    // The Hotspots tab is never disabled while `dashboard` is still
+    // loading (unlike the Compare button, which is) -- `handleLoadHotspots`
+    // must not silently no-op just because the unrelated complexity fetch
+    // hasn't settled yet, or the tab gets stuck on "Loading…" until a
+    // second, later click happens to land after it does.
+    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
+    mockedClient.getComplexity.mockImplementationOnce(
+      () => new Promise((resolve) => (resolveComplexity = resolve)),
+    )
+    mockedClient.getComplexityHotspots.mockResolvedValue({
+      is_git_repo: true,
+      scores: [{ node_id: 'app.py::hot', cyclomatic_complexity: 3, change_count: 4, hotspot_score: 12 }],
+      window_days: 90,
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    // At this point `dashboard` is still `{ status: 'loading' }` -- the
+    // complexity fetch hasn't resolved yet.
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledWith('/repo', 90))
+    await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
+
+    resolveComplexity({ scores: [] })
+  })
+
+  it('clears hotspots when the dashboard is closed', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getComplexityHotspots.mockResolvedValue({
+      is_git_repo: true,
+      scores: [{ node_id: 'app.py::hot', cyclomatic_complexity: 3, change_count: 4, hotspot_score: 12 }],
+      window_days: 90,
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    // A fresh session must fetch again -- the previous session's result was
+    // cleared, not carried over silently.
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(2))
+  })
+
+  it('ignores a stale hotspots response that resolves after closing and reopening the dashboard', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    let resolveFirstHotspots: (value: Awaited<ReturnType<typeof client.getComplexityHotspots>>) => void =
+      () => {}
+    mockedClient.getComplexityHotspots
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstHotspots = resolve)))
+      .mockResolvedValueOnce({
+        is_git_repo: true,
+        scores: [{ node_id: 'second', cyclomatic_complexity: 1, change_count: 1, hotspot_score: 1 }],
+        window_days: 90,
+      })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(1))
+
+    // Close, then reopen a fresh dashboard session while the first
+    // session's hotspots fetch is still in flight.
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText(/second/)).toBeInTheDocument())
+
+    // The first (stale) session's hotspots resolve only now -- must not
+    // overwrite the second, current session's result.
+    resolveFirstHotspots({
+      is_git_repo: true,
+      scores: [{ node_id: 'stale', cyclomatic_complexity: 1, change_count: 1, hotspot_score: 1 }],
+      window_days: 90,
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.getByText(/second/)).toBeInTheDocument()
+    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
+  })
+
+  it('ignores a stale hotspots response for an earlier window when a newer window was selected first', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    let resolveNinetyDayFetch: (value: Awaited<ReturnType<typeof client.getComplexityHotspots>>) => void =
+      () => {}
+    mockedClient.getComplexityHotspots
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveNinetyDayFetch = resolve)))
+      .mockResolvedValueOnce({
+        is_git_repo: true,
+        scores: [{ node_id: 'thirty-day', cyclomatic_complexity: 1, change_count: 1, hotspot_score: 1 }],
+        window_days: 30,
+      })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    // Opens the tab (fires the 90-day fetch, left pending) then immediately
+    // switches the window selector to 30 days (fires a second fetch) before
+    // the first one resolves.
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(1))
+    await user.selectOptions(screen.getByLabelText('Window'), '30')
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText(/thirty-day/)).toBeInTheDocument())
+
+    // The stale 90-day fetch resolves only now -- must not clobber the
+    // newer, current 30-day result the user is actually looking at.
+    resolveNinetyDayFetch({
+      is_git_repo: true,
+      scores: [{ node_id: 'ninety-day', cyclomatic_complexity: 1, change_count: 1, hotspot_score: 1 }],
+      window_days: 90,
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.getByText(/thirty-day/)).toBeInTheDocument()
+    expect(screen.queryByText(/ninety-day/)).not.toBeInTheDocument()
   })
 
   it('opens and closes the Add tables & models panel via the sidebar toggle', async () => {

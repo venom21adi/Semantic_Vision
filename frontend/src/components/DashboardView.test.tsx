@@ -1,7 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { ComplexityDiffResponse, ComplexityRefDiffResponse, ComplexityScore, GraphNode } from '../api/types'
+import type {
+  ComplexityDiffResponse,
+  ComplexityRefDiffResponse,
+  ComplexityScore,
+  GraphNode,
+  HotspotScore,
+} from '../api/types'
 import { DashboardView } from './DashboardView'
 
 const scores: ComplexityScore[] = [
@@ -25,6 +31,8 @@ function renderDashboard(overrides: Partial<React.ComponentProps<typeof Dashboar
     graphNodes,
     graphEdges: [],
     selectedNodeId: null,
+    hotspots: null,
+    onLoadHotspots: vi.fn(),
     ...overrides,
   }
   return { ...render(<DashboardView {...props} />), props }
@@ -224,5 +232,117 @@ describe('DashboardView', () => {
     await user.click(screen.getByRole('button', { name: 'Compare' }))
 
     expect(props.onCompareToRef).toHaveBeenCalledWith('main', 'main', 'feature', 'feature')
+  })
+
+  const hotspotScores: HotspotScore[] = [
+    { node_id: 'app.py::hot', cyclomatic_complexity: 3, change_count: 4, hotspot_score: 12 },
+  ]
+
+  it('calls onLoadHotspots(90) exactly once the first time the Hotspots tab is opened', async () => {
+    const user = userEvent.setup()
+    const { props, rerender } = renderDashboard()
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(props.onLoadHotspots).toHaveBeenCalledTimes(1)
+    expect(props.onLoadHotspots).toHaveBeenCalledWith(90)
+
+    // Simulate the fetch resolving -- in the real app, `App.tsx`'s
+    // `handleLoadHotspots` would now pass a non-null `hotspots` prop, so a
+    // later reselect must not fetch again.
+    rerender(
+      <DashboardView
+        {...props}
+        hotspots={{ status: 'loaded', windowDays: 90, result: { is_git_repo: true, scores: [], window_days: 90 } }}
+      />,
+    )
+    await user.click(screen.getByRole('button', { name: 'Complexity' }))
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(props.onLoadHotspots).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not refetch hotspots on reselect once a result already exists', async () => {
+    const user = userEvent.setup()
+    const { props } = renderDashboard({
+      hotspots: { status: 'loaded', windowDays: 90, result: { is_git_repo: true, scores: hotspotScores, window_days: 90 } },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await user.click(screen.getByRole('button', { name: 'Complexity' }))
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(props.onLoadHotspots).not.toHaveBeenCalled()
+  })
+
+  it('shows the loading state while hotspots are loading', async () => {
+    const user = userEvent.setup()
+    renderDashboard({ hotspots: { status: 'loading', windowDays: 90 } })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(screen.getByText('Loading…')).toBeInTheDocument()
+  })
+
+  it('shows an error message when hotspots fail to load', async () => {
+    const user = userEvent.setup()
+    renderDashboard({ hotspots: { status: 'error', windowDays: 90, message: 'hotspot boom' } })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('hotspot boom')
+  })
+
+  it('shows a not-a-git-repo message on the Hotspots tab', async () => {
+    const user = userEvent.setup()
+    renderDashboard({
+      hotspots: { status: 'loaded', windowDays: 90, result: { is_git_repo: false, scores: [], window_days: 90 } },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(screen.getByText(/Not a git repository/)).toBeInTheDocument()
+  })
+
+  it('renders the ranked hotspot list once loaded', async () => {
+    const user = userEvent.setup()
+    renderDashboard({
+      hotspots: {
+        status: 'loaded',
+        windowDays: 90,
+        result: { is_git_repo: true, scores: hotspotScores, window_days: 90 },
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument()
+  })
+
+  it('calls onLoadHotspots with the new value when the window selector changes', async () => {
+    const user = userEvent.setup()
+    const { props } = renderDashboard({
+      hotspots: {
+        status: 'loaded',
+        windowDays: 90,
+        result: { is_git_repo: true, scores: hotspotScores, window_days: 90 },
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await user.selectOptions(screen.getByLabelText('Window'), '30')
+
+    expect(props.onLoadHotspots).toHaveBeenCalledWith(30)
+  })
+
+  it('keeps the complexity split view unaffected when switching back from Hotspots', async () => {
+    const user = userEvent.setup()
+    renderDashboard()
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+    await user.click(screen.getByRole('button', { name: 'Complexity' }))
+
+    expect(screen.getByText('Functions scored')).toBeInTheDocument()
+    expect(screen.getByText('handler')).toBeInTheDocument()
   })
 })

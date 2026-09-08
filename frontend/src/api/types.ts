@@ -183,6 +183,19 @@ export interface ComplexityRefDiffResponse {
   changed: ComplexityChange[]
 }
 
+export interface HotspotScore {
+  node_id: string
+  cyclomatic_complexity: number
+  change_count: number
+  hotspot_score: number
+}
+
+export interface HotspotsResponse {
+  is_git_repo: boolean
+  scores: HotspotScore[]
+  window_days: number
+}
+
 export interface DbtManifestIngestResponse {
   models_ingested: number
   tables_reconciled: number

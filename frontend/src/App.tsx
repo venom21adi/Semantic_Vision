@@ -5,6 +5,7 @@ import {
   getComplexity,
   getComplexityDiff,
   getComplexityDiffRef,
+  getComplexityHotspots,
   getDefaultVisibleIds,
   getDoc,
   getFlowchart,
@@ -30,7 +31,13 @@ import type {
   NodePosition,
   ParseErrorInfo,
 } from './api/types'
-import { DashboardView, type DashboardState, type DiffMode, type DiffState } from './components/DashboardView'
+import {
+  DashboardView,
+  type DashboardState,
+  type DiffMode,
+  type DiffState,
+  type HotspotsState,
+} from './components/DashboardView'
 import type { GitRefsState } from './components/RefPicker'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { DemoRepoPicker } from './components/DemoRepoPicker'
@@ -205,6 +212,14 @@ export default function App() {
   // (Idea 3a) -- fetched once when the dashboard opens, alongside the
   // scores fetch, and cleared by the same `closeDashboard` chokepoint.
   const [gitRefs, setGitRefs] = useState<GitRefsState | null>(null)
+  // The dashboard's Hotspots tab (Idea 2 + Idea 3 of
+  // docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md) -- unlike `dashboard`/`gitRefs`,
+  // fetched lazily (see `handleLoadHotspots`/`DashboardView`'s own
+  // `handleSelectHotspotsTab`) the first time that tab is opened, not eagerly
+  // alongside the rest of the dashboard. Still a flat sibling state slice,
+  // still cleared by `closeDashboard` -- the exact chokepoint this dashboard's
+  // own `DiffMode` comment already warns future additions to wire into.
+  const [hotspots, setHotspots] = useState<HotspotsState | null>(null)
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -316,20 +331,28 @@ export default function App() {
   // (or invalidated) on its own, without the dashboard's own initial fetch
   // being re-triggered.
   const dashboardDiffRequestIdRef = useRef(0)
+  // Same guard, for `handleLoadHotspots`'s `getComplexityHotspots` request --
+  // independent of the other two since the Hotspots tab fetches lazily and
+  // on its own schedule (first open, then again on every window-size change),
+  // not tied to the dashboard's initial load or a complexity compare.
+  const hotspotsRequestIdRef = useRef(0)
 
   // The single chokepoint for closing the dashboard, whether from *outside*
   // `handleToggleDashboard` (a repo switch, opening a different pane, an
   // external selection) or from `handleToggleDashboard`'s own close branch,
   // which calls this instead of duplicating the close logic inline -- always
-  // bumps *both* request-id refs and clears `dashboardDiff` too, or a fetch
-  // still in flight (the dashboard's own, or a compare's) when this fires
-  // could resolve afterwards and resurrect state the user already left.
+  // bumps *all three* request-id refs and clears `dashboardDiff`/`hotspots`
+  // too, or a fetch still in flight (the dashboard's own, a compare's, or a
+  // hotspots load) when this fires could resolve afterwards and resurrect
+  // state the user already left.
   const closeDashboard = useCallback(() => {
     dashboardRequestIdRef.current += 1
     dashboardDiffRequestIdRef.current += 1
+    hotspotsRequestIdRef.current += 1
     setDashboard(null)
     setDashboardDiff(null)
     setGitRefs(null)
+    setHotspots(null)
   }, [])
 
   useEffect(() => {
@@ -991,6 +1014,34 @@ export default function App() {
     [repo, dashboard],
   )
 
+  // Fetches the Hotspots tab's ranking for a given churn window -- called
+  // lazily by `DashboardView` (first tab open, then again on every
+  // window-size change), never eagerly alongside the rest of the dashboard.
+  // Deliberately only guarded on `repo` existing, unlike the two compare
+  // handlers above (which also require `dashboard?.status === 'loaded'`
+  // since a compare replaces/reads the dashboard's own scores) -- hotspots
+  // data is independent of the complexity fetch, so gating on it too would
+  // silently no-op a click on the Hotspots tab made before that unrelated
+  // fetch resolves (the tab itself isn't disabled while it's in flight,
+  // unlike the Compare button), leaving the tab stuck on "Loading…" until
+  // a second click happened to land after `dashboard` settled.
+  const handleLoadHotspots = useCallback(
+    async (windowDays: number) => {
+      if (!repo) return
+      const requestId = ++hotspotsRequestIdRef.current
+      setHotspots({ status: 'loading', windowDays })
+      try {
+        const result = await getComplexityHotspots(repo.path, windowDays)
+        if (hotspotsRequestIdRef.current !== requestId) return
+        setHotspots({ status: 'loaded', windowDays, result })
+      } catch (error) {
+        if (hotspotsRequestIdRef.current !== requestId) return
+        setHotspots({ status: 'error', windowDays, message: errorMessage(error) })
+      }
+    },
+    [repo],
+  )
+
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
     if (pane?.kind === 'dataSource') {
@@ -1342,6 +1393,8 @@ export default function App() {
             graphNodes={repo.nodes}
             graphEdges={repo.edges}
             selectedNodeId={selectedNodeId}
+            hotspots={hotspots}
+            onLoadHotspots={handleLoadHotspots}
           />
         ) : (
           <>

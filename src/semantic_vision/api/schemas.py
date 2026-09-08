@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from semantic_vision.analysis.complexity import ComplexityChange, ComplexityScore
+from semantic_vision.analysis.hotspots import HotspotScore
 from semantic_vision.analysis.impact import Caller
 from semantic_vision.flowchart.cfg import FlowEdge, FlowNode
 from semantic_vision.models import Edge, Node, ParseError
@@ -149,6 +150,12 @@ class ComplexityRefDiffResponse(BaseModel):
     added: list[ComplexityScore] = []
     removed: list[ComplexityScore] = []
     changed: list[ComplexityChange] = []
+
+
+class HotspotsResponse(BaseModel):
+    is_git_repo: bool
+    scores: list[HotspotScore] = []
+    window_days: int
 
 
 class DbtManifestIngestRequest(BaseModel):

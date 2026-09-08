@@ -13,10 +13,12 @@ import type {
   ComplexityScore,
   GraphEdge,
   GraphNode,
+  HotspotsResponse,
 } from '../api/types'
 import { MiniCallGraph } from '../graph/MiniCallGraph'
-import { colors, spacing } from '../theme'
+import { colors, radius, spacing } from '../theme'
 import { getDashboardSplitWidth, setDashboardSplitWidth } from '../utils/localStorage'
+import { HotspotReportPane } from './HotspotReportPane'
 import { PerformanceReportPane } from './PerformanceReportPane'
 import { RefPicker, type GitRefsState } from './RefPicker'
 import { SummaryStatsHeader } from './SummaryStatsHeader'
@@ -41,6 +43,19 @@ export type DiffState =
   | { status: 'loaded'; mode: DiffMode; result: ComplexityDiffResponse | ComplexityRefDiffResponse }
   | { status: 'error'; mode: DiffMode; message: string }
 
+/** The Hotspots tab's data, lazily fetched -- unlike `state`/`gitRefs`,
+ * which both fetch eagerly the moment the dashboard opens (see
+ * `App.tsx`'s `handleToggleDashboard`), this is only requested the first
+ * time the Hotspots tab is actually selected. `windowDays` travels with
+ * each variant (not just a separate piece of state) so a response can
+ * always be matched back to the selector value that requested it. */
+export type HotspotsState =
+  | { status: 'loading'; windowDays: number }
+  | { status: 'loaded'; windowDays: number; result: HotspotsResponse }
+  | { status: 'error'; windowDays: number; message: string }
+
+type DashboardTab = 'complexity' | 'hotspots'
+
 interface DashboardViewProps {
   state: DashboardState
   path: string
@@ -53,12 +68,16 @@ interface DashboardViewProps {
   graphNodes: GraphNode[]
   graphEdges: GraphEdge[]
   selectedNodeId: string | null
+  hotspots: HotspotsState | null
+  onLoadHotspots: (windowDays: number) => void
 }
 
 const MIN_LIST_WIDTH = 360
 const MAX_LIST_WIDTH = 900
 const MIN_GRAPH_WIDTH = 280
 const DEFAULT_LIST_WIDTH = 520
+const DEFAULT_HOTSPOT_WINDOW_DAYS = 90
+const HOTSPOT_WINDOW_OPTIONS = [30, 90, 180]
 
 function clampListWidth(width: number): number {
   const viewportMax = typeof window === 'undefined' ? MAX_LIST_WIDTH : window.innerWidth - MIN_GRAPH_WIDTH
@@ -154,9 +173,17 @@ export function DashboardView({
   graphNodes,
   graphEdges,
   selectedNodeId,
+  hotspots,
+  onLoadHotspots,
 }: DashboardViewProps) {
   const compareDisabled = state.status !== 'loaded' || diff?.status === 'loading'
   const [listWidth, setListWidthState] = useState(() => clampListWidth(getDashboardSplitWidth() ?? DEFAULT_LIST_WIDTH))
+  const [activeTab, setActiveTab] = useState<DashboardTab>('complexity')
+
+  const handleSelectHotspotsTab = useCallback(() => {
+    setActiveTab('hotspots')
+    if (hotspots === null) onLoadHotspots(DEFAULT_HOTSPOT_WINDOW_DAYS)
+  }, [hotspots, onLoadHotspots])
 
   const handleResizeListWidth = useCallback((width: number) => {
     setListWidthState(width)
@@ -194,28 +221,36 @@ export function DashboardView({
         <div>
           <div>Code Health Dashboard</div>
           <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-            Complexity today — more signals land here as they ship.
+            Complexity and churn-weighted hotspots — more signals land here as they ship.
+          </div>
+          <div style={{ display: 'flex', gap: spacing.xs, marginTop: 6 }}>
+            <TabButton label="Complexity" active={activeTab === 'complexity'} onClick={() => setActiveTab('complexity')} />
+            <TabButton label="Hotspots" active={activeTab === 'hotspots'} onClick={handleSelectHotspotsTab} />
           </div>
         </div>
         <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0, alignItems: 'center' }}>
-          <RefPicker state={gitRefs} disabled={compareDisabled} onCompare={onCompareToRef} />
-          <button
-            onClick={onCompare}
-            disabled={compareDisabled}
-            className="sv-interactive"
-            title="Re-parse the repo and compare its complexity against the last time this dashboard fetched it -- see what an edit changed"
-            style={{
-              background: colors.bgPanel,
-              border: `1px solid ${colors.border}`,
-              borderRadius: 4,
-              color: compareDisabled ? colors.textDim : colors.textPrimary,
-              padding: '4px 10px',
-              fontSize: 12,
-              cursor: compareDisabled ? 'default' : 'pointer',
-            }}
-          >
-            {diff?.status === 'loading' && diff.mode.kind === 'last-look' ? 'Comparing…' : 'Compare to last look'}
-          </button>
+          {activeTab === 'complexity' && (
+            <>
+              <RefPicker state={gitRefs} disabled={compareDisabled} onCompare={onCompareToRef} />
+              <button
+                onClick={onCompare}
+                disabled={compareDisabled}
+                className="sv-interactive"
+                title="Re-parse the repo and compare its complexity against the last time this dashboard fetched it -- see what an edit changed"
+                style={{
+                  background: colors.bgPanel,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: 4,
+                  color: compareDisabled ? colors.textDim : colors.textPrimary,
+                  padding: '4px 10px',
+                  fontSize: 12,
+                  cursor: compareDisabled ? 'default' : 'pointer',
+                }}
+              >
+                {diff?.status === 'loading' && diff.mode.kind === 'last-look' ? 'Comparing…' : 'Compare to last look'}
+              </button>
+            </>
+          )}
           <button
             onClick={onBack}
             className="sv-interactive"
@@ -233,34 +268,118 @@ export function DashboardView({
           </button>
         </div>
       </div>
-      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <div style={{ position: 'relative', width: listWidth, flexShrink: 0, overflowY: 'auto', padding: spacing.lg }}>
-          {state.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
-          {state.status === 'error' && (
-            <p role="alert" style={{ color: colors.danger }}>
-              {state.message}
-            </p>
-          )}
-          {state.status === 'loaded' && (
-            <>
-              <SummaryStatsHeader scores={state.scores} />
-              {diff && <DiffPanel diff={diff} onSelectNode={onSelectNode} />}
-              <PerformanceReportPane path={path} scores={state.scores} onSelectNode={onSelectNode} />
-            </>
-          )}
-          <ResizeHandle width={listWidth} onResize={handleResizeListWidth} />
+      {activeTab === 'complexity' ? (
+        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+          <div style={{ position: 'relative', width: listWidth, flexShrink: 0, overflowY: 'auto', padding: spacing.lg }}>
+            {state.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
+            {state.status === 'error' && (
+              <p role="alert" style={{ color: colors.danger }}>
+                {state.message}
+              </p>
+            )}
+            {state.status === 'loaded' && (
+              <>
+                <SummaryStatsHeader scores={state.scores} />
+                {diff && <DiffPanel diff={diff} onSelectNode={onSelectNode} />}
+                <PerformanceReportPane path={path} scores={state.scores} onSelectNode={onSelectNode} />
+              </>
+            )}
+            <ResizeHandle width={listWidth} onResize={handleResizeListWidth} />
+          </div>
+          <div style={{ flex: 1, minWidth: MIN_GRAPH_WIDTH, borderLeft: `1px solid ${colors.bgPanel}` }}>
+            <MiniCallGraph
+              nodes={graphScopedNodes}
+              edges={graphEdges}
+              scores={scores}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={onSelectNode}
+            />
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: MIN_GRAPH_WIDTH, borderLeft: `1px solid ${colors.bgPanel}` }}>
-          <MiniCallGraph
-            nodes={graphScopedNodes}
-            edges={graphEdges}
-            scores={scores}
-            selectedNodeId={selectedNodeId}
-            onSelectNode={onSelectNode}
-          />
+      ) : (
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: spacing.lg }}>
+          <HotspotsPane hotspots={hotspots} onLoadHotspots={onLoadHotspots} onSelectNode={onSelectNode} />
         </div>
-      </div>
+      )}
     </div>
+  )
+}
+
+function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className="sv-interactive"
+      style={{
+        background: active ? colors.bgPanel : 'transparent',
+        border: `1px solid ${active ? colors.border : 'transparent'}`,
+        borderRadius: 4,
+        color: active ? colors.textPrimary : colors.textMuted,
+        padding: '2px 8px',
+        fontSize: 11,
+        cursor: 'pointer',
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+const hotspotSelectStyle = {
+  background: colors.bgPage,
+  color: colors.textPrimary,
+  border: `1px solid ${colors.bgPanel}`,
+  borderRadius: radius.sm,
+  padding: '4px 6px',
+  fontSize: 12,
+} as const
+
+function HotspotsPane({
+  hotspots,
+  onLoadHotspots,
+  onSelectNode,
+}: {
+  hotspots: HotspotsState | null
+  onLoadHotspots: (windowDays: number) => void
+  onSelectNode: (nodeId: string) => void
+}) {
+  const windowDays = hotspots?.windowDays ?? DEFAULT_HOTSPOT_WINDOW_DAYS
+
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
+        <label htmlFor="sv-hotspot-window" style={{ fontSize: 12, color: colors.textMuted }}>
+          Window
+        </label>
+        <select
+          id="sv-hotspot-window"
+          value={windowDays}
+          onChange={(event) => onLoadHotspots(Number(event.target.value))}
+          style={hotspotSelectStyle}
+        >
+          {HOTSPOT_WINDOW_OPTIONS.map((days) => (
+            <option key={days} value={days}>
+              Last {days} days
+            </option>
+          ))}
+        </select>
+      </div>
+      {hotspots === null || hotspots.status === 'loading' ? (
+        <p style={{ color: colors.textMuted }}>Loading…</p>
+      ) : hotspots.status === 'error' ? (
+        <p role="alert" style={{ color: colors.danger }}>
+          {hotspots.message}
+        </p>
+      ) : !hotspots.result.is_git_repo ? (
+        <p style={{ color: colors.textMuted }}>
+          Not a git repository — hotspot ranking needs git history to compute churn.
+        </p>
+      ) : (
+        <HotspotReportPane scores={hotspots.result.scores} onSelectNode={onSelectNode} />
+      )}
+    </>
   )
 }
 

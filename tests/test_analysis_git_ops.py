@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import semantic_vision.analysis.git_ops as git_ops
 from semantic_vision.analysis.git_ops import (
     GitError,
     checked_out_worktree,
+    compute_file_churn,
     find_git_root,
     list_refs,
     parse_ref,
@@ -117,3 +119,136 @@ def test_run_git_raises_git_error_when_git_is_not_installed(tmp_path: Path, monk
 
     with pytest.raises(GitError, match="not installed"):
         list_refs(tmp_path)
+
+
+def _commit_dated(root: Path, message: str, iso_date: str) -> None:
+    """Commits with an explicit author/committer date, for testing
+    `compute_file_churn`'s `--since` window filtering deterministically."""
+    _git(["add", "-A"], root)
+    env = {**os.environ, "GIT_AUTHOR_DATE": iso_date, "GIT_COMMITTER_DATE": iso_date}
+    subprocess.run(
+        ["git", "commit", "-m", message],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
+def test_compute_file_churn_counts_commits_touching_each_file(tmp_path: Path):
+    _init_repo(tmp_path)
+    (tmp_path / "a.py").write_text("a1", encoding="utf-8")
+    _commit(tmp_path, "touch a")
+    (tmp_path / "a.py").write_text("a2", encoding="utf-8")
+    (tmp_path / "b.py").write_text("b1", encoding="utf-8")
+    _commit(tmp_path, "touch a and b")
+    (tmp_path / "b.py").write_text("b2", encoding="utf-8")
+    _commit(tmp_path, "touch b")
+    (tmp_path / "c.py").write_text("c1", encoding="utf-8")
+    _commit(tmp_path, "touch c")
+
+    churn = compute_file_churn(tmp_path, window_days=3650)
+
+    assert churn == {"a.py": 2, "b.py": 2, "c.py": 1}
+
+
+def test_compute_file_churn_excludes_merge_commits(tmp_path: Path):
+    _init_repo(tmp_path)
+    (tmp_path / "a.py").write_text("line1\n", encoding="utf-8")
+    _commit(tmp_path, "initial")
+    main_branch = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    _git(["checkout", "-b", "feature"], tmp_path)
+    (tmp_path / "a.py").write_text("line1\nline2\n", encoding="utf-8")
+    _commit(tmp_path, "feature change")
+
+    _git(["checkout", main_branch], tmp_path)
+    (tmp_path / "a.py").write_text("line1\nline3\n", encoding="utf-8")
+    _commit(tmp_path, "master change")
+
+    merge = subprocess.run(
+        ["git", "merge", "feature", "--no-ff", "-m", "merge feature"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert merge.returncode != 0  # expect a real conflict to resolve
+    (tmp_path / "a.py").write_text("line1\nline2\nline3\nmerge-only-change\n", encoding="utf-8")
+    _commit(tmp_path, "merge feature")
+
+    churn = compute_file_churn(tmp_path, window_days=3650)
+
+    # 3 regular commits touched a.py; the merge commit's own conflict
+    # resolution (which introduces content -- "merge-only-change" -- not
+    # present in either parent) must not add a 4th.
+    assert churn == {"a.py": 3}
+
+
+def test_compute_file_churn_excludes_commits_outside_the_window(tmp_path: Path):
+    _init_repo(tmp_path)
+    (tmp_path / "old.py").write_text("old", encoding="utf-8")
+    _commit_dated(tmp_path, "old commit", "2000-01-01T00:00:00")
+    (tmp_path / "new.py").write_text("new", encoding="utf-8")
+    _commit(tmp_path, "recent commit")
+
+    churn = compute_file_churn(tmp_path, window_days=90)
+
+    assert churn == {"new.py": 1}
+
+
+def test_compute_file_churn_attributes_a_root_level_rename_to_the_new_name(tmp_path: Path):
+    # `git log --numstat` reports a rename with no shared directory prefix
+    # as a plain `old => new` pair on one line, not two tab-separated
+    # paths -- a naive `\t`-split would treat that whole string as a
+    # single garbled "path", losing the commit for both names.
+    _init_repo(tmp_path)
+    (tmp_path / "old.py").write_text("line1\nline2\nline3\nline4\nline5\n", encoding="utf-8")
+    _commit(tmp_path, "add old.py")
+    _git(["mv", "old.py", "new.py"], tmp_path)
+    _commit(tmp_path, "rename old.py to new.py")
+
+    churn = compute_file_churn(tmp_path, window_days=3650)
+
+    assert churn == {"old.py": 1, "new.py": 1}
+
+
+def test_compute_file_churn_attributes_a_same_directory_rename_to_the_new_name(tmp_path: Path):
+    # A rename that shares a directory prefix/suffix is condensed to
+    # `prefix{old => new}suffix` instead -- a different, also-easy-to-
+    # mis-parse notation from the plain-pair case above.
+    _init_repo(tmp_path)
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "old.py").write_text(
+        "lineA\nlineB\nlineC\nlineD\nlineE\n", encoding="utf-8"
+    )
+    _commit(tmp_path, "add sub/old.py")
+    _git(["mv", "sub/old.py", "sub/new.py"], tmp_path)
+    _commit(tmp_path, "rename sub/old.py to sub/new.py")
+
+    churn = compute_file_churn(tmp_path, window_days=3650)
+
+    assert churn == {"sub/old.py": 1, "sub/new.py": 1}
+
+
+def test_compute_file_churn_returns_empty_dict_for_a_repo_with_no_commits(tmp_path: Path):
+    _init_repo(tmp_path)
+
+    assert compute_file_churn(tmp_path) == {}
+
+
+def test_compute_file_churn_returns_empty_dict_when_git_is_not_installed(
+    tmp_path: Path, monkeypatch
+):
+    def _missing_git(*args, **kwargs):
+        raise FileNotFoundError("git not found")
+
+    monkeypatch.setattr(git_ops.subprocess, "run", _missing_git)
+
+    assert compute_file_churn(tmp_path) == {}

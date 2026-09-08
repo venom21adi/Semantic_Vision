@@ -15,6 +15,7 @@ from semantic_vision.analysis.git_ops import (
     find_git_root,
     list_refs,
 )
+from semantic_vision.analysis.hotspots import build_hotspot_scores
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
 from semantic_vision.api.cache import cache
 from semantic_vision.api.host_path import translate_host_path
@@ -38,6 +39,7 @@ from semantic_vision.api.schemas import (
     GraphResponse,
     GraphStateResponse,
     HealthResponse,
+    HotspotsResponse,
     ImpactResponse,
     OllamaModelsResponse,
     ParseRepoRequest,
@@ -503,6 +505,31 @@ def get_complexity_diff_ref(
         removed=removed,
         changed=changed,
     )
+
+
+@router.get("/complexity/hotspots", response_model=HotspotsResponse)
+def get_complexity_hotspots(
+    path: str = Query(...), window_days: int = Query(90, ge=1)
+) -> HotspotsResponse:
+    """Ranks functions by `cyclomatic_complexity * change_count` (a commit
+    touched its file in the last `window_days`) rather than complexity
+    alone -- see docs/ideas/COMPLEXITY-REPORT-IMPROVEMENT-IDEAS.md's Idea 3.
+    Never errors on a non-git path -- reports `is_git_repo=False` instead,
+    the same graceful-degradation convention `/git/refs` uses, so the
+    dashboard's Hotspots tab can show a "not available" state rather than
+    an error. `compute_file_churn` itself already swallows every git
+    failure (no commits yet, git missing, a shallow clone) into an empty
+    churn map, so no `GitError` can escape this route at all."""
+    current_result = _get_cached(path)
+    git_root = find_git_root(current_result.root)
+    if git_root is None:
+        return HotspotsResponse(is_git_repo=False, scores=[], window_days=window_days)
+
+    complexity_index = cache.get_or_build_complexity_index(path)
+    churn_by_file = cache.get_or_compute_churn(git_root, window_days)
+    offset = Path(current_result.root).relative_to(git_root)
+    scores = build_hotspot_scores(complexity_index, churn_by_file, offset=offset)
+    return HotspotsResponse(is_git_repo=True, scores=scores, window_days=window_days)
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)

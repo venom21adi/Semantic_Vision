@@ -13,6 +13,7 @@ import type {
   GitRefsResponse,
   GraphResponse,
   GraphStateResponse,
+  HotspotsResponse,
   ImpactResponse,
   NodePosition,
   OllamaModelsResponse,
@@ -154,6 +155,12 @@ function realGetComplexityDiffRef(
   return request<ComplexityRefDiffResponse>(`/api/complexity/diff-ref?${params.toString()}`)
 }
 
+function realGetComplexityHotspots(path: string, windowDays?: number): Promise<HotspotsResponse> {
+  const params = new URLSearchParams({ path })
+  if (windowDays !== undefined) params.set('window_days', String(windowDays))
+  return request<HotspotsResponse>(`/api/complexity/hotspots?${params.toString()}`)
+}
+
 function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
   return request<FlowchartResponse>(
     `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
@@ -259,6 +266,20 @@ export const getComplexityDiffRef = DEMO_MODE
       throw new Error('Git ref comparison is not available in demo mode')
     }
   : realGetComplexityDiffRef
+/** Demo-only: the static public demo has no real git history, so there's
+ * nothing to compute churn against -- reports `is_git_repo: false` (like
+ * `getGitRefs`) so the Hotspots tab renders its own "not available in
+ * demo" state rather than throwing, since unlike the ref-picker (a small
+ * inline control that can just not render) a whole tab staying clickable
+ * but broken would be a worse demo experience than a tab that explains
+ * itself. */
+export const getComplexityHotspots = DEMO_MODE
+  ? async (_path: string, windowDays?: number): Promise<HotspotsResponse> => ({
+      is_git_repo: false,
+      scores: [],
+      window_days: windowDays ?? 90,
+    })
+  : realGetComplexityHotspots
 export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
 export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest

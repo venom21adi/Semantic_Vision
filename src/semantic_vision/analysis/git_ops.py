@@ -9,6 +9,7 @@ anywhere else.
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -223,3 +224,88 @@ def build_ref_complexity_index(
             )
         result = parse_repository(worktree_subdir, language=language)
         return build_complexity_index(result, max_call_chain_depth=max_call_chain_depth)
+
+
+# Matches `git log --numstat`'s condensed rename notation, e.g.
+# `src/{acv_ad => semantic_vision}/api/routes.py` for a rename that shares
+# a directory prefix/suffix -- as opposed to a plain `old/path => new/path`
+# for a rename with nothing in common.
+_RENAME_BRACE_RE = re.compile(r"^(?P<prefix>.*)\{(?P<old>.*) => (?P<new>.*)\}(?P<suffix>.*)$")
+
+
+def _resolve_numstat_path(raw_path: str) -> str:
+    """`--numstat` reports a renamed/moved file's path as either a full
+    `old/path => new/path` pair or, when old and new share a prefix/suffix,
+    the condensed `prefix{old => new}suffix` form -- either way, a plain
+    `\\t`-split leaves a garbled, unmatchable string. Resolves to the file's
+    *current* (post-rename) path, since that's what `build_hotspot_scores`
+    needs to join against (today's complexity index is keyed by today's
+    file paths, not whatever a file used to be called)."""
+    brace_match = _RENAME_BRACE_RE.match(raw_path)
+    if brace_match:
+        return brace_match["prefix"] + brace_match["new"] + brace_match["suffix"]
+    if " => " in raw_path:
+        return raw_path.split(" => ", 1)[1]
+    return raw_path
+
+
+def compute_file_churn(git_root: Path, *, window_days: int = 90) -> dict[str, int]:
+    """Counts commits touching each file in the last `window_days`, keyed by
+    a git-root-relative posix path (as `git log --numstat` already reports
+    it). Merge commits are excluded (`--no-merges`) so a merge's aggregate
+    diff doesn't inflate every file it touches.
+
+    Deliberately degrades to `{}` on *any* git failure -- a brand-new repo
+    with zero commits yet, `git` missing from PATH, a shallow clone, a
+    corrupt repo -- rather than raising. Hotspot ranking is a nice-to-have
+    overlay on top of the complexity report, not a hard dependency: the
+    caller should still be able to show a (churn-less, i.e. all-zero)
+    hotspot list rather than have the whole request fail because history is
+    unavailable. This is the opposite trade-off from `list_refs`, which
+    raises on the same zero-commit case -- there, a picker with nothing to
+    list is a real error; here, zero churn is a legitimate, displayable
+    answer.
+    """
+    try:
+        # `--format=%x1f` -- git rejects a `--format` value with no `%`
+        # placeholder at all ("invalid --pretty format"), so a literal
+        # marker string alone doesn't work; `%x1f` emits the raw unit-
+        # separator byte instead, one per commit, which can never collide
+        # with a `--numstat` line (those are always `int\tint\tpath`) or a
+        # blank line.
+        output = _run_git(
+            [
+                "log",
+                "--no-merges",
+                f"--since={window_days} days ago",
+                "--numstat",
+                "--format=%x1f",
+            ],
+            cwd=git_root,
+        )
+    except GitError:
+        return {}
+
+    churn: dict[str, int] = {}
+    files_in_commit: set[str] = set()
+
+    def _flush() -> None:
+        for path in files_in_commit:
+            churn[path] = churn.get(path, 0) + 1
+        files_in_commit.clear()
+
+    for line in output.splitlines():
+        if line == _FIELD_SEP:
+            _flush()
+            continue
+        if not line.strip():
+            continue
+        parts = line.split("\t")
+        if len(parts) != 3:
+            continue
+        _added, _deleted, raw_path = parts
+        path = _resolve_numstat_path(raw_path)
+        files_in_commit.add(path)
+    _flush()
+
+    return churn

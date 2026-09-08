@@ -8,6 +8,7 @@ import threading
 from pathlib import Path
 
 from semantic_vision.analysis.complexity import ComplexityScore, build_complexity_index
+from semantic_vision.analysis.git_ops import compute_file_churn
 from semantic_vision.analysis.impact import build_reverse_caller_index
 from semantic_vision.models import EdgeKind, ParseResult
 
@@ -31,6 +32,20 @@ class RepoCache:
         # tabs) could otherwise both miss the cache and both pay the
         # AST-walk cost.
         self._complexity_lock = threading.Lock()
+        # Per-(git root, window) churn counts for the hotspots tab, keyed by
+        # `"{_key(git_root)}::{window_days}"`. Deliberately its own dict and
+        # lock, not folded into `_complexity_indexes`: churn is keyed by git
+        # root rather than the parsed path (they can differ -- a subdirectory
+        # parse still shares one git root's history), and its invalidation
+        # is different too -- a reparse (`set()`) doesn't change git history,
+        # so `set()` never touches this cache. There's no TTL: like
+        # `_complexity_indexes`, an entry lives for the process's lifetime
+        # (or until `clear()`) once computed. A new commit landing inside an
+        # already-cached window won't be reflected until then -- an accepted
+        # tradeoff (an explicit, occasional "load hotspots" action, not a
+        # hot path) rather than new invalidation machinery.
+        self._churn_indexes: dict[str, dict[str, int]] = {}
+        self._churn_lock = threading.Lock()
 
     @staticmethod
     def _key(path: str) -> str:
@@ -121,6 +136,19 @@ class RepoCache:
             if previous is not None:
                 self._previous_complexity_indexes[key] = previous
 
+    def get_or_compute_churn(self, git_root: Path, window_days: int) -> dict[str, int]:
+        key = f"{self._key(str(git_root))}::{window_days}"
+        existing = self._churn_indexes.get(key)
+        if existing is not None:
+            return existing
+        with self._churn_lock:
+            existing = self._churn_indexes.get(key)
+            if existing is not None:
+                return existing
+            churn = compute_file_churn(git_root, window_days=window_days)
+            self._churn_indexes[key] = churn
+            return churn
+
     def get_doc_root(self, path: str) -> Path | None:
         return self._doc_roots.get(self._key(path))
 
@@ -137,6 +165,7 @@ class RepoCache:
         self._complexity_indexes.clear()
         self._previous_complexity_indexes.clear()
         self._doc_roots.clear()
+        self._churn_indexes.clear()
 
 
 cache = RepoCache()
