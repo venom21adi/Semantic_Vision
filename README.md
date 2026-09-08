@@ -180,6 +180,38 @@ table, impact analysis crossing the dbt model, the ORM class, and the
 reading functions in one right-click — is in
 [guides/data-lineage.md](guides/data-lineage.md), with screenshots.
 
+## 🤖 MCP server for coding agents
+
+Semantic Vision already computes the exact structural facts a coding agent
+otherwise has to grep and guess at — call graph, impact analysis, complexity,
+git-aware hotspot scoring, and data lineage. `semantic-vision-mcp` exposes
+all of it as [MCP](https://modelcontextprotocol.io) tools any compatible
+agent (Claude Code, Claude Desktop, Cursor, etc.) can call mid-conversation:
+
+```bash
+uv sync
+uv run semantic-vision-mcp
+```
+
+then add it to your agent as a stdio MCP server, e.g. for Claude Code:
+
+```bash
+claude mcp add semantic-vision -- uv --directory /path/to/Semantic_Vision run semantic-vision-mcp
+```
+
+It talks to the same FastAPI backend over HTTP rather than running a
+separate analysis engine — reachable-or-spawn, exactly like the VS Code
+extension: if you already have the desktop app or extension open with a repo
+parsed, the MCP server reuses that warm cache instead of starting cold; if
+nothing's running, it spawns its own backend and cleans it up on exit.
+`parse_repo`, `get_graph`, `get_impact`, `get_callees`, `get_complexity`,
+`get_complexity_diff`(`_ref`), `get_hotspots`, `get_dead_code`,
+`get_git_refs`, `get_flowchart`, and `get_function_source` cover the same
+ground the UI does — see [guides/mcp-server.md](guides/mcp-server.md) for
+the full tool reference, client config examples, and what's deliberately
+left out.
+
+
 ## ✨ Features
 
 <img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> **See the whole call graph at a glance** — every directory, file,
@@ -389,37 +421,6 @@ code-to-data lineage — works the same way inside that panel. See
 configuration details (e.g. pointing it at an already-running backend
 instead of the bundled one). Prefer running the backend and frontend
 yourself, or via Docker? Both remain fully supported below.
-
-## 🤖 MCP server for coding agents
-
-Semantic Vision already computes the exact structural facts a coding agent
-otherwise has to grep and guess at — call graph, impact analysis, complexity,
-git-aware hotspot scoring, and data lineage. `semantic-vision-mcp` exposes
-all of it as [MCP](https://modelcontextprotocol.io) tools any compatible
-agent (Claude Code, Claude Desktop, Cursor, etc.) can call mid-conversation:
-
-```bash
-uv sync
-uv run semantic-vision-mcp
-```
-
-then add it to your agent as a stdio MCP server, e.g. for Claude Code:
-
-```bash
-claude mcp add semantic-vision -- uv --directory /path/to/Semantic_Vision run semantic-vision-mcp
-```
-
-It talks to the same FastAPI backend over HTTP rather than running a
-separate analysis engine — reachable-or-spawn, exactly like the VS Code
-extension: if you already have the desktop app or extension open with a repo
-parsed, the MCP server reuses that warm cache instead of starting cold; if
-nothing's running, it spawns its own backend and cleans it up on exit.
-`parse_repo`, `get_graph`, `get_impact`, `get_callees`, `get_complexity`,
-`get_complexity_diff`(`_ref`), `get_hotspots`, `get_dead_code`,
-`get_git_refs`, `get_flowchart`, and `get_function_source` cover the same
-ground the UI does — see [guides/mcp-server.md](guides/mcp-server.md) for
-the full tool reference, client config examples, and what's deliberately
-left out.
 
 ## 🧩 How it works
 
