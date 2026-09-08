@@ -1,8 +1,15 @@
-import type { ReactNode } from 'react'
 import type { GraphNode } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { KIND_COLORS } from '../graph/nodeTypes'
 import { colors, radius, spacing } from '../theme'
+
+/** Every row's fixed height, in px -- name line + file line + one badge
+ * line + vertical padding/margin, all rounded up with a little slack.
+ * Exported so `VirtualList` (see the report panes that use it) can window
+ * rows without measuring each one's real DOM height, which only works if
+ * every row actually renders at this exact height -- see the badges row's
+ * `flexWrap: 'nowrap'` below, which is what keeps it true. */
+export const ROW_HEIGHT = 68
 
 export interface RankedFunctionBadge {
   label: string
@@ -23,9 +30,6 @@ interface RankedFunctionRowProps {
   selected: boolean
   onSelect: () => void
   badges: RankedFunctionBadge[]
-  /** An optional control docked to the row's right edge -- today only
-   * `PerformanceReportPane`'s "show direct callers" drill-down toggle. */
-  trailing?: ReactNode
   /** For a diff's "Removed" section (`CodeHealthDetail.tsx`) -- the
    * function no longer exists in the refreshed graph, so selecting it
    * would silently do nothing. Renders dimmed and inert instead of
@@ -45,7 +49,6 @@ export function RankedFunctionRow({
   selected,
   onSelect,
   badges,
-  trailing,
   disabled = false,
 }: RankedFunctionRowProps) {
   const dotColor = graphNode ? KIND_COLORS[graphNode.kind].background : colors.disabled
@@ -61,99 +64,98 @@ export function RankedFunctionRow({
   const Wrapper = disabled ? 'div' : 'button'
 
   return (
-    <div
+    <Wrapper
+      {...(disabled ? {} : { type: 'button', onClick: onSelect })}
+      // `.sv-interactive`'s hover brightening is gated on `:not(:disabled)`,
+      // which only ever matches real form controls -- it's always true for
+      // a `<div>`, so applying this class here would brighten on hover
+      // exactly like a live row despite `cursor: default` below. Only the
+      // clickable `<button>` variant gets it.
+      className={disabled ? undefined : 'sv-interactive'}
       style={{
+        width: '100%',
+        boxSizing: 'border-box',
         display: 'flex',
-        alignItems: 'stretch',
-        gap: spacing.xs,
+        alignItems: 'flex-start',
+        gap: spacing.sm,
+        textAlign: 'left',
+        background: selected ? colors.infoBg : colors.bgPanel,
+        border: `1px solid ${selected ? colors.accent : colors.border}`,
+        borderRadius: radius.md,
+        padding: `${spacing.sm}px ${spacing.md}px`,
         marginBottom: spacing.xs,
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.6 : 1,
       }}
     >
-      <Wrapper
-        {...(disabled ? {} : { type: 'button', onClick: onSelect })}
-        // `.sv-interactive`'s hover brightening is gated on `:not(:disabled)`,
-        // which only ever matches real form controls -- it's always true for
-        // a `<div>`, so applying this class here would brighten on hover
-        // exactly like a live row despite `cursor: default` below. Only the
-        // clickable `<button>` variant gets it.
-        className={disabled ? undefined : 'sv-interactive'}
+      <span
+        aria-hidden="true"
         style={{
-          flex: 1,
-          minWidth: 0,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: spacing.sm,
-          textAlign: 'left',
-          background: selected ? colors.infoBg : colors.bgPanel,
-          border: `1px solid ${selected ? colors.accent : colors.border}`,
-          borderRadius: radius.md,
-          padding: `${spacing.sm}px ${spacing.md}px`,
-          cursor: disabled ? 'default' : 'pointer',
-          opacity: disabled ? 0.6 : 1,
+          width: 9,
+          height: 9,
+          borderRadius: 2,
+          background: dotColor,
+          flexShrink: 0,
+          marginTop: 4,
         }}
-      >
-        <span
-          aria-hidden="true"
+      />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <div
           style={{
-            width: 9,
-            height: 9,
-            borderRadius: 2,
-            background: dotColor,
-            flexShrink: 0,
-            marginTop: 4,
+            fontSize: 13,
+            fontWeight: 600,
+            color: disabled ? colors.textDim : colors.textPrimary,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
-        />
-        <span style={{ flex: 1, minWidth: 0 }}>
+          title={nodeId}
+        >
+          {primaryLabel}
+        </div>
+        {secondaryLabel && (
           <div
             style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: disabled ? colors.textDim : colors.textPrimary,
+              fontSize: 11,
+              color: colors.textDim,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
+              marginTop: 1,
             }}
-            title={nodeId}
           >
-            {primaryLabel}
+            {secondaryLabel}
           </div>
-          {secondaryLabel && (
-            <div
-              style={{
-                fontSize: 11,
-                color: colors.textDim,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                marginTop: 1,
-              }}
-            >
-              {secondaryLabel}
-            </div>
-          )}
-          {badges.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
-              {badges.map((badge) => (
-                <span
-                  key={badge.label}
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 600,
-                    padding: '1px 6px',
-                    borderRadius: radius.full,
-                    border: `1px solid ${badge.color ?? colors.border}`,
-                    color: badge.color ?? colors.textMuted,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {badge.label}
-                </span>
-              ))}
-            </div>
-          )}
-        </span>
-      </Wrapper>
-      {trailing}
-    </div>
+        )}
+        {badges.length > 0 && (
+          // `flexWrap: 'nowrap'` + `overflow: hidden` (not `'wrap'`) so
+          // this row always renders at exactly `ROW_HEIGHT` regardless of
+          // how many badges it has or how narrow the column is -- a
+          // second wrapped line would silently push this row's true
+          // height past what `VirtualList` assumes every row occupies,
+          // which reads as rows drifting out of alignment/overlapping as
+          // the list scrolls, not just a clipped badge.
+          <div style={{ display: 'flex', flexWrap: 'nowrap', overflow: 'hidden', gap: 4, marginTop: 5 }}>
+            {badges.map((badge) => (
+              <span
+                key={badge.label}
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  padding: '1px 6px',
+                  borderRadius: radius.full,
+                  border: `1px solid ${badge.color ?? colors.border}`,
+                  color: badge.color ?? colors.textMuted,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                {badge.label}
+              </span>
+            ))}
+          </div>
+        )}
+      </span>
+    </Wrapper>
   )
 }

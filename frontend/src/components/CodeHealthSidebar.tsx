@@ -132,6 +132,65 @@ function EmptyStateNotice({ message }: { message: string }) {
   )
 }
 
+/** A shimmering stand-in for a `RankedFunctionRow` while the dashboard's
+ * initial fetch (or the Hotspots/Dead code tab's own lazy fetch) is still
+ * in flight -- that computation genuinely takes a few seconds on a real
+ * repo (a full AST walk, or a git-churn pass over every file), and a bare
+ * "Loading…" line on an otherwise-empty column read as frozen rather than
+ * working. `count` rows, not the real (still-unknown) result size, so the
+ * skeleton's own height is exactly what a real list would need to fill --
+ * matches `RankedFunctionRow`'s box dimensions (`radius.md`/`bgPanel`/
+ * `border`) so it reads as "this list, not yet in" rather than a generic
+ * unrelated spinner. */
+function SkeletonRows({ count }: { count: number }) {
+  return (
+    <div aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <div
+          key={i}
+          className="sv-skeleton"
+          style={{
+            height: 52,
+            marginBottom: spacing.xs,
+            borderRadius: radius.md,
+            border: `1px solid ${colors.border}`,
+            // Each row's shimmer sweep starts a little later than the one
+            // above it -- a uniform wave down the list reads as "actively
+            // working," a flat synchronized pulse reads as a broken CSS
+            // animation.
+            animationDelay: `${i * 90}ms`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/** Loading copy + spinner + skeleton rows, shared by all three tabs'
+ * "still fetching" states -- the specific wording differs per tab (each
+ * fetch does genuinely different, differently-slow work), the visual
+ * treatment doesn't. */
+function LoadingNotice({ message }: { message: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <p
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spacing.sm,
+          margin: `0 0 ${spacing.md}px`,
+          color: colors.textMuted,
+          fontSize: 12,
+        }}
+      >
+        <span className="spinner" aria-hidden="true" />
+        {message}
+      </p>
+      <SkeletonRows count={8} />
+    </div>
+  )
+}
+
 function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button
@@ -198,7 +257,7 @@ function HotspotsPane({
         </select>
       </div>
       {hotspots === null || hotspots.status === 'loading' ? (
-        <p style={{ color: colors.textMuted }}>Loading…</p>
+        <LoadingNotice message="Computing churn history for every file…" />
       ) : hotspots.status === 'error' ? (
         <p role="alert" style={{ color: colors.danger }}>
           {hotspots.message}
@@ -221,7 +280,6 @@ interface CodeHealthSidebarProps {
   healthTab: HealthTab
   onHealthTabChange: (tab: HealthTab) => void
   state: DashboardState
-  path: string
   graphNodes: GraphNode[]
   selectedNodeId: string | null
   onSelectNode: (nodeId: string) => void
@@ -242,7 +300,6 @@ export function CodeHealthSidebar({
   healthTab,
   onHealthTabChange,
   state,
-  path,
   graphNodes,
   selectedNodeId,
   onSelectNode,
@@ -296,10 +353,12 @@ export function CodeHealthSidebar({
           <TabButton label="Dead code" active={healthTab === 'dead-code'} onClick={handleSelectDeadCodeTab} />
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: spacing.lg }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: spacing.lg }}>
         {healthTab === 'complexity' ? (
           <>
-            {state.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
+            {state.status === 'loading' && (
+              <LoadingNotice message="Analyzing complexity across the codebase…" />
+            )}
             {state.status === 'error' && (
               <p role="alert" style={{ color: colors.danger }}>
                 {state.message}
@@ -307,7 +366,6 @@ export function CodeHealthSidebar({
             )}
             {state.status === 'loaded' && (
               <PerformanceReportPane
-                path={path}
                 scores={state.scores}
                 graphNodes={graphNodes}
                 selectedNodeId={selectedNodeId}
@@ -344,7 +402,7 @@ function DeadCodePane({
   onSelectNode: (nodeId: string) => void
 }) {
   if (deadCode === null || deadCode.status === 'loading') {
-    return <p style={{ color: colors.textMuted }}>Loading…</p>
+    return <LoadingNotice message="Scanning for functions with no callers…" />
   }
   if (deadCode.status === 'error') {
     return (

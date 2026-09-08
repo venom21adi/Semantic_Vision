@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import type { DeadCodeCandidate, GraphNode } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { colors, radius, spacing } from '../theme'
-import { RankedFunctionRow } from './RankedFunctionRow'
+import { RankedFunctionRow, ROW_HEIGHT } from './RankedFunctionRow'
+import { VirtualList } from './VirtualList'
 
 interface DeadCodeReportPaneProps {
   candidates: DeadCodeCandidate[]
@@ -59,7 +60,7 @@ export function DeadCodeReportPane({
   }
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <p style={{ margin: '0 0 10px', fontSize: 11, color: colors.textMuted }}>
         Functions with no callers anywhere in this repo's call graph, after excluding decorated
         functions, test files/names, dunder methods, and <code>main</code> entry points.
@@ -79,20 +80,21 @@ export function DeadCodeReportPane({
       {visible.length === 0 ? (
         <p style={{ color: colors.textMuted }}>No candidates match this filter.</p>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {visible.map((candidate) => (
-            <li key={candidate.node_id}>
-              <RankedFunctionRow
-                nodeId={candidate.node_id}
-                graphNode={graphNodeById.get(candidate.node_id)}
-                selected={candidate.node_id === selectedNodeId}
-                onSelect={() => onSelectNode(candidate.node_id)}
-                badges={[]}
-              />
-            </li>
-          ))}
-        </ul>
+        <VirtualList
+          items={visible}
+          itemHeight={ROW_HEIGHT}
+          getKey={(candidate) => candidate.node_id}
+          renderItem={(candidate) => (
+            <RankedFunctionRow
+              nodeId={candidate.node_id}
+              graphNode={graphNodeById.get(candidate.node_id)}
+              selected={candidate.node_id === selectedNodeId}
+              onSelect={() => onSelectNode(candidate.node_id)}
+              badges={[]}
+            />
+          )}
+        />
       )}
-    </>
+    </div>
   )
 }

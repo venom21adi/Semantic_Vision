@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
-import { getImpact } from '../api/client'
-import type { Caller, ComplexityScore, GraphNode } from '../api/types'
+import type { ComplexityScore, GraphNode } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import {
   COMPLEX_COLOR,
@@ -11,10 +10,10 @@ import {
   complexityToColor,
 } from '../graph/heatmap'
 import { colors, radius, spacing } from '../theme'
-import { RankedFunctionRow } from './RankedFunctionRow'
+import { RankedFunctionRow, ROW_HEIGHT } from './RankedFunctionRow'
+import { VirtualList } from './VirtualList'
 
 interface PerformanceReportPaneProps {
-  path: string
   scores: ComplexityScore[]
   graphNodes: GraphNode[]
   selectedNodeId: string | null
@@ -26,7 +25,7 @@ function Legend() {
     <div style={{ marginBottom: 10, fontSize: 11, color: colors.textMuted }}>
       <p style={{ margin: '0 0 6px' }}>
         Ranked by cyclomatic complexity — roughly, how many independent paths through each
-        function. Click a row to select it; use ▸ to see who directly calls it.
+        function. Click a row to see who calls it and what it calls.
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <LegendSwatch color={SIMPLE_COLOR} label={`Simple (1–${SIMPLE_MAX})`} />
@@ -55,17 +54,6 @@ function LegendSwatch({ color, label }: { color: string; label: string }) {
   )
 }
 
-// `GET /api/impact` only ever has caller (upstream) data, not callee
-// (downstream) data -- there's no backend endpoint for "what does this
-// function call" -- so the drill-down surfaces a complex function's own
-// direct callers instead: who actually depends on it, cross-referenced
-// against their own complexity scores. Reuses the existing impact
-// endpoint rather than adding a new backend surface for this pane.
-type DrillDown =
-  | { nodeId: string; status: 'loading' }
-  | { nodeId: string; status: 'loaded'; callers: Caller[] }
-  | { nodeId: string; status: 'error'; message: string }
-
 type ComplexityTier = 'any' | 'simple' | 'moderate' | 'complex'
 type SortBy = 'complexity-desc' | 'complexity-asc' | 'name' | 'depth'
 
@@ -88,20 +76,17 @@ function matchesTier(score: ComplexityScore, tier: ComplexityTier): boolean {
 }
 
 export function PerformanceReportPane({
-  path,
   scores,
   graphNodes,
   selectedNodeId,
   onSelectNode,
 }: PerformanceReportPaneProps) {
-  const [drillDown, setDrillDown] = useState<DrillDown | null>(null)
   const [query, setQuery] = useState('')
   const [tier, setTier] = useState<ComplexityTier>('any')
   const [minDepth, setMinDepth] = useState(0)
   const [sortBy, setSortBy] = useState<SortBy>('complexity-desc')
 
   const graphNodeById = useMemo(() => new Map(graphNodes.map((node) => [node.id, node])), [graphNodes])
-  const scoresByNodeId = useMemo(() => new Map(scores.map((score) => [score.node_id, score])), [scores])
 
   function displayName(nodeId: string): string {
     const node = graphNodeById.get(nodeId)
@@ -137,30 +122,12 @@ export function PerformanceReportPane({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scores, query, tier, minDepth, sortBy, graphNodeById])
 
-  async function toggleDrillDown(nodeId: string) {
-    if (drillDown?.nodeId === nodeId) {
-      setDrillDown(null)
-      return
-    }
-    setDrillDown({ nodeId, status: 'loading' })
-    try {
-      const result = await getImpact(path, nodeId)
-      setDrillDown({ nodeId, status: 'loaded', callers: result.callers.filter((c) => c.direct) })
-    } catch (error) {
-      setDrillDown({
-        nodeId,
-        status: 'error',
-        message: error instanceof Error ? error.message : 'Something went wrong.',
-      })
-    }
-  }
-
   if (scores.length === 0) {
     return <p style={{ color: colors.textMuted }}>No functions found.</p>
   }
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <Legend />
       <div
         style={{
@@ -216,102 +183,28 @@ export function PerformanceReportPane({
       {visible.length === 0 ? (
         <p style={{ color: colors.textMuted }}>No functions match this filter.</p>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {visible.map((score) => (
-            <li key={score.node_id}>
-              <RankedFunctionRow
-                nodeId={score.node_id}
-                graphNode={graphNodeById.get(score.node_id)}
-                selected={score.node_id === selectedNodeId}
-                onSelect={() => onSelectNode(score.node_id)}
-                badges={[
-                  {
-                    label: `Complexity ${score.cyclomatic_complexity}`,
-                    color: complexityToColor(score.cyclomatic_complexity),
-                  },
-                  ...(score.call_chain_depth > 0
-                    ? [{ label: `Depth ${score.call_chain_depth}` }]
-                    : []),
-                  ...(score.has_nested_loops ? [{ label: 'Nested loops' }] : []),
-                ]}
-                trailing={
-                  <button
-                    type="button"
-                    aria-label={
-                      drillDown?.nodeId === score.node_id
-                        ? `Hide callers of ${score.node_id}`
-                        : `Show callers of ${score.node_id}`
-                    }
-                    title={
-                      drillDown?.nodeId === score.node_id ? 'Hide direct callers' : 'Show direct callers'
-                    }
-                    onClick={() => void toggleDrillDown(score.node_id)}
-                    className="sv-interactive"
-                    style={{
-                      background: colors.bgPanel,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: radius.sm,
-                      color: colors.textMuted,
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      padding: `0 ${spacing.xs}px`,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {drillDown?.nodeId === score.node_id ? '▾' : '▸'}
-                  </button>
-                }
-              />
-              {drillDown?.nodeId === score.node_id && (
-                <div style={{ margin: `-4px 0 ${spacing.xs}px ${spacing.xl}px` }}>
-                  {drillDown.status === 'loading' && (
-                    <p style={{ color: colors.textMuted, fontSize: 11, margin: 0 }}>Loading…</p>
-                  )}
-                  {drillDown.status === 'error' && (
-                    <p role="alert" style={{ color: colors.danger, fontSize: 11, margin: 0 }}>
-                      {drillDown.message}
-                    </p>
-                  )}
-                  {drillDown.status === 'loaded' && drillDown.callers.length === 0 && (
-                    <p style={{ color: colors.textMuted, fontSize: 11, margin: 0 }}>No direct callers.</p>
-                  )}
-                  {drillDown.status === 'loaded' && drillDown.callers.length > 0 && (
-                    <p style={{ color: colors.textDim, fontSize: 11, margin: '0 0 2px' }}>
-                      Direct callers (functions that call this one):
-                    </p>
-                  )}
-                  {drillDown.status === 'loaded' &&
-                    drillDown.callers.map((caller) => {
-                      const callerScore = scoresByNodeId.get(caller.id)
-                      return (
-                        <button
-                          key={caller.id}
-                          type="button"
-                          onClick={() => onSelectNode(caller.id)}
-                          className="sv-interactive"
-                          style={{
-                            display: 'block',
-                            width: '100%',
-                            textAlign: 'left',
-                            background: 'transparent',
-                            border: 'none',
-                            color: colors.textFaint,
-                            padding: '2px 0',
-                            cursor: 'pointer',
-                            fontSize: 11,
-                          }}
-                        >
-                          {displayName(caller.id)}
-                          {callerScore ? ` (complexity ${callerScore.cyclomatic_complexity})` : ''}
-                        </button>
-                      )
-                    })}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+        <VirtualList
+          items={visible}
+          itemHeight={ROW_HEIGHT}
+          getKey={(score) => score.node_id}
+          renderItem={(score) => (
+            <RankedFunctionRow
+              nodeId={score.node_id}
+              graphNode={graphNodeById.get(score.node_id)}
+              selected={score.node_id === selectedNodeId}
+              onSelect={() => onSelectNode(score.node_id)}
+              badges={[
+                {
+                  label: `Complexity ${score.cyclomatic_complexity}`,
+                  color: complexityToColor(score.cyclomatic_complexity),
+                },
+                ...(score.call_chain_depth > 0 ? [{ label: `Depth ${score.call_chain_depth}` }] : []),
+                ...(score.has_nested_loops ? [{ label: 'Nested loops' }] : []),
+              ]}
+            />
+          )}
+        />
       )}
-    </>
+    </div>
   )
 }

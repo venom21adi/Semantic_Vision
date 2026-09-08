@@ -136,6 +136,33 @@ textarea {
   outline: none;
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -120% 0;
+  }
+  100% {
+    background-position: 120% 0;
+  }
+}
+
+/* CodeHealthSidebar.tsx's `SkeletonRows` -- a moving highlight band across
+   an otherwise flat panel-colored box, mirroring `RankedFunctionRow`'s own
+   dimensions/colors so the loading state reads as "this list, still
+   filling in" rather than a generic unrelated spinner. oklch values here
+   mirror theme.ts's `colors.bgPanel`/`colors.border`/`colors.borderSubtle`
+   -- plain CSS can't import a TS value, kept in sync by this comment
+   rather than a build step. */
+.sv-skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.205 0.009 265) 25%,
+    oklch(0.27 0.010 265) 50%,
+    oklch(0.205 0.009 265) 75%
+  );
+  background-size: 250% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
 .spinner {
   display: inline-block;
   width: 12px;

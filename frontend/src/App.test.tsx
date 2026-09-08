@@ -1010,6 +1010,38 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Code Health' })).toHaveAttribute('aria-pressed', 'true')
   })
 
+  it('selecting a row in the Code Health lens never resurrects it on the Graph lens canvas', async () => {
+    mockedClient.getComplexity.mockResolvedValue({
+      scores: [
+        {
+          node_id: 'app.py::Greeter.greet',
+          cyclomatic_complexity: 4,
+          call_chain_depth: 0,
+          has_nested_loops: false,
+        },
+      ],
+    })
+    const user = await loadSampleRepo()
+
+    // Empties the Graph lens's canvas -- if selecting a Code Health row
+    // (below) leaked into `visibleIds` the way `handleSelectNode` does for
+    // the Graph lens's own tree, this placeholder would disappear and
+    // `greet`'s node would render, even though the user never asked for it
+    // on this canvas.
+    await user.click(screen.getByRole('button', { name: 'Reset selection' }))
+    await waitFor(() =>
+      expect(screen.getByText(/select a directory or file in the sidebar/i)).toBeInTheDocument(),
+    )
+
+    await openHealthLens(user)
+    await user.click(screen.getByText('greet'))
+
+    await backToGraphLens(user)
+
+    expect(screen.getByText(/select a directory or file in the sidebar/i)).toBeInTheDocument()
+    expect(screen.queryByTestId('rf__node-app.py::Greeter.greet')).not.toBeInTheDocument()
+  })
+
   it('returns to the Codebase Graph lens when its header tab is clicked', async () => {
     mockedClient.getComplexity.mockResolvedValue({ scores: [] })
     const user = await loadSampleRepo()

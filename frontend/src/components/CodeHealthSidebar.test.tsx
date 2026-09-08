@@ -29,7 +29,6 @@ function Harness(props: Omit<SidebarProps, 'healthTab' | 'onHealthTabChange'>) {
 function renderSidebar(overrides: Partial<Omit<SidebarProps, 'healthTab' | 'onHealthTabChange'>> = {}) {
   const props: Omit<SidebarProps, 'healthTab' | 'onHealthTabChange'> = {
     state: { status: 'loaded', scores },
-    path: '/repo',
     graphNodes,
     selectedNodeId: null,
     onSelectNode: vi.fn(),
@@ -46,7 +45,7 @@ describe('CodeHealthSidebar', () => {
   it('shows a loading message', () => {
     renderSidebar({ state: { status: 'loading' } })
 
-    expect(screen.getByText('Loading…')).toBeInTheDocument()
+    expect(screen.getByText('Analyzing complexity across the codebase…')).toBeInTheDocument()
   })
 
   it('shows an error message', () => {
@@ -108,7 +107,7 @@ describe('CodeHealthSidebar', () => {
 
     await user.click(screen.getByRole('button', { name: 'Hotspots' }))
 
-    expect(screen.getByText('Loading…')).toBeInTheDocument()
+    expect(screen.getByText('Computing churn history for every file…')).toBeInTheDocument()
   })
 
   it('shows an error message when hotspots fail to load', async () => {
@@ -210,7 +209,7 @@ describe('CodeHealthSidebar', () => {
 
     await user.click(screen.getByRole('button', { name: 'Dead code' }))
 
-    expect(screen.getByText('Loading…')).toBeInTheDocument()
+    expect(screen.getByText('Scanning for functions with no callers…')).toBeInTheDocument()
   })
 
   it('shows an error message when dead-code detection fails', async () => {

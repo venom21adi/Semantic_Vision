@@ -216,6 +216,17 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  // The Code Health lens's own selection -- deliberately independent of
+  // `selectedNodeId` above. That state also drives `visibleIds` (via
+  // `handleSelectNode`, which force-adds whatever's selected onto the
+  // Graph lens's canvas): reusing it here meant clicking a ranked-list row
+  // silently mutated the *other* lens's canvas, and could pull in a node
+  // with no visible ancestor context, producing edges that render but
+  // don't correspond to anything the user actually asked to see on that
+  // canvas. Code Health only ever needs "which function is the relationship
+  // graph in `CodeHealthDetail` currently centered on," which is exactly
+  // what this tracks, with zero effect on the Graph lens.
+  const [healthSelectedNodeId, setHealthSelectedNodeId] = useState<string | null>(null)
   const [pane, setPane] = useState<ActivePane>(null)
   const [view, setView] = useState<GraphView>('codebase')
   const [docProvider, setDocProvider] = useState<DocProvider>('ollama')
@@ -402,6 +413,7 @@ export default function App() {
     setGitRefs(null)
     setHotspots(null)
     setDeadCode(null)
+    setHealthSelectedNodeId(null)
   }, [])
 
   useEffect(() => {
@@ -939,6 +951,16 @@ export default function App() {
     setLens('graph')
   }, [])
 
+  // Selecting a row in `CodeHealthSidebar`, or a node in `CodeHealthDetail`'s
+  // own relationship graph, only ever needs to re-center that relationship
+  // graph -- unlike `handleSelectNode`, this never touches `visibleIds` or
+  // the Graph lens's own `selectedNodeId`, so it can't leak a node onto the
+  // canvas the user isn't even looking at (see `healthSelectedNodeId`'s
+  // comment above).
+  const handleSelectHealthNode = useCallback((nodeId: string) => {
+    setHealthSelectedNodeId(nodeId)
+  }, [])
+
   // Re-parses the repo (picking up whatever changed on disk since it was
   // last parsed -- an AI agent's edit, or a hand edit) and diffs the fresh
   // complexity scores against whatever was cached the last time this path's
@@ -1422,10 +1444,9 @@ export default function App() {
             healthTab={healthTab}
             onHealthTabChange={setHealthTab}
             state={dashboard ?? { status: 'loading' }}
-            path={repo.path}
             graphNodes={repo.nodes}
-            selectedNodeId={selectedNodeId}
-            onSelectNode={handleSelectNode}
+            selectedNodeId={healthSelectedNodeId}
+            onSelectNode={handleSelectHealthNode}
             hotspots={hotspots}
             onLoadHotspots={handleLoadHotspots}
             deadCode={deadCode}
@@ -1442,8 +1463,8 @@ export default function App() {
             onCompareToRef={handleCompareDashboardToRef}
             graphNodes={repo.nodes}
             graphEdges={repo.edges}
-            selectedNodeId={selectedNodeId}
-            onSelectNode={handleSelectNode}
+            selectedNodeId={healthSelectedNodeId}
+            onSelectNode={handleSelectHealthNode}
           />
         ) : (
           <>

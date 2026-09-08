@@ -3,7 +3,8 @@ import type { GraphNode, HotspotScore } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { MODERATE_MAX, SIMPLE_MAX, complexityToColor } from '../graph/heatmap'
 import { colors, radius, spacing } from '../theme'
-import { RankedFunctionRow } from './RankedFunctionRow'
+import { RankedFunctionRow, ROW_HEIGHT } from './RankedFunctionRow'
+import { VirtualList } from './VirtualList'
 
 interface HotspotReportPaneProps {
   scores: HotspotScore[]
@@ -83,7 +84,7 @@ export function HotspotReportPane({ scores, graphNodes, selectedNodeId, onSelect
   }
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <p style={{ margin: '0 0 10px', fontSize: 11, color: colors.textMuted }}>
         Ranked by complexity × how often the file changed in the selected window — a moderately
         complex function edited constantly is a bigger practical risk than a complex one nobody
@@ -132,27 +133,28 @@ export function HotspotReportPane({ scores, graphNodes, selectedNodeId, onSelect
       {visible.length === 0 ? (
         <p style={{ color: colors.textMuted }}>No functions match this filter.</p>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {visible.map((score) => (
-            <li key={score.node_id}>
-              <RankedFunctionRow
-                nodeId={score.node_id}
-                graphNode={graphNodeById.get(score.node_id)}
-                selected={score.node_id === selectedNodeId}
-                onSelect={() => onSelectNode(score.node_id)}
-                badges={[
-                  { label: `Hotspot ${score.hotspot_score}` },
-                  {
-                    label: `Complexity ${score.cyclomatic_complexity}`,
-                    color: complexityToColor(score.cyclomatic_complexity),
-                  },
-                  { label: `Changed ${score.change_count}×` },
-                ]}
-              />
-            </li>
-          ))}
-        </ul>
+        <VirtualList
+          items={visible}
+          itemHeight={ROW_HEIGHT}
+          getKey={(score) => score.node_id}
+          renderItem={(score) => (
+            <RankedFunctionRow
+              nodeId={score.node_id}
+              graphNode={graphNodeById.get(score.node_id)}
+              selected={score.node_id === selectedNodeId}
+              onSelect={() => onSelectNode(score.node_id)}
+              badges={[
+                { label: `Hotspot ${score.hotspot_score}` },
+                {
+                  label: `Complexity ${score.cyclomatic_complexity}`,
+                  color: complexityToColor(score.cyclomatic_complexity),
+                },
+                { label: `Changed ${score.change_count}×` },
+              ]}
+            />
+          )}
+        />
       )}
-    </>
+    </div>
   )
 }
