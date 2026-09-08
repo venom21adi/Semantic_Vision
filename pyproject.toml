@@ -7,7 +7,9 @@ license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.141.1",
+    "httpx>=0.28.1",
     "litellm>=1.60.0",
+    "mcp>=2.2.0,<3",
     "pydantic>=2.0",
     "sqlalchemy>=2.0",
     "tree-sitter>=0.26.0",
@@ -17,9 +19,11 @@ dependencies = [
     "uvicorn[standard]>=0.52.4",
 ]
 
+[project.scripts]
+semantic-vision-mcp = "semantic_vision.mcp_server.__main__:main"
+
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "pytest>=8.0",
     "ruff>=0.16.4",
 ]
