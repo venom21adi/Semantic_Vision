@@ -44,10 +44,11 @@ web app:
   to other functions. Works for both Python and JS/TS, including `switch`
   fallthrough, `do...while`'s bottom-condition check, and labeled
   `break`/`continue`.
-- **Complexity report** — toggle **Show complexity** for a
-  cyclomatic-complexity heatmap over the whole graph and a ranked report,
-  computed from a real AST walk. Click any entry to jump to it on the graph;
-  the drill-down cross-references its direct callers with their own scores.
+- **Code Health** — a peer lens to the codebase graph, switched via a
+  header tab: a filterable, sortable ranked list across three tabs
+  (Complexity, computed from a real AST walk; Hotspots, complexity ×
+  how often a file actually changes; Dead code, zero-caller candidates).
+  Click any row to see exactly who calls it and what it calls, live.
 - **AI-generated documentation** — right-click any function and choose
   **Document** to stream real Markdown documentation (Purpose, Parameters,
   Returns, Side Effects, Notes) assembled from its actual source, callers,

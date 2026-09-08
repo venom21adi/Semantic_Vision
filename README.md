@@ -22,7 +22,7 @@ to begin with.
 
 ### At a glance
 
-<img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Complexity report · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · 🤖 MCP server for coding agents · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
+<img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Code Health · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · 🤖 MCP server for coding agents · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
 
 ## <img src="assets/icons/impact-analysis.svg" width="22" height="22" align="absmiddle" alt=""/> Impact Analysis
 
@@ -96,33 +96,41 @@ Works for both Python and JS/TS, including `switch` fallthrough,
 The flowchart replaces the graph canvas while open; **Back to graph**
 returns you to the normal call graph.
 
-## <img src="assets/icons/complexity-report.svg" width="22" height="22" align="absmiddle" alt=""/> Complexity report
+## <img src="assets/icons/complexity-report.svg" width="22" height="22" align="absmiddle" alt=""/> Code Health: score a change, not just a snapshot
 
-Toggle **Show complexity** in the sidebar to see a cyclomatic-complexity
-heatmap over the whole graph and a ranked report of every function,
-computed from a real AST walk — decisions, boolean-operator chains,
-comprehension filters, `match` cases, and nested-loop hotspots all
-count, not just a line-count guess.
+**Code Health** sits in the header as a peer to **Codebase Graph** —
+two persistent, browser-tab-style lenses on the same repo, not a panel
+you open and close. Switching to it replaces the sidebar with a
+filterable, sortable ranked list instead of leaving the graph's file
+tree sitting there unused next to a second navigator.
 
-![A complexity heatmap tinting graph nodes, with a ranked performance report and legend in the side panel](assets/complexity-report.png)
+![The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats and a git-ref diff picker](assets/code-health.png)
 
-Click any entry to jump to it on the graph; the ▸ drill-down shows its
-direct callers (cross-referenced with their own scores), so you can
-tell a complex-but-unused function apart from a complex one half the
-codebase actually depends on.
+Three tabs share that list:
 
-### <img src="assets/icons/complexity-report.svg" width="20" height="20" align="absmiddle" alt=""/> Code Health Dashboard: score a change, not just a snapshot
+- **Complexity** — cyclomatic complexity for every function, computed
+  from a real AST walk (decisions, boolean-operator chains,
+  comprehension filters, `match` cases, and nested-loop hotspots all
+  count, not just a line-count guess), filterable by name/file/tier/call
+  depth and sortable by any of them.
+- **Hotspots** — the same complexity, weighted by how often each file
+  actually changed in a chosen window — a moderately complex function
+  edited constantly is a bigger practical risk than a complex one nobody
+  touches.
+- **Dead code** — zero-caller functions after excluding decorators, test
+  files, dunders, and entry points — candidates to review, never a
+  verdict, since a caller outside the repo (a library's public API) can
+  still be real.
 
-Click **Open dashboard** in the sidebar for a full-width view of the
-same data — a summary of the whole repo's health at a glance, next to a
-read-only graph visualizing complexity and call depth together, kept in
-sync with the ranked list below it.
+Click any row to see exactly who calls it and what it calls, live:
 
-The dashboard is git-aware: **Compare to last look** diffs the current
-state against whatever it showed the last time you opened it (useful
-right after an AI agent's session, or your own edit); typing a commit
-or branch into the ref picker instead diffs against any point in the
-repo's history — or fill in the second, optional field to diff two
+![Selecting a function shows its direct callers and callees as a small relationship graph, colored by complexity](assets/code-health-relationships.png)
+
+Complexity is also git-aware: **Compare to last look** diffs the
+current state against whatever it showed the last time you opened it
+(useful right after an AI agent's session, or your own edit); typing a
+commit or branch into the ref picker instead diffs against any point in
+the repo's history — or fill in the second, optional field to diff two
 arbitrary commits against each other, with no dependency on what's
 currently checked out. Either way, the result is added / removed /
 changed functions, each with its before-and-after complexity, so
@@ -234,14 +242,15 @@ I/O, and calls out to other functions in the repo, rendered with
 conventional flowchart shapes instead of you stepping through the code
 by hand.
 
-<img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **See which functions are worth worrying about** — a complexity
-heatmap and ranked report across the whole repo, with a one-click
-drill-down into who actually depends on each risky function.
+<img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **See which functions are worth worrying about** — the Code Health
+lens ranks every function by complexity, by hotspot score (complexity ×
+how often it actually changes), or lists dead-code candidates; click one
+to see exactly who calls it and what it calls, live.
 
-<img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **Judge a change, not just a snapshot** — the Code Health Dashboard
-compares complexity against the last time you looked, any commit or
-branch, or two arbitrary commits against each other, so "did this AI
-agent's edit help or hurt" is a glance instead of a manual diff read.
+<img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **Judge a change, not just a snapshot** — Code Health compares
+complexity against the last time you looked, any commit or branch, or
+two arbitrary commits against each other, so "did this AI agent's edit
+help or hurt" is a glance instead of a manual diff read.
 
 <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> **Never write another docstring by hand** — right-click any function
 to generate real Markdown documentation (Purpose, Parameters, Returns,
@@ -293,7 +302,7 @@ What works today, per language:
 | Search | ✅ | ✅ | ✅ |
 | Persisted layout & view state | ✅ | ✅ | ✅ |
 | Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ |
-| Complexity report | ✅ | ✅ | ✅ |
+| Code Health (complexity, hotspots, dead code) | ✅ | ✅ | ✅ |
 | AI-generated documentation | ✅ | ✅ | ✅ |
 | Execution flowcharts | ✅ | ✅ | ✅ |
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |

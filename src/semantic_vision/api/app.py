@@ -5,22 +5,27 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from semantic_vision.api.routes import router
 
-VITE_DEV_SERVER_ORIGIN = "http://localhost:5173"
+DEV_ORIGIN_PATTERN = r"^(vscode-webview://.*|http://localhost:\d+)$"
+"""Two origins this API needs to accept, combined into one regex since
+`CORSMiddleware` only takes a single `allow_origin_regex`:
 
-VSCODE_WEBVIEW_ORIGIN_PATTERN = r"^vscode-webview://.*"
-"""A VS Code webview's origin is a synthetic `vscode-webview://<uuid>`, a
-different uuid on every panel load -- a static `allow_origins` entry can't
-enumerate it, so it needs its own regex rule alongside the dev server's
-static one (`CORSMiddleware` accepts both at once; a request matching
-either passes). See Milestone 16 (VS Code Extension)."""
+- A VS Code webview's origin is a synthetic `vscode-webview://<uuid>`, a
+  different uuid on every panel load -- a static `allow_origins` entry
+  can't enumerate it. See Milestone 16 (VS Code Extension).
+- `http://localhost:<any port>`, not just the default Vite dev server port
+  (5173) -- a review/test tool (or a second `vite`/`vite preview` instance
+  run alongside the main dev server) reasonably binds to a different local
+  port, and there's no meaningful security boundary being enforced by
+  pinning this to one specific port number: this API is already
+  localhost-only, so anything that can reach it can already reach it
+  regardless of which local port it happens to be calling from."""
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Semantic Vision API")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[VITE_DEV_SERVER_ORIGIN],
-        allow_origin_regex=VSCODE_WEBVIEW_ORIGIN_PATTERN,
+        allow_origin_regex=DEV_ORIGIN_PATTERN,
         allow_methods=["*"],
         allow_headers=["*"],
     )
