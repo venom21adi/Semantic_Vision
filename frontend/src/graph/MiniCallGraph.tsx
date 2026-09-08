@@ -37,7 +37,7 @@ function MiniGraphNode({ data, selected }: NodeProps) {
   const nodeData = data as MiniGraphNodeData
   return (
     <div
-      title={`Call-chain depth ${nodeData.depth}`}
+      title={`${nodeData.label} (call-chain depth ${nodeData.depth})`}
       style={{
         background: nodeData.color,
         border: `2px solid ${selected ? colors.textPrimary : 'transparent'}`,

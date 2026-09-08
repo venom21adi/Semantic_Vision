@@ -2,10 +2,9 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Edge, Node } from '@xyflow/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { ComplexityScore, GraphEdge } from '../api/types'
+import type { GraphEdge } from '../api/types'
 import { AUTO_SAVE_POSITIONS_INTERVAL_MS, GraphCanvas, LARGE_GRAPH_NODE_THRESHOLD } from './GraphCanvas'
-import { COMPLEX_COLOR } from './heatmap'
-import { KIND_COLORS, type GraphNodeData } from './nodeTypes'
+import type { GraphNodeData } from './nodeTypes'
 import type { FlowEdgeData } from './transform'
 
 function makeNode(id: string, kind: GraphNodeData['kind'] = 'function'): Node<GraphNodeData> {
@@ -200,44 +199,6 @@ describe('GraphCanvas', () => {
     render(<GraphCanvas nodes={nodes} edges={[]} selectedNodeId={null} {...noop} />)
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  })
-
-  it('tints a node by its complexity score when complexityByNodeId is set', () => {
-    const complexityByNodeId = new Map<string, ComplexityScore>([
-      ['a', { node_id: 'a', cyclomatic_complexity: 12, call_chain_depth: 0, has_nested_loops: false }],
-    ])
-    render(
-      <GraphCanvas
-        nodes={[makeNode('a')]}
-        edges={[]}
-        selectedNodeId={null}
-        {...noop}
-        complexityByNodeId={complexityByNodeId}
-      />,
-    )
-
-    expect(screen.getByText('a')).toHaveStyle({ background: COMPLEX_COLOR })
-  })
-
-  it('falls back to the normal kind color for a node with no complexity score', () => {
-    const complexityByNodeId = new Map<string, ComplexityScore>()
-    render(
-      <GraphCanvas
-        nodes={[makeNode('a')]}
-        edges={[]}
-        selectedNodeId={null}
-        {...noop}
-        complexityByNodeId={complexityByNodeId}
-      />,
-    )
-
-    expect(screen.getByText('a')).toHaveStyle({ background: KIND_COLORS.function.background })
-  })
-
-  it('does not tint anything when complexityByNodeId is not set', () => {
-    render(<GraphCanvas nodes={[makeNode('a')]} edges={[]} selectedNodeId={null} {...noop} />)
-
-    expect(screen.getByText('a')).toHaveStyle({ background: KIND_COLORS.function.background })
   })
 
   it('auto-saves positions on an interval', () => {

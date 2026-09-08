@@ -12,11 +12,6 @@ export interface GraphNodeData extends Record<string, unknown> {
   /** JS/TS getter/setter marker -- see `accessorLabel.ts`. `undefined`
    * for every node that isn't a getter/setter. */
   accessorKind?: 'get' | 'set' | null
-  /** Set only while the complexity heatmap is on, and only for `function`
-   * nodes (the only kind with a complexity score) -- overrides the
-   * kind-based background below rather than replacing it, so turning the
-   * heatmap off just means this stops being set. */
-  heatmapColor?: string
   /** Directory/file nodes only -- whether this container's own children
    * are currently shown as separate nodes (`true`) or rolled up into this
    * one (`false`). Undefined for non-container kinds and for a container
@@ -78,7 +73,7 @@ function GraphNodeComponent({ data, selected }: NodeProps) {
     <div
       title={displayLabel}
       style={{
-        background: nodeData.heatmapColor ?? colors.background,
+        background: colors.background,
         border: `2px solid ${selected ? themeColors.textPrimary : colors.border}`,
         borderRadius: 6,
         padding: '6px 12px',

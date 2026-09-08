@@ -52,12 +52,6 @@ const palette = {
   // at, not a generic heading.
   teal300: 'oklch(0.72 0.11 195)',
 
-  // A warm amber-orange, hue 55 -- reserved for `complexityActiveBg`,
-  // distinct from both the primary accent and the `warning` semantic
-  // (hue 80) so "complexity view is on" doesn't visually collide with an
-  // actual warning banner.
-  amber700: 'oklch(0.48 0.13 55)',
-
   // Semantic hues, all sharing chroma/lightness pairings so they read as
   // one consistent "status color" family, varying only in hue.
   red300: 'oklch(0.72 0.16 25)',
@@ -84,7 +78,6 @@ export const colors = {
   disabled: palette.slate500,
   accent: palette.indigo500,
   accentStrong: palette.indigo700,
-  complexityActiveBg: palette.amber700,
   dataSourceActiveBg: palette.teal700,
   dataLineageHeading: palette.teal300,
   /** Selected sidebar-tree row background, and the "expand blocked" info

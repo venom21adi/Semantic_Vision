@@ -25,7 +25,6 @@ import {
   updateDocRoot,
 } from './api/client'
 import type {
-  ComplexityScore,
   DocProvider,
   FlowchartResponse,
   GraphEdge,
@@ -33,14 +32,16 @@ import type {
   NodePosition,
   ParseErrorInfo,
 } from './api/types'
+import { CodeHealthDetail } from './components/CodeHealthDetail'
+import { CodeHealthSidebar } from './components/CodeHealthSidebar'
 import {
-  DashboardView,
   type DashboardState,
   type DeadCodeState,
   type DiffMode,
   type DiffState,
+  type HealthTab,
   type HotspotsState,
-} from './components/DashboardView'
+} from './components/codeHealthTypes'
 import type { GitRefsState } from './components/RefPicker'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { DemoRepoPicker } from './components/DemoRepoPicker'
@@ -151,6 +152,33 @@ function errorMessage(error: unknown): string {
   return 'Something went wrong.'
 }
 
+/** The header's "Codebase Graph" / "Code Health" lens switcher -- styled
+ * like `Sidebar.tsx`'s existing Codebase/File view toggle (same active/
+ * inactive treatment) rather than a new button style, so the two peer
+ * navigation controls in this app read as the same family. */
+function LensTabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className="sv-interactive"
+      style={{
+        padding: `${spacing.xs}px ${spacing.md}px`,
+        borderRadius: radius.sm,
+        border: `1px solid ${colors.border}`,
+        background: active ? colors.accent : 'transparent',
+        color: colors.textPrimary,
+        fontSize: 12,
+        fontWeight: active ? 600 : 400,
+        cursor: 'pointer',
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 type FlowchartState =
   | { status: 'loading'; label: string }
   | { status: 'loaded'; label: string; data: FlowchartResponse }
@@ -198,35 +226,44 @@ export default function App() {
     isDocSaveNoticeDismissed(),
   )
   const [flowchartState, setFlowchartState] = useState<FlowchartState | null>(null)
-  // The standalone, full-width dashboard (see docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md)
-  // -- deliberately independent of `pane`/`complexityByNodeId` rather than a second
-  // consumer of `pane`'s existing `'complexity'` kind. That kind still drives the
-  // heatmap + narrow side panel exactly as before; this is a separate, later-added
-  // way to see the same ranked report full-width, with the canvas and DetailsPanel
-  // out of the way. See handleToggleDashboard below for why the two stayed separate.
+  // Which of the two peer lenses on this repo is showing -- 'graph' (the
+  // canvas + DetailsPanel, `Sidebar`'s tree) or 'health' (the Code Health
+  // dashboard, `CodeHealthSidebar`'s ranked list + `CodeHealthDetail`).
+  // Switched via the header tabs (see the JSX below), not toggled open/
+  // closed -- each lens's own state (`dashboard`/`hotspots`/`deadCode`
+  // below, or `visibleIds`/`pane` for the graph) survives a switch away
+  // and back, the way a browser tab's state survives switching tabs.
+  const [lens, setLens] = useState<'graph' | 'health'>('graph')
+  // Which dataset populates the Code Health lens's list -- lifted here
+  // (rather than living inside `CodeHealthSidebar`) because
+  // `CodeHealthSidebar` (the list) and `CodeHealthDetail` (summary/diff/
+  // relationship graph) render in two different places in the JSX below,
+  // not as parent/child, and both need to agree on it.
+  const [healthTab, setHealthTab] = useState<HealthTab>('complexity')
+  // The Code Health lens's complexity scores -- fetched once when the lens
+  // first activates (see handleActivateHealthLens below), reused on every
+  // later switch back to this lens rather than refetched.
   const [dashboard, setDashboard] = useState<DashboardState | null>(null)
-  // The dashboard's "Compare to last look" result (Idea 3b of
-  // docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md) -- a sibling to `dashboard`, not
-  // nested inside it, matching this file's convention of flat, independently
-  // managed state slices rather than one growing mega-object. See
-  // `handleCompareDashboard` and `closeDashboard` below.
+  // The Code Health lens's "Compare to last look" result -- a sibling to
+  // `dashboard`, not nested inside it, matching this file's convention of
+  // flat, independently managed state slices rather than one growing
+  // mega-object. See `handleCompareDashboard` and `resetHealthState`.
   const [dashboardDiff, setDashboardDiff] = useState<DiffState | null>(null)
-  // Branches + recent commits for the "compare to commit" ref picker
-  // (Idea 3a) -- fetched once when the dashboard opens, alongside the
-  // scores fetch, and cleared by the same `closeDashboard` chokepoint.
+  // Branches + recent commits for the "compare to commit" ref picker --
+  // fetched once when the Code Health lens activates, alongside the
+  // scores fetch, and cleared by the same `resetHealthState` chokepoint.
   const [gitRefs, setGitRefs] = useState<GitRefsState | null>(null)
-  // The dashboard's Hotspots tab (Idea 2 + Idea 3 of
-  // docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md) -- unlike `dashboard`/`gitRefs`,
-  // fetched lazily (see `handleLoadHotspots`/`DashboardView`'s own
+  // The Code Health lens's Hotspots tab -- unlike `dashboard`/`gitRefs`,
+  // fetched lazily (see `handleLoadHotspots`/`CodeHealthSidebar`'s own
   // `handleSelectHotspotsTab`) the first time that tab is opened, not eagerly
-  // alongside the rest of the dashboard. Still a flat sibling state slice,
-  // still cleared by `closeDashboard` -- the exact chokepoint this dashboard's
+  // alongside the rest of the lens's data. Still a flat sibling state slice,
+  // still cleared by `resetHealthState` -- the exact chokepoint this lens's
   // own `DiffMode` comment already warns future additions to wire into.
   const [hotspots, setHotspots] = useState<HotspotsState | null>(null)
-  // The dashboard's Dead Code tab -- same lazy-fetch-on-first-open
+  // The Code Health lens's Dead Code tab -- same lazy-fetch-on-first-open
   // treatment as `hotspots` above (see `handleLoadDeadCode`/
-  // `DashboardView`'s own `handleSelectDeadCodeTab`), same flat sibling
-  // state slice cleared by `closeDashboard`.
+  // `CodeHealthSidebar`'s own `handleSelectDeadCodeTab`), same flat sibling
+  // state slice cleared by `resetHealthState`.
   const [deadCode, setDeadCode] = useState<DeadCodeState | null>(null)
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
@@ -327,12 +364,12 @@ export default function App() {
     paneRef.current = pane
   }, [pane])
 
-  // Identifies *which* `getComplexity` request (from handleToggleDashboard) a
+  // Identifies *which* `getComplexity` request (from handleActivateHealthLens) a
   // response belongs to -- stronger than checking a mirrored `dashboard` ref's
   // `status === 'loading'` alone would be (that only proves *some* request is
-  // in flight, not that it's this one). Without it, closing and reopening the
-  // dashboard fast enough would leave two requests in flight, and a
-  // status-only guard would accept whichever resolves last even if it's stale.
+  // in flight, not that it's this one). Without it, a fresh repo load
+  // invalidating this while a fetch is still in flight would let a
+  // status-only guard accept whichever resolves last even if it's stale.
   const dashboardRequestIdRef = useRef(0)
   // Same guard, for `handleCompareDashboard`'s `getComplexityDiff` request --
   // independent of `dashboardRequestIdRef` since a compare can be in flight
@@ -348,15 +385,14 @@ export default function App() {
   // independent of the others for the same reason `hotspotsRequestIdRef` is.
   const deadCodeRequestIdRef = useRef(0)
 
-  // The single chokepoint for closing the dashboard, whether from *outside*
-  // `handleToggleDashboard` (a repo switch, opening a different pane, an
-  // external selection) or from `handleToggleDashboard`'s own close branch,
-  // which calls this instead of duplicating the close logic inline -- always
-  // bumps *all four* request-id refs and clears `dashboardDiff`/`hotspots`/
-  // `deadCode` too, or a fetch still in flight (the dashboard's own, a
-  // compare's, a hotspots load, or a dead-code load) when this fires could
-  // resolve afterwards and resurrect state the user already left.
-  const closeDashboard = useCallback(() => {
+  // The single chokepoint for invalidating the Code Health lens's data --
+  // called only when a fresh repo load makes the previous scores stale
+  // (see handleLoad below). Always bumps *all four* request-id refs and
+  // clears `dashboardDiff`/`hotspots`/`deadCode` too, or a fetch still in
+  // flight (the dashboard's own, a compare's, a hotspots load, or a
+  // dead-code load) when this fires could resolve afterwards and
+  // resurrect state that no longer belongs to the newly-loaded repo.
+  const resetHealthState = useCallback(() => {
     dashboardRequestIdRef.current += 1
     dashboardDiffRequestIdRef.current += 1
     hotspotsRequestIdRef.current += 1
@@ -434,8 +470,10 @@ export default function App() {
       setSelectedNodeId(null)
       setPane(null)
       setView('codebase')
+      setLens('graph')
+      setHealthTab('complexity')
       setFlowchartState(null)
-      closeDashboard()
+      resetHealthState()
       setDataOnlyActive(false)
       // At or below the threshold: every node id is independently visible,
       // identical to this app's pre-collapse, pre-selection behavior (a
@@ -486,7 +524,7 @@ export default function App() {
     } finally {
       setLoading(false)
     }
-  }, [closeDashboard])
+  }, [resetHealthState])
 
   const handleChangeDocRoot = useCallback(async (newDocRoot: string) => {
     const current = repoRef.current
@@ -856,65 +894,23 @@ export default function App() {
     [repo],
   )
 
-  // Toggling this off is just clearing the pane -- `complexityByNodeId`
-  // below is derived from `pane`, so the heatmap and this pane always
-  // stay in sync with no separate on/off state to fall out of sync with.
-  const handleToggleComplexity = useCallback(async () => {
+  // Activates the Code Health lens -- idempotent, browser-tab-style:
+  // switching to it just flips `lens`, and only fetches complexity/refs the
+  // *first* time this repo-session (guarded on `dashboard === null`), never
+  // on a later switch back. Cancels any in-flight doc generation and clears
+  // `pane`/`flowchartState` since those belong to the Graph lens, which is
+  // no longer on screen once this fires -- but only on that first
+  // activation. A switch-back (the `if (dashboard) return` below) leaves an
+  // in-flight doc generation running in the background rather than
+  // cancelling it, deliberately: the same "switching lenses doesn't destroy
+  // the other lens's state" contract this whole redesign is built on.
+  const handleActivateHealthLens = useCallback(async () => {
     if (!repo) return
-    if (pane?.kind === 'complexity') {
-      setPane(null)
-      return
-    }
-    cancelGeneration()
-    // The dashboard occupies the same "Analysis" section of the sidebar and stays
-    // reachable while it's open (see handleToggleDashboard) -- without this, opening
-    // this pane while the dashboard is showing would fetch and set state invisibly
-    // behind it, then pop up the moment the dashboard closes.
-    closeDashboard()
-    setPane({ kind: 'complexity', status: 'loading' })
-    try {
-      const result = await getComplexity(repo.path)
-      // Bail if something else -- closing this pane, opening a different
-      // one, loading a different repo -- has moved on since this fetch
-      // started. Applying a stale response here could resurrect a pane
-      // the user already dismissed, or worse, attach one repo's scores to
-      // a graph that's since switched to a different repo (`paneRef`
-      // reflects the latest `pane`, not the one this closure captured).
-      if (paneRef.current?.kind !== 'complexity' || paneRef.current.status !== 'loading') return
-      setPane({ kind: 'complexity', status: 'loaded', scores: result.scores })
-    } catch (error) {
-      if (paneRef.current?.kind !== 'complexity' || paneRef.current.status !== 'loading') return
-      setPane({ kind: 'complexity', status: 'error', message: errorMessage(error) })
-    }
-  }, [repo, pane, cancelGeneration, closeDashboard])
-
-  const complexityByNodeId = useMemo(() => {
-    if (pane?.kind !== 'complexity' || pane.status !== 'loaded') return null
-    return new Map<string, ComplexityScore>(pane.scores.map((score) => [score.node_id, score]))
-  }, [pane])
-
-  // Separate from handleToggleComplexity above by design: the dashboard replaces
-  // the canvas + DetailsPanel entirely (see the layout below), so it can't also
-  // drive the heatmap the way `pane`'s `'complexity'` kind does -- reusing that
-  // same state would make heatmap-while-reading-the-list permanently unreachable.
-  // Cancels any in-flight doc generation and clears `pane`/`flowchartState` on open
-  // since both live in the space the dashboard is about to take over.
-  const handleToggleDashboard = useCallback(async () => {
-    if (!repo) return
-    // Routed through `closeDashboard` (not a duplicated inline
-    // `setDashboard(null)`) so this branch also bumps `dashboardDiffRequestIdRef`
-    // and clears `dashboardDiff` -- closing the dashboard while a compare is
-    // still in flight must invalidate that too, or it can resolve afterwards
-    // and resurrect a dashboard (and diff results) the user already left.
-    if (dashboard) {
-      closeDashboard()
-      return
-    }
+    setLens('health')
+    if (dashboard) return
     cancelGeneration()
     setPane(null)
     setFlowchartState(null)
-    setDashboardDiff(null)
-    dashboardDiffRequestIdRef.current += 1
     setDashboard({ status: 'loading' })
     setGitRefs({ status: 'loading' })
     const requestId = ++dashboardRequestIdRef.current
@@ -937,7 +933,11 @@ export default function App() {
       if (dashboardRequestIdRef.current !== requestId) return
       setGitRefs({ status: 'error', message: errorMessage(error) })
     }
-  }, [repo, dashboard, cancelGeneration, closeDashboard])
+  }, [repo, dashboard, cancelGeneration])
+
+  const handleActivateGraphLens = useCallback(() => {
+    setLens('graph')
+  }, [])
 
   // Re-parses the repo (picking up whatever changed on disk since it was
   // last parsed -- an AI agent's edit, or a hand edit) and diffs the fresh
@@ -1028,7 +1028,7 @@ export default function App() {
   )
 
   // Fetches the Hotspots tab's ranking for a given churn window -- called
-  // lazily by `DashboardView` (first tab open, then again on every
+  // lazily by `CodeHealthSidebar` (first tab open, then again on every
   // window-size change), never eagerly alongside the rest of the dashboard.
   // Deliberately only guarded on `repo` existing, unlike the two compare
   // handlers above (which also require `dashboard?.status === 'loaded'`
@@ -1083,9 +1083,8 @@ export default function App() {
       return
     }
     cancelGeneration()
-    closeDashboard()
     setPane({ kind: 'dataSource' })
-  }, [repo, pane, cancelGeneration, closeDashboard])
+  }, [repo, pane, cancelGeneration])
 
   // Ingesting a dbt manifest or a live DB connection merges new
   // nodes/edges into the backend's cached `ParseResult`, not into this
@@ -1165,21 +1164,22 @@ export default function App() {
     [cancelGeneration],
   )
 
-  // Wraps `handleSelectNode` for the entry points that are reachable *while the
-  // dashboard is open* -- the sidebar's tree/search (it stays mounted; only the
-  // canvas + DetailsPanel are replaced) and the VS Code host's `postMessage`
-  // (can arrive at any time regardless of what's currently shown). Deliberately
-  // not folded into `handleSelectNode` itself: `DashboardView`'s own ranked list
-  // also calls `handleSelectNode` directly when a name is clicked, and should
-  // behave exactly like the narrow side-panel report always has -- silently
-  // adding the node to the canvas underneath without booting the user out of
-  // the view they're reading, not closing it on every click.
+  // Wraps `handleSelectNode` for the VS Code host's `postMessage` bridge,
+  // which can arrive at any time regardless of which lens is currently
+  // showing -- switches back to the Graph lens first, since a "jump to
+  // this file/function" message is inherently a Graph-lens activity.
+  // Deliberately not folded into `handleSelectNode` itself:
+  // `CodeHealthSidebar`'s own ranked list also calls `handleSelectNode`
+  // directly when a row is clicked, and should behave exactly like the
+  // narrow side-panel report always has -- silently adding the node to the
+  // canvas underneath without booting the user out of the Code Health lens
+  // they're reading, not switching lenses on every click.
   const handleExternalSelectNode = useCallback(
     (nodeId: string | null) => {
-      if (dashboard) closeDashboard()
+      if (lens === 'health') setLens('graph')
       handleSelectNode(nodeId)
     },
-    [dashboard, closeDashboard, handleSelectNode],
+    [lens, handleSelectNode],
   )
 
   // One click, from the demo's own "try these" suggestions, does what a
@@ -1331,6 +1331,7 @@ export default function App() {
         style={{
           display: 'flex',
           alignItems: 'center',
+          flexWrap: 'wrap',
           gap: spacing.lg,
           padding: spacing.md,
           borderBottom: `1px solid ${colors.bgPanel}`,
@@ -1363,6 +1364,12 @@ export default function App() {
             </a>
           )}
         </div>
+        {repo && (
+          <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
+            <LensTabButton label="Codebase Graph" active={lens === 'graph'} onClick={handleActivateGraphLens} />
+            <LensTabButton label="Code Health" active={lens === 'health'} onClick={() => void handleActivateHealthLens()} />
+          </div>
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           {repo && DEMO_MODE && (
             <DemoRepoPill slug={repo.path} onSwitch={() => setRepo(null)} />
@@ -1389,7 +1396,7 @@ export default function App() {
         <HelpGuide />
       </header>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        {repo && (
+        {repo && lens === 'graph' && (
           <Sidebar
             nodes={repo.nodes}
             edges={repo.edges}
@@ -1397,10 +1404,6 @@ export default function App() {
             onSelectNode={handleExternalSelectNode}
             view={view}
             onViewChange={setView}
-            complexityActive={pane?.kind === 'complexity'}
-            onToggleComplexity={handleToggleComplexity}
-            dashboardActive={dashboard !== null}
-            onToggleDashboard={handleToggleDashboard}
             dataSourceActive={pane?.kind === 'dataSource'}
             onToggleDataSource={handleToggleDataSource}
             dataOnlyActive={dataOnlyActive}
@@ -1414,12 +1417,25 @@ export default function App() {
             onToggleCollapsed={toggleSidebarCollapsed}
           />
         )}
-        {dashboard && repo ? (
-          <DashboardView
-            state={dashboard}
+        {repo && lens === 'health' && (
+          <CodeHealthSidebar
+            healthTab={healthTab}
+            onHealthTabChange={setHealthTab}
+            state={dashboard ?? { status: 'loading' }}
             path={repo.path}
+            graphNodes={repo.nodes}
+            selectedNodeId={selectedNodeId}
             onSelectNode={handleSelectNode}
-            onBack={handleToggleDashboard}
+            hotspots={hotspots}
+            onLoadHotspots={handleLoadHotspots}
+            deadCode={deadCode}
+            onLoadDeadCode={handleLoadDeadCode}
+          />
+        )}
+        {lens === 'health' && repo ? (
+          <CodeHealthDetail
+            healthTab={healthTab}
+            state={dashboard ?? { status: 'loading' }}
             diff={dashboardDiff}
             onCompare={handleCompareDashboard}
             gitRefs={gitRefs}
@@ -1427,10 +1443,7 @@ export default function App() {
             graphNodes={repo.nodes}
             graphEdges={repo.edges}
             selectedNodeId={selectedNodeId}
-            hotspots={hotspots}
-            onLoadHotspots={handleLoadHotspots}
-            deadCode={deadCode}
-            onLoadDeadCode={handleLoadDeadCode}
+            onSelectNode={handleSelectNode}
           />
         ) : (
           <>
@@ -1531,7 +1544,6 @@ export default function App() {
                     expandBlockedNotice={view === 'codebase' ? expandBlockedNotice : null}
                     onAutoSavePositions={handleAutoSavePositions}
                     highlight={impactHighlight ?? dataLineageHighlight}
-                    complexityByNodeId={complexityByNodeId}
                     hiddenEdgeKinds={hiddenEdgeKinds}
                     onToggleEdgeKind={handleToggleEdgeKind}
                   />

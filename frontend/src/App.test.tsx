@@ -84,6 +84,20 @@ async function openRepoPill(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: /^Current repository:/ }))
 }
 
+/** Switches to the Code Health lens via the header tab and waits for
+ * `CodeHealthSidebar` to actually mount -- its own "Complexity" tab button
+ * is a signal unique to that lens (unlike waiting on loaded data, which
+ * varies test to test), so this is safe to await regardless of whether the
+ * complexity fetch itself has resolved yet. */
+async function openHealthLens(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Code Health' }))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Complexity' })).toBeInTheDocument())
+}
+
+async function backToGraphLens(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Codebase Graph' }))
+}
+
 beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
@@ -975,7 +989,7 @@ describe('App', () => {
     expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument()
   })
 
-  it('fetches and shows the performance report when Show complexity is toggled on', async () => {
+  it('fetches and shows the ranked report when the Code Health lens is activated', async () => {
     mockedClient.getComplexity.mockResolvedValue({
       scores: [
         {
@@ -988,139 +1002,27 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
+    await openHealthLens(user)
 
     expect(mockedClient.getComplexity).toHaveBeenCalledWith('/repo')
-    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
-    expect(screen.getByText(/app\.py::Greeter\.greet/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Hide complexity' })).toBeInTheDocument()
+    expect(screen.getByText('greet')).toBeInTheDocument()
+    expect(screen.getByText('Complexity 4')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Code Health' })).toHaveAttribute('aria-pressed', 'true')
   })
 
-  it('closes the performance report and reverts the toggle when clicked again', async () => {
+  it('returns to the Codebase Graph lens when its header tab is clicked', async () => {
     mockedClient.getComplexity.mockResolvedValue({ scores: [] })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
-    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
+    await openHealthLens(user)
 
-    await user.click(screen.getByRole('button', { name: 'Hide complexity' }))
+    await backToGraphLens(user)
 
-    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Show complexity' })).toBeInTheDocument()
-  })
-
-  it('does not resurrect the performance report if it is closed before the fetch resolves', async () => {
-    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
-    mockedClient.getComplexity.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveComplexity = resolve
-        }),
-    )
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
-    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
-
-    // Close it before the (still in-flight) fetch has a chance to resolve.
-    await user.click(screen.getByRole('button', { name: 'Hide complexity' }))
-    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
-
-    resolveComplexity({ scores: [] })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
-  })
-
-  it('does not attach a stale repo\'s complexity scores after switching repos mid-fetch', async () => {
-    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
-    mockedClient.getComplexity.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveComplexity = resolve
-        }),
-    )
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Show complexity' }))
-    await waitFor(() => expect(screen.getByText('Performance Report')).toBeInTheDocument())
-
-    // Load a different repo while the first repo's complexity fetch is
-    // still in flight -- App.tsx's `handleLoad` resets `pane` to null.
-    mockedClient.parseRepo.mockResolvedValueOnce({
-      path: '/other-repo',
-      doc_root: '/other-repo',
-      node_count: 2,
-      edge_count: 1,
-      parse_errors: [],
-    })
-    await openRepoPill(user)
-    await user.clear(screen.getByLabelText('Repository path'))
-    await user.type(screen.getByLabelText('Repository path'), '/other-repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
-    await waitFor(() => expect(screen.queryByText('Performance Report')).not.toBeInTheDocument())
-
-    resolveComplexity({ scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }] })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.queryByText('Performance Report')).not.toBeInTheDocument()
-  })
-
-  it('fetches and shows the dashboard when Open dashboard is toggled on', async () => {
-    mockedClient.getComplexity.mockResolvedValue({
-      scores: [
-        {
-          node_id: 'app.py::Greeter.greet',
-          cyclomatic_complexity: 4,
-          call_chain_depth: 0,
-          has_nested_loops: false,
-        },
-      ],
-    })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-
-    expect(mockedClient.getComplexity).toHaveBeenCalledWith('/repo')
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    expect(screen.getByText(/app\.py::Greeter\.greet/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Close dashboard' })).toBeInTheDocument()
-  })
-
-  it('closes the dashboard and reverts the toggle when clicked again', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-
-    await user.click(screen.getByRole('button', { name: 'Close dashboard' }))
-
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Open dashboard' })).toBeInTheDocument()
-  })
-
-  it('does not resurrect the dashboard if it is closed before the fetch resolves', async () => {
-    let resolveComplexity: (value: ComplexityResponse) => void = () => {}
-    mockedClient.getComplexity.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveComplexity = resolve
-        }),
-    )
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-
-    // Close it before the (still in-flight) fetch has a chance to resolve.
-    await user.click(screen.getByRole('button', { name: 'Close dashboard' }))
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
-
-    resolveComplexity({ scores: [] })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Complexity' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Codebase Graph' })).toHaveAttribute('aria-pressed', 'true')
+    // The graph itself -- and everything on it -- was never touched by the
+    // lens switch; it's still right there.
+    expect(screen.getByTestId('rf__node-app.py::Greeter.greet')).toBeInTheDocument()
   })
 
   it("does not attach a stale repo's dashboard scores after switching repos mid-fetch", async () => {
@@ -1133,11 +1035,12 @@ describe('App', () => {
     )
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Code Health' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Complexity' })).toBeInTheDocument())
 
     // Load a different repo while the first repo's dashboard fetch is
-    // still in flight -- App.tsx's `handleLoad` resets `dashboard` to null.
+    // still in flight -- App.tsx's `handleLoad` resets `dashboard` to null
+    // and switches back to the Codebase Graph lens.
     mockedClient.parseRepo.mockResolvedValueOnce({
       path: '/other-repo',
       doc_root: '/other-repo',
@@ -1149,55 +1052,29 @@ describe('App', () => {
     await user.clear(screen.getByLabelText('Repository path'))
     await user.type(screen.getByLabelText('Repository path'), '/other-repo')
     await user.click(screen.getByRole('button', { name: /load/i }))
-    await waitFor(() => expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Complexity' })).not.toBeInTheDocument())
 
     resolveComplexity({ scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }] })
     await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
+    // Still on the Codebase Graph lens -- the stale resolve didn't pull the
+    // user back into a dashboard that belongs to a repo they've left.
+    expect(screen.queryByRole('button', { name: 'Complexity' })).not.toBeInTheDocument()
   })
 
-  it('does not apply a stale fetch when the dashboard is closed and reopened before it resolves', async () => {
-    let resolveFirst: (value: ComplexityResponse) => void = () => {}
-    let resolveSecond: (value: ComplexityResponse) => void = () => {}
-    mockedClient.getComplexity
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirst = resolve)))
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveSecond = resolve)))
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Close dashboard' }))
-    await waitFor(() => expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-
-    // The first (stale) fetch resolves after the second (current) one has
-    // already started -- its scores must never make it onto the screen.
-    resolveFirst({
-      scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }],
-    })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
-
-    resolveSecond({
-      scores: [{ node_id: 'fresh', cyclomatic_complexity: 2, call_chain_depth: 0, has_nested_loops: false }],
-    })
-    await waitFor(() => expect(screen.getByText(/fresh/)).toBeInTheDocument())
-    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
-  })
-
-  it('closes the dashboard when a node is selected from the sidebar tree', async () => {
+  it('does not refetch complexity when switching back to the Code Health lens', async () => {
     mockedClient.getComplexity.mockResolvedValue({ scores: [] })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
+    expect(mockedClient.getComplexity).toHaveBeenCalledTimes(1)
 
-    await user.click(within(screen.getByRole('tree')).getByText('greet'))
+    // Browser-tab semantics: switching away and back reuses what's already
+    // there instead of firing a second fetch.
+    await backToGraphLens(user)
+    await openHealthLens(user)
 
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Open dashboard' })).toBeInTheDocument()
+    expect(mockedClient.getComplexity).toHaveBeenCalledTimes(1)
   })
 
   it('runs a compare and shows the diff results plus the refreshed ranked list', async () => {
@@ -1243,8 +1120,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
 
     await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
 
@@ -1253,7 +1129,7 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText(/Changed/)).toBeInTheDocument())
     // The ranked list itself refreshes from `diffResult.current`, not a
     // separate `getComplexity` re-fetch.
-    expect(screen.getByText(/complexity 4 → 9/)).toBeInTheDocument()
+    expect(screen.getByText('Complexity 4 → 9')).toBeInTheDocument()
   })
 
   it('prunes a removed function out of visibleIds so it stops inflating "on canvas"', async () => {
@@ -1263,8 +1139,7 @@ describe('App', () => {
     // threshold) -- confirms the starting count before the prune.
     expect(screen.getByText('2 on canvas')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
 
     // The compare's own reparse reports the function gone entirely.
     mockedClient.getGraph.mockResolvedValueOnce({
@@ -1289,93 +1164,8 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
     await waitFor(() => expect(screen.getByText(/Removed/)).toBeInTheDocument())
 
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await backToGraphLens(user)
     expect(screen.getByText('1 on canvas')).toBeInTheDocument()
-  })
-
-  it('does not resurrect the dashboard if it is closed while a compare is in flight', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    mockedClient.getComplexityDiff.mockResolvedValue({
-      available: true,
-      current: [],
-      added: [],
-      removed: [],
-      changed: [],
-    })
-    let resolveParse: (value: Awaited<ReturnType<typeof client.parseRepo>>) => void = () => {}
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-
-    mockedClient.parseRepo.mockImplementationOnce(
-      () => new Promise((resolve) => (resolveParse = resolve)),
-    )
-    await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
-
-    // Close the dashboard before the compare's own reparse resolves.
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
-
-    resolveParse({ path: '/repo', doc_root: '/repo', node_count: 2, edge_count: 1, parse_errors: [] })
-    // The fixed behavior bails out right after `getGraph` resolves (the
-    // stale-request guard fires before `getComplexityDiff` is ever called),
-    // so there's nothing to `waitFor` on -- just flush enough ticks to get
-    // past that one remaining await.
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.queryByText('Code Health Dashboard')).not.toBeInTheDocument()
-    expect(mockedClient.getComplexityDiff).not.toHaveBeenCalled()
-  })
-
-  // The "Compare to last look" button disables itself while a compare is
-  // already in flight (see `DashboardView`'s `compareDisabled`), so two
-  // overlapping compares can't actually be triggered by clicking it twice --
-  // that disabled state is itself a stronger guarantee than a request-id
-  // guard alone would be. The reachable variant of this race is a stale
-  // compare resolving *after* the dashboard has been closed and reopened
-  // (starting a fresh compare) in between -- exercised here.
-  it('ignores a stale compare response that resolves after closing and reopening the dashboard', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-
-    let resolveFirstDiff: (value: Awaited<ReturnType<typeof client.getComplexityDiff>>) => void =
-      () => {}
-    mockedClient.getComplexityDiff
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstDiff = resolve)))
-      .mockResolvedValueOnce({ available: true, current: [], added: [], removed: [], changed: [] })
-
-    await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
-    await waitFor(() => expect(mockedClient.getComplexityDiff).toHaveBeenCalledTimes(1))
-
-    // Close, then reopen a fresh dashboard session while the first compare
-    // is still in flight, and run a second compare in it.
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
-    await waitFor(() => expect(mockedClient.getComplexityDiff).toHaveBeenCalledTimes(2))
-    await waitFor(() => expect(screen.getByText('No changes vs last look.')).toBeInTheDocument())
-
-    // The first (stale) compare's diff resolves only now -- it must not
-    // overwrite the second, current session's result.
-    resolveFirstDiff({
-      available: true,
-      current: [
-        { node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
-      ],
-      added: [],
-      removed: [],
-      changed: [],
-    })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.getByText('No changes vs last look.')).toBeInTheDocument()
-    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
   })
 
   it('runs a compare-to-ref and shows the diff results labeled with the ref', async () => {
@@ -1396,8 +1186,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
 
     await user.type(screen.getByLabelText('Git ref to compare against'), 'abc1234')
     await user.click(screen.getByRole('button', { name: 'Compare' }))
@@ -1432,8 +1221,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
 
     await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
     await user.type(
@@ -1450,100 +1238,6 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText('No changes main → feature.')).toBeInTheDocument())
   })
 
-  // Mirrors the existing "ignores a stale compare response..." test above,
-  // for the ref-diff variant: the ref-picker's own Compare button disables
-  // itself while a compare is in flight (`compareDisabled` in
-  // `DashboardView`), so two overlapping ref compares can't actually be
-  // triggered by clicking it twice -- the reachable variant is a stale
-  // response resolving after the dashboard was closed and reopened.
-  it('ignores a stale ref-diff response that resolves after closing and reopening the dashboard', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    mockedClient.getGitRefs.mockResolvedValue({ is_git_repo: true, branches: ['main'], commits: [] })
-    let resolveFirstRefDiff: (value: Awaited<ReturnType<typeof client.getComplexityDiffRef>>) => void =
-      () => {}
-    mockedClient.getComplexityDiffRef
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstRefDiff = resolve)))
-      .mockResolvedValueOnce({
-        ref: 'main',
-        to_ref: null,
-        available: true,
-        current: [],
-        added: [],
-        removed: [],
-        changed: [],
-      })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
-    await user.click(screen.getByRole('button', { name: 'Compare' }))
-    await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledTimes(1))
-
-    // Close, then reopen a fresh dashboard session while the first ref
-    // compare is still in flight, and run a second ref compare in it.
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.type(screen.getByLabelText('Git ref to compare against'), 'main')
-    await user.click(screen.getByRole('button', { name: 'Compare' }))
-    await waitFor(() => expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledTimes(2))
-    await waitFor(() => expect(screen.getByText('No changes vs main.')).toBeInTheDocument())
-
-    // The first (stale) ref compare's diff resolves only now -- it must
-    // not overwrite the second, current session's result. Distinguished
-    // via a non-empty `added` bucket (not just a different `current`,
-    // which `handleCompareDashboardToRef` never feeds into anything
-    // rendered) so an unguarded overwrite is actually observable.
-    resolveFirstRefDiff({
-      ref: 'main',
-      to_ref: null,
-      available: true,
-      current: [],
-      added: [
-        { node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
-      ],
-      removed: [],
-      changed: [],
-    })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.getByText('No changes vs main.')).toBeInTheDocument()
-    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
-  })
-
-  it('ignores a stale git-refs response that resolves after closing and reopening the dashboard', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    let resolveFirstRefs: (value: Awaited<ReturnType<typeof client.getGitRefs>>) => void = () => {}
-    mockedClient.getGitRefs
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstRefs = resolve)))
-      .mockResolvedValueOnce({ is_git_repo: true, branches: ['second-session-branch'], commits: [] })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-
-    // Close, then reopen a fresh dashboard session while the first
-    // session's git-refs fetch is still in flight.
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await waitFor(() =>
-      expect(
-        Array.from(document.body.querySelectorAll('option')).map((o) => o.value),
-      ).toEqual(['second-session-branch']),
-    )
-
-    // The first (stale) session's refs resolve only now -- must not
-    // overwrite the second, current session's ref-picker data.
-    resolveFirstRefs({ is_git_repo: true, branches: ['first-session-branch'], commits: [] })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(Array.from(document.body.querySelectorAll('option')).map((o) => o.value)).toEqual([
-      'second-session-branch',
-    ])
-  })
-
   it('lazily loads hotspots only when the Hotspots tab is first opened', async () => {
     mockedClient.getComplexity.mockResolvedValue({ scores: [] })
     mockedClient.getComplexityHotspots.mockResolvedValue({
@@ -1553,8 +1247,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
 
     expect(mockedClient.getComplexityHotspots).not.toHaveBeenCalled()
 
@@ -1581,8 +1274,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
     // At this point `dashboard` is still `{ status: 'loading' }` -- the
     // complexity fetch hasn't resolved yet.
     await user.click(screen.getByRole('button', { name: 'Hotspots' }))
@@ -1591,70 +1283,6 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
 
     resolveComplexity({ scores: [] })
-  })
-
-  it('clears hotspots when the dashboard is closed', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    mockedClient.getComplexityHotspots.mockResolvedValue({
-      is_git_repo: true,
-      scores: [{ node_id: 'app.py::hot', cyclomatic_complexity: 3, change_count: 4, hotspot_score: 12 }],
-      window_days: 90,
-    })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
-    await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
-
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
-
-    // A fresh session must fetch again -- the previous session's result was
-    // cleared, not carried over silently.
-    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(2))
-  })
-
-  it('ignores a stale hotspots response that resolves after closing and reopening the dashboard', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    let resolveFirstHotspots: (value: Awaited<ReturnType<typeof client.getComplexityHotspots>>) => void =
-      () => {}
-    mockedClient.getComplexityHotspots
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstHotspots = resolve)))
-      .mockResolvedValueOnce({
-        is_git_repo: true,
-        scores: [{ node_id: 'second', cyclomatic_complexity: 1, change_count: 1, hotspot_score: 1 }],
-        window_days: 90,
-      })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
-    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(1))
-
-    // Close, then reopen a fresh dashboard session while the first
-    // session's hotspots fetch is still in flight.
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
-    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledTimes(2))
-    await waitFor(() => expect(screen.getByText(/second/)).toBeInTheDocument())
-
-    // The first (stale) session's hotspots resolve only now -- must not
-    // overwrite the second, current session's result.
-    resolveFirstHotspots({
-      is_git_repo: true,
-      scores: [{ node_id: 'stale', cyclomatic_complexity: 1, change_count: 1, hotspot_score: 1 }],
-      window_days: 90,
-    })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.getByText(/second/)).toBeInTheDocument()
-    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
   })
 
   it('ignores a stale hotspots response for an earlier window when a newer window was selected first', async () => {
@@ -1670,8 +1298,7 @@ describe('App', () => {
       })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
     // Opens the tab (fires the 90-day fetch, left pending) then immediately
     // switches the window selector to 30 days (fires a second fetch) before
     // the first one resolves.
@@ -1701,8 +1328,7 @@ describe('App', () => {
     })
     const user = await loadSampleRepo()
 
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await openHealthLens(user)
 
     expect(mockedClient.getDeadCode).not.toHaveBeenCalled()
 
@@ -1710,59 +1336,6 @@ describe('App', () => {
 
     await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledWith('/repo'))
     await waitFor(() => expect(screen.getByText(/app\.py::orphan/)).toBeInTheDocument())
-  })
-
-  it('clears dead-code candidates when the dashboard is closed', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    mockedClient.getDeadCode.mockResolvedValue({
-      candidates: [{ node_id: 'app.py::orphan' }],
-    })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Dead code' }))
-    await waitFor(() => expect(screen.getByText(/app\.py::orphan/)).toBeInTheDocument())
-
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Dead code' }))
-
-    // A fresh session must fetch again -- the previous session's result was
-    // cleared, not carried over silently.
-    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledTimes(2))
-  })
-
-  it('ignores a stale dead-code response that resolves after closing and reopening the dashboard', async () => {
-    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
-    let resolveFirstDeadCode: (value: Awaited<ReturnType<typeof client.getDeadCode>>) => void = () => {}
-    mockedClient.getDeadCode
-      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstDeadCode = resolve)))
-      .mockResolvedValueOnce({ candidates: [{ node_id: 'second' }] })
-    const user = await loadSampleRepo()
-
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Dead code' }))
-    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledTimes(1))
-
-    // Close, then reopen a fresh dashboard session while the first
-    // session's dead-code fetch is still in flight.
-    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
-    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
-    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Dead code' }))
-    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledTimes(2))
-    await waitFor(() => expect(screen.getByText(/second/)).toBeInTheDocument())
-
-    // The first (stale) session's dead-code fetch resolves only now -- must
-    // not overwrite the second, current session's result.
-    resolveFirstDeadCode({ candidates: [{ node_id: 'stale' }] })
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(screen.getByText(/second/)).toBeInTheDocument()
-    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
   })
 
   it('opens and closes the Add tables & models panel via the sidebar toggle', async () => {

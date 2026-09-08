@@ -14,13 +14,12 @@ import {
   type NodeMouseHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { ComplexityScore, GraphEdge, NodePosition } from '../api/types'
+import type { GraphEdge, NodePosition } from '../api/types'
 import { colors } from '../theme'
 import { formatNodeLabel } from './accessorLabel'
 import type { ContainerVisibility } from './collapseDirectories'
 import { ContextMenu, type ContextMenuTarget } from './ContextMenu'
 import { EdgeLegend } from './EdgeLegend'
-import { complexityToColor } from './heatmap'
 import { LaneSmoothStepEdge } from './LaneSmoothStepEdge'
 import { nodeTypes, type GraphNodeData } from './nodeTypes'
 import { neighborNodeIds, type FlowEdgeData } from './transform'
@@ -74,12 +73,6 @@ export interface GraphCanvasProps {
    * analysis caller chain) instead of resetting the canvas to just that
    * subset -- so the rest of the graph stays visible for context. */
   highlight?: GraphHighlight | null
-  /** When set (the complexity heatmap is on), tints each function node's
-   * background by its complexity score instead of the normal kind color.
-   * Applied the same way `highlight` is -- as a derived overlay on the
-   * already-laid-out nodes, not by feeding back into the layout pipeline,
-   * so toggling it doesn't trigger a relayout or reset dragged positions. */
-  complexityByNodeId?: ReadonlyMap<string, ComplexityScore> | null
   /** Edge kinds currently hidden from the canvas via the legend's
    * checkboxes -- a pure display filter applied after layout, so
    * toggling one never moves a node or triggers a relayout. Omitted/
@@ -103,7 +96,6 @@ function GraphCanvasInner({
   expandBlockedNotice,
   onAutoSavePositions,
   highlight,
-  complexityByNodeId,
   hiddenEdgeKinds,
   onToggleEdgeKind,
 }: GraphCanvasProps) {
@@ -162,14 +154,11 @@ function GraphCanvasInner({
       nodes.map((node) => {
         const selected = node.id === selectedNodeId
         const opacity = !highlight ? 1 : highlight.nodeIds.has(node.id) ? 1 : DIMMED_NODE_OPACITY
-        const score = complexityByNodeId?.get(node.id)
-        const heatmapColor = score ? complexityToColor(score.cyclomatic_complexity) : undefined
         const visibility = containerState?.get(node.id)
         const data = node.data as GraphNodeData
         if (
           node.selected === selected &&
           node.style?.opacity === opacity &&
-          data.heatmapColor === heatmapColor &&
           data.isExpanded === visibility?.expanded &&
           data.hiddenDescendantCount === visibility?.hiddenDescendantCount
         ) {
@@ -181,13 +170,12 @@ function GraphCanvasInner({
           style: { ...node.style, opacity },
           data: {
             ...data,
-            heatmapColor,
             isExpanded: visibility?.expanded,
             hiddenDescendantCount: visibility?.hiddenDescendantCount,
           },
         }
       }),
-    [nodes, selectedNodeId, highlight, complexityByNodeId, containerState],
+    [nodes, selectedNodeId, highlight, containerState],
   )
 
   const displayEdges = useMemo(

@@ -14,12 +14,6 @@ interface SidebarProps {
   onSelectNode: (nodeId: string) => void
   view: GraphView
   onViewChange: (view: GraphView) => void
-  complexityActive: boolean
-  onToggleComplexity: () => void
-  /** The standalone full-width dashboard (see `DashboardView`) -- independent of
-   * `complexityActive` above by design; see `App.tsx`'s `handleToggleDashboard`. */
-  dashboardActive: boolean
-  onToggleDashboard: () => void
   dataSourceActive: boolean
   onToggleDataSource: () => void
   /** Dims every node on the canvas that isn't a table, dbt model, or the
@@ -50,10 +44,6 @@ export function Sidebar({
   onSelectNode,
   view,
   onViewChange,
-  complexityActive,
-  onToggleComplexity,
-  dashboardActive,
-  onToggleDashboard,
   dataSourceActive,
   onToggleDataSource,
   dataOnlyActive,
@@ -156,61 +146,6 @@ export function Sidebar({
         {view === 'codebase'
           ? 'Start here — browse the whole repo as one graph you can drag, zoom, and expand.'
           : "A focused view of just the file you have open right now."}
-      </div>
-
-      <div
-        style={{
-          padding: `${spacing.xs}px ${spacing.sm}px 2px`,
-          fontSize: 10,
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: colors.textDim,
-        }}
-      >
-        Analysis
-      </div>
-      <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
-        <button
-          type="button"
-          aria-pressed={complexityActive}
-          onClick={onToggleComplexity}
-          className="sv-interactive"
-          title="Highlight every function by cyclomatic complexity and rank them in a report"
-          style={{
-            width: '100%',
-            padding: `${spacing.xs}px ${spacing.sm}px`,
-            borderRadius: radius.sm,
-            border: `1px solid ${colors.border}`,
-            background: complexityActive ? colors.complexityActiveBg : 'transparent',
-            color: colors.textPrimary,
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
-        >
-          {complexityActive ? 'Hide complexity' : 'Show complexity'}
-        </button>
-      </div>
-      <div style={{ padding: `0 ${spacing.sm}px ${spacing.sm}px` }}>
-        <button
-          type="button"
-          aria-pressed={dashboardActive}
-          onClick={onToggleDashboard}
-          className="sv-interactive"
-          title="Open the full-width code health dashboard -- complexity ranking today, more signals as they ship"
-          style={{
-            width: '100%',
-            padding: `${spacing.xs}px ${spacing.sm}px`,
-            borderRadius: radius.sm,
-            border: `1px solid ${colors.border}`,
-            background: dashboardActive ? colors.complexityActiveBg : 'transparent',
-            color: colors.textPrimary,
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
-        >
-          {dashboardActive ? 'Close dashboard' : 'Open dashboard'}
-        </button>
       </div>
 
       <div

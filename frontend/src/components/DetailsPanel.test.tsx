@@ -306,47 +306,6 @@ describe('DetailsPanel', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('boom')
   })
 
-  it('renders a ranked performance report when the complexity pane is loaded', () => {
-    render(
-      <DetailsPanel
-        selectedNode={node}
-        pane={{
-          kind: 'complexity',
-          status: 'loaded',
-          scores: [
-            {
-              node_id: 'app.py::Greeter.greet',
-              cyclomatic_complexity: 4,
-              call_chain_depth: 0,
-              has_nested_loops: false,
-            },
-          ],
-        }}
-        onSelectCaller={noop}
-        onClosePane={noop}
-        {...docProps}
-      />,
-    )
-
-    expect(screen.getByText('Performance Report')).toBeInTheDocument()
-    expect(screen.getByText(/app\.py::Greeter\.greet/)).toBeInTheDocument()
-    expect(screen.getByText(/complexity 4/)).toBeInTheDocument()
-  })
-
-  it('renders a complexity pane error', () => {
-    render(
-      <DetailsPanel
-        selectedNode={node}
-        pane={{ kind: 'complexity', status: 'error', message: 'boom' }}
-        onSelectCaller={noop}
-        onClosePane={noop}
-        {...docProps}
-      />,
-    )
-
-    expect(screen.getByRole('alert')).toHaveTextContent('boom')
-  })
-
   it('calls onToggleCollapsed when the collapse button is clicked', async () => {
     const onToggleCollapsed = vi.fn()
     const user = userEvent.setup()

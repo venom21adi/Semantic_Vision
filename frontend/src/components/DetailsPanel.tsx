@@ -5,14 +5,13 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import type { Caller, ComplexityScore, DocProvider, GraphNode, ImpactResponse } from '../api/types'
+import type { Caller, DocProvider, GraphNode, ImpactResponse } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { colors, font, radius, spacing } from '../theme'
 import { CollapseToggle } from './CollapseToggle'
 import { DataSourcePane } from './DataSourcePane'
 import { DocPane } from './DocPane'
 import { escapedPlainText, highlightSource } from './highlightSource'
-import { PerformanceReportPane } from './PerformanceReportPane'
 
 const MIN_DETAILS_WIDTH = 260
 const MAX_DETAILS_WIDTH = 640
@@ -121,9 +120,6 @@ export type ActivePane =
   | { kind: 'impact'; status: 'loading' }
   | { kind: 'impact'; status: 'loaded'; result: ImpactResponse }
   | { kind: 'impact'; status: 'error'; message: string }
-  | { kind: 'complexity'; status: 'loading' }
-  | { kind: 'complexity'; status: 'loaded'; scores: ComplexityScore[] }
-  | { kind: 'complexity'; status: 'error'; message: string }
   | { kind: 'dataSource' }
   | null
 
@@ -388,24 +384,6 @@ export function DetailsPanel({
         </div>
       )}
 
-      {pane?.kind === 'complexity' && (
-        <div style={{ marginTop: spacing.lg }}>
-          <PaneHeader title="Performance Report" onClose={onClosePane} />
-          {pane.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
-          {pane.status === 'error' && (
-            <p role="alert" style={{ color: colors.danger }}>
-              {pane.message}
-            </p>
-          )}
-          {pane.status === 'loaded' && (
-            <PerformanceReportPane
-              path={repoPath}
-              scores={pane.scores}
-              onSelectNode={onSelectCaller}
-            />
-          )}
-        </div>
-      )}
 
       {pane?.kind === 'dataSource' && (
         <div style={{ marginTop: spacing.lg }}>
