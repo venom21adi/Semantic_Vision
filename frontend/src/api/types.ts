@@ -196,6 +196,14 @@ export interface HotspotsResponse {
   window_days: number
 }
 
+export interface DeadCodeCandidate {
+  node_id: string
+}
+
+export interface DeadCodeResponse {
+  candidates: DeadCodeCandidate[]
+}
+
 export interface DbtManifestIngestResponse {
   models_ingested: number
   tables_reconciled: number

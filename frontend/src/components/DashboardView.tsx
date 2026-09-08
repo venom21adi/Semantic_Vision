@@ -12,6 +12,7 @@ import type {
   ComplexityDiffResponse,
   ComplexityRefDiffResponse,
   ComplexityScore,
+  DeadCodeResponse,
   GraphEdge,
   GraphNode,
   HotspotsResponse,
@@ -20,6 +21,7 @@ import { LARGE_GRAPH_NODE_THRESHOLD } from '../graph/GraphCanvas'
 import { MiniCallGraph } from '../graph/MiniCallGraph'
 import { colors, radius, spacing } from '../theme'
 import { getDashboardSplitWidth, setDashboardSplitWidth } from '../utils/localStorage'
+import { DeadCodeReportPane } from './DeadCodeReportPane'
 import { HotspotReportPane } from './HotspotReportPane'
 import { PerformanceReportPane } from './PerformanceReportPane'
 import { RefPicker, type GitRefsState } from './RefPicker'
@@ -56,7 +58,19 @@ export type HotspotsState =
   | { status: 'loaded'; windowDays: number; result: HotspotsResponse }
   | { status: 'error'; windowDays: number; message: string }
 
-type DashboardTab = 'complexity' | 'hotspots'
+/** The Dead Code tab's data -- same lazy-fetch-on-first-open treatment as
+ * `HotspotsState` above, and cleared by the same `closeDashboard`
+ * chokepoint in App.tsx. No parameter to carry alongside each variant
+ * (unlike `HotspotsState`'s `windowDays`): dead-code detection has no
+ * user-adjustable input, it's just "recompute against the current
+ * parse." */
+export type DeadCodeState =
+  | { status: 'loading' }
+  | { status: 'loaded'; result: DeadCodeResponse }
+  | { status: 'error'; message: string }
+  | { status: 'unavailable'; message: string }
+
+type DashboardTab = 'complexity' | 'hotspots' | 'dead-code'
 
 interface DashboardViewProps {
   state: DashboardState
@@ -72,6 +86,8 @@ interface DashboardViewProps {
   selectedNodeId: string | null
   hotspots: HotspotsState | null
   onLoadHotspots: (windowDays: number) => void
+  deadCode: DeadCodeState | null
+  onLoadDeadCode: () => void
 }
 
 const MIN_LIST_WIDTH = 360
@@ -178,6 +194,8 @@ export function DashboardView({
   selectedNodeId,
   hotspots,
   onLoadHotspots,
+  deadCode,
+  onLoadDeadCode,
 }: DashboardViewProps) {
   const compareDisabled = state.status !== 'loaded' || diff?.status === 'loading'
   const [listWidth, setListWidthState] = useState(() => clampListWidth(getDashboardSplitWidth() ?? DEFAULT_LIST_WIDTH))
@@ -187,6 +205,11 @@ export function DashboardView({
     setActiveTab('hotspots')
     if (hotspots === null) onLoadHotspots(DEFAULT_HOTSPOT_WINDOW_DAYS)
   }, [hotspots, onLoadHotspots])
+
+  const handleSelectDeadCodeTab = useCallback(() => {
+    setActiveTab('dead-code')
+    if (deadCode === null) onLoadDeadCode()
+  }, [deadCode, onLoadDeadCode])
 
   const handleResizeListWidth = useCallback((width: number) => {
     setListWidthState(width)
@@ -260,11 +283,13 @@ export function DashboardView({
         <div>
           <div>Code Health Dashboard</div>
           <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-            Complexity and churn-weighted hotspots — more signals land here as they ship.
+            Complexity, churn-weighted hotspots, and dead-code candidates — more signals land
+            here as they ship.
           </div>
           <div style={{ display: 'flex', gap: spacing.xs, marginTop: 6 }}>
             <TabButton label="Complexity" active={activeTab === 'complexity'} onClick={() => setActiveTab('complexity')} />
             <TabButton label="Hotspots" active={activeTab === 'hotspots'} onClick={handleSelectHotspotsTab} />
+            <TabButton label="Dead code" active={activeTab === 'dead-code'} onClick={handleSelectDeadCodeTab} />
           </div>
         </div>
         <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0, alignItems: 'center' }}>
@@ -325,8 +350,10 @@ export function DashboardView({
                 </>
               )}
             </>
-          ) : (
+          ) : activeTab === 'hotspots' ? (
             <HotspotsPane hotspots={hotspots} onLoadHotspots={onLoadHotspots} onSelectNode={onSelectNode} />
+          ) : (
+            <DeadCodePane deadCode={deadCode} onSelectNode={onSelectNode} />
           )}
           <ResizeHandle width={listWidth} onResize={handleResizeListWidth} />
         </div>
@@ -433,6 +460,29 @@ function HotspotsPane({
       )}
     </>
   )
+}
+
+function DeadCodePane({
+  deadCode,
+  onSelectNode,
+}: {
+  deadCode: DeadCodeState | null
+  onSelectNode: (nodeId: string) => void
+}) {
+  if (deadCode === null || deadCode.status === 'loading') {
+    return <p style={{ color: colors.textMuted }}>Loading…</p>
+  }
+  if (deadCode.status === 'error') {
+    return (
+      <p role="alert" style={{ color: colors.danger }}>
+        {deadCode.message}
+      </p>
+    )
+  }
+  if (deadCode.status === 'unavailable') {
+    return <p style={{ color: colors.textMuted }}>{deadCode.message}</p>
+  }
+  return <DeadCodeReportPane candidates={deadCode.result.candidates} onSelectNode={onSelectNode} />
 }
 
 function diffModeLabel(mode: DiffMode): string {

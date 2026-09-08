@@ -1108,6 +1108,64 @@ def test_complexity_hotspots_offsets_churn_correctly_for_a_subdirectory_parse(tm
     assert by_id["app.py::f"]["change_count"] == 2
 
 
+def test_dead_code_requires_prior_parse():
+    resp = client.get("/api/dead-code", params={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 404
+
+
+def test_dead_code_flags_a_zero_caller_function(tmp_path: Path):
+    (tmp_path / "app.py").write_text(
+        "def used():\n"
+        "    return 1\n\n\n"
+        "def orphan():\n"
+        "    return 2\n\n\n"
+        "def caller():\n"
+        "    return used()\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/dead-code", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    candidate_ids = {c["node_id"] for c in resp.json()["candidates"]}
+    assert "app.py::orphan" in candidate_ids
+    assert "app.py::used" not in candidate_ids
+    # `caller` itself has no caller either, but it's excluded for a
+    # different reason below (not asserted here) -- just confirming it's
+    # at least present as a real orphan alongside `orphan`.
+    assert "app.py::caller" in candidate_ids
+
+
+def test_dead_code_excludes_decorated_test_and_dunder_functions(tmp_path: Path):
+    (tmp_path / "app.py").write_text(
+        "class Widget:\n"
+        "    def __init__(self):\n"
+        "        pass\n\n"
+        "\n"
+        "@some_decorator\n"
+        "def handler():\n"
+        "    return 1\n\n"
+        "\n"
+        "def main():\n"
+        "    return 2\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "test_app.py").write_text(
+        "def test_something():\n    assert True\n", encoding="utf-8"
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/dead-code", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    candidate_ids = {c["node_id"] for c in resp.json()["candidates"]}
+    assert candidate_ids == set()
+
+
 def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisition(monkeypatch):
     """`get_current_and_previous_complexity_index` exists specifically so
     `current` and `previous` are read as one atomic operation: reading them

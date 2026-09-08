@@ -5,6 +5,7 @@ import type {
   ComplexityDiffResponse,
   ComplexityRefDiffResponse,
   ComplexityScore,
+  DeadCodeCandidate,
   GraphEdge,
   GraphNode,
   HotspotScore,
@@ -35,6 +36,8 @@ function renderDashboard(overrides: Partial<React.ComponentProps<typeof Dashboar
     selectedNodeId: null,
     hotspots: null,
     onLoadHotspots: vi.fn(),
+    deadCode: null,
+    onLoadDeadCode: vi.fn(),
     ...overrides,
   }
   return { ...render(<DashboardView {...props} />), props }
@@ -355,6 +358,88 @@ describe('DashboardView', () => {
     expect(screen.getByText('handler')).toBeInTheDocument()
   })
 
+  const deadCodeCandidates: DeadCodeCandidate[] = [{ node_id: 'app.py::orphan' }]
+
+  it('calls onLoadDeadCode exactly once the first time the Dead code tab is opened', async () => {
+    const user = userEvent.setup()
+    const { props, rerender } = renderDashboard()
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(props.onLoadDeadCode).toHaveBeenCalledTimes(1)
+
+    // Same "already have a result, a reselect must not refetch" contract
+    // as the Hotspots tab above.
+    rerender(<DashboardView {...props} deadCode={{ status: 'loaded', result: { candidates: [] } }} />)
+    await user.click(screen.getByRole('button', { name: 'Complexity' }))
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(props.onLoadDeadCode).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not refetch dead code on reselect once a result already exists', async () => {
+    const user = userEvent.setup()
+    const { props } = renderDashboard({
+      deadCode: { status: 'loaded', result: { candidates: deadCodeCandidates } },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+    await user.click(screen.getByRole('button', { name: 'Complexity' }))
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(props.onLoadDeadCode).not.toHaveBeenCalled()
+  })
+
+  it('shows the loading state while dead code is loading', async () => {
+    const user = userEvent.setup()
+    renderDashboard({ deadCode: { status: 'loading' } })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(screen.getByText('Loading…')).toBeInTheDocument()
+  })
+
+  it('shows an error message when dead-code detection fails', async () => {
+    const user = userEvent.setup()
+    renderDashboard({ deadCode: { status: 'error', message: 'dead code boom' } })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('dead code boom')
+  })
+
+  it('renders the candidate list once loaded', async () => {
+    const user = userEvent.setup()
+    renderDashboard({
+      deadCode: { status: 'loaded', result: { candidates: deadCodeCandidates } },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(screen.getByText(/app\.py::orphan/)).toBeInTheDocument()
+  })
+
+  it('shows a graceful message on the Dead code tab when unavailable (demo mode)', async () => {
+    const user = userEvent.setup()
+    renderDashboard({
+      deadCode: { status: 'unavailable', message: 'Dead-code detection is not available in demo mode' },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(screen.getByText('Dead-code detection is not available in demo mode')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('shows an empty-state message when no candidates are found', async () => {
+    const user = userEvent.setup()
+    renderDashboard({ deadCode: { status: 'loaded', result: { candidates: [] } } })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    expect(screen.getByText('No dead-code candidates found.')).toBeInTheDocument()
+  })
+
   it('scopes the relationship diagram to the selected function, not the whole repo', () => {
     const localScores: ComplexityScore[] = [
       { node_id: 'app.py::a', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
@@ -449,6 +534,21 @@ describe('DashboardView', () => {
     })
 
     await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
+    expect(screen.getByText('handler')).toBeInTheDocument()
+  })
+
+  it('shows the scoped relationship diagram on the Dead code tab too', async () => {
+    const user = userEvent.setup()
+    renderDashboard({
+      selectedNodeId: 'app.py::handler',
+      deadCode: {
+        status: 'loaded',
+        result: { candidates: [{ node_id: 'app.py::handler' }] },
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
 
     expect(screen.getByText('handler')).toBeInTheDocument()
   })

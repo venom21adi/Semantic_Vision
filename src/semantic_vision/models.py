@@ -63,6 +63,17 @@ class Node(BaseModel):
     stays the bare method name regardless (see `resolver/symbol_table.py`)
     -- this field is purely presentational, for a UI that wants to show
     "get foo"/"set foo" instead of two identically-labeled boxes."""
+    has_decorators: bool = False
+    """Whether a FUNCTION node's definition carries at least one
+    decorator (Python `@x`), JS/TS decorator (`@Component()`), or Java
+    annotation (`@Override`) -- regardless of whether that decorator
+    itself resolves to a call (`resolver/calls.py` only ever sees the
+    call-shaped ones). `False` for every other node kind. Used by
+    `analysis/dead_code.py` as a false-positive suppressor: a decorator is
+    itself evidence of framework-managed invocation (a route handler, a
+    pytest fixture, a DI-injected constructor) even when which framework
+    isn't known, so a decorated function with zero in-repo callers isn't
+    treated as a dead-code candidate."""
 
 
 class Edge(BaseModel):

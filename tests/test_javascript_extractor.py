@@ -354,6 +354,32 @@ def test_class_level_decorator_not_leaked_onto_first_method():
     assert raw.classes[0].methods[0].decorator_calls == []
 
 
+def test_method_has_decorators_true_even_for_bare_name_decorator():
+    # `@Get` (no call parens) never appears in `decorator_calls` -- see
+    # `_collect_decorator_calls` -- but `has_decorators` isn't restricted
+    # to call-shaped decorators, so it should still flip true here.
+    raw = extract("class C {\n  @Get\n  findAll() {}\n}\n")
+    method = raw.classes[0].methods[0]
+    assert method.decorator_calls == []
+    assert method.has_decorators is True
+
+
+def test_method_has_decorators_false_with_no_decorator():
+    raw = extract("class C {\n  plain() {}\n}\n")
+    assert raw.classes[0].methods[0].has_decorators is False
+
+
+def test_class_level_decorator_has_decorators_not_leaked_onto_first_method():
+    # Same leak this module already guards `decorator_calls` against (see
+    # `test_class_level_decorator_not_leaked_onto_first_method` above) --
+    # `has_decorators` is set from the same `pending_decorators`
+    # accumulator, so it needs its own regression test rather than
+    # assuming the existing one covers it.
+    raw = extract('@Component({})\nclass C {\n  greet() {}\n}\n')
+    assert raw.classes[0].decorator_calls == [RawCall(dotted="Component", lineno=1)]
+    assert raw.classes[0].methods[0].has_decorators is False
+
+
 def test_class_nested_inside_arrow_function_closure_is_found():
     raw = extract("const outer = () => {\n  class Deep { m() { helper(); } }\n};\n")
     assert len(raw.functions) == 1

@@ -20,6 +20,7 @@ from semantic_vision.api.schemas import (
     ComplexityDiffResponse,
     ComplexityRefDiffResponse,
     ComplexityResponse,
+    DeadCodeResponse,
     FlowchartResponse,
     FunctionSourceResponse,
     GitRefsResponse,
@@ -265,6 +266,10 @@ class BackendClient:
             "/api/complexity/hotspots", {"path": path, "window_days": window_days}
         )
         return HotspotsResponse.model_validate(data)
+
+    async def get_dead_code(self, path: str) -> DeadCodeResponse:
+        data = await self._get("/api/dead-code", {"path": path})
+        return DeadCodeResponse.model_validate(data)
 
     async def get_git_refs(self, path: str) -> GitRefsResponse:
         data = await self._get("/api/git/refs", {"path": path})

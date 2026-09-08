@@ -3,12 +3,13 @@ from __future__ import annotations
 import threading
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
+from fastapi import APIRouter, HTTPException, Query
 from semantic_vision.ai.context import assemble_context, assemble_file_context
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
 from semantic_vision.analysis.complexity import diff_complexity_indexes
+from semantic_vision.analysis.dead_code import find_dead_code_candidates
 from semantic_vision.analysis.git_ops import (
     GitError,
     build_ref_complexity_index,
@@ -28,6 +29,7 @@ from semantic_vision.api.schemas import (
     DbConnectionIngestResponse,
     DbtManifestIngestRequest,
     DbtManifestIngestResponse,
+    DeadCodeResponse,
     DocIndexResponse,
     DocResponse,
     DocRootResponse,
@@ -530,6 +532,21 @@ def get_complexity_hotspots(
     offset = Path(current_result.root).relative_to(git_root)
     scores = build_hotspot_scores(complexity_index, churn_by_file, offset=offset)
     return HotspotsResponse(is_git_repo=True, scores=scores, window_days=window_days)
+
+
+@router.get("/dead-code", response_model=DeadCodeResponse)
+def get_dead_code(path: str = Query(...)) -> DeadCodeResponse:
+    """`FUNCTION` nodes with zero real callers, filtered through
+    `analysis/dead_code.py`'s false-positive heuristics -- see
+    docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 1. Pure graph analysis,
+    no git dependency (unlike `/complexity/hotspots`) and nothing new to
+    cache: both the reverse index and the parsed nodes it filters are
+    already sitting in `RepoCache` from the initial parse."""
+    result = _get_cached(path)
+    reverse_index = cache.get_reverse_caller_index(path)
+    assert reverse_index is not None, "reverse index is built alongside the cached parse result"
+    candidates = find_dead_code_candidates(result.nodes, reverse_index, root=Path(result.root))
+    return DeadCodeResponse(candidates=candidates)
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)

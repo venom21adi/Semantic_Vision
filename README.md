@@ -415,10 +415,11 @@ extension: if you already have the desktop app or extension open with a repo
 parsed, the MCP server reuses that warm cache instead of starting cold; if
 nothing's running, it spawns its own backend and cleans it up on exit.
 `parse_repo`, `get_graph`, `get_impact`, `get_callees`, `get_complexity`,
-`get_complexity_diff`(`_ref`), `get_hotspots`, `get_git_refs`,
-`get_flowchart`, and `get_function_source` cover the same ground the UI
-does — see [guides/mcp-server.md](guides/mcp-server.md) for the full tool
-reference, client config examples, and what's deliberately left out.
+`get_complexity_diff`(`_ref`), `get_hotspots`, `get_dead_code`,
+`get_git_refs`, `get_flowchart`, and `get_function_source` cover the same
+ground the UI does — see [guides/mcp-server.md](guides/mcp-server.md) for
+the full tool reference, client config examples, and what's deliberately
+left out.
 
 ## 🧩 How it works
 

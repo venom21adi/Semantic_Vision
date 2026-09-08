@@ -34,6 +34,7 @@ vi.mock('./api/client', async (importOriginal) => {
     getGitRefs: vi.fn(),
     getComplexityDiffRef: vi.fn(),
     getComplexityHotspots: vi.fn(),
+    getDeadCode: vi.fn(),
     ingestDbtManifest: vi.fn(),
     ingestDbConnection: vi.fn(),
   }
@@ -1691,6 +1692,77 @@ describe('App', () => {
 
     expect(screen.getByText(/thirty-day/)).toBeInTheDocument()
     expect(screen.queryByText(/ninety-day/)).not.toBeInTheDocument()
+  })
+
+  it('lazily loads dead-code candidates only when the Dead code tab is first opened', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getDeadCode.mockResolvedValue({
+      candidates: [{ node_id: 'app.py::orphan' }],
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+
+    expect(mockedClient.getDeadCode).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledWith('/repo'))
+    await waitFor(() => expect(screen.getByText(/app\.py::orphan/)).toBeInTheDocument())
+  })
+
+  it('clears dead-code candidates when the dashboard is closed', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    mockedClient.getDeadCode.mockResolvedValue({
+      candidates: [{ node_id: 'app.py::orphan' }],
+    })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+    await waitFor(() => expect(screen.getByText(/app\.py::orphan/)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+
+    // A fresh session must fetch again -- the previous session's result was
+    // cleared, not carried over silently.
+    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledTimes(2))
+  })
+
+  it('ignores a stale dead-code response that resolves after closing and reopening the dashboard', async () => {
+    mockedClient.getComplexity.mockResolvedValue({ scores: [] })
+    let resolveFirstDeadCode: (value: Awaited<ReturnType<typeof client.getDeadCode>>) => void = () => {}
+    mockedClient.getDeadCode
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirstDeadCode = resolve)))
+      .mockResolvedValueOnce({ candidates: [{ node_id: 'second' }] })
+    const user = await loadSampleRepo()
+
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledTimes(1))
+
+    // Close, then reopen a fresh dashboard session while the first
+    // session's dead-code fetch is still in flight.
+    await user.click(screen.getByRole('button', { name: 'Back to graph' }))
+    await user.click(screen.getByRole('button', { name: 'Open dashboard' }))
+    await waitFor(() => expect(screen.getByText('Code Health Dashboard')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Dead code' }))
+    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText(/second/)).toBeInTheDocument())
+
+    // The first (stale) session's dead-code fetch resolves only now -- must
+    // not overwrite the second, current session's result.
+    resolveFirstDeadCode({ candidates: [{ node_id: 'stale' }] })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.getByText(/second/)).toBeInTheDocument()
+    expect(screen.queryByText(/stale/)).not.toBeInTheDocument()
   })
 
   it('opens and closes the Add tables & models panel via the sidebar toggle', async () => {

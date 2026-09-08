@@ -215,6 +215,21 @@ def test_get_hotspots_reports_is_git_repo_false_outside_any_git_repo(tmp_path: P
     assert body["scores"] == []
 
 
+def test_get_dead_code_flags_the_zero_caller_function():
+    async def scenario():
+        mcp = _server()
+        await _parse_simple_repo(mcp)
+        result = await mcp.call_tool("get_dead_code", {"path": str(FIXTURES / "simple_repo")})
+        return result.structured_content
+
+    body = _run(scenario())
+    candidate_ids = {c["node_id"] for c in body["candidates"]}
+    # `Greeter.greet` has no callers anywhere in this fixture -- a real
+    # candidate. `format_name` does (`greet` calls it) -- must not appear.
+    assert "app.py::Greeter.greet" in candidate_ids
+    assert "helpers.py::format_name" not in candidate_ids
+
+
 def test_get_complexity_diff_reports_unavailable_with_no_earlier_snapshot():
     async def scenario():
         mcp = _server()

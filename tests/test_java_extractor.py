@@ -63,6 +63,35 @@ public class Widget {
     assert [m.name for m in cls.methods] == ["total"]
 
 
+def test_annotated_method_has_decorators_true():
+    source = "class A {\n    @Override\n    public String toString() { return \"\"; }\n}\n"
+    raw = extract(source)
+    assert raw.classes[0].methods[0].has_decorators is True
+    assert raw.classes[0].methods[0].decorator_calls == []
+
+
+def test_annotation_with_arguments_still_sets_has_decorators():
+    source = 'class A {\n    @Table(name = "x")\n    void bar() {}\n}\n'
+    raw = extract(source)
+    assert raw.classes[0].methods[0].has_decorators is True
+
+
+def test_plain_method_has_decorators_false():
+    source = "class A {\n    void plain() {}\n}\n"
+    raw = extract(source)
+    assert raw.classes[0].methods[0].has_decorators is False
+
+
+def test_class_level_annotation_not_leaked_onto_first_method():
+    # Java has no `pending_decorators`-style accumulator the way the JS/TS
+    # extractor does -- `_has_annotations` reads a method's own `modifiers`
+    # child directly -- but this is still worth a direct regression test
+    # rather than assuming the class-vs-method distinction just works.
+    source = "@Entity\nclass A {\n    void plain() {}\n}\n"
+    raw = extract(source)
+    assert raw.classes[0].methods[0].has_decorators is False
+
+
 def test_multi_declarator_field_produces_multiple_attributes():
     raw = extract("class A {\n    private int a, b;\n}\n")
     assert [(a.name, a.annotation) for a in raw.classes[0].attributes] == [

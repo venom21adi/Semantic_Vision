@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from semantic_vision.analysis.complexity import ComplexityChange, ComplexityScore
+from semantic_vision.analysis.dead_code import DeadCodeCandidate
 from semantic_vision.analysis.hotspots import HotspotScore
 from semantic_vision.analysis.impact import Caller
 from semantic_vision.flowchart.cfg import FlowEdge, FlowNode
@@ -156,6 +157,10 @@ class HotspotsResponse(BaseModel):
     is_git_repo: bool
     scores: list[HotspotScore] = []
     window_days: int
+
+
+class DeadCodeResponse(BaseModel):
+    candidates: list[DeadCodeCandidate] = []
 
 
 class DbtManifestIngestRequest(BaseModel):

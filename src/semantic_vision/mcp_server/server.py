@@ -146,6 +146,19 @@ def build_server(client: BackendClient) -> MCPServer:
         return result.model_dump(mode="json")
 
     @mcp.tool()
+    async def get_dead_code(path: str) -> dict[str, Any]:
+        """Functions with zero callers anywhere in `path`'s call graph,
+        after excluding decorated functions (route handlers, fixtures,
+        DI-injected constructors), test files/names, dunder methods, and
+        `main` entry points -- see the REST API's own
+        docs/ideas/REPO-INTELLIGENCE-IDEAS.md for the full heuristic list.
+        Candidates to review, not a verdict: a real caller outside this
+        repo (a library's public API, a framework this tool doesn't
+        recognize) can still exist."""
+        result = await client.get_dead_code(path)
+        return result.model_dump(mode="json")
+
+    @mcp.tool()
     async def get_git_refs(path: str) -> dict[str, Any]:
         """Local branches and recent commits for `path`, for picking a
         `ref`/`to_ref` to pass to get_complexity_diff_ref."""

@@ -318,6 +318,7 @@ def _extract_function(
         decorator_calls=_collect_decorator_calls(decorators or []),
         nested_classes=nested_classes,
         accessor_kind=accessor_kind,
+        has_decorators=bool(decorators),
     )
 
 

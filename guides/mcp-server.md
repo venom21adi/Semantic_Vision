@@ -85,6 +85,7 @@ picks up on-disk changes since the last parse.
 | `get_complexity_diff(path)` | Complexity now vs. the last time it was computed for this path. |
 | `get_complexity_diff_ref(path, ref, to_ref, language)` | Complexity diffed against a specific commit/branch, or between two arbitrary refs — "did this change make the code healthier or worse." Runs in a scratch git worktree; never touches your working tree. |
 | `get_hotspots(path, window_days)` | Functions ranked by complexity × how often their file has changed in git history — a practical risk signal, not just a static one. |
+| `get_dead_code(path)` | Functions with zero callers anywhere in the graph, after excluding decorated functions, test files/names, dunder methods, and `main` entry points — candidates to review, not a verdict. |
 | `get_git_refs(path)` | Local branches and recent commits, for picking a `ref` to diff against. |
 | `get_flowchart(path, id)` | Control-flow breakdown of one function's body — branches, loops, early returns. |
 | `get_function_source(path, id)` | The exact source text of one function or file, read by its recorded line range. |

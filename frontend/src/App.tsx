@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
+  DeadCodeUnavailableError,
   DEMO_MODE,
   getComplexity,
   getComplexityDiff,
   getComplexityDiffRef,
   getComplexityHotspots,
+  getDeadCode,
   getDefaultVisibleIds,
   getDoc,
   getFlowchart,
@@ -34,6 +36,7 @@ import type {
 import {
   DashboardView,
   type DashboardState,
+  type DeadCodeState,
   type DiffMode,
   type DiffState,
   type HotspotsState,
@@ -220,6 +223,11 @@ export default function App() {
   // still cleared by `closeDashboard` -- the exact chokepoint this dashboard's
   // own `DiffMode` comment already warns future additions to wire into.
   const [hotspots, setHotspots] = useState<HotspotsState | null>(null)
+  // The dashboard's Dead Code tab -- same lazy-fetch-on-first-open
+  // treatment as `hotspots` above (see `handleLoadDeadCode`/
+  // `DashboardView`'s own `handleSelectDeadCodeTab`), same flat sibling
+  // state slice cleared by `closeDashboard`.
+  const [deadCode, setDeadCode] = useState<DeadCodeState | null>(null)
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -336,23 +344,28 @@ export default function App() {
   // on its own schedule (first open, then again on every window-size change),
   // not tied to the dashboard's initial load or a complexity compare.
   const hotspotsRequestIdRef = useRef(0)
+  // Same guard, for `handleLoadDeadCode`'s `getDeadCode` request --
+  // independent of the others for the same reason `hotspotsRequestIdRef` is.
+  const deadCodeRequestIdRef = useRef(0)
 
   // The single chokepoint for closing the dashboard, whether from *outside*
   // `handleToggleDashboard` (a repo switch, opening a different pane, an
   // external selection) or from `handleToggleDashboard`'s own close branch,
   // which calls this instead of duplicating the close logic inline -- always
-  // bumps *all three* request-id refs and clears `dashboardDiff`/`hotspots`
-  // too, or a fetch still in flight (the dashboard's own, a compare's, or a
-  // hotspots load) when this fires could resolve afterwards and resurrect
-  // state the user already left.
+  // bumps *all four* request-id refs and clears `dashboardDiff`/`hotspots`/
+  // `deadCode` too, or a fetch still in flight (the dashboard's own, a
+  // compare's, a hotspots load, or a dead-code load) when this fires could
+  // resolve afterwards and resurrect state the user already left.
   const closeDashboard = useCallback(() => {
     dashboardRequestIdRef.current += 1
     dashboardDiffRequestIdRef.current += 1
     hotspotsRequestIdRef.current += 1
+    deadCodeRequestIdRef.current += 1
     setDashboard(null)
     setDashboardDiff(null)
     setGitRefs(null)
     setHotspots(null)
+    setDeadCode(null)
   }, [])
 
   useEffect(() => {
@@ -1042,6 +1055,27 @@ export default function App() {
     [repo],
   )
 
+  // Fetches the Dead Code tab's candidate list -- lazily, on first open,
+  // same "only guarded on `repo`" reasoning as `handleLoadHotspots` above
+  // (dead-code detection is independent of the complexity fetch too).
+  const handleLoadDeadCode = useCallback(async () => {
+    if (!repo) return
+    const requestId = ++deadCodeRequestIdRef.current
+    setDeadCode({ status: 'loading' })
+    try {
+      const result = await getDeadCode(repo.path)
+      if (deadCodeRequestIdRef.current !== requestId) return
+      setDeadCode({ status: 'loaded', result })
+    } catch (error) {
+      if (deadCodeRequestIdRef.current !== requestId) return
+      if (error instanceof DeadCodeUnavailableError) {
+        setDeadCode({ status: 'unavailable', message: error.message })
+      } else {
+        setDeadCode({ status: 'error', message: errorMessage(error) })
+      }
+    }
+  }, [repo])
+
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
     if (pane?.kind === 'dataSource') {
@@ -1395,6 +1429,8 @@ export default function App() {
             selectedNodeId={selectedNodeId}
             hotspots={hotspots}
             onLoadHotspots={handleLoadHotspots}
+            deadCode={deadCode}
+            onLoadDeadCode={handleLoadDeadCode}
           />
         ) : (
           <>

@@ -4,6 +4,7 @@ import type {
   ComplexityResponse,
   DbConnectionIngestResponse,
   DbtManifestIngestResponse,
+  DeadCodeResponse,
   DocIndexResponse,
   DocProvider,
   DocResponse,
@@ -49,6 +50,17 @@ export class ApiError extends Error {
     super(message)
     this.name = 'ApiError'
     this.status = status
+  }
+}
+
+/** Thrown only by `getDeadCode`'s demo stub -- a distinct type (not a
+ * plain `Error`) so `App.tsx`'s `handleLoadDeadCode` can tell "expected,
+ * demo-only unavailability" apart from a real failure and route it to
+ * `DeadCodeState`'s `'unavailable'` status instead of `'error'`. */
+export class DeadCodeUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'DeadCodeUnavailableError'
   }
 }
 
@@ -159,6 +171,10 @@ function realGetComplexityHotspots(path: string, windowDays?: number): Promise<H
   const params = new URLSearchParams({ path })
   if (windowDays !== undefined) params.set('window_days', String(windowDays))
   return request<HotspotsResponse>(`/api/complexity/hotspots?${params.toString()}`)
+}
+
+function realGetDeadCode(path: string): Promise<DeadCodeResponse> {
+  return request<DeadCodeResponse>(`/api/dead-code?path=${encodeURIComponent(path)}`)
 }
 
 function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
@@ -280,6 +296,23 @@ export const getComplexityHotspots = DEMO_MODE
       window_days: windowDays ?? 90,
     })
   : realGetComplexityHotspots
+/** Demo-only: computing this for real needs the live backend's parsed
+ * node data (the `has_decorators`/reverse-caller-index analysis in
+ * `analysis/dead_code.py`), which the static demo's pre-generated fixture
+ * bundle doesn't carry. Throws `DeadCodeUnavailableError` (not a plain
+ * error, and not a silently-empty candidate list either) so the Dead Code
+ * tab can render its own graceful "not available in demo" state -- the
+ * same "a whole tab staying clickable but broken is worse than one that
+ * explains itself" reasoning `getComplexityHotspots`'s stub above already
+ * follows, just without a `DeadCodeResponse` field to carry the signal
+ * (there's no real-world "unavailable" case for this route the way
+ * `is_git_repo` is a real one for hotspots, so this stays a demo-only
+ * concept rather than a schema addition). */
+export const getDeadCode = DEMO_MODE
+  ? async (_path: string): Promise<DeadCodeResponse> => {
+      throw new DeadCodeUnavailableError('Dead-code detection is not available in demo mode')
+    }
+  : realGetDeadCode
 export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
 export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest

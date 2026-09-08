@@ -583,6 +583,13 @@ def test_decorator_calls_are_attributed_to_enclosing_scope():
     assert handler_calls == []
 
 
+def test_has_decorators_flag_set_on_decorated_function_only():
+    result = parse_repository(FIXTURES / "decorator_repo")
+    nodes_by_id = {n.id: n for n in result.nodes}
+    assert nodes_by_id["app.py::handler"].has_decorators is True
+    assert nodes_by_id["app.py::route"].has_decorators is False
+
+
 def test_read_root_reads_files_from_a_different_directory_but_reports_root_unchanged(
     tmp_path: Path,
 ):

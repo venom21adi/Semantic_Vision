@@ -57,6 +57,12 @@ class RawFunction:
     would otherwise collapse distinct methods onto one graph node id), but
     unbounded instead of a fixed get/set pair, since Java allows arbitrarily
     many overloads of one name."""
+    has_decorators: bool = False
+    """Whether this def carries at least one decorator, independent of
+    whether that decorator is call-shaped (see `decorator_calls` above --
+    a bare `@staticmethod`/`@property` never appears there, but still
+    counts here). Threaded onto `Node.has_decorators` for
+    `analysis/dead_code.py`'s false-positive suppression."""
 
 
 @dataclass
@@ -247,6 +253,7 @@ def _extract_function(node: FunctionDefT) -> RawFunction:
         calls=_collect_calls(node.body),
         decorator_calls=_collect_decorator_calls(node.decorator_list),
         nested_classes=nested_classes,
+        has_decorators=bool(node.decorator_list),
     )
 
 

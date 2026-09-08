@@ -176,6 +176,23 @@ def _find_nested_classes(body: Node) -> list[Node]:
     return found
 
 
+_ANNOTATION_TYPES = frozenset({"marker_annotation", "annotation"})
+
+
+def _has_annotations(node: Node) -> bool:
+    """Whether `node` (a `method_declaration`/`constructor_declaration`)
+    carries at least one annotation (`@Override`, `@Test`,
+    `@Table(name = "x")`). Annotations sit inside an optional sibling
+    `modifiers` node alongside plain keywords like `public`/`static`, as
+    `marker_annotation` (`@Foo`) or `annotation` (`@Foo(...)`) children --
+    confirmed directly against tree-sitter-java's own parse tree, not
+    guessed from the grammar docs."""
+    for child in node.children:
+        if child.type == "modifiers":
+            return any(grandchild.type in _ANNOTATION_TYPES for grandchild in child.children)
+    return False
+
+
 def _extract_function(node: Node, name: str) -> RawFunction:
     """Shared by `method_declaration` and `constructor_declaration` --
     both have `name`/`body`/`parameters` fields with the same shape.
@@ -183,7 +200,12 @@ def _extract_function(node: Node, name: str) -> RawFunction:
     `@Table(name = "x")`) are compile-time/reflection metadata, never an
     actual runtime call the way a Python/JS decorator is, so representing
     one as a `RawCall` would misrepresent what's actually happening at
-    runtime -- deliberately not extracted, not a gap."""
+    runtime -- deliberately not extracted, not a gap. `has_decorators` is
+    still set from the same annotations, though: unlike a `RawCall`, it
+    doesn't claim anything happened at runtime, just that reflection-based
+    invocation (`@Test`, a DI framework's `@Inject`/`@Autowired`, JAX-RS's
+    `@GET`) is plausible -- which is exactly the signal
+    `analysis/dead_code.py` needs."""
     body = node.child_by_field_name("body")
     calls: list[RawCall] = []
     nested_classes: list[RawClass] = []
@@ -196,6 +218,7 @@ def _extract_function(node: Node, name: str) -> RawFunction:
         end_lineno=_end_line(node),
         calls=calls,
         nested_classes=nested_classes,
+        has_decorators=_has_annotations(node),
     )
 
 
