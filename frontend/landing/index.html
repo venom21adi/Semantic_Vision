@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Semantic Vision — Understand any codebase in minutes</title>
-<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, AI-generated documentation, and code-to-data lineage for Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
+<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, Code Health (complexity, hotspots, dead code), AI-generated documentation, and code-to-data lineage for Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
 <meta property="og:title" content="Semantic Vision" />
 <meta property="og:description" content="Understand any Python, JavaScript, TypeScript, or Java codebase in minutes, not days." />
 <meta property="og:image" content="./img/Banner.png" />
@@ -625,6 +625,7 @@
     </a>
     <div class="nav-links">
       <a href="#features">Features</a>
+      <a href="#code-health">Code Health</a>
       <a href="#lineage">Data lineage</a>
       <a href="#benchmarks">Benchmarks</a>
       <a href="#get-started">Get started</a>
@@ -750,27 +751,6 @@
 
     <div class="feature-row reverse" data-reveal>
       <div class="feature-copy">
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h3>See which functions are actually worth worrying about</h3>
-        <p>
-          Toggle <strong>Show complexity</strong> for a cyclomatic-complexity
-          heatmap over the whole graph and a ranked report, computed from a
-          real AST walk — decisions, boolean-operator chains, comprehension
-          filters, <code>match</code> cases, and nested-loop hotspots all
-          count, not just a line-count guess.
-        </p>
-        <p>
-          Click any entry to jump to it on the graph; the drill-down shows
-          its direct callers cross-referenced with their own scores, so you
-          can tell a complex-but-unused function apart from one half the
-          codebase depends on.
-        </p>
-      </div>
-      <div class="feature-shot"><img src="./img/complexity-report.png" alt="A complexity heatmap tinting graph nodes, with a ranked report and legend in the side panel" loading="lazy" width="1600" height="960" /></div>
-    </div>
-
-    <div class="feature-row" data-reveal>
-      <div class="feature-copy">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <h3>Never write another docstring by hand</h3>
         <p>
@@ -789,6 +769,58 @@
         </p>
       </div>
       <div class="feature-shot"><img src="./img/AI_Documentation.gif" alt="AI documentation streaming live for a function, alongside its call graph" loading="lazy" width="1395" height="660" /></div>
+    </div>
+  </div>
+</section>
+
+<section id="code-health">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Code Health</div>
+      <h2>Score a change, not just a snapshot</h2>
+      <p>A filterable, sortable ranked list across three tabs — right next to the graph, not a separate tool.</p>
+    </div>
+
+    <div class="feature-row" data-reveal>
+      <div class="feature-copy">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3>See which functions are actually worth worrying about</h3>
+        <p>
+          <strong>Complexity</strong> ranks every function by cyclomatic
+          complexity, computed from a real AST walk — decisions,
+          boolean-operator chains, comprehension filters, <code>match</code>
+          cases, and nested-loop hotspots all count, not just a line-count
+          guess.
+        </p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Hotspots</strong> weights that same complexity by how often each file actually changes — a moderately complex function edited constantly is a bigger practical risk than a complex one nobody touches</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Dead code</strong> surfaces zero-caller functions to review — candidates, never a verdict</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Filter by name, file, complexity tier, or call depth, and sort any of the three lists</span></li>
+        </ul>
+      </div>
+      <div class="feature-shot"><img src="./img/code-health.png" alt="The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats" loading="lazy" width="1600" height="900" /></div>
+    </div>
+
+    <div class="feature-row reverse" data-reveal>
+      <div class="feature-copy">
+        <h3>Click a row to see who calls it — and what it calls</h3>
+        <p>
+          Selecting any function shows its direct callers and callees as a
+          live relationship graph, colored by complexity — the same
+          information a callers-only drill-down used to take an extra click
+          to reveal, now visible the moment you click a row.
+        </p>
+        <p>
+          Also git-aware: <strong>Compare to last look</strong> diffs the
+          current state against whatever it showed last time (useful right
+          after an AI agent's session), or type a commit or branch into the
+          ref picker to diff against any point in the repo's history — added
+          / removed / changed functions, each with its before-and-after
+          complexity, so "did this edit help or hurt" is a glance instead of
+          a manual <code>git diff</code> read-through.
+        </p>
+      </div>
+      <div class="feature-shot"><img src="./img/code-health-relationships.png" alt="Selecting a function shows its direct callers and callees as a relationship graph, colored by complexity" loading="lazy" width="1600" height="900" /></div>
     </div>
   </div>
 </section>
@@ -894,7 +926,7 @@
         <tbody>
           <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Complexity report</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code Health (complexity, hotspots, dead code)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
