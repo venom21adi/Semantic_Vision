@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -15,6 +16,7 @@ import type {
   GraphNode,
   HotspotsResponse,
 } from '../api/types'
+import { LARGE_GRAPH_NODE_THRESHOLD } from '../graph/GraphCanvas'
 import { MiniCallGraph } from '../graph/MiniCallGraph'
 import { colors, radius, spacing } from '../theme'
 import { getDashboardSplitWidth, setDashboardSplitWidth } from '../utils/localStorage'
@@ -78,6 +80,7 @@ const MIN_GRAPH_WIDTH = 280
 const DEFAULT_LIST_WIDTH = 520
 const DEFAULT_HOTSPOT_WINDOW_DAYS = 90
 const HOTSPOT_WINDOW_OPTIONS = [30, 90, 180]
+const MAX_NEIGHBORHOOD_NODES = LARGE_GRAPH_NODE_THRESHOLD
 
 function clampListWidth(width: number): number {
   const viewportMax = typeof window === 'undefined' ? MAX_LIST_WIDTH : window.innerWidth - MIN_GRAPH_WIDTH
@@ -198,8 +201,44 @@ export function DashboardView({
   }, [listWidth])
 
   const scores = state.status === 'loaded' ? state.scores : []
-  const scoredNodeIds = new Set(scores.map((score) => score.node_id))
-  const graphScopedNodes = graphNodes.filter((node) => scoredNodeIds.has(node.id))
+
+  // Scopes the relationship diagram to the *selected* function's direct
+  // callers/callees only -- never the whole repo's call graph. Feeding
+  // `MiniCallGraph` (and the dagre layout inside it, `graph/layout.ts`)
+  // every scored function at once hung the browser outright on a
+  // real-world repo the size of FastAPI: a single `.filter()` over
+  // `graphEdges` here is cheap even at thousands of edges, but laying out
+  // thousands of nodes is not. `MAX_NEIGHBORHOOD_NODES` reuses
+  // `GraphCanvas`'s own large-graph threshold rather than inventing a new
+  // number, guarding the one remaining pathological case: a single hub
+  // function called from hundreds of places.
+  const selectedNeighborhood = useMemo(() => {
+    if (!selectedNodeId) {
+      return { nodes: [] as GraphNode[], edges: [] as GraphEdge[], truncated: false, totalCount: 0 }
+    }
+    const neighborEdges = graphEdges.filter(
+      (edge) =>
+        edge.kind === 'calls' && (edge.source === selectedNodeId || edge.target === selectedNodeId),
+    )
+    const neighborIds = new Set<string>([selectedNodeId])
+    for (const edge of neighborEdges) {
+      neighborIds.add(edge.source)
+      neighborIds.add(edge.target)
+    }
+    const totalCount = neighborIds.size
+    const truncated = totalCount > MAX_NEIGHBORHOOD_NODES
+    const idList = [
+      selectedNodeId,
+      ...[...neighborIds].filter((id) => id !== selectedNodeId),
+    ].slice(0, MAX_NEIGHBORHOOD_NODES)
+    const idSet = new Set(idList)
+    return {
+      nodes: graphNodes.filter((node) => idSet.has(node.id)),
+      edges: neighborEdges.filter((edge) => idSet.has(edge.source) && idSet.has(edge.target)),
+      truncated,
+      totalCount,
+    }
+  }, [selectedNodeId, graphNodes, graphEdges])
 
   return (
     <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -268,39 +307,52 @@ export function DashboardView({
           </button>
         </div>
       </div>
-      {activeTab === 'complexity' ? (
-        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-          <div style={{ position: 'relative', width: listWidth, flexShrink: 0, overflowY: 'auto', padding: spacing.lg }}>
-            {state.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
-            {state.status === 'error' && (
-              <p role="alert" style={{ color: colors.danger }}>
-                {state.message}
-              </p>
-            )}
-            {state.status === 'loaded' && (
-              <>
-                <SummaryStatsHeader scores={state.scores} />
-                {diff && <DiffPanel diff={diff} onSelectNode={onSelectNode} />}
-                <PerformanceReportPane path={path} scores={state.scores} onSelectNode={onSelectNode} />
-              </>
-            )}
-            <ResizeHandle width={listWidth} onResize={handleResizeListWidth} />
-          </div>
-          <div style={{ flex: 1, minWidth: MIN_GRAPH_WIDTH, borderLeft: `1px solid ${colors.bgPanel}` }}>
-            <MiniCallGraph
-              nodes={graphScopedNodes}
-              edges={graphEdges}
-              scores={scores}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={onSelectNode}
-            />
-          </div>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <div style={{ position: 'relative', width: listWidth, flexShrink: 0, overflowY: 'auto', padding: spacing.lg }}>
+          {activeTab === 'complexity' ? (
+            <>
+              {state.status === 'loading' && <p style={{ color: colors.textMuted }}>Loading…</p>}
+              {state.status === 'error' && (
+                <p role="alert" style={{ color: colors.danger }}>
+                  {state.message}
+                </p>
+              )}
+              {state.status === 'loaded' && (
+                <>
+                  <SummaryStatsHeader scores={state.scores} />
+                  {diff && <DiffPanel diff={diff} onSelectNode={onSelectNode} />}
+                  <PerformanceReportPane path={path} scores={state.scores} onSelectNode={onSelectNode} />
+                </>
+              )}
+            </>
+          ) : (
+            <HotspotsPane hotspots={hotspots} onLoadHotspots={onLoadHotspots} onSelectNode={onSelectNode} />
+          )}
+          <ResizeHandle width={listWidth} onResize={handleResizeListWidth} />
         </div>
-      ) : (
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: spacing.lg }}>
-          <HotspotsPane hotspots={hotspots} onLoadHotspots={onLoadHotspots} onSelectNode={onSelectNode} />
+        <div style={{ flex: 1, minWidth: MIN_GRAPH_WIDTH, borderLeft: `1px solid ${colors.bgPanel}`, display: 'flex', flexDirection: 'column' }}>
+          {selectedNodeId ? (
+            <>
+              <MiniCallGraph
+                nodes={selectedNeighborhood.nodes}
+                edges={selectedNeighborhood.edges}
+                scores={scores}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={onSelectNode}
+              />
+              {selectedNeighborhood.truncated && (
+                <p style={{ color: colors.textMuted, fontSize: 11, padding: '4px 8px', margin: 0 }}>
+                  Showing {MAX_NEIGHBORHOOD_NODES} of {selectedNeighborhood.totalCount} related functions.
+                </p>
+              )}
+            </>
+          ) : (
+            <p style={{ color: colors.textMuted, fontSize: 12, padding: spacing.lg, margin: 0 }}>
+              Select a function from the list to see its call relationships.
+            </p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

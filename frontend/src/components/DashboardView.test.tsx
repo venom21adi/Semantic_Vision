@@ -5,9 +5,11 @@ import type {
   ComplexityDiffResponse,
   ComplexityRefDiffResponse,
   ComplexityScore,
+  GraphEdge,
   GraphNode,
   HotspotScore,
 } from '../api/types'
+import { LARGE_GRAPH_NODE_THRESHOLD } from '../graph/GraphCanvas'
 import { DashboardView } from './DashboardView'
 
 const scores: ComplexityScore[] = [
@@ -65,10 +67,17 @@ describe('DashboardView', () => {
     expect(screen.getByText('Max call depth')).toBeInTheDocument()
   })
 
-  it('renders the mini call graph pane', () => {
-    renderDashboard()
+  it('renders the mini call graph pane for the selected function', () => {
+    renderDashboard({ selectedNodeId: 'app.py::handler' })
 
     expect(screen.getByText('handler')).toBeInTheDocument()
+  })
+
+  it('shows a placeholder instead of a graph when nothing is selected', () => {
+    renderDashboard()
+
+    expect(screen.getByText('Select a function from the list to see its call relationships.')).toBeInTheDocument()
+    expect(screen.queryByText('handler')).not.toBeInTheDocument()
   })
 
   it('calls onBack when "Back to graph" is clicked', async () => {
@@ -337,12 +346,110 @@ describe('DashboardView', () => {
 
   it('keeps the complexity split view unaffected when switching back from Hotspots', async () => {
     const user = userEvent.setup()
-    renderDashboard()
+    renderDashboard({ selectedNodeId: 'app.py::handler' })
 
     await user.click(screen.getByRole('button', { name: 'Hotspots' }))
     await user.click(screen.getByRole('button', { name: 'Complexity' }))
 
     expect(screen.getByText('Functions scored')).toBeInTheDocument()
+    expect(screen.getByText('handler')).toBeInTheDocument()
+  })
+
+  it('scopes the relationship diagram to the selected function, not the whole repo', () => {
+    const localScores: ComplexityScore[] = [
+      { node_id: 'app.py::a', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
+      { node_id: 'app.py::b', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
+      { node_id: 'app.py::unrelated', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false },
+    ]
+    const localNodes: GraphNode[] = [
+      { id: 'app.py::a', kind: 'function', label: 'nodeA', file: 'app.py', line_start: 1, line_end: 2 },
+      { id: 'app.py::b', kind: 'function', label: 'nodeB', file: 'app.py', line_start: 3, line_end: 4 },
+      { id: 'app.py::unrelated', kind: 'function', label: 'nodeUnrelated', file: 'app.py', line_start: 5, line_end: 6 },
+    ]
+    const localEdges: GraphEdge[] = [
+      { source: 'app.py::a', target: 'app.py::b', kind: 'calls', external: false, ambiguous: false },
+    ]
+    renderDashboard({
+      state: { status: 'loaded', scores: localScores },
+      graphNodes: localNodes,
+      graphEdges: localEdges,
+      selectedNodeId: 'app.py::a',
+    })
+
+    expect(screen.getByText('nodeA')).toBeInTheDocument()
+    expect(screen.getByText('nodeB')).toBeInTheDocument()
+    expect(screen.queryByText('nodeUnrelated')).not.toBeInTheDocument()
+  })
+
+  it(
+    'truncates the diagram and shows a note when a function has more neighbors than the large-graph threshold',
+    () => {
+      const hubScore: ComplexityScore = {
+        node_id: 'app.py::hub',
+        cyclomatic_complexity: 1,
+        call_chain_depth: 0,
+        has_nested_loops: false,
+      }
+      // Just over the threshold, not by much -- large enough to prove
+      // truncation kicks in, small enough that laying out this many nodes
+      // via dagre inside jsdom stays reasonably fast under CI load.
+      const neighborCount = LARGE_GRAPH_NODE_THRESHOLD + 5
+      const neighborScores: ComplexityScore[] = Array.from({ length: neighborCount }, (_, i) => ({
+        node_id: `app.py::n${i}`,
+        cyclomatic_complexity: 1,
+        call_chain_depth: 0,
+        has_nested_loops: false,
+      }))
+      const localNodes: GraphNode[] = [
+        { id: 'app.py::hub', kind: 'function', label: 'hub', file: 'app.py', line_start: 1, line_end: 2 },
+        ...Array.from({ length: neighborCount }, (_, i) => ({
+          id: `app.py::n${i}`,
+          kind: 'function' as const,
+          label: `n${i}`,
+          file: 'app.py',
+          line_start: 1,
+          line_end: 2,
+        })),
+      ]
+      const localEdges: GraphEdge[] = Array.from({ length: neighborCount }, (_, i) => ({
+        source: 'app.py::hub',
+        target: `app.py::n${i}`,
+        kind: 'calls' as const,
+        external: false,
+        ambiguous: false,
+      }))
+      renderDashboard({
+        state: { status: 'loaded', scores: [hubScore, ...neighborScores] },
+        graphNodes: localNodes,
+        graphEdges: localEdges,
+        selectedNodeId: 'app.py::hub',
+      })
+
+      // Selected node + neighbors = neighborCount + 1, exceeding the threshold.
+      expect(
+        screen.getByText(`Showing ${LARGE_GRAPH_NODE_THRESHOLD} of ${neighborCount + 1} related functions.`),
+      ).toBeInTheDocument()
+    },
+    15000,
+  )
+
+  it('shows the scoped relationship diagram on the Hotspots tab too', async () => {
+    const user = userEvent.setup()
+    renderDashboard({
+      selectedNodeId: 'app.py::handler',
+      hotspots: {
+        status: 'loaded',
+        windowDays: 90,
+        result: {
+          is_git_repo: true,
+          scores: [{ node_id: 'app.py::handler', cyclomatic_complexity: 4, change_count: 2, hotspot_score: 8 }],
+          window_days: 90,
+        },
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Hotspots' }))
+
     expect(screen.getByText('handler')).toBeInTheDocument()
   })
 })
