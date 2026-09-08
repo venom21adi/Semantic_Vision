@@ -22,7 +22,7 @@ to begin with.
 
 ### At a glance
 
-<img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Complexity report · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
+<img src="assets/icons/impact-analysis.svg" width="16" height="16" align="absmiddle" alt=""/> Impact analysis · <img src="assets/icons/call-graph.svg" width="16" height="16" align="absmiddle" alt=""/> Interactive call graph · <img src="assets/icons/execution-flowchart.svg" width="16" height="16" align="absmiddle" alt=""/> Execution flowcharts · <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> Complexity report · <img src="assets/icons/ai-docs.svg" width="16" height="16" align="absmiddle" alt=""/> AI-generated docs · <img src="assets/icons/data-lineage.svg" width="16" height="16" align="absmiddle" alt=""/> Code-to-data lineage · 🤖 MCP server for coding agents · <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> 100% local & private
 
 ## <img src="assets/icons/impact-analysis.svg" width="22" height="22" align="absmiddle" alt=""/> Impact Analysis
 
@@ -225,6 +225,13 @@ same graph, reconciled by name. Flip **Data only** to read it as a pure
 lineage diagram, with impact analysis spanning code and data in one
 traversal.
 
+🤖 **Give a coding agent the same map** — an [MCP](https://modelcontextprotocol.io)
+server exposes the call graph, impact analysis, complexity/hotspot
+scoring, and data lineage as tools Claude Code, Claude Desktop, or any
+other MCP-compatible agent can call directly, instead of grepping and
+guessing at blast radius. Reuses whatever backend and cache you already
+have running — no separate setup, no re-parsing.
+
 🧩 **Right inside your editor, zero setup** — install the
 [VS Code extension](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
 and get the full graph, impact analysis, and everything else below in a
@@ -383,9 +390,39 @@ configuration details (e.g. pointing it at an already-running backend
 instead of the bundled one). Prefer running the backend and frontend
 yourself, or via Docker? Both remain fully supported below.
 
+## 🤖 MCP server for coding agents
+
+Semantic Vision already computes the exact structural facts a coding agent
+otherwise has to grep and guess at — call graph, impact analysis, complexity,
+git-aware hotspot scoring, and data lineage. `semantic-vision-mcp` exposes
+all of it as [MCP](https://modelcontextprotocol.io) tools any compatible
+agent (Claude Code, Claude Desktop, Cursor, etc.) can call mid-conversation:
+
+```bash
+uv sync
+uv run semantic-vision-mcp
+```
+
+then add it to your agent as a stdio MCP server, e.g. for Claude Code:
+
+```bash
+claude mcp add semantic-vision -- uv --directory /path/to/Semantic_Vision run semantic-vision-mcp
+```
+
+It talks to the same FastAPI backend over HTTP rather than running a
+separate analysis engine — reachable-or-spawn, exactly like the VS Code
+extension: if you already have the desktop app or extension open with a repo
+parsed, the MCP server reuses that warm cache instead of starting cold; if
+nothing's running, it spawns its own backend and cleans it up on exit.
+`parse_repo`, `get_graph`, `get_impact`, `get_callees`, `get_complexity`,
+`get_complexity_diff`(`_ref`), `get_hotspots`, `get_git_refs`,
+`get_flowchart`, and `get_function_source` cover the same ground the UI
+does — see [guides/mcp-server.md](guides/mcp-server.md) for the full tool
+reference, client config examples, and what's deliberately left out.
+
 ## 🧩 How it works
 
-Semantic Vision has two parts:
+Semantic Vision has three parts:
 
 - **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
   repository (Python's `ast` module, or `tree-sitter` for
@@ -406,6 +443,9 @@ Semantic Vision has two parts:
   graph with [`@xyflow/react`](https://reactflow.dev/) and `dagre`
   auto-layout, and persists your layout and saved analysis state in a
   `.visualiser/` folder inside the repo you're inspecting.
+- **MCP server** (`src/semantic_vision/mcp_server/`) — a thin wrapper
+  exposing the backend's REST API as MCP tools over stdio for coding
+  agents, described above; no analysis logic of its own.
 
 ## 🛠️ Development
 
