@@ -2,7 +2,7 @@
 
 # Semantic Vision
 
-**Understand any Python, JavaScript, TypeScript, or Java codebase in minutes, not days.**
+**Codebase observability for you and your AI agents so you can use AI coding effectively and privately.**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -10,15 +10,15 @@
 
 ### What problem does this solve?
 
-Engineers lose real hours every week reconstructing context on code
-they didn't write — tracing callers by hand, guessing at blast radius,
-reading files one at a time with no map of the whole. Documentation is
-supposed to fill that gap, but it's the first thing that goes stale:
-tedious to write, easy to skip, and quickly out of sync with code that
-keeps changing. Semantic Vision builds that map automatically and
-generates documentation on demand from the code as it actually is
-today — nothing to remember to update, because nothing was hand-written
-to begin with.
+AI coding agents can now change large parts of a codebase in seconds. The problem is that our ability to understand those changes has not kept up.
+
+A diff tells you what an agent changed not what depends on it, what it affects, or whether the codebase is actually getting better. Understanding that still means jumping between files, tracing dependencies, and relying on a mental model that is usually incomplete.
+
+Semantic Vision gives you that context in one place so you can understand, review, and change a codebase with confidence, whether the last edit was yours or an agent's.
+
+Impact Analysis shows the blast radius of any change. Call Graphs make relationships between files, classes, and functions visible. Execution Flowcharts show how a function actually behaves. Code Health surfaces complexity, hotspots, dead code, coverage, duplication, dependencies, and AI-powered recommendations. AI Documentation captures context from the code itself. Code-to-Data Lineage connects application logic to the tables and columns it depends on.
+
+Everything runs locally 100% private. Your code never leaves your machine.
 
 ### At a glance
 
