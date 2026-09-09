@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 import semantic_vision.api.cache as cache_module
 import semantic_vision.api.routes as routes_module
+from semantic_vision.analysis.osv_client import OsvQueryError, VulnerabilitySummary
 from semantic_vision.api.app import app
 from semantic_vision.api.cache import cache
 from semantic_vision.persistence.store import resolve_doc_root as _real_resolve_doc_root
@@ -1164,6 +1165,334 @@ def test_dead_code_excludes_decorated_test_and_dunder_functions(tmp_path: Path):
     assert resp.status_code == 200
     candidate_ids = {c["node_id"] for c in resp.json()["candidates"]}
     assert candidate_ids == set()
+
+
+def test_coverage_ingest_requires_prior_parse(tmp_path: Path):
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text("<coverage><packages/></coverage>", encoding="utf-8")
+
+    resp = client.post(
+        "/api/coverage/ingest",
+        params={"path": str(FIXTURES / "simple_repo")},
+        json={"path": str(coverage_xml)},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_coverage_risk_reports_unavailable_before_any_ingest(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/coverage/risk", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is False
+    assert body["scores"] == []
+
+
+def test_coverage_ingest_and_risk_ranks_uncovered_functions_higher(tmp_path: Path):
+    (tmp_path / "app.py").write_text(
+        "def covered():\n"
+        "    return 1\n\n"
+        "\n"
+        "def uncovered():\n"
+        "    if True:\n"
+        "        return 2\n"
+        "    return 3\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        "<coverage><packages><package><classes>"
+        '<class filename="app.py"><lines>'
+        '<line number="1" hits="1"/><line number="2" hits="1"/>'
+        '<line number="5" hits="0"/><line number="6" hits="0"/><line number="7" hits="0"/>'
+        "</lines></class>"
+        "</classes></package></packages></coverage>",
+        encoding="utf-8",
+    )
+
+    ingest_resp = client.post(
+        "/api/coverage/ingest", params={"path": repo_path}, json={"path": str(coverage_xml)}
+    )
+    assert ingest_resp.status_code == 200
+    assert ingest_resp.json() == {"files_in_report": 1, "files_matched": 1, "lines_recorded": 5}
+
+    resp = client.get("/api/coverage/risk", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is True
+    by_id = {s["node_id"]: s for s in body["scores"]}
+    assert by_id["app.py::covered"]["coverage_ratio"] == 1.0
+    assert by_id["app.py::uncovered"]["coverage_ratio"] == 0.0
+    # Uncovered-and-more-complex ranks first.
+    assert body["scores"][0]["node_id"] == "app.py::uncovered"
+
+
+def test_coverage_ingest_invalid_file_returns_400(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    bad_file = tmp_path / "not-coverage.txt"
+    bad_file.write_text("this is not a coverage report", encoding="utf-8")
+
+    resp = client.post(
+        "/api/coverage/ingest", params={"path": repo_path}, json={"path": str(bad_file)}
+    )
+
+    assert resp.status_code == 400
+
+
+def test_coverage_ingest_reports_zero_matched_when_report_paths_dont_line_up(tmp_path: Path):
+    """A coverage report generated from a different working directory than
+    the one this repo was parsed from -- its paths just don't line up with
+    this repo's own `Node.file` values. `files_matched == 0` alongside a
+    non-zero `files_in_report` is the signal a caller can use to tell
+    "nothing ingested" apart from "ingested something that doesn't apply,"
+    which a bare count alone couldn't distinguish."""
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        '<coverage><packages><package><classes><class filename="some/other/root/app.py">'
+        '<lines><line number="1" hits="1"/></lines></class>'
+        "</classes></package></packages></coverage>",
+        encoding="utf-8",
+    )
+
+    resp = client.post(
+        "/api/coverage/ingest", params={"path": repo_path}, json={"path": str(coverage_xml)}
+    )
+
+    assert resp.json() == {"files_in_report": 1, "files_matched": 0, "lines_recorded": 1}
+
+
+def test_coverage_risk_reflects_a_re_ingest_not_a_stale_cached_ranking(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    uncovered_xml = tmp_path / "uncovered.xml"
+    uncovered_xml.write_text(
+        '<coverage><packages><package><classes><class filename="app.py">'
+        '<lines><line number="1" hits="0"/><line number="2" hits="0"/></lines></class>'
+        "</classes></package></packages></coverage>",
+        encoding="utf-8",
+    )
+    client.post(
+        "/api/coverage/ingest", params={"path": repo_path}, json={"path": str(uncovered_xml)}
+    )
+    first = client.get("/api/coverage/risk", params={"path": repo_path}).json()
+    assert first["scores"][0]["coverage_ratio"] == 0.0
+
+    covered_xml = tmp_path / "covered.xml"
+    covered_xml.write_text(
+        '<coverage><packages><package><classes><class filename="app.py">'
+        '<lines><line number="1" hits="1"/><line number="2" hits="1"/></lines></class>'
+        "</classes></package></packages></coverage>",
+        encoding="utf-8",
+    )
+    client.post(
+        "/api/coverage/ingest", params={"path": repo_path}, json={"path": str(covered_xml)}
+    )
+
+    second = client.get("/api/coverage/risk", params={"path": repo_path}).json()
+
+    assert second["scores"][0]["coverage_ratio"] == 1.0
+
+
+def test_coverage_data_is_cleared_by_a_reparse(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        '<coverage><packages><package><classes><class filename="app.py">'
+        '<lines><line number="1" hits="1"/></lines></class>'
+        "</classes></package></packages></coverage>",
+        encoding="utf-8",
+    )
+    client.post(
+        "/api/coverage/ingest", params={"path": repo_path}, json={"path": str(coverage_xml)}
+    )
+
+    # Reparsing the same path invalidates the ingested coverage data, the
+    # same way a reparse invalidates the cached complexity index.
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/coverage/risk", params={"path": repo_path})
+
+    assert resp.json()["available"] is False
+
+
+def test_duplicates_requires_prior_parse():
+    resp = client.get("/api/duplicates", params={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 404
+
+
+def test_duplicates_groups_structurally_identical_functions(tmp_path: Path):
+    (tmp_path / "app.py").write_text(
+        "def add_and_double(a, b):\n"
+        "    total = a + b\n"
+        "    doubled = total * 2\n"
+        "    return doubled\n"
+        "\n"
+        "\n"
+        "def sum_and_scale(x, y):\n"
+        "    result = x + y\n"
+        "    scaled = result * 2\n"
+        "    return scaled\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/duplicates", params={"path": repo_path})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body["groups"]) == 1
+    assert body["groups"][0]["size"] == 2
+    assert set(body["groups"][0]["node_ids"]) == {
+        "app.py::add_and_double",
+        "app.py::sum_and_scale",
+    }
+
+
+def test_duplicates_are_cleared_by_a_reparse(tmp_path: Path):
+    (tmp_path / "app.py").write_text(
+        "def add_and_double(a, b):\n"
+        "    total = a + b\n"
+        "    doubled = total * 2\n"
+        "    return doubled\n"
+        "\n"
+        "\n"
+        "def sum_and_scale(x, y):\n"
+        "    result = x + y\n"
+        "    scaled = result * 2\n"
+        "    return scaled\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+    client.get("/api/duplicates", params={"path": repo_path})
+
+    (tmp_path / "app.py").write_text("def only_one():\n    return 1\n", encoding="utf-8")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.get("/api/duplicates", params={"path": repo_path})
+
+    assert resp.json()["groups"] == []
+
+
+def test_dependency_risk_requires_prior_parse():
+    resp = client.post(
+        "/api/dependencies/risk",
+        params={"path": str(FIXTURES / "simple_repo")},
+        json={"confirm_network_access": True},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_dependency_risk_rejects_a_request_without_explicit_consent(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/dependencies/risk", params={"path": repo_path}, json={"confirm_network_access": False}
+    )
+
+    assert resp.status_code == 400
+
+    # Omitting the field entirely must not silently default to consenting.
+    resp_omitted = client.post("/api/dependencies/risk", params={"path": repo_path}, json={})
+    assert resp_omitted.status_code == 400
+
+
+def test_dependency_risk_reports_available_with_empty_risks_when_nothing_matches(tmp_path: Path):
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    resp = client.post(
+        "/api/dependencies/risk", params={"path": repo_path}, json={"confirm_network_access": True}
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is True
+    assert body["risks"] == []
+
+
+def test_dependency_risk_cross_references_actually_imported_and_declared_packages(
+    tmp_path: Path, monkeypatch
+):
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\ndependencies = ["requests>=2.31.0"]\n', encoding="utf-8"
+    )
+    (tmp_path / "app.py").write_text(
+        "import requests\n\n\ndef fetch():\n    return requests.get('http://example.com')\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def fake_query_osv_batch(packages):
+        assert [p.name for p in packages] == ["requests"]
+        return {"requests": [VulnerabilitySummary(id="GHSA-fake-1234")]}
+
+    monkeypatch.setattr(routes_module, "query_osv_batch", fake_query_osv_batch)
+
+    resp = client.post(
+        "/api/dependencies/risk", params={"path": repo_path}, json={"confirm_network_access": True}
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is True
+    assert len(body["risks"]) == 1
+    assert body["risks"][0]["package"] == "requests"
+    assert body["risks"][0]["vulnerabilities"] == [{"id": "GHSA-fake-1234"}]
+
+
+def test_dependency_risk_degrades_gracefully_on_an_osv_query_failure(tmp_path: Path, monkeypatch):
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\ndependencies = ["requests>=2.31.0"]\n', encoding="utf-8"
+    )
+    (tmp_path / "app.py").write_text(
+        "import requests\n\n\ndef fetch():\n    return requests.get('http://example.com')\n",
+        encoding="utf-8",
+    )
+    repo_path = str(tmp_path)
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def failing_query_osv_batch(packages):
+        raise OsvQueryError("could not reach osv.dev")
+
+    monkeypatch.setattr(routes_module, "query_osv_batch", failing_query_osv_batch)
+
+    resp = client.post(
+        "/api/dependencies/risk", params={"path": repo_path}, json={"confirm_network_access": True}
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is False
+    assert "osv.dev" in body["message"]
 
 
 def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisition(monkeypatch):

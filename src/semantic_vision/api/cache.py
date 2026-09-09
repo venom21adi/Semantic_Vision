@@ -8,6 +8,8 @@ import threading
 from pathlib import Path
 
 from semantic_vision.analysis.complexity import ComplexityScore, build_complexity_index
+from semantic_vision.analysis.coverage import CoverageRiskScore, build_coverage_risk_scores
+from semantic_vision.analysis.duplicates import DuplicateGroup, build_duplicate_groups
 from semantic_vision.analysis.git_ops import compute_file_churn
 from semantic_vision.analysis.impact import build_reverse_caller_index
 from semantic_vision.models import EdgeKind, ParseResult
@@ -46,6 +48,29 @@ class RepoCache:
         # hot path) rather than new invalidation machinery.
         self._churn_indexes: dict[str, dict[str, int]] = {}
         self._churn_lock = threading.Lock()
+        # Per-file, per-line hit counts from the most recently ingested
+        # coverage report for this path (see `POST /api/coverage/ingest`).
+        # Unlike churn, this *is* invalidated on reparse (see `set()`):
+        # it's cross-referenced against a function's own `line_start`/
+        # `line_end`, which can shift on a reparse, so a stale ingest
+        # would silently misattribute coverage to the wrong lines.
+        self._coverage_line_hits: dict[str, dict[str, dict[int, int]]] = {}
+        # The risk ranking computed from `_coverage_line_hits` plus the
+        # complexity index and reverse caller index -- lazily built and
+        # cached under the same lock as the raw ingest, since building it
+        # calls `find_upstream_callers` once per function (an O(BFS) cost
+        # per node, the same traversal `GET /api/impact` pays once per
+        # request but this would otherwise pay once per function per
+        # request). Invalidated by both a fresh ingest (see
+        # `set_coverage_line_hits`) and a reparse (see `set()`) -- either
+        # can change the numbers this ranking is built from.
+        self._coverage_risk_scores: dict[str, list[CoverageRiskScore]] = {}
+        self._coverage_lock = threading.Lock()
+        # Lazily built, double-checked-locking, invalidated on reparse --
+        # same treatment as `_complexity_indexes`, since this is another
+        # AST walk over the same parsed source.
+        self._duplicate_indexes: dict[str, list[DuplicateGroup]] = {}
+        self._duplicate_lock = threading.Lock()
 
     @staticmethod
     def _key(path: str) -> str:
@@ -135,6 +160,60 @@ class RepoCache:
             previous = self._complexity_indexes.pop(key, None)
             if previous is not None:
                 self._previous_complexity_indexes[key] = previous
+        with self._coverage_lock:
+            self._coverage_line_hits.pop(key, None)
+            self._coverage_risk_scores.pop(key, None)
+        with self._duplicate_lock:
+            self._duplicate_indexes.pop(key, None)
+
+    def set_coverage_line_hits(
+        self, path: str, line_hits_by_file: dict[str, dict[int, int]]
+    ) -> None:
+        with self._coverage_lock:
+            key = self._key(path)
+            self._coverage_line_hits[key] = line_hits_by_file
+            # A fresh ingest invalidates any risk ranking built from the
+            # previous one -- otherwise a re-ingest (a corrected coverage
+            # report, say) would silently keep serving stale scores.
+            self._coverage_risk_scores.pop(key, None)
+
+    def get_coverage_line_hits(self, path: str) -> dict[str, dict[int, int]] | None:
+        return self._coverage_line_hits.get(self._key(path))
+
+    def get_or_build_coverage_risk_scores(
+        self,
+        path: str,
+        line_hits_by_file: dict[str, dict[int, int]],
+    ) -> list[CoverageRiskScore]:
+        key = self._key(path)
+        existing = self._coverage_risk_scores.get(key)
+        if existing is not None:
+            return existing
+        with self._coverage_lock:
+            existing = self._coverage_risk_scores.get(key)
+            if existing is not None:
+                return existing
+            scores = build_coverage_risk_scores(
+                self._results[key].nodes,
+                self.get_or_build_complexity_index(path),
+                self._reverse_indexes[key],
+                line_hits_by_file,
+            )
+            self._coverage_risk_scores[key] = scores
+            return scores
+
+    def get_or_build_duplicate_groups(self, path: str) -> list[DuplicateGroup]:
+        key = self._key(path)
+        existing = self._duplicate_indexes.get(key)
+        if existing is not None:
+            return existing
+        with self._duplicate_lock:
+            existing = self._duplicate_indexes.get(key)
+            if existing is not None:
+                return existing
+            groups = build_duplicate_groups(self._results[key])
+            self._duplicate_indexes[key] = groups
+            return groups
 
     def get_or_compute_churn(self, git_root: Path, window_days: int) -> dict[str, int]:
         key = f"{self._key(str(git_root))}::{window_days}"
@@ -166,6 +245,9 @@ class RepoCache:
         self._previous_complexity_indexes.clear()
         self._doc_roots.clear()
         self._churn_indexes.clear()
+        self._coverage_line_hits.clear()
+        self._coverage_risk_scores.clear()
+        self._duplicate_indexes.clear()
 
 
 cache = RepoCache()

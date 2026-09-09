@@ -8,8 +8,13 @@ from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, HTTPException, Query
 from semantic_vision.ai.context import assemble_context, assemble_file_context
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
+from semantic_vision.analysis import coverage_ingest
 from semantic_vision.analysis.complexity import diff_complexity_indexes
 from semantic_vision.analysis.dead_code import find_dead_code_candidates
+from semantic_vision.analysis.dependency_manifest import (
+    find_declared_dependencies,
+    resolve_used_dependencies,
+)
 from semantic_vision.analysis.git_ops import (
     GitError,
     build_ref_complexity_index,
@@ -18,6 +23,7 @@ from semantic_vision.analysis.git_ops import (
 )
 from semantic_vision.analysis.hotspots import build_hotspot_scores
 from semantic_vision.analysis.impact import DEFAULT_MAX_DEPTH, find_upstream_callers
+from semantic_vision.analysis.osv_client import OsvQueryError, query_osv_batch
 from semantic_vision.api.cache import cache
 from semantic_vision.api.host_path import translate_host_path
 from semantic_vision.api.repo_cache_sync import sync_to_fast_cache
@@ -25,14 +31,21 @@ from semantic_vision.api.schemas import (
     ComplexityDiffResponse,
     ComplexityRefDiffResponse,
     ComplexityResponse,
+    CoverageIngestRequest,
+    CoverageIngestResponse,
+    CoverageResponse,
     DbConnectionIngestRequest,
     DbConnectionIngestResponse,
     DbtManifestIngestRequest,
     DbtManifestIngestResponse,
     DeadCodeResponse,
+    DependencyRisk,
+    DependencyRiskRequest,
+    DependencyRiskResponse,
     DocIndexResponse,
     DocResponse,
     DocRootResponse,
+    DuplicatesResponse,
     FlowchartResponse,
     FunctionSourceResponse,
     GenerateDocRequest,
@@ -547,6 +560,126 @@ def get_dead_code(path: str = Query(...)) -> DeadCodeResponse:
     assert reverse_index is not None, "reverse index is built alongside the cached parse result"
     candidates = find_dead_code_candidates(result.nodes, reverse_index, root=Path(result.root))
     return DeadCodeResponse(candidates=candidates)
+
+
+@router.post("/coverage/ingest", response_model=CoverageIngestResponse)
+def ingest_coverage(
+    request: CoverageIngestRequest, path: str = Query(...)
+) -> CoverageIngestResponse:
+    """Reads a coverage.py XML or lcov report the user's own test-runner
+    already produced (see docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 4)
+    and stores its per-line hit counts for `GET /api/coverage/risk` to
+    cross-reference against complexity and blast radius. `request.path` is
+    the coverage file's own path, distinct from `path` (the already-parsed
+    repo this ingest is scoped to). No lock needed here unlike
+    `_dbt_ingest_lock`/`_db_introspect_lock`: those guard a genuine
+    read-strip-merge-write across the whole cached `ParseResult`, while
+    this is a pure parse-then-store into `RepoCache.set_coverage_line_hits`,
+    which is already atomic under its own internal lock."""
+    result = _get_cached(path)  # 404s if this repo hasn't been parsed yet
+    try:
+        line_hits_by_file = coverage_ingest.parse_coverage_file(request.path)
+    except coverage_ingest.CoverageParseError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    cache.set_coverage_line_hits(path, line_hits_by_file)
+
+    # `files_matched` cross-checks the report's own file paths against
+    # this repo's actual parsed `Node.file` values, not just "how many
+    # files did the report mention" -- a coverage.py XML report generated
+    # from a different working directory than the one this repo was
+    # parsed from can have every path silently fail to line up (e.g.
+    # `src/app.py` in the report vs. `app.py` as parsed), which would
+    # otherwise report a confident-looking "N files ingested" while every
+    # function ends up with `coverage_ratio: None`. A `files_matched == 0`
+    # alongside a non-zero `files_in_report` is exactly that signal.
+    repo_files = {node.file.replace("\\", "/") for node in result.nodes}
+    files_matched = sum(1 for file in line_hits_by_file if file in repo_files)
+    return CoverageIngestResponse(
+        files_in_report=len(line_hits_by_file),
+        files_matched=files_matched,
+        lines_recorded=sum(len(lines) for lines in line_hits_by_file.values()),
+    )
+
+
+@router.get("/coverage/risk", response_model=CoverageResponse)
+def get_coverage_risk(path: str = Query(...)) -> CoverageResponse:
+    """Ranks functions by `complexity x (1 + blast radius) x (1 -
+    coverage)` -- see docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 4.
+    `available=False` until `POST /api/coverage/ingest` has been called at
+    least once for this repo path since its last parse, the same graceful
+    "nothing ingested yet" convention `HotspotsResponse.is_git_repo`
+    uses. The ranking itself is cached (see
+    `RepoCache.get_or_build_coverage_risk_scores`) rather than recomputed
+    per request -- it calls `find_upstream_callers` once per function,
+    the same per-node BFS cost `GET /api/impact` normally only pays once
+    per request, not once per function in the whole repo."""
+    _get_cached(path)
+    line_hits_by_file = cache.get_coverage_line_hits(path)
+    if line_hits_by_file is None:
+        return CoverageResponse(available=False, scores=[])
+
+    scores = cache.get_or_build_coverage_risk_scores(path, line_hits_by_file)
+    return CoverageResponse(available=True, scores=scores)
+
+
+@router.get("/duplicates", response_model=DuplicatesResponse)
+def get_duplicates(path: str = Query(...)) -> DuplicatesResponse:
+    """Groups functions whose normalized AST shape hashes identically --
+    see docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 2 (exact-shape hashing
+    only, not near-miss similarity matching). Pure static analysis, no git
+    or ingested-file dependency; lazily built and cached the same way
+    complexity is (see `RepoCache.get_or_build_duplicate_groups`)."""
+    _get_cached(path)
+    groups = cache.get_or_build_duplicate_groups(path)
+    return DuplicatesResponse(groups=groups)
+
+
+@router.post("/dependencies/risk", response_model=DependencyRiskResponse)
+def get_dependency_risk(
+    request: DependencyRiskRequest, path: str = Query(...)
+) -> DependencyRiskResponse:
+    """Cross-references packages this repo's code *actually imports* (via
+    the resolver's own `external::` edge targets) against packages
+    *declared* in a manifest at the repo root, then queries osv.dev for
+    known vulnerabilities against each -- see
+    docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 3. The one route in this
+    project requiring an explicit opt-in for a live network call: rejects
+    with 400 if `confirm_network_access` isn't `True`, regardless of what
+    a client's own UI happens to send -- never silent, never a default.
+    No caching: a vulnerability feed changes over time, and a stale cached
+    result read as current is a real correctness risk in the other
+    direction from most of this project's other, safely-cacheable
+    analyses."""
+    if not request.confirm_network_access:
+        raise HTTPException(
+            status_code=400,
+            detail="Dependency risk scanning requires confirm_network_access=true "
+            "-- it queries osv.dev, the one outbound network call this project makes.",
+        )
+    result = _get_cached(path)
+    declared = find_declared_dependencies(Path(result.root))
+    external_targets = (
+        edge.target for edge in result.edges if edge.external and edge.kind == EdgeKind.IMPORTS
+    )
+    used = resolve_used_dependencies(external_targets, declared)
+    if not used:
+        return DependencyRiskResponse(available=True, risks=[])
+
+    try:
+        vulns_by_package = query_osv_batch(used)
+    except OsvQueryError as exc:
+        return DependencyRiskResponse(available=False, risks=[], message=str(exc))
+
+    risks = [
+        DependencyRisk(
+            package=pkg.name,
+            version=pkg.version,
+            ecosystem=pkg.ecosystem,
+            vulnerabilities=vulns_by_package.get(pkg.name.lower(), []),
+        )
+        for pkg in used
+    ]
+    return DependencyRiskResponse(available=True, risks=risks)
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)

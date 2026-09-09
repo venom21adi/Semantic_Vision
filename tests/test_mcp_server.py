@@ -230,6 +230,71 @@ def test_get_dead_code_flags_the_zero_caller_function():
     assert "helpers.py::format_name" not in candidate_ids
 
 
+def test_get_coverage_risk_reports_unavailable_before_any_ingest():
+    async def scenario():
+        mcp = _server()
+        await _parse_simple_repo(mcp)
+        result = await mcp.call_tool(
+            "get_coverage_risk", {"path": str(FIXTURES / "simple_repo")}
+        )
+        return result.structured_content
+
+    body = _run(scenario())
+    assert body["available"] is False
+    assert body["scores"] == []
+
+
+def test_ingest_coverage_then_get_coverage_risk_ranks_functions(tmp_path: Path):
+    async def scenario():
+        mcp = _server()
+        await mcp.call_tool("parse_repo", {"path": str(tmp_path)})
+        await mcp.call_tool(
+            "ingest_coverage",
+            {"path": str(tmp_path), "coverage_path": str(tmp_path / "coverage.xml")},
+        )
+        result = await mcp.call_tool("get_coverage_risk", {"path": str(tmp_path)})
+        return result.structured_content
+
+    (tmp_path / "app.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    (tmp_path / "coverage.xml").write_text(
+        '<coverage><packages><package><classes><class filename="app.py">'
+        '<lines><line number="1" hits="0"/></lines></class>'
+        "</classes></package></packages></coverage>",
+        encoding="utf-8",
+    )
+
+    body = _run(scenario())
+    assert body["available"] is True
+    assert body["scores"][0]["node_id"] == "app.py::f"
+    assert body["scores"][0]["coverage_ratio"] == 0.0
+
+
+def test_get_duplicates_groups_structurally_identical_functions(tmp_path: Path):
+    async def scenario():
+        mcp = _server()
+        await mcp.call_tool("parse_repo", {"path": str(tmp_path)})
+        result = await mcp.call_tool("get_duplicates", {"path": str(tmp_path)})
+        return result.structured_content
+
+    (tmp_path / "app.py").write_text(
+        "def add_and_double(a, b):\n"
+        "    total = a + b\n"
+        "    doubled = total * 2\n"
+        "    return doubled\n"
+        "\n"
+        "\n"
+        "def sum_and_scale(x, y):\n"
+        "    result = x + y\n"
+        "    scaled = result * 2\n"
+        "    return scaled\n",
+        encoding="utf-8",
+    )
+
+    body = _run(scenario())
+    assert len(body["groups"]) == 1
+    assert body["groups"][0]["size"] == 2
+
+
 def test_get_complexity_diff_reports_unavailable_with_no_earlier_snapshot():
     async def scenario():
         mcp = _server()

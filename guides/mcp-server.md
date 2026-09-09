@@ -86,6 +86,9 @@ picks up on-disk changes since the last parse.
 | `get_complexity_diff_ref(path, ref, to_ref, language)` | Complexity diffed against a specific commit/branch, or between two arbitrary refs — "did this change make the code healthier or worse." Runs in a scratch git worktree; never touches your working tree. |
 | `get_hotspots(path, window_days)` | Functions ranked by complexity × how often their file has changed in git history — a practical risk signal, not just a static one. |
 | `get_dead_code(path)` | Functions with zero callers anywhere in the graph, after excluding decorated functions, test files/names, dunder methods, and `main` entry points — candidates to review, not a verdict. |
+| `ingest_coverage(path, coverage_path)` | Reads a coverage.py XML or lcov report your own test-runner already produced. Required once before `get_coverage_risk` returns real data. |
+| `get_coverage_risk(path)` | Functions ranked by complexity × (1 + blast radius) × (1 − test coverage) — where correctness risk actually concentrates, combining three numbers no other single tool here reports together. |
+| `get_duplicates(path)` | Functions whose structure is identical once every identifier name, literal value, and comment is stripped — a maintenance-cost signal complexity alone can't see. Exact-shape matches only, not near-misses. |
 | `get_git_refs(path)` | Local branches and recent commits, for picking a `ref` to diff against. |
 | `get_flowchart(path, id)` | Control-flow breakdown of one function's body — branches, loops, early returns. |
 | `get_function_source(path, id)` | The exact source text of one function or file, read by its recorded line range. |
@@ -103,3 +106,12 @@ than the structural facts above). Column-level lineage isn't a separate
 tool either — it's already inside `get_graph`/`get_callees` as `Table`/
 `Column`/`DBT_MODEL` nodes and `references`/`materializes`/`foreign_key`
 edges, exactly how the web app itself renders it.
+
+Dependency/security risk scanning (the web app's "Dependencies" tab) is
+deliberately not exposed here either, unlike every other Code Health
+signal above: it's the one feature in this project that makes a live
+outbound network call (to [osv.dev](https://osv.dev)), gated behind an
+explicit, per-request consent field the REST API itself enforces
+server-side. An agent silently triggering a real network call needs its
+own consent design — not assumed away by wrapping it as one more tool
+call — so it stays a web-app-only feature for now.

@@ -16,6 +16,9 @@ const TAB_BLURB: Record<HealthTab, string> = {
   complexity: 'Cyclomatic complexity, ranked across every function.',
   hotspots: 'Complexity weighted by how often each file actually changes.',
   'dead-code': "Zero-caller functions -- candidates to review, never a verdict.",
+  coverage: 'Complexity, blast radius, and test coverage combined into one risk score.',
+  duplicates: 'Functions whose structure is identical after stripping names and literals.',
+  dependencies: 'Known vulnerabilities in packages this repo actually imports (via osv.dev).',
 }
 
 interface CodeHealthDetailProps {

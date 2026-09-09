@@ -2,7 +2,11 @@ import type {
   ComplexityDiffResponse,
   ComplexityRefDiffResponse,
   ComplexityScore,
+  CoverageIngestResponse,
+  CoverageResponse,
   DeadCodeResponse,
+  DependencyRiskResponse,
+  DuplicatesResponse,
   HotspotsResponse,
 } from '../api/types'
 
@@ -53,4 +57,58 @@ export type DeadCodeState =
   | { status: 'error'; message: string }
   | { status: 'unavailable'; message: string }
 
-export type HealthTab = 'complexity' | 'hotspots' | 'dead-code'
+/** The Coverage tab's data -- same lazy-fetch-on-first-open treatment as
+ * `HotspotsState`/`DeadCodeState`. `'loaded'` covers both "nothing ingested
+ * yet" (`result.available === false`, prompting the ingest form) and "here's
+ * the ranking" (`result.available === true`) -- one status, not two, since
+ * both are a successful fetch of the same endpoint. */
+export type CoverageState =
+  | { status: 'loading' }
+  | { status: 'loaded'; result: CoverageResponse }
+  | { status: 'error'; message: string }
+  | { status: 'unavailable'; message: string }
+
+/** The coverage-file ingest form's own submission state, tracked separately
+ * from `CoverageState` -- ingesting and viewing results are two different
+ * user actions (mirrors `DataSourcePane`'s own ingest-form state shape),
+ * and a re-ingest shouldn't blank out an already-rendered ranked list while
+ * it's in flight. */
+export type CoverageIngestState =
+  | { status: 'idle' }
+  | { status: 'submitting' }
+  | { status: 'success'; result: CoverageIngestResponse }
+  | { status: 'error'; message: string }
+
+/** The Duplicates tab's data -- same lazy-fetch-on-first-open treatment as
+ * `HotspotsState`/`DeadCodeState`/`CoverageState`. Fully local/offline (no
+ * ingested file, no git dependency), so there's no `'unavailable'` variant
+ * the way `DeadCodeState`/`CoverageState` need for demo mode -- the demo's
+ * `getDuplicates` stub returns a real, valid empty result instead. */
+export type DuplicatesState =
+  | { status: 'loading' }
+  | { status: 'loaded'; result: DuplicatesResponse }
+  | { status: 'error'; message: string }
+
+/** The Dependencies tab's data. Unlike every other tab, there's no `null`
+ * "not yet fetched" state and no lazy-fetch-on-first-open -- opening this
+ * tab does nothing by itself, since it's the one opt-in, network-calling
+ * feature in the app; `'idle'` is the real default, and a scan only ever
+ * starts from an explicit button click (see `CodeHealthSidebar.tsx`'s
+ * `DependenciesPane`). `'unavailable'` is demo-mode only, mirroring
+ * `CoverageState`'s own use of that status for the same reason -- the
+ * real backend's own "osv.dev query failed" case is instead carried by a
+ * successful `'loaded'` fetch with `result.available === false`. */
+export type DependencyRiskState =
+  | { status: 'idle' }
+  | { status: 'submitting' }
+  | { status: 'loaded'; result: DependencyRiskResponse }
+  | { status: 'error'; message: string }
+  | { status: 'unavailable'; message: string }
+
+export type HealthTab =
+  | 'complexity'
+  | 'hotspots'
+  | 'dead-code'
+  | 'coverage'
+  | 'duplicates'
+  | 'dependencies'

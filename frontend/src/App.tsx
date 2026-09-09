@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
+  CoverageUnavailableError,
   DeadCodeUnavailableError,
+  DependencyRiskUnavailableError,
   DEMO_MODE,
   getComplexity,
   getComplexityDiff,
   getComplexityDiffRef,
   getComplexityHotspots,
+  getCoverageRisk,
   getDeadCode,
   getDefaultVisibleIds,
+  getDependencyRisk,
   getDoc,
+  getDuplicates,
   getFlowchart,
   getFunctionSource,
   getGitRefs,
@@ -18,6 +23,7 @@ import {
   getImpact,
   getImpactShowcaseIds,
   getOllamaModels,
+  ingestCoverage,
   parseRepo,
   saveDoc,
   saveGraphState,
@@ -35,10 +41,14 @@ import type {
 import { CodeHealthDetail } from './components/CodeHealthDetail'
 import { CodeHealthSidebar } from './components/CodeHealthSidebar'
 import {
+  type CoverageIngestState,
+  type CoverageState,
   type DashboardState,
   type DeadCodeState,
+  type DependencyRiskState,
   type DiffMode,
   type DiffState,
+  type DuplicatesState,
   type HealthTab,
   type HotspotsState,
 } from './components/codeHealthTypes'
@@ -276,6 +286,22 @@ export default function App() {
   // `CodeHealthSidebar`'s own `handleSelectDeadCodeTab`), same flat sibling
   // state slice cleared by `resetHealthState`.
   const [deadCode, setDeadCode] = useState<DeadCodeState | null>(null)
+  // The Code Health lens's Coverage tab -- same lazy-fetch-on-first-open
+  // treatment as `hotspots`/`deadCode` above, plus its own independent
+  // ingest-form submission state (`coverageIngest`, not cleared by
+  // `resetHealthState` -- a stale "N files matched" summary from a
+  // previous repo is harmless leftover text, not a data-correctness bug
+  // the way a stale ranked list would be).
+  const [coverage, setCoverage] = useState<CoverageState | null>(null)
+  const [coverageIngest, setCoverageIngest] = useState<CoverageIngestState>({ status: 'idle' })
+  // The Code Health lens's Duplicates tab -- same lazy-fetch-on-first-open
+  // treatment as `hotspots`/`deadCode`/`coverage` above.
+  const [duplicates, setDuplicates] = useState<DuplicatesState | null>(null)
+  // The Code Health lens's Dependencies tab -- unlike every other tab
+  // above, never `null`/lazily auto-fetched: `'idle'` is the real default,
+  // since this is the one opt-in, network-calling feature (see
+  // `DependencyRiskState`'s own docstring).
+  const [dependencyRisk, setDependencyRisk] = useState<DependencyRiskState>({ status: 'idle' })
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -395,24 +421,39 @@ export default function App() {
   // Same guard, for `handleLoadDeadCode`'s `getDeadCode` request --
   // independent of the others for the same reason `hotspotsRequestIdRef` is.
   const deadCodeRequestIdRef = useRef(0)
+  // Same guard, for `handleLoadCoverageRisk`'s `getCoverageRisk` request --
+  // independent of the others for the same reason `hotspotsRequestIdRef` is.
+  const coverageRequestIdRef = useRef(0)
+  // Same guard, for `handleLoadDuplicates`'s `getDuplicates` request --
+  // independent of the others for the same reason `hotspotsRequestIdRef` is.
+  const duplicatesRequestIdRef = useRef(0)
+  // Same guard, for `handleScanDependencies`'s `getDependencyRisk` request.
+  const dependencyRiskRequestIdRef = useRef(0)
 
   // The single chokepoint for invalidating the Code Health lens's data --
   // called only when a fresh repo load makes the previous scores stale
-  // (see handleLoad below). Always bumps *all four* request-id refs and
-  // clears `dashboardDiff`/`hotspots`/`deadCode` too, or a fetch still in
-  // flight (the dashboard's own, a compare's, a hotspots load, or a
-  // dead-code load) when this fires could resolve afterwards and
-  // resurrect state that no longer belongs to the newly-loaded repo.
+  // (see handleLoad below). Always bumps *all seven* request-id refs and
+  // clears `dashboardDiff`/`hotspots`/`deadCode`/`coverage`/`duplicates`/
+  // `dependencyRisk` too, or a fetch still in flight when this fires could
+  // resolve afterwards and resurrect state that no longer belongs to the
+  // newly-loaded repo. `dependencyRisk` resets to `'idle'`, not `null` --
+  // it never had a null state to begin with (see its own declaration).
   const resetHealthState = useCallback(() => {
     dashboardRequestIdRef.current += 1
     dashboardDiffRequestIdRef.current += 1
     hotspotsRequestIdRef.current += 1
     deadCodeRequestIdRef.current += 1
+    coverageRequestIdRef.current += 1
+    duplicatesRequestIdRef.current += 1
+    dependencyRiskRequestIdRef.current += 1
     setDashboard(null)
     setDashboardDiff(null)
     setGitRefs(null)
     setHotspots(null)
     setDeadCode(null)
+    setCoverage(null)
+    setDuplicates(null)
+    setDependencyRisk({ status: 'idle' })
     setHealthSelectedNodeId(null)
   }, [])
 
@@ -1098,6 +1139,89 @@ export default function App() {
     }
   }, [repo])
 
+  // Fetches the Coverage tab's risk ranking -- lazily, on first open, same
+  // "only guarded on `repo`" reasoning as `handleLoadHotspots`/
+  // `handleLoadDeadCode` above. `result.available === false` (nothing
+  // ingested yet) is still a successful `'loaded'` fetch, not an error --
+  // `CodeHealthSidebar`'s `CoveragePane` reads that flag to show the ingest
+  // form instead of a ranked list.
+  const handleLoadCoverageRisk = useCallback(async () => {
+    if (!repo) return
+    const requestId = ++coverageRequestIdRef.current
+    setCoverage({ status: 'loading' })
+    try {
+      const result = await getCoverageRisk(repo.path)
+      if (coverageRequestIdRef.current !== requestId) return
+      setCoverage({ status: 'loaded', result })
+    } catch (error) {
+      if (coverageRequestIdRef.current !== requestId) return
+      if (error instanceof CoverageUnavailableError) {
+        setCoverage({ status: 'unavailable', message: error.message })
+      } else {
+        setCoverage({ status: 'error', message: errorMessage(error) })
+      }
+    }
+  }, [repo])
+
+  // Ingests a coverage report the user points at, then immediately
+  // re-fetches the risk ranking -- the new data only exists in the
+  // backend's cache until that second call, mirroring `DataSourcePane`'s
+  // own submit-then-`onIngestComplete` flow for dbt/DB ingestion.
+  const handleIngestCoverage = useCallback(
+    async (coveragePath: string) => {
+      if (!repo) return
+      setCoverageIngest({ status: 'submitting' })
+      try {
+        const result = await ingestCoverage(repo.path, coveragePath)
+        setCoverageIngest({ status: 'success', result })
+        await handleLoadCoverageRisk()
+      } catch (error) {
+        setCoverageIngest({ status: 'error', message: errorMessage(error) })
+      }
+    },
+    [repo, handleLoadCoverageRisk],
+  )
+
+  // Fetches the Duplicates tab's grouped candidate list -- lazily, on
+  // first open, same "only guarded on `repo`" reasoning as
+  // `handleLoadHotspots`/`handleLoadDeadCode` above (fully local/offline,
+  // independent of the complexity fetch).
+  const handleLoadDuplicates = useCallback(async () => {
+    if (!repo) return
+    const requestId = ++duplicatesRequestIdRef.current
+    setDuplicates({ status: 'loading' })
+    try {
+      const result = await getDuplicates(repo.path)
+      if (duplicatesRequestIdRef.current !== requestId) return
+      setDuplicates({ status: 'loaded', result })
+    } catch (error) {
+      if (duplicatesRequestIdRef.current !== requestId) return
+      setDuplicates({ status: 'error', message: errorMessage(error) })
+    }
+  }, [repo])
+
+  // Scans dependencies -- unlike every other Code Health fetch handler,
+  // never called automatically (see `DependencyRiskState`'s own
+  // docstring): only `CodeHealthSidebar.tsx`'s `DependenciesPane` calls
+  // this, and only from its own explicit "Scan dependencies" button.
+  const handleScanDependencies = useCallback(async () => {
+    if (!repo) return
+    const requestId = ++dependencyRiskRequestIdRef.current
+    setDependencyRisk({ status: 'submitting' })
+    try {
+      const result = await getDependencyRisk(repo.path)
+      if (dependencyRiskRequestIdRef.current !== requestId) return
+      setDependencyRisk({ status: 'loaded', result })
+    } catch (error) {
+      if (dependencyRiskRequestIdRef.current !== requestId) return
+      if (error instanceof DependencyRiskUnavailableError) {
+        setDependencyRisk({ status: 'unavailable', message: error.message })
+      } else {
+        setDependencyRisk({ status: 'error', message: errorMessage(error) })
+      }
+    }
+  }, [repo])
+
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
     if (pane?.kind === 'dataSource') {
@@ -1451,6 +1575,14 @@ export default function App() {
             onLoadHotspots={handleLoadHotspots}
             deadCode={deadCode}
             onLoadDeadCode={handleLoadDeadCode}
+            coverage={coverage}
+            onLoadCoverage={handleLoadCoverageRisk}
+            coverageIngest={coverageIngest}
+            onIngestCoverage={handleIngestCoverage}
+            duplicates={duplicates}
+            onLoadDuplicates={handleLoadDuplicates}
+            dependencyRisk={dependencyRisk}
+            onScanDependencies={handleScanDependencies}
           />
         )}
         {lens === 'health' && repo ? (

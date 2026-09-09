@@ -20,7 +20,10 @@ from semantic_vision.api.schemas import (
     ComplexityDiffResponse,
     ComplexityRefDiffResponse,
     ComplexityResponse,
+    CoverageIngestResponse,
+    CoverageResponse,
     DeadCodeResponse,
+    DuplicatesResponse,
     FlowchartResponse,
     FunctionSourceResponse,
     GitRefsResponse,
@@ -270,6 +273,18 @@ class BackendClient:
     async def get_dead_code(self, path: str) -> DeadCodeResponse:
         data = await self._get("/api/dead-code", {"path": path})
         return DeadCodeResponse.model_validate(data)
+
+    async def ingest_coverage(self, path: str, coverage_path: str) -> CoverageIngestResponse:
+        data = await self._post("/api/coverage/ingest", {"path": coverage_path}, {"path": path})
+        return CoverageIngestResponse.model_validate(data)
+
+    async def get_coverage_risk(self, path: str) -> CoverageResponse:
+        data = await self._get("/api/coverage/risk", {"path": path})
+        return CoverageResponse.model_validate(data)
+
+    async def get_duplicates(self, path: str) -> DuplicatesResponse:
+        data = await self._get("/api/duplicates", {"path": path})
+        return DuplicatesResponse.model_validate(data)
 
     async def get_git_refs(self, path: str) -> GitRefsResponse:
         data = await self._get("/api/git/refs", {"path": path})

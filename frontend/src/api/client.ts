@@ -2,7 +2,11 @@ import type {
   ComplexityDiffResponse,
   ComplexityRefDiffResponse,
   ComplexityResponse,
+  CoverageIngestResponse,
+  CoverageResponse,
   DbConnectionIngestResponse,
+  DependencyRiskResponse,
+  DuplicatesResponse,
   DbtManifestIngestResponse,
   DeadCodeResponse,
   DocIndexResponse,
@@ -61,6 +65,34 @@ export class DeadCodeUnavailableError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'DeadCodeUnavailableError'
+  }
+}
+
+/** Thrown only by `getDependencyRisk`'s demo stub -- this feature makes a
+ * real external network call (to osv.dev), which is never appropriate in
+ * a public demo build regardless of what a viewer clicks. Unlike
+ * `CoverageUnavailableError`, there's no real-backend "unavailable" case
+ * this mirrors -- the real backend only ever reports availability via
+ * `DependencyRiskResponse.available` (an osv.dev query failure), which the
+ * demo build can never legitimately reach in the first place. */
+export class DependencyRiskUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'DependencyRiskUnavailableError'
+  }
+}
+
+/** Thrown only by `getCoverageRisk`/`ingestCoverage`'s demo stubs -- the
+ * static demo has no user-supplied coverage report to ingest, and unlike
+ * `getComplexityHotspots`'s stub, there's no real-world "unavailable" case
+ * this route's own response schema already carries (a real backend's
+ * `CoverageResponse.available` means "nothing ingested yet," not "this
+ * feature doesn't work here"), so this stays a distinct demo-only signal,
+ * same reasoning as `DeadCodeUnavailableError`. */
+export class CoverageUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CoverageUnavailableError'
   }
 }
 
@@ -175,6 +207,33 @@ function realGetComplexityHotspots(path: string, windowDays?: number): Promise<H
 
 function realGetDeadCode(path: string): Promise<DeadCodeResponse> {
   return request<DeadCodeResponse>(`/api/dead-code?path=${encodeURIComponent(path)}`)
+}
+
+function realIngestCoverage(path: string, coveragePath: string): Promise<CoverageIngestResponse> {
+  return request<CoverageIngestResponse>(
+    `/api/coverage/ingest?path=${encodeURIComponent(path)}`,
+    { method: 'POST', body: JSON.stringify({ path: coveragePath }) },
+  )
+}
+
+function realGetCoverageRisk(path: string): Promise<CoverageResponse> {
+  return request<CoverageResponse>(`/api/coverage/risk?path=${encodeURIComponent(path)}`)
+}
+
+function realGetDuplicates(path: string): Promise<DuplicatesResponse> {
+  return request<DuplicatesResponse>(`/api/duplicates?path=${encodeURIComponent(path)}`)
+}
+
+function realGetDependencyRisk(path: string): Promise<DependencyRiskResponse> {
+  // `confirm_network_access: true` is only ever sent here -- this
+  // function is only ever called from an explicit, user-triggered "Scan
+  // dependencies" click (see `CodeHealthSidebar.tsx`'s `DependenciesPane`),
+  // never automatically. The backend still enforces this server-side too
+  // (a 400 if the flag isn't `true`), regardless of what this client sends.
+  return request<DependencyRiskResponse>(
+    `/api/dependencies/risk?path=${encodeURIComponent(path)}`,
+    { method: 'POST', body: JSON.stringify({ confirm_network_access: true }) },
+  )
 }
 
 function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
@@ -313,6 +372,30 @@ export const getDeadCode = DEMO_MODE
       throw new DeadCodeUnavailableError('Dead-code detection is not available in demo mode')
     }
   : realGetDeadCode
+export const ingestCoverage = DEMO_MODE
+  ? async (_path: string, _coveragePath: string): Promise<CoverageIngestResponse> => {
+      throw new CoverageUnavailableError('Coverage ingestion is not available in demo mode')
+    }
+  : realIngestCoverage
+export const getCoverageRisk = DEMO_MODE
+  ? async (_path: string): Promise<CoverageResponse> => {
+      throw new CoverageUnavailableError('Coverage ranking is not available in demo mode')
+    }
+  : realGetCoverageRisk
+// Demo-only: fully local/offline analysis (no ingested file, no git/network
+// dependency), so unlike `getDeadCode`/`getCoverageRisk` this can safely
+// return a real, valid empty response rather than throwing -- the demo's
+// fixture bundle just never happens to contain any duplicate functions.
+export const getDuplicates = DEMO_MODE
+  ? async (_path: string): Promise<DuplicatesResponse> => ({ groups: [] })
+  : realGetDuplicates
+export const getDependencyRisk = DEMO_MODE
+  ? async (_path: string): Promise<DependencyRiskResponse> => {
+      throw new DependencyRiskUnavailableError(
+        'Dependency risk scanning is not available in demo mode',
+      )
+    }
+  : realGetDependencyRisk
 export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
 export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest

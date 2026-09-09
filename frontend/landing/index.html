@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Semantic Vision — Understand any codebase in minutes</title>
-<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, Code Health (complexity, hotspots, dead code), AI-generated documentation, and code-to-data lineage for Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
+<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies), AI-generated documentation, and code-to-data lineage for Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
 <meta property="og:title" content="Semantic Vision" />
 <meta property="og:description" content="Understand any Python, JavaScript, TypeScript, or Java codebase in minutes, not days." />
 <meta property="og:image" content="./img/Banner.png" />
@@ -778,7 +778,7 @@
     <div class="section-head" data-reveal>
       <div class="kicker">Code Health</div>
       <h2>Score a change, not just a snapshot</h2>
-      <p>A filterable, sortable ranked list across three tabs — right next to the graph, not a separate tool.</p>
+      <p>A filterable, sortable ranked list across six tabs — right next to the graph, not a separate tool.</p>
     </div>
 
     <div class="feature-row" data-reveal>
@@ -795,7 +795,10 @@
         <ul>
           <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Hotspots</strong> weights that same complexity by how often each file actually changes — a moderately complex function edited constantly is a bigger practical risk than a complex one nobody touches</span></li>
           <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Dead code</strong> surfaces zero-caller functions to review — candidates, never a verdict</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Filter by name, file, complexity tier, or call depth, and sort any of the three lists</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Coverage</strong> ranks by complexity × blast radius × (1 − test coverage) — point it at a coverage.py or lcov report you already generated</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Duplicates</strong> groups functions whose structure is identical once names, literals, and comments are stripped away</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Dependencies</strong> flags known vulnerabilities (via osv.dev) in packages you actually import — opt-in, the one feature here that calls out to the network</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Filter by name, file, complexity tier, or call depth, and sort any of the ranked lists</span></li>
         </ul>
       </div>
       <div class="feature-shot"><img src="./img/code-health.png" alt="The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats" loading="lazy" width="1600" height="900" /></div>
@@ -926,7 +929,7 @@
         <tbody>
           <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Code Health (complexity, hotspots, dead code)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>

@@ -89,6 +89,31 @@ export function dismissDocSaveNotice(): void {
   }
 }
 
+const DEPENDENCY_SCAN_CONSENT_KEY = 'semantic-vision:dependency-scan-consent'
+
+/** Whether the user has consented *before* to dependency/security risk
+ * scanning (the one feature that queries osv.dev, a live outbound network
+ * call). This only remembers that consent has been given previously --
+ * it does NOT auto-run the scan; the Dependencies tab still requires an
+ * explicit click every session, matching the AI-provider precedent (a
+ * choice made every time, never silently defaulted to). Its only effect
+ * is skipping a first-time explanatory prompt on repeat use. */
+export function getDependencyScanConsent(): boolean {
+  try {
+    return localStorage.getItem(DEPENDENCY_SCAN_CONSENT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setDependencyScanConsent(): void {
+  try {
+    localStorage.setItem(DEPENDENCY_SCAN_CONSENT_KEY, '1')
+  } catch {
+    // Best-effort only.
+  }
+}
+
 const SIDEBAR_COLLAPSED_KEY = 'semantic-vision:sidebar-collapsed'
 const DETAILS_COLLAPSED_KEY = 'semantic-vision:details-collapsed'
 

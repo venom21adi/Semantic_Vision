@@ -204,6 +204,55 @@ export interface DeadCodeResponse {
   candidates: DeadCodeCandidate[]
 }
 
+export interface CoverageRiskScore {
+  node_id: string
+  cyclomatic_complexity: number
+  blast_radius: number
+  coverage_ratio: number | null
+  risk_score: number
+}
+
+export interface CoverageResponse {
+  available: boolean
+  scores: CoverageRiskScore[]
+}
+
+export interface CoverageIngestResponse {
+  files_in_report: number
+  /** Of `files_in_report`, how many actually correspond to a file in this
+   * parsed repo. `0` alongside a non-zero `files_in_report` means the
+   * report's paths don't line up with this repo's own -- every function's
+   * `coverage_ratio` will read `null`, not a bug. */
+  files_matched: number
+  lines_recorded: number
+}
+
+export interface DuplicateGroup {
+  node_ids: string[]
+  size: number
+}
+
+export interface DuplicatesResponse {
+  groups: DuplicateGroup[]
+}
+
+export interface VulnerabilitySummary {
+  id: string
+}
+
+export interface DependencyRisk {
+  package: string
+  version: string | null
+  ecosystem: string
+  vulnerabilities: VulnerabilitySummary[]
+}
+
+export interface DependencyRiskResponse {
+  available: boolean
+  risks: DependencyRisk[]
+  message: string | null
+}
+
 export interface DbtManifestIngestResponse {
   models_ingested: number
   tables_reconciled: number

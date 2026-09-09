@@ -136,9 +136,19 @@ export function RankedFunctionRow({
           // which reads as rows drifting out of alignment/overlapping as
           // the list scrolls, not just a clipped badge.
           <div style={{ display: 'flex', flexWrap: 'nowrap', overflow: 'hidden', gap: 4, marginTop: 5 }}>
-            {badges.map((badge) => (
+            {badges.map((badge, index) => (
+              // Keyed by index, not `badge.label`: every other tab's badges
+              // are short, mutually-distinct metrics ("Hotspot 20",
+              // "Complexity 4") where the label is already a stable
+              // identity, but Duplicates' member-name badges can legitimately
+              // repeat (two different functions sharing a bare name across
+              // files/classes) -- a label-keyed list silently collides
+              // there. This is a static, fully-recomputed-per-render list
+              // with no per-item animation/reordering need, so an index key
+              // has no real downside.
               <span
-                key={badge.label}
+                key={index}
+                title={badge.label}
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
@@ -147,7 +157,11 @@ export function RankedFunctionRow({
                   border: `1px solid ${badge.color ?? colors.border}`,
                   color: badge.color ?? colors.textMuted,
                   whiteSpace: 'nowrap',
-                  flexShrink: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  minWidth: 20,
+                  maxWidth: 140,
+                  flexShrink: 1,
                 }}
               >
                 {badge.label}

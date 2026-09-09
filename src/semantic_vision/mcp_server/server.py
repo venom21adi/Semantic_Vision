@@ -159,6 +159,41 @@ def build_server(client: BackendClient) -> MCPServer:
         return result.model_dump(mode="json")
 
     @mcp.tool()
+    async def ingest_coverage(path: str, coverage_path: str) -> dict[str, Any]:
+        """Ingests a coverage.py XML or lcov report (`coverage_path`,
+        produced by the user's own test-runner -- this tool never runs
+        tests itself) for the already-parsed repo at `path`. Required once
+        before get_coverage_risk returns real data; re-ingest after
+        significant source changes, since a function's line range can
+        shift and this ingest is tied to the ranges at ingest time."""
+        result = await client.ingest_coverage(path, coverage_path)
+        return result.model_dump(mode="json")
+
+    @mcp.tool()
+    async def get_coverage_risk(path: str) -> dict[str, Any]:
+        """Ranks functions by complexity x (1 + upstream blast radius) x
+        (1 - test coverage) -- combines three numbers no other single tool
+        here reports together, to answer "where's the real correctness
+        risk" rather than complexity or blast radius alone.
+        `available: false` until ingest_coverage has been called at least
+        once for this path since its last parse."""
+        result = await client.get_coverage_risk(path)
+        return result.model_dump(mode="json")
+
+    @mcp.tool()
+    async def get_duplicates(path: str) -> dict[str, Any]:
+        """Groups functions whose normalized AST shape hashes identically
+        -- every identifier name, literal value, and comment stripped, so
+        a copy-pasted-then-lightly-renamed function still gets flagged.
+        Exact-shape matching only (not a similarity/near-miss threshold):
+        two functions with any real structural difference won't group.
+        A maintenance-cost signal complexity alone can't see -- two
+        individually "simple" functions can still be costly duplication
+        together."""
+        result = await client.get_duplicates(path)
+        return result.model_dump(mode="json")
+
+    @mcp.tool()
     async def get_git_refs(path: str) -> dict[str, Any]:
         """Local branches and recent commits for `path`, for picking a
         `ref`/`to_ref` to pass to get_complexity_diff_ref."""

@@ -102,25 +102,27 @@ returns you to the normal call graph.
 two persistent, browser-tab-style lenses on the same repo, not a panel
 you open and close. Switching to it replaces the sidebar with a
 filterable, sortable ranked list instead of leaving the graph's file
-tree sitting there unused next to a second navigator.
+tree sitting there unused next to a second navigator. Six tabs share
+that list, each backed by its own `GET`/`POST /api/...` endpoint (see
+[guides/mcp-server.md](guides/mcp-server.md) for the matching MCP tools)
+— everything below runs locally against your own source, with one
+explicit, opt-in exception noted at the end.
 
 ![The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats and a git-ref diff picker](assets/code-health.png)
 
-Three tabs share that list:
-
-- **Complexity** — cyclomatic complexity for every function, computed
-  from a real AST walk (decisions, boolean-operator chains,
-  comprehension filters, `match` cases, and nested-loop hotspots all
-  count, not just a line-count guess), filterable by name/file/tier/call
-  depth and sortable by any of them.
-- **Hotspots** — the same complexity, weighted by how often each file
-  actually changed in a chosen window — a moderately complex function
-  edited constantly is a bigger practical risk than a complex one nobody
-  touches.
-- **Dead code** — zero-caller functions after excluding decorators, test
-  files, dunders, and entry points — candidates to review, never a
-  verdict, since a caller outside the repo (a library's public API) can
-  still be real.
+- **Complexity** (`GET /api/complexity`) — cyclomatic complexity for
+  every function, computed from a real AST walk (decisions,
+  boolean-operator chains, comprehension filters, `match` cases, and
+  nested-loop hotspots all count, not just a line-count guess),
+  filterable by name/file/tier/call depth and sortable by any of them.
+- **Hotspots** (`GET /api/complexity/hotspots`) — the same complexity,
+  weighted by how often each file actually changed in a chosen window —
+  a moderately complex function edited constantly is a bigger practical
+  risk than a complex one nobody touches.
+- **Dead code** (`GET /api/dead-code`) — zero-caller functions after
+  excluding decorators, test files, dunders, and entry points —
+  candidates to review, never a verdict, since a caller outside the repo
+  (a library's public API) can still be real.
 
 Click any row to see exactly who calls it and what it calls, live:
 
@@ -136,6 +138,55 @@ currently checked out. Either way, the result is added / removed /
 changed functions, each with its before-and-after complexity, so
 "did this change make the code healthier or worse" is a glance instead
 of a manual `git diff` read-through.
+
+### Coverage — where correctness risk actually concentrates
+
+Complexity and blast radius each answer half of "is this risky to
+change"; neither alone answers "and is it actually tested." Point the
+**Coverage** tab at a coverage.py XML (`coverage xml`) or lcov report
+your own test-runner already produced (`POST /api/coverage/ingest` —
+Semantic Vision never runs your tests itself, only reads what you
+already generated), and every function gets ranked by `complexity ×
+(1 + blast radius) × (1 − coverage)`:
+
+![The Coverage tab after ingesting a real report: functions ranked by complexity, blast radius, and test coverage combined into one risk score](assets/code-health-coverage.png)
+
+A function with no coverage data at all badges **No coverage data** —
+kept visually distinct from a genuinely-measured **Coverage 0%**, since
+the risk formula treats both as worst-case but only one of them is
+really "measured and bad."
+
+### Duplicates — the maintenance cost complexity can't see
+
+Two individually "simple" functions can still be a real duplication
+cost together. The **Duplicates** tab (`GET /api/duplicates`) normalizes
+every function's AST down to its bare shape — every identifier name,
+literal value, and comment stripped away — and groups whatever hashes
+identically:
+
+![The Duplicates tab: functions whose structure is identical after stripping names, literals, and comments, grouped together](assets/code-health-duplicates.png)
+
+Exact-shape matches only, not near-misses: a renamed-and-recommented
+copy still groups with its original, but two functions with any real
+structural difference won't. Click a group to jump to its first
+member's own relationship graph, same as any other tab.
+
+### Dependencies — the one feature that leaves your machine
+
+Every import the resolver can't match inside your repo already becomes
+a synthetic `external::` node; the **Dependencies** tab cross-references
+those against what your manifest (`pyproject.toml` / `requirements.txt`
+/ `package.json`) actually declares — only packages that are *both*
+imported *and* declared get checked — then queries
+[osv.dev](https://osv.dev) for known vulnerabilities against each. This
+is the one outbound network call anywhere in Semantic Vision besides an
+AI-provider doc request, so it's opt-in every time: check the consent
+box, click **Scan dependencies**, and only then does anything leave your
+machine (`POST /api/dependencies/risk` itself rejects the request
+server-side if you didn't explicitly confirm, regardless of what any
+client sends):
+
+![The Dependencies tab after a real scan: known vulnerabilities in packages this repo actually imports, via osv.dev](assets/code-health-dependencies.png)
 
 ## <img src="assets/icons/data-lineage.svg" width="22" height="22" align="absmiddle" alt=""/> Code-to-data lineage
 
@@ -214,10 +265,12 @@ parsed, the MCP server reuses that warm cache instead of starting cold; if
 nothing's running, it spawns its own backend and cleans it up on exit.
 `parse_repo`, `get_graph`, `get_impact`, `get_callees`, `get_complexity`,
 `get_complexity_diff`(`_ref`), `get_hotspots`, `get_dead_code`,
-`get_git_refs`, `get_flowchart`, and `get_function_source` cover the same
-ground the UI does — see [guides/mcp-server.md](guides/mcp-server.md) for
-the full tool reference, client config examples, and what's deliberately
-left out.
+`ingest_coverage`, `get_coverage_risk`, `get_duplicates`, `get_git_refs`,
+`get_flowchart`, and `get_function_source` cover the same ground the UI
+does — see [guides/mcp-server.md](guides/mcp-server.md) for the full tool
+reference, client config examples, and what's deliberately left out (the
+one exception: dependency/security-risk scanning stays web-app-only,
+since it's the one feature here that makes a live outbound network call).
 
 
 ## ✨ Features
@@ -244,8 +297,10 @@ by hand.
 
 <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **See which functions are worth worrying about** — the Code Health
 lens ranks every function by complexity, by hotspot score (complexity ×
-how often it actually changes), or lists dead-code candidates; click one
-to see exactly who calls it and what it calls, live.
+how often it actually changes), by coverage-vs-blast-radius risk, lists
+dead-code and near-duplicate candidates, and flags known vulnerabilities
+in packages you actually import; click any function to see exactly who
+calls it and what it calls, live.
 
 <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **Judge a change, not just a snapshot** — Code Health compares
 complexity against the last time you looked, any commit or branch, or
@@ -302,7 +357,7 @@ What works today, per language:
 | Search | ✅ | ✅ | ✅ |
 | Persisted layout & view state | ✅ | ✅ | ✅ |
 | Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ |
-| Code Health (complexity, hotspots, dead code) | ✅ | ✅ | ✅ |
+| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies) | ✅ | ✅ | ✅ |
 | AI-generated documentation | ✅ | ✅ | ✅ |
 | Execution flowcharts | ✅ | ✅ | ✅ |
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |

@@ -10,9 +10,12 @@ from typing import Literal
 from pydantic import BaseModel
 
 from semantic_vision.analysis.complexity import ComplexityChange, ComplexityScore
+from semantic_vision.analysis.coverage import CoverageRiskScore
 from semantic_vision.analysis.dead_code import DeadCodeCandidate
+from semantic_vision.analysis.duplicates import DuplicateGroup
 from semantic_vision.analysis.hotspots import HotspotScore
 from semantic_vision.analysis.impact import Caller
+from semantic_vision.analysis.osv_client import VulnerabilitySummary
 from semantic_vision.flowchart.cfg import FlowEdge, FlowNode
 from semantic_vision.models import Edge, Node, ParseError
 from semantic_vision.persistence.models import DocIndexEntry, NodePosition
@@ -161,6 +164,64 @@ class HotspotsResponse(BaseModel):
 
 class DeadCodeResponse(BaseModel):
     candidates: list[DeadCodeCandidate] = []
+
+
+class CoverageIngestRequest(BaseModel):
+    path: str
+    """Absolute path to a coverage.py XML report (`coverage xml`) or an
+    lcov text report the user's own test-runner already produced --
+    Semantic Vision never runs the test suite itself."""
+
+
+class CoverageIngestResponse(BaseModel):
+    files_in_report: int
+    """Distinct file paths the coverage report itself mentions -- not
+    cross-checked against the parsed repo."""
+    files_matched: int
+    """Of `files_in_report`, how many actually correspond to a parsed
+    `Node.file` in this repo. `0` alongside a non-zero `files_in_report`
+    is a real signal the report's paths don't line up with this repo's
+    own (e.g. generated from a different working directory) -- every
+    function's `coverage_ratio` will read `None`, not a bug."""
+    lines_recorded: int
+
+
+class CoverageResponse(BaseModel):
+    available: bool
+    """`False` until `POST /api/coverage/ingest` has been called at least
+    once for this repo path since its last parse."""
+    scores: list[CoverageRiskScore] = []
+
+
+class DuplicatesResponse(BaseModel):
+    groups: list[DuplicateGroup] = []
+
+
+class DependencyRiskRequest(BaseModel):
+    confirm_network_access: bool = False
+    """Must be explicitly `True` -- this is the one route in this project
+    that makes a live outbound network call (to osv.dev). The route
+    itself rejects a request where this isn't `True` with a 400, not just
+    a frontend UI gating it -- an explicit, server-enforced opt-in,
+    mirroring how AI documentation's provider choice is a required,
+    per-request field, never a silent default."""
+
+
+class DependencyRisk(BaseModel):
+    package: str
+    version: str | None
+    ecosystem: str
+    vulnerabilities: list[VulnerabilitySummary] = []
+
+
+class DependencyRiskResponse(BaseModel):
+    available: bool
+    """`False` only when the osv.dev query itself failed (network,
+    timeout, unexpected response) -- see `message` for why. A repo with no
+    used-and-declared packages to check is still `available: True` with an
+    empty `risks` list, not unavailable."""
+    risks: list[DependencyRisk] = []
+    message: str | None = None
 
 
 class DbtManifestIngestRequest(BaseModel):
