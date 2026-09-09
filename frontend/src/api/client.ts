@@ -5,6 +5,7 @@ import type {
   CoverageIngestResponse,
   CoverageResponse,
   DbConnectionIngestResponse,
+  DependencyRisk,
   DependencyRiskResponse,
   DuplicatesResponse,
   DbtManifestIngestResponse,
@@ -93,6 +94,17 @@ export class CoverageUnavailableError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'CoverageUnavailableError'
+  }
+}
+
+/** Thrown only by `streamCodeHealthRecommendations`'s demo stub -- this
+ * route needs a real backend and a real AI provider, never fakeable in
+ * the public demo (same flavor-(b) reasoning as
+ * `DependencyRiskUnavailableError`/`CoverageUnavailableError`). */
+export class RecommendationsUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'RecommendationsUnavailableError'
   }
 }
 
@@ -301,6 +313,41 @@ async function* realStreamDoc(
   }
 }
 
+async function* realStreamCodeHealthRecommendations(
+  path: string,
+  provider: DocProvider,
+  model: string | undefined,
+  dependencyRisks: DependencyRisk[] | undefined,
+  signal?: AbortSignal,
+): AsyncGenerator<string> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/code-health/recommendations?path=${encodeURIComponent(path)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, model, dependency_risks: dependencyRisks ?? null }),
+      signal,
+    },
+  )
+
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null)
+    const detail =
+      body && typeof body === 'object' && 'detail' in body ? String(body.detail) : undefined
+    throw new ApiError(response.status, detail ?? response.statusText)
+  }
+
+  const reader = response.body?.getReader()
+  if (!reader) return
+
+  const decoder = new TextDecoder()
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) return
+    yield decoder.decode(value, { stream: true })
+  }
+}
+
 export const parseRepo = DEMO_MODE ? demoClient.parseRepo : realParseRepo
 export const updateDocRoot = DEMO_MODE ? demoClient.updateDocRoot : realUpdateDocRoot
 export const getGraph = DEMO_MODE ? demoClient.getGraph : realGetGraph
@@ -401,6 +448,20 @@ export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetO
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest
 export const ingestDbConnection = DEMO_MODE ? demoClient.ingestDbConnection : realIngestDbConnection
 export const streamDoc = DEMO_MODE ? demoClient.streamDoc : realStreamDoc
+// Not a generator function -- it always throws before there's ever
+// anything to yield, and a generator with no `yield` at all is a lint
+// smell (`require-yield`) precisely because it usually signals a mistake
+// like this one. A plain function that throws synchronously still fails
+// a `for await (... of streamCodeHealthRecommendations(...))` at the same
+// point (the iterable expression is evaluated eagerly), so callers don't
+// need to know the difference.
+export const streamCodeHealthRecommendations = DEMO_MODE
+  ? (): AsyncGenerator<string> => {
+      throw new RecommendationsUnavailableError(
+        'AI recommendations are not available in demo mode',
+      )
+    }
+  : realStreamCodeHealthRecommendations
 /** Demo-only: no real-backend concept of an impact-analysis "showcase"
  * function exists, so the real app always gets an empty list rather than
  * a second code path every consumer has to branch on. */

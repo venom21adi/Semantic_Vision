@@ -87,6 +87,31 @@ imports its behavior actually depends on, if that's not obvious. If a section do
 write "None." under it rather than omitting the heading. Do not invent behavior beyond what the
 names/signatures reasonably imply, and do not wrap the whole response in a code fence."""
 
+RECOMMENDATIONS_SYSTEM_PROMPT = """You are a senior engineer prioritizing code-health work for a
+team, given a summary of up to five signals from a static analysis tool: top complexity risks,
+hotspots (complexity weighted by recent change frequency), coverage risk (complexity x blast
+radius x lack of test coverage), duplicate functions, and dependency vulnerabilities. Not every
+section will have data -- some may say "not scanned this session," which means that signal
+wasn't run, not that it found nothing; treat it as missing information, not a clean bill of
+health.
+
+Write concise Markdown with exactly these level-2 headings, in this order:
+
+## Top priorities
+## Why these first
+## Quick wins
+## Notes
+
+"Top priorities" is a ranked list of at most 5 concrete, specific items (name the actual
+function/package from the data, never a generic category) that combines evidence across
+sections when it strengthens the case -- e.g. a function that's both a hotspot and has low
+coverage is a stronger signal than either alone. "Why these first" briefly justifies the
+ranking. "Quick wins" lists anything low-effort/high-value (e.g. a single vulnerable dependency
+with a known fix, a small duplicate group). "Notes" flags any signal that wasn't scanned this
+session and would change the picture if it had been. If a section doesn't apply, write "None."
+under it rather than omitting the heading. Do not invent findings beyond what the data actually
+shows, and do not wrap the whole response in a code fence."""
+
 
 class ProviderError(RuntimeError):
     pass
@@ -120,7 +145,12 @@ def stream_documentation(
     if provider not in _MODELS:
         raise ProviderError(f"Unknown provider: {provider}")
 
-    system_prompt = FILE_SYSTEM_PROMPT if context.kind == "file" else SYSTEM_PROMPT
+    if context.kind == "file":
+        system_prompt = FILE_SYSTEM_PROMPT
+    elif context.kind == "code_health":
+        system_prompt = RECOMMENDATIONS_SYSTEM_PROMPT
+    else:
+        system_prompt = SYSTEM_PROMPT
     try:
         response = litellm.completion(
             model=_resolve_model(provider, model),

@@ -27,6 +27,7 @@ import {
   parseRepo,
   saveDoc,
   saveGraphState,
+  streamCodeHealthRecommendations,
   streamDoc,
   updateDocRoot,
 } from './api/client'
@@ -51,6 +52,7 @@ import {
   type DuplicatesState,
   type HealthTab,
   type HotspotsState,
+  type RecommendationsState,
 } from './components/codeHealthTypes'
 import type { GitRefsState } from './components/RefPicker'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
@@ -237,6 +239,11 @@ export default function App() {
   // graph in `CodeHealthDetail` currently centered on," which is exactly
   // what this tracks, with zero effect on the Graph lens.
   const [healthSelectedNodeId, setHealthSelectedNodeId] = useState<string | null>(null)
+  // Which package is selected on the Dependencies tab -- a sibling to
+  // `healthSelectedNodeId`, not a reuse of it: a package isn't a
+  // `GraphNode` id, so `CodeHealthDetail`'s canvas branches on this
+  // separately to render `PackageImportersGraph` instead of `MiniCallGraph`.
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
   const [pane, setPane] = useState<ActivePane>(null)
   const [view, setView] = useState<GraphView>('codebase')
   const [docProvider, setDocProvider] = useState<DocProvider>('ollama')
@@ -302,6 +309,11 @@ export default function App() {
   // since this is the one opt-in, network-calling feature (see
   // `DependencyRiskState`'s own docstring).
   const [dependencyRisk, setDependencyRisk] = useState<DependencyRiskState>({ status: 'idle' })
+  // The Code Health lens's Recommendations tab -- same opt-in, never-
+  // auto-fetched treatment as `dependencyRisk` above, for the same reason:
+  // generating this makes a real AI-provider call, which must only ever
+  // start from an explicit click.
+  const [recommendations, setRecommendations] = useState<RecommendationsState>({ status: 'idle' })
   // The single source of truth for the codebase-view canvas: exactly the
   // ids that render as their own box (see `buildVisibleGraph`). The
   // sidebar's checkboxes and the canvas chevron both just toggle
@@ -429,6 +441,17 @@ export default function App() {
   const duplicatesRequestIdRef = useRef(0)
   // Same guard, for `handleScanDependencies`'s `getDependencyRisk` request.
   const dependencyRiskRequestIdRef = useRef(0)
+  // A streamed generation, not a plain request -- mirrors `generationRef`
+  // (the Graph lens's own DocPane generation) rather than a request-id
+  // counter, since `handleGenerateRecommendations` needs to actually abort
+  // an in-flight fetch, not just ignore a stale response. Kept independent
+  // of `generationRef` itself: the two features belong to different lenses
+  // and have no reason to cancel each other.
+  const recommendationsGenerationRef = useRef<AbortController | null>(null)
+  const cancelRecommendationsGeneration = useCallback(() => {
+    recommendationsGenerationRef.current?.abort()
+    recommendationsGenerationRef.current = null
+  }, [])
 
   // The single chokepoint for invalidating the Code Health lens's data --
   // called only when a fresh repo load makes the previous scores stale
@@ -446,6 +469,7 @@ export default function App() {
     coverageRequestIdRef.current += 1
     duplicatesRequestIdRef.current += 1
     dependencyRiskRequestIdRef.current += 1
+    cancelRecommendationsGeneration()
     setDashboard(null)
     setDashboardDiff(null)
     setGitRefs(null)
@@ -454,8 +478,10 @@ export default function App() {
     setCoverage(null)
     setDuplicates(null)
     setDependencyRisk({ status: 'idle' })
+    setRecommendations({ status: 'idle' })
     setHealthSelectedNodeId(null)
-  }, [])
+    setSelectedPackage(null)
+  }, [cancelRecommendationsGeneration])
 
   useEffect(() => {
     if (!expandBlockedNotice) return
@@ -1002,6 +1028,13 @@ export default function App() {
     setHealthSelectedNodeId(nodeId)
   }, [])
 
+  // Selecting a tile in the Dependencies tab's grid -- drives
+  // `CodeHealthDetail`'s canvas the same way `handleSelectHealthNode` does
+  // for every function-scoped tab, just for `selectedPackage` instead.
+  const handleSelectPackage = useCallback((packageName: string) => {
+    setSelectedPackage(packageName)
+  }, [])
+
   // Re-parses the repo (picking up whatever changed on disk since it was
   // last parsed -- an AI agent's edit, or a hand edit) and diffs the fresh
   // complexity scores against whatever was cached the last time this path's
@@ -1221,6 +1254,46 @@ export default function App() {
       }
     }
   }, [repo])
+
+  // Streams AI recommendations across the Code Health lens's own signals --
+  // mirrors `handleGenerateDoc`'s abort/streaming shape exactly. Dependency
+  // findings are folded in only when `dependencyRisk` already holds a
+  // successful, available scan from this session -- never fetched here,
+  // so clicking Generate can't silently trigger the app's one live
+  // network call on its own (see `CodeHealthRecommendationsRequest`'s own
+  // docstring on the backend).
+  const handleGenerateRecommendations = useCallback(async () => {
+    if (!repo) return
+    cancelRecommendationsGeneration()
+    const controller = new AbortController()
+    recommendationsGenerationRef.current = controller
+
+    setRecommendations({ status: 'generating', markdown: '' })
+    try {
+      let markdown = ''
+      const model = docProvider === 'ollama' ? ollamaModel || undefined : undefined
+      const dependencyRisks =
+        dependencyRisk.status === 'loaded' && dependencyRisk.result.available
+          ? dependencyRisk.result.risks
+          : undefined
+      for await (const chunk of streamCodeHealthRecommendations(
+        repo.path,
+        docProvider,
+        model,
+        dependencyRisks,
+        controller.signal,
+      )) {
+        if (controller.signal.aborted) return
+        markdown += chunk
+        setRecommendations({ status: 'generating', markdown })
+      }
+      if (controller.signal.aborted) return
+      setRecommendations({ status: 'loaded', markdown })
+    } catch (error) {
+      if (controller.signal.aborted) return
+      setRecommendations({ status: 'error', message: errorMessage(error) })
+    }
+  }, [repo, docProvider, ollamaModel, dependencyRisk, cancelRecommendationsGeneration])
 
   const handleToggleDataSource = useCallback(() => {
     if (!repo) return
@@ -1583,6 +1656,17 @@ export default function App() {
             onLoadDuplicates={handleLoadDuplicates}
             dependencyRisk={dependencyRisk}
             onScanDependencies={handleScanDependencies}
+            selectedPackage={selectedPackage}
+            onSelectPackage={handleSelectPackage}
+            recommendations={recommendations}
+            onGenerateRecommendations={handleGenerateRecommendations}
+            docProvider={docProvider}
+            onDocProviderChange={setDocProvider}
+            ollamaModels={ollamaModels}
+            ollamaModelsLoading={ollamaModelsLoading}
+            ollamaModel={ollamaModel}
+            onOllamaModelChange={setOllamaModel}
+            onRefreshOllamaModels={refreshOllamaModels}
           />
         )}
         {lens === 'health' && repo ? (
@@ -1597,6 +1681,13 @@ export default function App() {
             graphEdges={repo.edges}
             selectedNodeId={healthSelectedNodeId}
             onSelectNode={handleSelectHealthNode}
+            dependencyRisks={
+              dependencyRisk.status === 'loaded' && dependencyRisk.result.available
+                ? dependencyRisk.result.risks
+                : []
+            }
+            selectedPackage={selectedPackage}
+            recommendations={recommendations}
           />
         ) : (
           <>

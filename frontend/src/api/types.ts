@@ -245,6 +245,7 @@ export interface DependencyRisk {
   version: string | null
   ecosystem: string
   vulnerabilities: VulnerabilitySummary[]
+  importer_node_ids: string[]
 }
 
 export interface DependencyRiskResponse {

@@ -1,11 +1,13 @@
 import { useMemo, type ReactNode } from 'react'
-import type { GraphEdge, GraphNode } from '../api/types'
+import type { ComplexityScore, DependencyRisk, GraphEdge, GraphNode } from '../api/types'
 import { formatNodeLabel } from '../graph/accessorLabel'
 import { LARGE_GRAPH_NODE_THRESHOLD } from '../graph/GraphCanvas'
 import { complexityToColor } from '../graph/heatmap'
 import { MiniCallGraph } from '../graph/MiniCallGraph'
-import { colors, spacing } from '../theme'
-import type { DashboardState, DiffMode, DiffState, HealthTab } from './codeHealthTypes'
+import { PackageImportersGraph } from '../graph/PackageImportersGraph'
+import { colors, radius, spacing } from '../theme'
+import { RecommendationsOutputPane } from './CodeHealthRecommendationsPane'
+import type { DashboardState, DiffMode, DiffState, HealthTab, RecommendationsState } from './codeHealthTypes'
 import { RankedFunctionRow } from './RankedFunctionRow'
 import { RefPicker, type GitRefsState } from './RefPicker'
 import { SummaryStatsHeader } from './SummaryStatsHeader'
@@ -18,7 +20,8 @@ const TAB_BLURB: Record<HealthTab, string> = {
   'dead-code': "Zero-caller functions -- candidates to review, never a verdict.",
   coverage: 'Complexity, blast radius, and test coverage combined into one risk score.',
   duplicates: 'Functions whose structure is identical after stripping names and literals.',
-  dependencies: 'Known vulnerabilities in packages this repo actually imports (via osv.dev).',
+  dependencies: 'Known vulnerabilities in packages this repo actually imports (via osv.dev) -- select one to see which of your own files import it.',
+  recommendations: 'AI-prioritized findings across complexity, hotspots, coverage, and duplicates.',
 }
 
 interface CodeHealthDetailProps {
@@ -32,6 +35,9 @@ interface CodeHealthDetailProps {
   graphEdges: GraphEdge[]
   selectedNodeId: string | null
   onSelectNode: (nodeId: string) => void
+  dependencyRisks: DependencyRisk[]
+  selectedPackage: string | null
+  recommendations: RecommendationsState
 }
 
 /** The Code Health lens's main-content column -- occupies exactly the
@@ -53,9 +59,15 @@ export function CodeHealthDetail({
   graphEdges,
   selectedNodeId,
   onSelectNode,
+  dependencyRisks,
+  selectedPackage,
+  recommendations,
 }: CodeHealthDetailProps) {
   const compareDisabled = state.status !== 'loaded' || diff?.status === 'loading'
   const scores = state.status === 'loaded' ? state.scores : []
+  const selectedRisk = selectedPackage
+    ? dependencyRisks.find((risk) => risk.package === selectedPackage)
+    : undefined
 
   // Resolves a raw dotted node id to its real name/file for the diff rows
   // below (`RankedFunctionRow`) and for the "Call relationships for ..."
@@ -163,7 +175,21 @@ export function CodeHealthDetail({
         </div>
       )}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        {selectedNodeId ? (
+        {healthTab === 'recommendations' ? (
+          <RecommendationsOutputPane state={recommendations} />
+        ) : healthTab === 'dependencies' ? (
+          selectedRisk ? (
+            <PackageDetailAndImporters
+              risk={selectedRisk}
+              graphNodes={graphNodes}
+              scores={scores}
+            />
+          ) : (
+            <p style={{ color: colors.textMuted, fontSize: 12, padding: spacing.lg, margin: 0 }}>
+              Select a package to see which of your own files import it.
+            </p>
+          )
+        ) : selectedNodeId ? (
           <>
             {/* The selection (and this graph) persists across tab switches
              * -- "who calls this" doesn't change depending on which tab you
@@ -200,6 +226,76 @@ export function CodeHealthDetail({
         )}
       </div>
     </div>
+  )
+}
+
+/** The dependencies-tab canvas -- a package-detail header (full,
+ * uncapped vulnerability list, unlike the tile grid's own capped badges)
+ * above `PackageImportersGraph`, occupying the exact spot `MiniCallGraph`
+ * fills for every other tab. */
+function PackageDetailAndImporters({
+  risk,
+  graphNodes,
+  scores,
+}: {
+  risk: DependencyRisk
+  graphNodes: GraphNode[]
+  scores: ComplexityScore[]
+}) {
+  const hasVulnerabilities = risk.vulnerabilities.length > 0
+  return (
+    <>
+      <div style={{ padding: `${spacing.sm}px ${spacing.md}px 0` }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: spacing.xs, flexWrap: 'wrap' }}>
+          <strong style={{ fontSize: 13, color: colors.textPrimary }}>{risk.package}</strong>
+          <span style={{ fontSize: 11, color: colors.textDim }}>
+            {risk.version ?? 'unknown version'} · {risk.ecosystem}
+          </span>
+        </div>
+        {hasVulnerabilities ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: spacing.xs }}>
+            {risk.vulnerabilities.map((vuln) => (
+              <a
+                key={vuln.id}
+                href={`https://osv.dev/vulnerability/${vuln.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="sv-interactive"
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  padding: '1px 6px',
+                  borderRadius: radius.full,
+                  border: `1px solid ${colors.danger}`,
+                  color: colors.danger,
+                  textDecoration: 'none',
+                }}
+              >
+                {vuln.id}
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p style={{ fontSize: 11, color: colors.success, margin: `${spacing.xs}px 0 0` }}>
+            No known vulnerabilities
+          </p>
+        )}
+        <p style={{ fontSize: 11, color: colors.textMuted, margin: `${spacing.xs}px 0 0` }}>
+          {risk.importer_node_ids.length === 0
+            ? 'No files in this repo import this package directly.'
+            : `Imported by ${risk.importer_node_ids.length} file${risk.importer_node_ids.length === 1 ? '' : 's'} in this repo:`}
+        </p>
+      </div>
+      {risk.importer_node_ids.length > 0 && (
+        <PackageImportersGraph
+          packageName={risk.package}
+          hasVulnerabilities={hasVulnerabilities}
+          importerNodeIds={risk.importer_node_ids}
+          graphNodes={graphNodes}
+          scores={scores}
+        />
+      )}
+    </>
   )
 }
 

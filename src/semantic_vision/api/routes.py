@@ -6,13 +6,18 @@ from pathlib import Path
 from fastapi.responses import StreamingResponse
 
 from fastapi import APIRouter, HTTPException, Query
-from semantic_vision.ai.context import assemble_context, assemble_file_context
+from semantic_vision.ai.context import (
+    assemble_code_health_context,
+    assemble_context,
+    assemble_file_context,
+)
 from semantic_vision.ai.providers import ProviderError, list_ollama_models, stream_documentation
 from semantic_vision.analysis import coverage_ingest
 from semantic_vision.analysis.complexity import diff_complexity_indexes
 from semantic_vision.analysis.dead_code import find_dead_code_candidates
 from semantic_vision.analysis.dependency_manifest import (
     find_declared_dependencies,
+    find_package_importers,
     resolve_used_dependencies,
 )
 from semantic_vision.analysis.git_ops import (
@@ -28,6 +33,7 @@ from semantic_vision.api.cache import cache
 from semantic_vision.api.host_path import translate_host_path
 from semantic_vision.api.repo_cache_sync import sync_to_fast_cache
 from semantic_vision.api.schemas import (
+    CodeHealthRecommendationsRequest,
     ComplexityDiffResponse,
     ComplexityRefDiffResponse,
     ComplexityResponse,
@@ -658,10 +664,12 @@ def get_dependency_risk(
         )
     result = _get_cached(path)
     declared = find_declared_dependencies(Path(result.root))
-    external_targets = (
-        edge.target for edge in result.edges if edge.external and edge.kind == EdgeKind.IMPORTS
-    )
-    used = resolve_used_dependencies(external_targets, declared)
+    external_edges = [
+        (edge.source, edge.target)
+        for edge in result.edges
+        if edge.external and edge.kind == EdgeKind.IMPORTS
+    ]
+    used = resolve_used_dependencies((target for _, target in external_edges), declared)
     if not used:
         return DependencyRiskResponse(available=True, risks=[])
 
@@ -670,16 +678,77 @@ def get_dependency_risk(
     except OsvQueryError as exc:
         return DependencyRiskResponse(available=False, risks=[], message=str(exc))
 
+    importers = find_package_importers(external_edges)
     risks = [
         DependencyRisk(
             package=pkg.name,
             version=pkg.version,
             ecosystem=pkg.ecosystem,
             vulnerabilities=vulns_by_package.get(pkg.name.lower(), []),
+            importer_node_ids=importers.get(pkg.name.lower(), []),
         )
         for pkg in used
     ]
     return DependencyRiskResponse(available=True, risks=risks)
+
+
+@router.post("/code-health/recommendations")
+def get_code_health_recommendations(
+    request: CodeHealthRecommendationsRequest, path: str = Query(...)
+) -> StreamingResponse:
+    """Streams AI-generated, prioritized recommendations across every Code
+    Health signal at once -- the first cross-signal endpoint in this
+    project (every other analysis route answers one signal). Mirrors
+    `/generate-doc`'s shape exactly: assemble a budgeted context, hand it to
+    `stream_documentation`, return a `StreamingResponse`. Complexity and
+    duplicates are always pulled fresh from `RepoCache` (both are free,
+    local, already-cached computations); hotspots is too, but comes back
+    empty for a non-git repo (no churn signal to rank by, same as
+    `/complexity/hotspots` itself); coverage is only included if a report
+    was ingested this session (`cache.get_coverage_line_hits` is not
+    `None`); dependency vulnerabilities are only included if the client
+    supplied them -- `request.dependency_risks` -- never fetched here,
+    since that would mean silently making the app's one live network call
+    just because this button was clicked."""
+    result = _get_cached(path)
+    nodes_by_id = {n.id: n for n in result.nodes}
+    complexity_index = cache.get_or_build_complexity_index(path)
+    duplicate_groups = cache.get_or_build_duplicate_groups(path)
+
+    git_root = find_git_root(result.root)
+    hotspot_scores = []
+    if git_root is not None:
+        churn_by_file = cache.get_or_compute_churn(git_root, window_days=90)
+        offset = Path(result.root).relative_to(git_root)
+        hotspot_scores = build_hotspot_scores(complexity_index, churn_by_file, offset=offset)
+
+    line_hits_by_file = cache.get_coverage_line_hits(path)
+    coverage_scores = None
+    if line_hits_by_file is not None:
+        coverage_scores = cache.get_or_build_coverage_risk_scores(path, line_hits_by_file)
+
+    dependency_vulnerabilities = None
+    if request.dependency_risks is not None:
+        dependency_vulnerabilities = [
+            (risk.package, risk.version, [v.id for v in risk.vulnerabilities])
+            for risk in request.dependency_risks
+            if risk.vulnerabilities
+        ]
+
+    context = assemble_code_health_context(
+        complexity_index,
+        hotspot_scores,
+        coverage_scores,
+        duplicate_groups,
+        dependency_vulnerabilities,
+        nodes_by_id,
+    )
+    try:
+        stream = stream_documentation(request.provider, context, request.model)
+    except ProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return StreamingResponse(stream, media_type="text/plain")
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)

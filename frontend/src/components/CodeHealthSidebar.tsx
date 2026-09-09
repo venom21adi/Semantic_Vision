@@ -6,7 +6,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import type { GraphNode } from '../api/types'
+import type { DocProvider, GraphNode } from '../api/types'
 import { colors, radius, spacing } from '../theme'
 import {
   getDashboardSplitWidth,
@@ -23,6 +23,7 @@ import type {
   DuplicatesState,
   HealthTab,
   HotspotsState,
+  RecommendationsState,
 } from './codeHealthTypes'
 import { CoverageReportPane } from './CoverageReportPane'
 import { DeadCodeReportPane } from './DeadCodeReportPane'
@@ -30,6 +31,7 @@ import { DependencyRiskReportPane } from './DependencyRiskReportPane'
 import { DuplicatesReportPane } from './DuplicatesReportPane'
 import { HotspotReportPane } from './HotspotReportPane'
 import { PerformanceReportPane } from './PerformanceReportPane'
+import { RecommendationsControls } from './CodeHealthRecommendationsPane'
 
 const MIN_LIST_WIDTH = 360
 const MAX_LIST_WIDTH = 900
@@ -426,9 +428,13 @@ function CoveragePane({
 function DependenciesPane({
   dependencyRisk,
   onScanDependencies,
+  selectedPackage,
+  onSelectPackage,
 }: {
   dependencyRisk: DependencyRiskState
   onScanDependencies: () => void
+  selectedPackage: string | null
+  onSelectPackage: (packageName: string) => void
 }) {
   const [consentChecked, setConsentChecked] = useState(() => getDependencyScanConsent())
 
@@ -506,7 +512,11 @@ function DependenciesPane({
           message={dependencyRisk.result.message ?? 'Could not reach osv.dev — try again.'}
         />
       ) : (
-        <DependencyRiskReportPane risks={dependencyRisk.result.risks} />
+        <DependencyRiskReportPane
+          risks={dependencyRisk.result.risks}
+          selectedPackage={selectedPackage}
+          onSelectPackage={onSelectPackage}
+        />
       )}
     </div>
   )
@@ -531,6 +541,17 @@ interface CodeHealthSidebarProps {
   onLoadDuplicates: () => void
   dependencyRisk: DependencyRiskState
   onScanDependencies: () => void
+  selectedPackage: string | null
+  onSelectPackage: (packageName: string) => void
+  recommendations: RecommendationsState
+  onGenerateRecommendations: () => void
+  docProvider: DocProvider
+  onDocProviderChange: (provider: DocProvider) => void
+  ollamaModels: string[]
+  ollamaModelsLoading: boolean
+  ollamaModel: string
+  onOllamaModelChange: (model: string) => void
+  onRefreshOllamaModels: () => void
 }
 
 /** The Code Health lens's left column -- occupies exactly the position
@@ -559,6 +580,17 @@ export function CodeHealthSidebar({
   onLoadDuplicates,
   dependencyRisk,
   onScanDependencies,
+  selectedPackage,
+  onSelectPackage,
+  recommendations,
+  onGenerateRecommendations,
+  docProvider,
+  onDocProviderChange,
+  ollamaModels,
+  ollamaModelsLoading,
+  ollamaModel,
+  onOllamaModelChange,
+  onRefreshOllamaModels,
 }: CodeHealthSidebarProps) {
   const [listWidth, setListWidthState] = useState(() =>
     clampListWidth(getDashboardSplitWidth() ?? DEFAULT_LIST_WIDTH),
@@ -631,6 +663,14 @@ export function CodeHealthSidebar({
             active={healthTab === 'dependencies'}
             onClick={() => onHealthTabChange('dependencies')}
           />
+          {/* Same no-lazy-fetch-wrapper treatment as Dependencies -- opening
+              this tab must never itself trigger an AI-provider call; that
+              only ever starts from `RecommendationsControls`'s own button. */}
+          <TabButton
+            label="Recommendations"
+            active={healthTab === 'recommendations'}
+            onClick={() => onHealthTabChange('recommendations')}
+          />
         </div>
       </div>
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: spacing.lg }}>
@@ -679,8 +719,28 @@ export function CodeHealthSidebar({
             selectedNodeId={selectedNodeId}
             onSelectNode={onSelectNode}
           />
+        ) : healthTab === 'dependencies' ? (
+          <DependenciesPane
+            dependencyRisk={dependencyRisk}
+            onScanDependencies={onScanDependencies}
+            selectedPackage={selectedPackage}
+            onSelectPackage={onSelectPackage}
+          />
         ) : (
-          <DependenciesPane dependencyRisk={dependencyRisk} onScanDependencies={onScanDependencies} />
+          <RecommendationsControls
+            state={recommendations}
+            provider={docProvider}
+            onProviderChange={onDocProviderChange}
+            ollamaModels={ollamaModels}
+            ollamaModelsLoading={ollamaModelsLoading}
+            ollamaModel={ollamaModel}
+            onOllamaModelChange={onOllamaModelChange}
+            onRefreshOllamaModels={onRefreshOllamaModels}
+            onGenerate={onGenerateRecommendations}
+            dependencyDataAvailable={
+              dependencyRisk.status === 'loaded' && dependencyRisk.result.available
+            }
+          />
         )}
       </div>
       <ResizeHandle width={listWidth} onResize={handleResizeListWidth} />

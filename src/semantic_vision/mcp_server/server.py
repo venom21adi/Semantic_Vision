@@ -218,4 +218,12 @@ def build_server(client: BackendClient) -> MCPServer:
         result = await client.get_function_source(path, id)
         return result.model_dump(mode="json")
 
+    # Deliberately not exposed here, unlike every other Code Health signal
+    # above: dependency-risk scanning (the one feature that makes a live
+    # outbound network call, see guides/mcp-server.md) and
+    # `/code-health/recommendations` (a streamed AI response that can carry
+    # client-supplied, potentially-stale dependency data -- neither a
+    # synchronous agent tool call nor a network-consent decision an agent
+    # should make silently is a good fit here; both stay web-app-only).
+
     return mcp

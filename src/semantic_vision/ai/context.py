@@ -18,11 +18,22 @@ import tree_sitter
 from pydantic import BaseModel
 
 from semantic_vision import ast_locate, java_locate, ts_locate
+from semantic_vision.analysis.complexity import ComplexityScore
+from semantic_vision.analysis.coverage import CoverageRiskScore
+from semantic_vision.analysis.duplicates import DuplicateGroup
+from semantic_vision.analysis.hotspots import HotspotScore
 from semantic_vision.models import EdgeKind, Node, NodeKind, ParseResult
 from semantic_vision.parser import java_extractor, javascript_extractor
 from semantic_vision.parser.javascript_extractor import _CLASS_DECLARATION_TYPES
 
 MAX_CONTEXT_TOKENS = 2000
+
+# How many entries each Code Health summary section shows -- enough to be
+# useful, small enough that even five sections at once stay well inside
+# `MAX_CONTEXT_TOKENS` without leaning on the budget-drop path for a
+# normally-sized repo.
+_CODE_HEALTH_TOP_N = 8
+_CODE_HEALTH_TOP_DUPLICATE_GROUPS = 5
 
 AnyDefNode = ast_locate.DefNode | tree_sitter.Node
 
@@ -65,10 +76,11 @@ class DocContext(BaseModel):
     """Fully assembled context text, ready to send as the user message."""
     omitted: list[str]
     """Section names dropped or truncated to stay within the token budget."""
-    kind: Literal["function", "file"] = "function"
+    kind: Literal["function", "file", "code_health"] = "function"
     """Which system prompt `ai.providers.stream_documentation` should pair
-    this with -- a function doc and a file doc ask the model for
-    differently-shaped Markdown (see `SYSTEM_PROMPT`/`FILE_SYSTEM_PROMPT`
+    this with -- a function doc, a file doc, and a code-health summary each
+    ask the model for differently-shaped Markdown (see
+    `SYSTEM_PROMPT`/`FILE_SYSTEM_PROMPT`/`RECOMMENDATIONS_SYSTEM_PROMPT`
     there), so the context and the prompt template must stay matched."""
 
 
@@ -640,3 +652,164 @@ def assemble_file_context(
 
     prompt = "\n\n".join(sections)
     return DocContext(node_id=node_id, prompt=prompt, omitted=omitted, kind="file")
+
+
+def _label_for(node_id: str, nodes_by_id: dict[str, Node]) -> str:
+    node = nodes_by_id.get(node_id)
+    return f"{node.label} ({node.file})" if node is not None else node_id
+
+
+def _add_all_or_nothing_section(
+    sections: list[str], omitted: list[str], budget: int, title: str, block: str
+) -> int:
+    """Charges `block` against `budget` as a single unit -- unlike
+    `assemble_context`'s per-line signature lists, a Code Health summary
+    section reads as one coherent list, so it's kept whole or dropped
+    whole rather than silently truncated mid-list."""
+    if _approx_tokens(block) <= budget:
+        sections.append(block)
+        return budget - _approx_tokens(block)
+    omitted.append(title)
+    return budget
+
+
+def assemble_code_health_context(
+    complexity_index: dict[str, ComplexityScore],
+    hotspot_scores: list[HotspotScore],
+    coverage_scores: list[CoverageRiskScore] | None,
+    duplicate_groups: list[DuplicateGroup],
+    dependency_vulnerabilities: list[tuple[str, str | None, list[str]]] | None,
+    nodes_by_id: dict[str, Node],
+    max_tokens: int = MAX_CONTEXT_TOKENS,
+) -> DocContext:
+    """Assembles a cross-signal Code Health summary -- unlike
+    `assemble_context`/`assemble_file_context`, this isn't scoped to one
+    node; it curates the repo's own top complexity/hotspot/coverage/
+    duplicate/dependency findings into one prompt for
+    `RECOMMENDATIONS_SYSTEM_PROMPT` to prioritize. Sections are added in
+    order from the signal every repo always has to the one most repos
+    won't (complexity, hotspots, coverage, duplicates, dependency
+    vulnerabilities), so an over-budget context drops from the *bottom* --
+    dependency vulnerabilities first, then duplicates, then coverage, then
+    hotspots, with the complexity ranking itself the last thing dropped.
+    This isn't a claim that dependency vulnerabilities matter *less* --
+    quite the opposite, they're often the most urgent single finding --
+    just that they're the section most likely to be missing already (no
+    scan run this session) and the one every other section doesn't depend
+    on existing, so it's the safest one to lose first under a tight
+    budget. In practice `MAX_CONTEXT_TOKENS` comfortably fits all five
+    sections for a normally-sized repo; this only matters for a
+    pathologically large finding set.
+
+    `coverage_scores=None` means no coverage report was ingested this
+    session (distinct from `[]`, which would mean one was ingested but
+    scored nothing) -- and `dependency_vulnerabilities=None` means
+    dependency scanning hasn't been run this session. Both render an
+    explicit "not scanned" note rather than silently omitting the section,
+    so the model (and a reader of its output) knows the difference between
+    "nothing found" and "never checked." `dependency_vulnerabilities` is
+    deliberately never fetched here -- see `api.routes`'s recommendations
+    route -- so this function takes it as plain `(package, version,
+    vulnerability_ids)` tuples already filtered to vulnerable packages,
+    not `api.schemas.DependencyRisk` (importing an API-layer schema into
+    this analysis-adjacent module would invert the codebase's own layering).
+    """
+    budget = max_tokens
+    sections: list[str] = []
+    omitted: list[str] = []
+
+    top_complexity = sorted(
+        complexity_index.values(), key=lambda s: s.cyclomatic_complexity, reverse=True
+    )[:_CODE_HEALTH_TOP_N]
+    if top_complexity:
+        lines = [
+            f"- `{_label_for(s.node_id, nodes_by_id)}`: complexity {s.cyclomatic_complexity}, "
+            f"call-chain depth {s.call_chain_depth}"
+            for s in top_complexity
+        ]
+        block = "## Top complexity risks\n\n" + "\n".join(lines)
+        budget = _add_all_or_nothing_section(
+            sections, omitted, budget, "Top complexity risks", block
+        )
+
+    top_hotspots = sorted(hotspot_scores, key=lambda s: s.hotspot_score, reverse=True)[
+        :_CODE_HEALTH_TOP_N
+    ]
+    if top_hotspots:
+        lines = [
+            f"- `{_label_for(s.node_id, nodes_by_id)}`: hotspot score {s.hotspot_score} "
+            f"(complexity {s.cyclomatic_complexity} x {s.change_count} recent changes)"
+            for s in top_hotspots
+        ]
+        block = "## Hotspots\n\n" + "\n".join(lines)
+        budget = _add_all_or_nothing_section(sections, omitted, budget, "Hotspots", block)
+
+    if coverage_scores is None:
+        block = "## Coverage risk\n\nNo coverage report ingested this session."
+        budget = _add_all_or_nothing_section(sections, omitted, budget, "Coverage risk", block)
+    elif coverage_scores:
+        top_coverage = sorted(coverage_scores, key=lambda s: s.risk_score, reverse=True)[
+            :_CODE_HEALTH_TOP_N
+        ]
+        lines = [
+            f"- `{_label_for(s.node_id, nodes_by_id)}`: risk {s.risk_score:.1f} "
+            f"(complexity {s.cyclomatic_complexity}, blast radius {s.blast_radius}, "
+            f"coverage {'no data' if s.coverage_ratio is None else f'{s.coverage_ratio:.0%}'})"
+            for s in top_coverage
+        ]
+        block = "## Coverage risk\n\n" + "\n".join(lines)
+        budget = _add_all_or_nothing_section(sections, omitted, budget, "Coverage risk", block)
+    else:
+        # A report was ingested (`coverage_scores` isn't `None`) but scored
+        # nothing -- only reachable for a repo with zero FUNCTION nodes in
+        # practice, since `build_coverage_risk_scores` otherwise scores
+        # every function unconditionally. Still handled explicitly rather
+        # than falling through silently: this module's own contract is
+        # that "ingested, nothing scored" and "never ingested" render
+        # distinct notes, the same distinction `dependency_vulnerabilities`
+        # already draws between `None`, `[]`, and populated.
+        block = "## Coverage risk\n\nCoverage report ingested, but nothing was scored."
+        budget = _add_all_or_nothing_section(sections, omitted, budget, "Coverage risk", block)
+
+    top_duplicates = duplicate_groups[:_CODE_HEALTH_TOP_DUPLICATE_GROUPS]
+    if top_duplicates:
+        lines = []
+        for group in top_duplicates:
+            shown = group.node_ids[:5]
+            names = ", ".join(f"`{_label_for(nid, nodes_by_id)}`" for nid in shown)
+            remaining = len(group.node_ids) - len(shown)
+            extra = f" (+{remaining} more)" if remaining > 0 else ""
+            lines.append(f"- {group.size} functions with identical structure: {names}{extra}")
+        block = "## Duplicate functions\n\n" + "\n".join(lines)
+        budget = _add_all_or_nothing_section(
+            sections, omitted, budget, "Duplicate functions", block
+        )
+
+    if dependency_vulnerabilities is None:
+        block = "## Dependency vulnerabilities\n\nNot scanned this session."
+        budget = _add_all_or_nothing_section(
+            sections, omitted, budget, "Dependency vulnerabilities", block
+        )
+    elif dependency_vulnerabilities:
+        lines = []
+        for package, version, vuln_ids in dependency_vulnerabilities:
+            shown = vuln_ids[:5]
+            ids = ", ".join(shown) + ("..." if len(vuln_ids) > len(shown) else "")
+            lines.append(
+                f"- `{package}` {version or 'unknown version'}: "
+                f"{len(vuln_ids)} known vulnerabilit{'y' if len(vuln_ids) == 1 else 'ies'} ({ids})"
+            )
+        block = "## Dependency vulnerabilities\n\n" + "\n".join(lines)
+        budget = _add_all_or_nothing_section(
+            sections, omitted, budget, "Dependency vulnerabilities", block
+        )
+    else:
+        block = "## Dependency vulnerabilities\n\nScanned this session -- no known vulnerabilities."
+        budget = _add_all_or_nothing_section(
+            sections, omitted, budget, "Dependency vulnerabilities", block
+        )
+
+    prompt = "\n\n".join(sections)
+    return DocContext(
+        node_id="code-health-summary", prompt=prompt, omitted=omitted, kind="code_health"
+    )

@@ -6,6 +6,7 @@ import pytest
 from semantic_vision.ai.context import DocContext
 from semantic_vision.ai.providers import (
     FILE_SYSTEM_PROMPT,
+    RECOMMENDATIONS_SYSTEM_PROMPT,
     SYSTEM_PROMPT,
     ProviderError,
     list_ollama_models,
@@ -18,6 +19,13 @@ CONTEXT = DocContext(
 
 FILE_CONTEXT = DocContext(
     node_id="app.py", prompt="## File\n\n`app.py`", omitted=[], kind="file"
+)
+
+CODE_HEALTH_CONTEXT = DocContext(
+    node_id="code-health-summary",
+    prompt="## Top complexity risks\n\n- `handler (app.py)`: complexity 9, call-chain depth 2",
+    omitted=[],
+    kind="code_health",
 )
 
 
@@ -85,6 +93,23 @@ def test_stream_documentation_uses_the_file_system_prompt_for_a_file_doc(monkeyp
 
     assert captured["messages"][0] == {"role": "system", "content": FILE_SYSTEM_PROMPT}
     assert FILE_SYSTEM_PROMPT != SYSTEM_PROMPT
+
+
+def test_stream_documentation_uses_the_recommendations_system_prompt_for_a_code_health_doc(
+    monkeypatch,
+):
+    captured = {}
+
+    def fake_completion(**kwargs):
+        captured.update(kwargs)
+        return iter([_FakeChunk("ok")])
+
+    monkeypatch.setattr("semantic_vision.ai.providers.litellm.completion", fake_completion)
+
+    list(stream_documentation("ollama", CODE_HEALTH_CONTEXT))
+
+    assert captured["messages"][0] == {"role": "system", "content": RECOMMENDATIONS_SYSTEM_PROMPT}
+    assert RECOMMENDATIONS_SYSTEM_PROMPT not in (SYSTEM_PROMPT, FILE_SYSTEM_PROMPT)
 
 
 def test_stream_documentation_rejects_unknown_provider():

@@ -1,38 +1,49 @@
 import type { DependencyRisk } from '../api/types'
 import { colors, radius, spacing } from '../theme'
 
+// Tiles are narrower than the old full-width cards -- capping badges here
+// keeps a heavily-vulnerable package's tile from growing much taller than
+// its neighbors in the grid. The full, uncapped list is always available in
+// `CodeHealthDetail`'s canvas header once this tile is selected.
+const MAX_VULNERABILITY_BADGES = 4
+
 interface RankedDependencyRowProps {
   risk: DependencyRisk
+  selected: boolean
+  onSelect: () => void
 }
 
-/** Package-keyed, not `GraphNode`-keyed -- a package isn't a graph node, so
- * this can't reuse `RankedFunctionRow` (which assumes one, for its dot
- * color and click-to-select-on-canvas behavior). No click/selection here
- * either: a package has no neighborhood graph to jump to the way a
- * function does, so vulnerability ids are just links out to osv.dev's own
- * advisory pages instead. Not used inside `VirtualList`: unlike a
- * function list (which can run into the thousands), the packages here are
- * bounded by what a manifest declares, realistically never near
- * `VIRTUALIZE_THRESHOLD` -- and a package's vulnerability badges wrap
- * across multiple lines rather than clipping to one (a package can have
- * many advisories), so this row has no fixed height for a virtualizer to
- * assume in the first place. */
-export function RankedDependencyRow({ risk }: RankedDependencyRowProps) {
+/** One grid tile in `DependencyRiskReportPane`. Package-keyed, not
+ * `GraphNode`-keyed -- a package isn't a graph node, so this can't reuse
+ * `RankedFunctionRow` directly, though it mirrors that component's
+ * selected/onSelect shape. Selecting a tile drives `CodeHealthDetail`'s
+ * canvas: it renders `PackageImportersGraph` for whichever package is
+ * selected, showing which of this repo's own files actually import it --
+ * so a package's vulnerability badges here link out to osv.dev, while
+ * clicking the tile itself answers "where in my code am I exposed to
+ * this." */
+export function RankedDependencyRow({ risk, selected, onSelect }: RankedDependencyRowProps) {
   const hasVulnerabilities = risk.vulnerabilities.length > 0
+  const shownVulnerabilities = risk.vulnerabilities.slice(0, MAX_VULNERABILITY_BADGES)
+  const hiddenCount = risk.vulnerabilities.length - shownVulnerabilities.length
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={onSelect}
+      className="sv-interactive"
       style={{
         width: '100%',
         boxSizing: 'border-box',
+        textAlign: 'left',
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.xs,
-        background: colors.bgPanel,
-        border: `1px solid ${hasVulnerabilities ? colors.danger : colors.border}`,
+        background: selected ? colors.infoBg : colors.bgPanel,
+        border: `1px solid ${selected ? colors.accent : hasVulnerabilities ? colors.danger : colors.border}`,
         borderRadius: radius.md,
         padding: `${spacing.sm}px ${spacing.md}px`,
-        marginBottom: spacing.xs,
+        cursor: 'pointer',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: spacing.xs, flexWrap: 'wrap' }}>
@@ -45,13 +56,10 @@ export function RankedDependencyRow({ risk }: RankedDependencyRowProps) {
       </div>
       {hasVulnerabilities ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {risk.vulnerabilities.map((vuln) => (
-            <a
+          {shownVulnerabilities.map((vuln) => (
+            <span
               key={vuln.id}
-              href={`https://osv.dev/vulnerability/${vuln.id}`}
-              target="_blank"
-              rel="noreferrer"
-              className="sv-interactive"
+              title={vuln.id}
               style={{
                 fontSize: 10,
                 fontWeight: 600,
@@ -59,16 +67,24 @@ export function RankedDependencyRow({ risk }: RankedDependencyRowProps) {
                 borderRadius: radius.full,
                 border: `1px solid ${colors.danger}`,
                 color: colors.danger,
-                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: 120,
               }}
             >
               {vuln.id}
-            </a>
+            </span>
           ))}
+          {hiddenCount > 0 && (
+            <span style={{ fontSize: 10, fontWeight: 600, color: colors.textMuted, padding: '1px 4px' }}>
+              +{hiddenCount} more
+            </span>
+          )}
         </div>
       ) : (
         <span style={{ fontSize: 11, color: colors.success }}>No known vulnerabilities</span>
       )}
-    </div>
+    </button>
   )
 }

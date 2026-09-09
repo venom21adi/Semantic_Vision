@@ -5,6 +5,7 @@ import type {
   ComplexityDiffResponse,
   ComplexityRefDiffResponse,
   ComplexityScore,
+  DependencyRisk,
   GraphEdge,
   GraphNode,
 } from '../api/types'
@@ -31,6 +32,9 @@ function renderDetail(overrides: Partial<React.ComponentProps<typeof CodeHealthD
     graphEdges: [],
     selectedNodeId: null,
     onSelectNode: vi.fn(),
+    dependencyRisks: [],
+    selectedPackage: null,
+    recommendations: { status: 'idle' },
     ...overrides,
   }
   return { ...render(<CodeHealthDetail {...props} />), props }
@@ -313,5 +317,92 @@ describe('CodeHealthDetail', () => {
     renderDetail({ healthTab: 'dead-code', selectedNodeId: 'app.py::handler' })
 
     expect(screen.getByTestId('rf__node-app.py::handler')).toBeInTheDocument()
+  })
+
+  describe('Dependencies tab', () => {
+    it('shows a placeholder when no package is selected, ignoring any leftover function selection', () => {
+      renderDetail({ healthTab: 'dependencies', selectedNodeId: 'app.py::handler' })
+
+      expect(
+        screen.getByText('Select a package to see which of your own files import it.'),
+      ).toBeInTheDocument()
+      expect(screen.queryByText(/Call relationships for/)).not.toBeInTheDocument()
+    })
+
+    it('renders the selected package\'s detail, vulnerability links, and importer graph', () => {
+      const risks: DependencyRisk[] = [
+        {
+          package: 'requests',
+          version: '2.31.0',
+          ecosystem: 'PyPI',
+          vulnerabilities: [{ id: 'GHSA-fake-1234' }],
+          importer_node_ids: ['app.py::handler'],
+        },
+      ]
+      renderDetail({ healthTab: 'dependencies', dependencyRisks: risks, selectedPackage: 'requests' })
+
+      // "requests" renders twice -- once in the detail header, once as the
+      // package node's own label inside `PackageImportersGraph`.
+      expect(screen.getAllByText('requests').length).toBeGreaterThanOrEqual(2)
+      expect(screen.getByText('2.31.0 · PyPI')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'GHSA-fake-1234' })).toHaveAttribute(
+        'href',
+        'https://osv.dev/vulnerability/GHSA-fake-1234',
+      )
+      expect(screen.getByText('handler')).toBeInTheDocument()
+    })
+
+    it('shows a no-importers note instead of an empty graph when nothing in the repo imports the package', () => {
+      const risks: DependencyRisk[] = [
+        {
+          package: 'unused-pkg',
+          version: '1.0.0',
+          ecosystem: 'PyPI',
+          vulnerabilities: [],
+          importer_node_ids: [],
+        },
+      ]
+      renderDetail({ healthTab: 'dependencies', dependencyRisks: risks, selectedPackage: 'unused-pkg' })
+
+      expect(
+        screen.getByText('No files in this repo import this package directly.'),
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Recommendations tab', () => {
+    it('shows a placeholder before anything has been generated, ignoring any leftover function selection', () => {
+      renderDetail({ healthTab: 'recommendations', selectedNodeId: 'app.py::handler' })
+
+      expect(screen.getByText(/Choose a provider and click Generate/)).toBeInTheDocument()
+      expect(screen.queryByText(/Call relationships for/)).not.toBeInTheDocument()
+    })
+
+    it('shows a spinner while generating before any content has streamed in', () => {
+      renderDetail({
+        healthTab: 'recommendations',
+        recommendations: { status: 'generating', markdown: '' },
+      })
+
+      expect(screen.getByText('Generating…')).toBeInTheDocument()
+    })
+
+    it('renders the streamed markdown while generating', () => {
+      renderDetail({
+        healthTab: 'recommendations',
+        recommendations: { status: 'generating', markdown: '## Top priorities' },
+      })
+
+      expect(screen.getByRole('heading', { name: 'Top priorities', level: 2 })).toBeInTheDocument()
+    })
+
+    it('renders the loaded markdown', () => {
+      renderDetail({
+        healthTab: 'recommendations',
+        recommendations: { status: 'loaded', markdown: '## Quick wins' },
+      })
+
+      expect(screen.getByRole('heading', { name: 'Quick wins', level: 2 })).toBeInTheDocument()
+    })
   })
 })

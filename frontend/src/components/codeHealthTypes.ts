@@ -112,3 +112,16 @@ export type HealthTab =
   | 'coverage'
   | 'duplicates'
   | 'dependencies'
+  | 'recommendations'
+
+/** The Recommendations tab's data -- unlike every ranked-list tab, this
+ * isn't fetched eagerly or lazily-on-first-open; it only ever starts from
+ * an explicit "Generate" click (mirrors `DependencyRiskState`'s own
+ * opt-in shape, since a click here can itself trigger a real AI-provider
+ * call). `markdown` accumulates across `'generating'` -> `'loaded'` the
+ * same way `DocPane`'s own streaming pane does. */
+export type RecommendationsState =
+  | { status: 'idle' }
+  | { status: 'generating'; markdown: string }
+  | { status: 'loaded'; markdown: string }
+  | { status: 'error'; message: string }

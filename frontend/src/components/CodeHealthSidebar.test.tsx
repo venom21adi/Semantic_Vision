@@ -52,6 +52,17 @@ function renderSidebar(overrides: Partial<Omit<SidebarProps, 'healthTab' | 'onHe
     onLoadDuplicates: vi.fn(),
     dependencyRisk: { status: 'idle' },
     onScanDependencies: vi.fn(),
+    selectedPackage: null,
+    onSelectPackage: vi.fn(),
+    recommendations: { status: 'idle' },
+    onGenerateRecommendations: vi.fn(),
+    docProvider: 'ollama',
+    onDocProviderChange: vi.fn(),
+    ollamaModels: [],
+    ollamaModelsLoading: false,
+    ollamaModel: '',
+    onOllamaModelChange: vi.fn(),
+    onRefreshOllamaModels: vi.fn(),
     ...overrides,
   }
   return { ...render(<Harness {...props} />), props }
@@ -604,7 +615,13 @@ describe('CodeHealthSidebar', () => {
 
     it('renders the risk list once loaded', async () => {
       const risks: DependencyRisk[] = [
-        { package: 'requests', version: '2.31.0', ecosystem: 'PyPI', vulnerabilities: [] },
+        {
+          package: 'requests',
+          version: '2.31.0',
+          ecosystem: 'PyPI',
+          vulnerabilities: [],
+          importer_node_ids: [],
+        },
       ]
       const user = userEvent.setup()
       renderSidebar({
@@ -621,6 +638,48 @@ describe('CodeHealthSidebar', () => {
       renderSidebar()
 
       await user.click(screen.getByRole('button', { name: 'Dependencies' }))
+      await user.click(screen.getByRole('button', { name: 'Complexity' }))
+
+      expect(screen.getByText('handler')).toBeInTheDocument()
+    })
+  })
+
+  describe('Recommendations tab', () => {
+    it('does not generate automatically when the tab is opened', async () => {
+      const user = userEvent.setup()
+      const { props } = renderSidebar()
+
+      await user.click(screen.getByRole('button', { name: 'Recommendations' }))
+
+      expect(props.onGenerateRecommendations).not.toHaveBeenCalled()
+    })
+
+    it('calls onGenerateRecommendations when the Generate button is clicked', async () => {
+      const user = userEvent.setup()
+      const { props } = renderSidebar()
+
+      await user.click(screen.getByRole('button', { name: 'Recommendations' }))
+      await user.click(screen.getByRole('button', { name: 'Generate recommendations' }))
+
+      expect(props.onGenerateRecommendations).toHaveBeenCalledTimes(1)
+    })
+
+    it('notes that dependency data is available once a scan has completed', async () => {
+      const user = userEvent.setup()
+      renderSidebar({
+        dependencyRisk: { status: 'loaded', result: { available: true, risks: [], message: null } },
+      })
+
+      await user.click(screen.getByRole('button', { name: 'Recommendations' }))
+
+      expect(screen.getByText(/Includes this session's dependency scan results/)).toBeInTheDocument()
+    })
+
+    it('keeps the complexity list intact when switching back from Recommendations', async () => {
+      const user = userEvent.setup()
+      renderSidebar()
+
+      await user.click(screen.getByRole('button', { name: 'Recommendations' }))
       await user.click(screen.getByRole('button', { name: 'Complexity' }))
 
       expect(screen.getByText('handler')).toBeInTheDocument()

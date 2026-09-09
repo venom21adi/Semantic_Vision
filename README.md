@@ -102,11 +102,11 @@ returns you to the normal call graph.
 two persistent, browser-tab-style lenses on the same repo, not a panel
 you open and close. Switching to it replaces the sidebar with a
 filterable, sortable ranked list instead of leaving the graph's file
-tree sitting there unused next to a second navigator. Six tabs share
+tree sitting there unused next to a second navigator. Seven tabs share
 that list, each backed by its own `GET`/`POST /api/...` endpoint (see
 [guides/mcp-server.md](guides/mcp-server.md) for the matching MCP tools)
-— everything below runs locally against your own source, with one
-explicit, opt-in exception noted at the end.
+— everything below runs locally against your own source, with two
+explicit, opt-in exceptions noted below.
 
 ![The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats and a git-ref diff picker](assets/code-health.png)
 
@@ -184,9 +184,29 @@ AI-provider doc request, so it's opt-in every time: check the consent
 box, click **Scan dependencies**, and only then does anything leave your
 machine (`POST /api/dependencies/risk` itself rejects the request
 server-side if you didn't explicitly confirm, regardless of what any
-client sends):
+client sends). Results render as a grid, sorted vulnerable-first — click
+a package to see, in the same relationship-graph panel every other tab
+uses, exactly which of *your own* files actually import it, not just
+that it's declared somewhere:
 
-![The Dependencies tab after a real scan: known vulnerabilities in packages this repo actually imports, via osv.dev](assets/code-health-dependencies.png)
+![The Dependencies tab after a real scan: a vulnerable-first grid of packages, with the selected package's blast radius — which of this repo's own files import it — graphed alongside its full vulnerability list](assets/code-health-dependencies.png)
+
+### Recommendations — one AI pass across every signal above
+
+Every tab above answers one question in isolation. **Recommendations**
+asks an AI provider (the same local-[Ollama](https://ollama.com)/OpenAI/
+Anthropic choice AI docs already use) to read the real complexity,
+hotspot, coverage, and duplicate findings for your repo together and
+prioritize — a function that's both a hotspot *and* part of a duplicate
+group is a stronger signal than either fact alone, the kind of
+correlation that's easy to miss skimming five separate ranked lists one
+at a time. Dependency findings are folded in automatically once you've
+scanned this session, but generating a recommendation never triggers
+that scan itself — the osv.dev call stays exactly as opt-in as it is on
+its own tab; clicking Generate here only ever talks to your chosen AI
+provider, the same one AI docs already talk to.
+
+![The Recommendations tab: a prioritized, AI-generated punch list combining real complexity, hotspot, coverage, and duplicate findings for this repo, with dependency data folded in from an earlier scan](assets/code-health-recommendations.png)
 
 ## <img src="assets/icons/data-lineage.svg" width="22" height="22" align="absmiddle" alt=""/> Code-to-data lineage
 
@@ -268,9 +288,11 @@ nothing's running, it spawns its own backend and cleans it up on exit.
 `ingest_coverage`, `get_coverage_risk`, `get_duplicates`, `get_git_refs`,
 `get_flowchart`, and `get_function_source` cover the same ground the UI
 does — see [guides/mcp-server.md](guides/mcp-server.md) for the full tool
-reference, client config examples, and what's deliberately left out (the
-one exception: dependency/security-risk scanning stays web-app-only,
-since it's the one feature here that makes a live outbound network call).
+reference, client config examples, and what's deliberately left out: both
+dependency/security-risk scanning and AI-generated Recommendations stay
+web-app-only, since neither an outbound network call nor client-supplied
+scan data an agent didn't ask for is something a tool call should trigger
+silently.
 
 
 ## ✨ Features
@@ -299,8 +321,11 @@ by hand.
 lens ranks every function by complexity, by hotspot score (complexity ×
 how often it actually changes), by coverage-vs-blast-radius risk, lists
 dead-code and near-duplicate candidates, and flags known vulnerabilities
-in packages you actually import; click any function to see exactly who
-calls it and what it calls, live.
+in packages you actually import — click a vulnerable package to see
+exactly which of your own files import it; click any function to see
+exactly who calls it and what it calls, live. An AI pass across all of
+it then prioritizes what to actually work on first, correlating signals
+a person skimming five ranked lists one at a time would likely miss.
 
 <img src="assets/icons/complexity-report.svg" width="16" height="16" align="absmiddle" alt=""/> **Judge a change, not just a snapshot** — Code Health compares
 complexity against the last time you looked, any commit or branch, or
@@ -357,7 +382,7 @@ What works today, per language:
 | Search | ✅ | ✅ | ✅ |
 | Persisted layout & view state | ✅ | ✅ | ✅ |
 | Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ |
-| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies) | ✅ | ✅ | ✅ |
+| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations) | ✅ | ✅ | ✅ |
 | AI-generated documentation | ✅ | ✅ | ✅ |
 | Execution flowcharts | ✅ | ✅ | ✅ |
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |

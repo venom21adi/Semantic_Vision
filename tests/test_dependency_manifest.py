@@ -3,6 +3,7 @@ from pathlib import Path
 from semantic_vision.analysis.dependency_manifest import (
     DeclaredPackage,
     find_declared_dependencies,
+    find_package_importers,
     parse_package_json,
     parse_pyproject,
     parse_requirements_txt,
@@ -174,3 +175,54 @@ def test_resolve_used_dependencies_resolves_a_scoped_package_import_with_a_sub_p
     used = resolve_used_dependencies(external_targets, declared)
 
     assert [pkg.name for pkg in used] == ["@babel/core"]
+
+
+def test_find_package_importers_maps_a_package_to_its_importing_source_ids():
+    # Computed for every external edge, not just used-and-declared ones --
+    # `routes.py` filters down to the packages it actually needs afterwards,
+    # the same "compute broadly, filter at the call site" split
+    # `resolve_used_dependencies` itself doesn't need since it's already
+    # given only external targets.
+    external_edges = [
+        ("app.py", "external::requests.sessions"),
+        ("other.py", "external::os.path"),
+    ]
+
+    importers = find_package_importers(external_edges)
+
+    assert importers["requests"] == ["app.py"]
+    assert importers["os"] == ["other.py"]
+
+
+def test_find_package_importers_collects_multiple_distinct_importers_sorted():
+    external_edges = [
+        ("z_file.py", "external::requests"),
+        ("a_file.py", "external::requests.sessions"),
+    ]
+
+    importers = find_package_importers(external_edges)
+
+    assert importers["requests"] == ["a_file.py", "z_file.py"]
+
+
+def test_find_package_importers_deduplicates_repeated_imports_from_the_same_source():
+    external_edges = [
+        ("app.py", "external::requests.sessions"),
+        ("app.py", "external::requests.exceptions"),
+    ]
+
+    importers = find_package_importers(external_edges)
+
+    assert importers["requests"] == ["app.py"]
+
+
+def test_find_package_importers_resolves_a_scoped_npm_package_by_its_full_scope_slash_name():
+    external_edges = [("src/app.ts", "external::@babel/core/lib/transform")]
+
+    importers = find_package_importers(external_edges)
+
+    assert importers == {"@babel/core": ["src/app.ts"]}
+
+
+def test_find_package_importers_returns_empty_dict_for_no_edges():
+    assert find_package_importers([]) == {}

@@ -212,6 +212,12 @@ class DependencyRisk(BaseModel):
     version: str | None
     ecosystem: str
     vulnerabilities: list[VulnerabilitySummary] = []
+    importer_node_ids: list[str] = []
+    """Node ids of this repo's own source whose `external::` import edges
+    resolved to this package -- the package's blast radius inside the
+    codebase, not just a vulnerability list. In practice always file node
+    ids, never function ones (imports are file-attributed, not function-
+    attributed). See `dependency_manifest.find_package_importers`."""
 
 
 class DependencyRiskResponse(BaseModel):
@@ -222,6 +228,23 @@ class DependencyRiskResponse(BaseModel):
     empty `risks` list, not unavailable."""
     risks: list[DependencyRisk] = []
     message: str | None = None
+
+
+class CodeHealthRecommendationsRequest(BaseModel):
+    provider: Literal["ollama", "openai", "anthropic"]
+    model: str | None = None
+    """Same meaning as `GenerateDocRequest.model` -- see
+    `ai.providers.stream_documentation`."""
+    dependency_risks: list[DependencyRisk] | None = None
+    """Client-supplied, never fetched by this route -- dependency scanning
+    is this app's one opt-in, live-network-call feature
+    (`DependencyRiskRequest.confirm_network_access`), and generating
+    recommendations must not silently trigger a second osv.dev query just
+    because the user clicked a button on a different tab. `None` means
+    dependency scanning hasn't been run this session; the recommendations
+    context reflects that explicitly rather than silently omitting the
+    signal. If supplied, only entries with at least one vulnerability are
+    used -- a clean package contributes nothing a recommendation needs."""
 
 
 class DbtManifestIngestRequest(BaseModel):

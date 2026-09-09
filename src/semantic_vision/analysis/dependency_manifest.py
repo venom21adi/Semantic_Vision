@@ -196,3 +196,26 @@ def resolve_used_dependencies(
     resolved = [declared[name] for name in used_names if name in declared]
     resolved.sort(key=lambda pkg: pkg.name.lower())
     return resolved
+
+
+def find_package_importers(external_edges: Iterable[tuple[str, str]]) -> dict[str, list[str]]:
+    """Maps each package name (lowercased, matching `resolve_used_dependencies`'s
+    own key convention) to the sorted node ids of this repo's own source
+    whose `external::` import edge resolved to it -- a package's blast
+    radius inside the codebase, not just whether it's used at all. In
+    practice these are always file node ids, never function ones: every
+    `EdgeKind.IMPORTS` edge (`resolver/imports.py`) is attributed to the
+    file it appears in, not a specific function inside it. `external_edges`
+    is `(source_node_id, target_qualname)` pairs (the qualname still
+    carrying its `external::` prefix, stripped here the same way
+    `resolve_used_dependencies` does) -- unlike that function, this one
+    needs the edge's source too, so it can't reuse its `external_targets`
+    parameter as-is."""
+    importers: dict[str, set[str]] = {}
+    for source, target in external_edges:
+        qualname = target.removeprefix("external::")
+        top_level = _package_name_from_qualname(qualname)
+        if not top_level:
+            continue
+        importers.setdefault(top_level.lower(), set()).add(source)
+    return {name: sorted(sources) for name, sources in importers.items()}

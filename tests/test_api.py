@@ -1467,6 +1467,7 @@ def test_dependency_risk_cross_references_actually_imported_and_declared_package
     assert len(body["risks"]) == 1
     assert body["risks"][0]["package"] == "requests"
     assert body["risks"][0]["vulnerabilities"] == [{"id": "GHSA-fake-1234"}]
+    assert body["risks"][0]["importer_node_ids"] == ["app.py"]
 
 
 def test_dependency_risk_degrades_gracefully_on_an_osv_query_failure(tmp_path: Path, monkeypatch):
@@ -2227,3 +2228,129 @@ def test_db_connection_ingest_invalid_connection_string_returns_400():
     )
 
     assert resp.status_code == 400
+
+
+def test_code_health_recommendations_requires_prior_parse():
+    resp = client.post(
+        "/api/code-health/recommendations",
+        params={"path": str(FIXTURES / "simple_repo")},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 404
+
+
+def test_code_health_recommendations_streams_content(monkeypatch):
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def fake_stream(provider, context, model=None):
+        assert provider == "ollama"
+        assert context.kind == "code_health"
+        yield "## Top priorities\n\n"
+        yield "- Refactor `greet`."
+
+    monkeypatch.setattr(routes_module, "stream_documentation", fake_stream)
+
+    resp = client.post(
+        "/api/code-health/recommendations",
+        params={"path": repo_path},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.text == "## Top priorities\n\n- Refactor `greet`."
+
+
+def test_code_health_recommendations_context_omits_coverage_and_dependencies_by_default(
+    monkeypatch,
+):
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    captured = {}
+
+    def fake_stream(provider, context, model=None):
+        captured["prompt"] = context.prompt
+        yield "ok"
+
+    monkeypatch.setattr(routes_module, "stream_documentation", fake_stream)
+
+    resp = client.post(
+        "/api/code-health/recommendations",
+        params={"path": repo_path},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 200
+    assert "No coverage report ingested this session." in captured["prompt"]
+    assert "Not scanned this session." in captured["prompt"]
+
+
+def test_code_health_recommendations_context_includes_client_supplied_dependency_risks(
+    monkeypatch,
+):
+    """Dependency data is never fetched by this route itself -- see the
+    route's own docstring -- so it must come through only when the client
+    supplies it, exercising the one field that isn't just read straight
+    from `RepoCache`."""
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    captured = {}
+
+    def fake_stream(provider, context, model=None):
+        captured["prompt"] = context.prompt
+        yield "ok"
+
+    monkeypatch.setattr(routes_module, "stream_documentation", fake_stream)
+
+    resp = client.post(
+        "/api/code-health/recommendations",
+        params={"path": repo_path},
+        json={
+            "provider": "ollama",
+            "dependency_risks": [
+                {
+                    "package": "litellm",
+                    "version": "1.60.0",
+                    "ecosystem": "PyPI",
+                    "vulnerabilities": [{"id": "GHSA-fake-1234"}],
+                    "importer_node_ids": [],
+                },
+                {
+                    "package": "httpx",
+                    "version": "0.28.1",
+                    "ecosystem": "PyPI",
+                    "vulnerabilities": [],
+                    "importer_node_ids": [],
+                },
+            ],
+        },
+    )
+
+    assert resp.status_code == 200
+    assert "`litellm` 1.60.0" in captured["prompt"]
+    assert "GHSA-fake-1234" in captured["prompt"]
+    # A clean package (no vulnerabilities) contributes nothing to the list.
+    assert "httpx" not in captured["prompt"]
+
+
+def test_code_health_recommendations_provider_failure_returns_502(monkeypatch):
+    from semantic_vision.ai.providers import ProviderError
+
+    repo_path = str(FIXTURES / "simple_repo")
+    client.post("/api/parse-repo", json={"path": repo_path})
+
+    def failing_stream(provider, context, model=None):
+        raise ProviderError("boom")
+
+    monkeypatch.setattr(routes_module, "stream_documentation", failing_stream)
+
+    resp = client.post(
+        "/api/code-health/recommendations",
+        params={"path": repo_path},
+        json={"provider": "ollama"},
+    )
+
+    assert resp.status_code == 502

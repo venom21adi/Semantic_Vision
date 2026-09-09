@@ -3,9 +3,15 @@ from pathlib import Path
 from semantic_vision.ai.context import (
     _decorators_of,
     _render_ts_signature,
+    assemble_code_health_context,
     assemble_context,
     assemble_file_context,
 )
+from semantic_vision.analysis.complexity import ComplexityScore
+from semantic_vision.analysis.coverage import CoverageRiskScore
+from semantic_vision.analysis.duplicates import DuplicateGroup
+from semantic_vision.analysis.hotspots import HotspotScore
+from semantic_vision.models import Node, NodeKind
 from semantic_vision.parser.javascript_extractor import parse_tree
 from semantic_vision.repo_parser import parse_repository
 from semantic_vision.ts_locate import _build_index, find_def_node
@@ -512,4 +518,160 @@ def test_java_file_context_never_inlines_a_method_body():
     context = assemble_file_context(result, "Service.java")
 
     assert "Helper.helper(value)" not in context.prompt
+
+
+def _fn_node(node_id: str, label: str) -> Node:
+    return Node(
+        id=node_id, kind=NodeKind.FUNCTION, label=label, file="app.py", line_start=1, line_end=2
+    )
+
+
+def test_code_health_context_is_kind_code_health():
+    context = assemble_code_health_context({}, [], None, [], None, {})
+
+    assert context.kind == "code_health"
+
+
+def test_code_health_context_ranks_complexity_by_score_descending():
+    nodes_by_id = {"app.py::a": _fn_node("app.py::a", "a"), "app.py::b": _fn_node("app.py::b", "b")}
+    complexity_index = {
+        "app.py::a": ComplexityScore(
+            node_id="app.py::a", cyclomatic_complexity=3, call_chain_depth=0, has_nested_loops=False
+        ),
+        "app.py::b": ComplexityScore(
+            node_id="app.py::b", cyclomatic_complexity=9, call_chain_depth=1, has_nested_loops=False
+        ),
+    }
+
+    context = assemble_code_health_context(complexity_index, [], None, [], None, nodes_by_id)
+
+    assert "## Top complexity risks" in context.prompt
+    section = context.prompt.split("## Top complexity risks")[1].split("## ")[0]
+    assert section.index("`b (app.py)`") < section.index("`a (app.py)`")
+
+
+def test_code_health_context_reports_coverage_not_ingested_when_none():
+    context = assemble_code_health_context({}, [], None, [], None, {})
+
+    assert "## Coverage risk" in context.prompt
+    assert "No coverage report ingested this session." in context.prompt
+
+
+def test_code_health_context_includes_coverage_risk_scores_when_present():
+    nodes_by_id = {"app.py::a": _fn_node("app.py::a", "a")}
+    coverage_scores = [
+        CoverageRiskScore(
+            node_id="app.py::a",
+            cyclomatic_complexity=5,
+            blast_radius=2,
+            coverage_ratio=0.25,
+            risk_score=11.25,
+        )
+    ]
+
+    context = assemble_code_health_context({}, [], coverage_scores, [], None, nodes_by_id)
+
+    section = context.prompt.split("## Coverage risk")[1].split("## ")[0]
+    assert "`a (app.py)`" in section
+    assert "risk 11.2" in section
+    assert "coverage 25%" in section
+
+
+def test_code_health_context_distinguishes_no_coverage_data_from_zero_percent():
+    nodes_by_id = {"app.py::a": _fn_node("app.py::a", "a")}
+    coverage_scores = [
+        CoverageRiskScore(
+            node_id="app.py::a",
+            cyclomatic_complexity=5,
+            blast_radius=0,
+            coverage_ratio=None,
+            risk_score=5.0,
+        )
+    ]
+
+    context = assemble_code_health_context({}, [], coverage_scores, [], None, nodes_by_id)
+
+    section = context.prompt.split("## Coverage risk")[1].split("## ")[0]
+    assert "coverage no data" in section
+
+
+def test_code_health_context_distinguishes_ingested_but_nothing_scored_from_not_ingested():
+    context = assemble_code_health_context({}, [], [], [], None, {})
+
+    section = context.prompt.split("## Coverage risk")[1].split("## ")[0]
+    assert "ingested, but nothing was scored" in section
+    assert "No coverage report ingested" not in section
+
+
+def test_code_health_context_reports_dependencies_not_scanned_when_none():
+    context = assemble_code_health_context({}, [], None, [], None, {})
+
+    assert "## Dependency vulnerabilities" in context.prompt
+    assert "Not scanned this session." in context.prompt
+
+
+def test_code_health_context_reports_clean_scan_for_an_empty_dependency_list():
+    context = assemble_code_health_context({}, [], None, [], [], {})
+
+    section = context.prompt.split("## Dependency vulnerabilities")[1]
+    assert "no known vulnerabilities" in section
+    assert "Not scanned" not in section
+
+
+def test_code_health_context_includes_dependency_vulnerabilities_when_present():
+    dependency_vulnerabilities = [("litellm", "1.60.0", ["GHSA-fake-1234", "PYSEC-fake-5678"])]
+
+    context = assemble_code_health_context({}, [], None, [], dependency_vulnerabilities, {})
+
+    section = context.prompt.split("## Dependency vulnerabilities")[1]
+    assert "`litellm` 1.60.0" in section
+    assert "GHSA-fake-1234" in section
+    assert "2 known vulnerabilities" in section
+
+
+def test_code_health_context_includes_duplicate_groups():
+    nodes_by_id = {"app.py::a": _fn_node("app.py::a", "a"), "app.py::b": _fn_node("app.py::b", "b")}
+    duplicate_groups = [DuplicateGroup(node_ids=["app.py::a", "app.py::b"], size=2)]
+
+    context = assemble_code_health_context({}, [], None, duplicate_groups, None, nodes_by_id)
+
+    assert "## Duplicate functions" in context.prompt
+    section = context.prompt.split("## Duplicate functions")[1].split("## ")[0]
+    assert "2 functions with identical structure" in section
+    assert "`a (app.py)`" in section
+    assert "`b (app.py)`" in section
+
+
+def test_code_health_context_includes_hotspots_ranked_by_score():
+    nodes_by_id = {"app.py::a": _fn_node("app.py::a", "a")}
+    hotspot_scores = [
+        HotspotScore(node_id="app.py::a", cyclomatic_complexity=4, change_count=5, hotspot_score=20)
+    ]
+
+    context = assemble_code_health_context({}, hotspot_scores, None, [], None, nodes_by_id)
+
+    section = context.prompt.split("## Hotspots")[1].split("## ")[0]
+    assert "`a (app.py)`" in section
+    assert "hotspot score 20" in section
+
+
+def test_code_health_context_drops_least_important_sections_when_over_budget():
+    """Sections are added in priority order -- complexity, hotspots,
+    coverage, duplicates, dependencies -- so a tight budget should drop
+    from the *bottom* (dependencies first), not the top."""
+    nodes_by_id = {"app.py::a": _fn_node("app.py::a", "a")}
+    complexity_index = {
+        "app.py::a": ComplexityScore(
+            node_id="app.py::a", cyclomatic_complexity=9, call_chain_depth=1, has_nested_loops=False
+        )
+    }
+    dependency_vulnerabilities = [("some-package", "1.0.0", ["GHSA-x"])]
+
+    context = assemble_code_health_context(
+        complexity_index, [], None, [], dependency_vulnerabilities, nodes_by_id, max_tokens=20
+    )
+
+    assert "## Top complexity risks" in context.prompt
+    assert "## Dependency vulnerabilities" not in context.prompt
+    assert "Dependency vulnerabilities" in context.omitted
     assert "requireNonNull" not in context.prompt

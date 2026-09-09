@@ -115,3 +115,14 @@ explicit, per-request consent field the REST API itself enforces
 server-side. An agent silently triggering a real network call needs its
 own consent design — not assumed away by wrapping it as one more tool
 call — so it stays a web-app-only feature for now.
+
+The web app's "Recommendations" tab (an AI pass across complexity,
+hotspots, coverage, and duplicates, with dependency findings folded in
+only if you've already scanned this session) is left out for the same
+family of reasons: it streams a model response rather than returning
+one structured answer, and it can carry client-supplied dependency-scan
+data an agent has no way to have obtained itself without the same
+consent question above. Neither a streaming tool call nor a network-
+consent decision an agent should make silently fits this server's own
+"answer a structural question" shape well, so this one stays web-app-only
+too.
