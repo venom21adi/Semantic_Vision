@@ -133,6 +133,12 @@
       opacity: 1 !important; transform: none !important; transition: none !important;
     }
     .rail-glow, .node, .workflow-step { animation: none !important; }
+    .bento-graph .dot, .bento-impact .ring, .bento-flow .dot, .bento-bars rect,
+    .bento-docs .spark, .bento-docs .tline, .bento-lineage .dot {
+      animation: none !important;
+      opacity: 1 !important;
+    }
+    .bento-docs .tline { stroke-dashoffset: 0 !important; }
   }
 
   /* ---------- Nav ---------- */
@@ -573,97 +579,100 @@
     transform: none;
   }
 
-  /* ---------- Solution showcase (auto-cycling tabs + stage) ----------
-     A different motion metaphor from the MCP orbit -- a vertical tab
-     rail with a progress bar that auto-advances through each lens, and
-     a stage panel that swaps in a big icon + short copy. Click a tab to
-     pin it and stop the auto-advance, same pattern as the MCP wheel. */
-  .showcase {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 28px;
+  /* ---------- Feature bento ----------
+     Six cards, each with its own small always-on SVG animation (a
+     traveling dot along a call-graph edge, an impact "ping", a dot
+     moving through a flowchart, live-looking bars, a typing sparkle,
+     a dot flowing from code to table) -- motion lives in parallel inside
+     every card instead of one thing rotating through six states. */
+  .feature-bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .bento-card {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    padding: 10px;
+    padding: 22px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
   }
-  .showcase-tabs { display: flex; flex-direction: column; gap: 2px; position: relative; }
-  .showcase-tab {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-align: left;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 11px 12px;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-family: var(--font-ui);
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .showcase-tab:hover { background: var(--bg-panel-raised); }
-  .showcase-tab.is-active { background: var(--featured-tint); color: var(--text); border-color: var(--featured-border); }
-  .showcase-tab-icon {
-    width: 30px; height: 30px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    display: grid; place-items: center;
-    background: var(--bg-panel-raised);
-    color: var(--text-dim);
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .showcase-tab.is-active .showcase-tab-icon { background: var(--accent); color: #fff; }
-  .showcase-tab-icon svg { width: 15px; height: 15px; }
-  .showcase-tab-text { display: flex; flex-direction: column; gap: 1px; font-size: 13.5px; font-weight: 700; }
-  .showcase-tab-text em {
-    font-style: normal;
-    font-size: 10.5px;
+  .bento-card:hover { border-color: var(--featured-border); transform: translateY(-3px); }
+  .bento-visual { height: 84px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .bento-visual svg { width: 84px; height: 84px; overflow: visible; }
+  .bento-tag {
+    display: block;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--accent-text);
+    margin-bottom: 5px;
   }
-  .showcase-progress { height: 2px; background: var(--border-subtle); border-radius: 999px; margin: 8px 12px 4px; overflow: hidden; }
-  .showcase-progress i { display: block; height: 100%; width: 0%; background: var(--accent); border-radius: 999px; }
-  .showcase-progress i.is-animating { transition: width 2.6s linear; width: 100%; }
+  .bento-card h4 { margin: 0 0 6px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .bento-card p { margin: 0; font-size: 13.5px; color: var(--text-muted); }
 
-  .showcase-stage {
-    position: relative;
-    background: var(--bg-panel-raised);
-    border-radius: 14px;
-    min-height: 320px;
-    overflow: hidden;
+  /* Card 1 -- call graph: a dot travels each edge, in turn */
+  .bento-graph .node { fill: var(--bg-panel-raised); stroke: var(--text-dim); stroke-width: 1.4; }
+  .bento-graph .edge { stroke: var(--border); stroke-width: 1.3; }
+  .bento-graph .dot { fill: var(--accent); }
+  .bento-graph .dot-a { offset-path: path('M20 20 L70 32'); animation: bento-travel 2.4s linear infinite; }
+  .bento-graph .dot-b { offset-path: path('M20 20 L40 70'); animation: bento-travel 2.4s linear infinite; animation-delay: 0.8s; }
+  .bento-graph .dot-c { offset-path: path('M70 32 L40 70'); animation: bento-travel 2.4s linear infinite; animation-delay: 1.6s; }
+  @keyframes bento-travel {
+    0% { offset-distance: 0%; opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
   }
-  .showcase-stage::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 30% 20%, var(--hero-glow), transparent 60%);
-    pointer-events: none;
+
+  /* Card 2 -- impact: rings ping outward from a fixed core */
+  .bento-impact .ring { fill: none; stroke: var(--accent); stroke-width: 1.6; transform-box: fill-box; transform-origin: center; animation: bento-ping 2.6s ease-out infinite; opacity: 0; }
+  .bento-impact .ring2 { animation-delay: 0.9s; }
+  .bento-impact .core { fill: var(--accent); }
+  @keyframes bento-ping {
+    0% { transform: scale(0.4); opacity: 0.9; }
+    75% { opacity: 0; }
+    100% { transform: scale(2.2); opacity: 0; }
   }
-  .stage-panel {
-    display: none;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    height: 100%;
-    padding: 40px 44px;
-    position: relative;
+
+  /* Card 3 -- execution flow: a dot runs entry -> decision -> exit */
+  .bento-flow .shape { fill: var(--bg-panel-raised); stroke: var(--text-dim); stroke-width: 1.4; }
+  .bento-flow .edge { stroke: var(--border); stroke-width: 1.3; }
+  .bento-flow .dot { fill: var(--teal-light); offset-path: path('M45 10 L45 80'); animation: bento-travel-v 2.4s linear infinite; }
+  @keyframes bento-travel-v {
+    0% { offset-distance: 0%; opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
   }
-  .stage-panel.is-active { display: flex; animation: stage-in 0.45s ease; }
-  @keyframes stage-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .stage-icon {
-    width: 60px; height: 60px;
-    border-radius: 16px;
-    display: grid; place-items: center;
-    background: var(--accent-soft-bg);
-    color: var(--accent-text);
-    margin-bottom: 20px;
+
+  /* Card 4 -- code health: bars breathe like a live meter */
+  .bento-bars rect { fill: var(--accent); transform-box: fill-box; transform-origin: bottom; animation: bento-bar 1.8s ease-in-out infinite; }
+  .bento-bars rect:nth-child(1) { animation-delay: 0s; }
+  .bento-bars rect:nth-child(2) { animation-delay: 0.15s; }
+  .bento-bars rect:nth-child(3) { animation-delay: 0.3s; }
+  .bento-bars rect:nth-child(4) { animation-delay: 0.45s; }
+  @keyframes bento-bar {
+    0%, 100% { transform: scaleY(0.45); }
+    50% { transform: scaleY(1); }
   }
-  .stage-icon svg { width: 30px; height: 30px; }
-  .stage-panel h4 { margin: 0 0 10px; font-size: 21px; font-weight: 800; letter-spacing: -0.015em; }
-  .stage-panel p { margin: 0; max-width: 440px; color: var(--text-muted); font-size: 14.5px; line-height: 1.6; }
+
+  /* Card 5 -- AI docs: a sparkle twinkles while lines "type" out */
+  .bento-docs .spark { fill: var(--accent); transform-box: fill-box; transform-origin: center; animation: bento-twinkle 1.8s ease-in-out infinite; }
+  @keyframes bento-twinkle {
+    0%, 100% { transform: scale(0.7); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+  .bento-docs .tline { stroke: var(--teal-light); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 62; stroke-dashoffset: 62; animation: bento-type 2.6s ease-in-out infinite; }
+  .bento-docs .tline:nth-child(3) { animation-delay: 0.3s; }
+  .bento-docs .tline:nth-child(4) { animation-delay: 0.6s; }
+  @keyframes bento-type {
+    0% { stroke-dashoffset: 62; }
+    40%, 65% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 62; }
+  }
+
+  /* Card 6 -- lineage: a dot flows from code block down to table */
+  .bento-lineage .block { fill: var(--bg-panel-raised); stroke: var(--text-dim); stroke-width: 1.4; }
+  .bento-lineage .edge { stroke: var(--border); stroke-width: 1.3; }
+  .bento-lineage .dot { fill: var(--green); offset-path: path('M45 26 L45 64'); animation: bento-travel-v 2.2s linear infinite; }
 
   .solution-more {
     text-align: center;
@@ -1093,10 +1102,7 @@
   /* ---------- Responsive ---------- */
   @media (max-width: 980px) {
     .privacy-grid { grid-template-columns: repeat(2, 1fr); }
-    .showcase { grid-template-columns: 1fr; }
-    .showcase-tabs { flex-direction: row; flex-wrap: wrap; }
-    .showcase-tab { flex: 1 1 auto; }
-    .showcase-progress { display: none; }
+    .feature-bento { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 860px) {
     .nav-links { display: none; }
@@ -1106,9 +1112,7 @@
     .trio { grid-template-columns: 1fr; }
     .paths { grid-template-columns: 1fr; }
     .privacy-grid { grid-template-columns: 1fr; }
-    .showcase-tab-text { display: none; }
-    .showcase-tab { padding: 10px; justify-content: center; }
-    .stage-panel { padding: 32px 26px; }
+    .feature-bento { grid-template-columns: 1fr; }
     .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
     .flow-branch-item::before { display: none; }
     section { padding: 76px 0; }
@@ -1280,66 +1284,95 @@
       <h2>Everything you need to understand a codebase.</h2>
     </div>
 
-    <div class="showcase" data-reveal>
-      <div class="showcase-tabs">
-        <button type="button" class="showcase-tab is-active" data-index="0">
-          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.6"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg></span>
-          <span class="showcase-tab-text"><em>Understand</em>Interactive Call Graph</span>
-        </button>
-        <button type="button" class="showcase-tab" data-index="1">
-          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <span class="showcase-tab-text"><em>Predict</em>Impact Analysis</span>
-        </button>
-        <button type="button" class="showcase-tab" data-index="2">
-          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-          <span class="showcase-tab-text"><em>Trace</em>Execution Flowcharts</span>
-        </button>
-        <button type="button" class="showcase-tab" data-index="3">
-          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-          <span class="showcase-tab-text"><em>Measure</em>Code Health</span>
-        </button>
-        <button type="button" class="showcase-tab" data-index="4">
-          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></span>
-          <span class="showcase-tab-text"><em>Explain</em>AI Documentation</span>
-        </button>
-        <button type="button" class="showcase-tab" data-index="5">
-          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.6"/></svg></span>
-          <span class="showcase-tab-text"><em>Connect</em>Code-to-Data Lineage</span>
-        </button>
-        <div class="showcase-progress"><i id="showcase-progress-bar"></i></div>
+    <div class="feature-bento" data-reveal>
+      <div class="bento-card">
+        <div class="bento-visual bento-graph">
+          <svg viewBox="0 0 90 90">
+            <line class="edge" x1="20" y1="20" x2="70" y2="32"/>
+            <line class="edge" x1="20" y1="20" x2="40" y2="70"/>
+            <line class="edge" x1="70" y1="32" x2="40" y2="70"/>
+            <circle class="node" cx="20" cy="20" r="6"/>
+            <circle class="node" cx="70" cy="32" r="6"/>
+            <circle class="node" cx="40" cy="70" r="6"/>
+            <circle class="dot dot-a" cx="0" cy="0" r="3"/>
+            <circle class="dot dot-b" cx="0" cy="0" r="3"/>
+            <circle class="dot dot-c" cx="0" cy="0" r="3"/>
+          </svg>
+        </div>
+        <span class="bento-tag">Understand</span>
+        <h4>Interactive Call Graph</h4>
+        <p>The whole repo, on one zoomable screen.</p>
       </div>
 
-      <div class="showcase-stage">
-        <div class="stage-panel is-active" data-index="0">
-          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.5"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="6" r="2.8" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="9" r="2.8" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="19" r="2.8" stroke="currentColor" stroke-width="1.5"/></svg></div>
-          <h4>Interactive Call Graph</h4>
-          <p>Every directory, file, class, and function — as one zoomable, color-coded graph. Structure that would take an hour of grepping, visible on one screen.</p>
+      <div class="bento-card">
+        <div class="bento-visual bento-impact">
+          <svg viewBox="0 0 90 90">
+            <circle class="ring ring1" cx="45" cy="45" r="7"/>
+            <circle class="ring ring2" cx="45" cy="45" r="7"/>
+            <circle class="core" cx="45" cy="45" r="5"/>
+          </svg>
         </div>
-        <div class="stage-panel" data-index="1">
-          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Impact Analysis</h4>
-          <p>Know what depends on a function, table, or column before you change it — direct and transitive callers, circular chains, the full blast radius.</p>
+        <span class="bento-tag">Predict</span>
+        <h4>Impact Analysis</h4>
+        <p>Every caller, before you touch a line.</p>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-visual bento-flow">
+          <svg viewBox="0 0 90 90">
+            <rect class="shape" x="30" y="6" width="30" height="14" rx="3"/>
+            <polygon class="shape" points="45,32 60,45 45,58 30,45"/>
+            <rect class="shape" x="30" y="70" width="30" height="14" rx="3"/>
+            <line class="edge" x1="45" y1="20" x2="45" y2="32"/>
+            <line class="edge" x1="45" y1="58" x2="45" y2="70"/>
+            <circle class="dot" cx="0" cy="0" r="3"/>
+          </svg>
         </div>
-        <div class="stage-panel" data-index="2">
-          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-          <h4>Execution Flowcharts</h4>
-          <p>Trace how a function actually behaves — branches, loops, I/O, and calls to other functions — without stepping through the source by hand.</p>
+        <span class="bento-tag">Trace</span>
+        <h4>Execution Flowcharts</h4>
+        <p>Branches, loops, and I/O — mapped out.</p>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-visual bento-bars">
+          <svg viewBox="0 0 90 90">
+            <rect x="14" y="40" width="12" height="40" rx="2"/>
+            <rect x="34" y="25" width="12" height="55" rx="2"/>
+            <rect x="54" y="15" width="12" height="65" rx="2"/>
+            <rect x="74" y="35" width="12" height="45" rx="2"/>
+          </svg>
         </div>
-        <div class="stage-panel" data-index="3">
-          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>Code Health</h4>
-          <p>Find the parts of your codebase worth worrying about: complexity, hotspots, coverage risk, dead code, duplicates, and dependency vulnerabilities.</p>
+        <span class="bento-tag">Measure</span>
+        <h4>Code Health</h4>
+        <p>The parts of your codebase worth worrying about.</p>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-visual bento-docs">
+          <svg viewBox="0 0 90 90">
+            <path class="spark" d="M66 12 L69 19 L76 22 L69 25 L66 32 L63 25 L56 22 L63 19 Z"/>
+            <line class="tline" x1="10" y1="45" x2="70" y2="45"/>
+            <line class="tline" x1="10" y1="58" x2="55" y2="58"/>
+            <line class="tline" x1="10" y1="71" x2="62" y2="71"/>
+          </svg>
         </div>
-        <div class="stage-panel" data-index="4">
-          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="4.4" stroke="currentColor" stroke-width="1.5"/></svg></div>
-          <h4>AI Documentation</h4>
-          <p>Generate documentation from the actual context around a function or file — source, callers, callees, imports. Local Ollama, OpenAI, or Anthropic.</p>
+        <span class="bento-tag">Explain</span>
+        <h4>AI Documentation</h4>
+        <p>Real docs, generated from real context.</p>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-visual bento-lineage">
+          <svg viewBox="0 0 90 90">
+            <rect class="block" x="20" y="8" width="50" height="18" rx="3"/>
+            <rect class="block" x="20" y="64" width="50" height="18" rx="3"/>
+            <line class="edge" x1="45" y1="26" x2="45" y2="64"/>
+            <circle class="dot" cx="0" cy="0" r="3"/>
+          </svg>
         </div>
-        <div class="stage-panel" data-index="5">
-          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.5"/></svg></div>
-          <h4>Code-to-Data Lineage</h4>
-          <p>Follow application logic into the data it touches — code → models → tables → columns. SQLAlchemy, dbt manifests, and live database connections.</p>
-        </div>
+        <span class="bento-tag">Connect</span>
+        <h4>Code-to-Data Lineage</h4>
+        <p>Code → models → tables → columns.</p>
       </div>
     </div>
 
@@ -1991,59 +2024,6 @@
   }
 })();
 
-(function () {
-  var showcase = document.querySelector('.showcase');
-  var tabs = document.querySelectorAll('.showcase-tab');
-  var panels = document.querySelectorAll('.stage-panel');
-  var bar = document.getElementById('showcase-progress-bar');
-  if (!showcase || !tabs.length) return;
-
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var current = 0;
-  var timer = null;
-
-  function activate(index) {
-    current = index;
-    tabs.forEach(function (t) { t.classList.remove('is-active'); });
-    panels.forEach(function (p) { p.classList.remove('is-active'); });
-    tabs[index].classList.add('is-active');
-    panels[index].classList.add('is-active');
-    if (bar) {
-      bar.classList.remove('is-animating');
-      void bar.offsetWidth;
-      if (timer) bar.classList.add('is-animating');
-    }
-  }
-
-  function stopAuto() {
-    if (timer) { clearInterval(timer); timer = null; }
-    if (bar) bar.classList.remove('is-animating');
-  }
-  function startAuto() {
-    if (timer || reduceMotion) return;
-    if (bar) { bar.classList.remove('is-animating'); void bar.offsetWidth; bar.classList.add('is-animating'); }
-    timer = setInterval(function () { activate((current + 1) % tabs.length); }, 2600);
-  }
-
-  tabs.forEach(function (tab, i) {
-    tab.addEventListener('click', function () {
-      stopAuto();
-      activate(i);
-    });
-  });
-
-  if ('IntersectionObserver' in window) {
-    var io2 = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) startAuto();
-        else stopAuto();
-      });
-    }, { threshold: 0.4 });
-    io2.observe(showcase);
-  } else {
-    startAuto();
-  }
-})();
 </script>
 </body>
 </html>
