@@ -1,0 +1,358 @@
+{
+  "candidates": [
+    {
+      "node_id": "adapters/adapters.js::getAdapter"
+    },
+    {
+      "node_id": "adapters/fetch.js::getFetch"
+    },
+    {
+      "node_id": "adapters/http.js::decodeURIComponentSafe"
+    },
+    {
+      "node_id": "adapters/http.js::dispatchBeforeRedirect"
+    },
+    {
+      "node_id": "adapters/http.js::flushOnFinish"
+    },
+    {
+      "node_id": "adapters/http.js::handleSocketError"
+    },
+    {
+      "node_id": "adapters/http.js::isSameOriginRedirect"
+    },
+    {
+      "node_id": "adapters/http.js::normalizeLookup"
+    },
+    {
+      "node_id": "adapters/http.js::stripMatchingHeaders"
+    },
+    {
+      "node_id": "adapters/http.js::wrapAsync"
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.constructor"
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.source"
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.throwIfRequested"
+    },
+    {
+      "node_id": "cancel/CancelToken.js::CancelToken.toAbortSignal"
+    },
+    {
+      "node_id": "cancel/CanceledError.js::CanceledError.constructor"
+    },
+    {
+      "node_id": "cancel/isCancel.js::isCancel"
+    },
+    {
+      "node_id": "core/Axios.js::Axios.constructor"
+    },
+    {
+      "node_id": "core/Axios.js::Axios.getUri"
+    },
+    {
+      "node_id": "core/Axios.js::Axios.request"
+    },
+    {
+      "node_id": "core/AxiosError.js::AxiosError.constructor"
+    },
+    {
+      "node_id": "core/AxiosError.js::AxiosError.from"
+    },
+    {
+      "node_id": "core/AxiosError.js::AxiosError.toJSON"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.iterator]"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.[Symbol.toStringTag]#get"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.accessor"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.clear"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.concat"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.concat"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.constructor"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.delete"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.from"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.getSetCookie"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.has"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.normalize"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.parseParameters"
+    },
+    {
+      "node_id": "core/AxiosHeaders.js::AxiosHeaders.toString"
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.clear"
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.constructor"
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.eject"
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.forEach"
+    },
+    {
+      "node_id": "core/InterceptorManager.js::InterceptorManager.use"
+    },
+    {
+      "node_id": "core/buildFullPath.js::buildFullPath"
+    },
+    {
+      "node_id": "core/dispatchRequest.js::dispatchRequest"
+    },
+    {
+      "node_id": "core/mergeConfig.js::mergeConfig"
+    },
+    {
+      "node_id": "core/setFormDataHeaders.js::setFormDataHeaders"
+    },
+    {
+      "node_id": "core/settle.js::settle"
+    },
+    {
+      "node_id": "core/transformData.js::transformData"
+    },
+    {
+      "node_id": "defaults/index.js::own"
+    },
+    {
+      "node_id": "defaults/index.js::stringifySafely"
+    },
+    {
+      "node_id": "helpers/AxiosTransformStream.js::AxiosTransformStream._read"
+    },
+    {
+      "node_id": "helpers/AxiosTransformStream.js::AxiosTransformStream._transform"
+    },
+    {
+      "node_id": "helpers/AxiosTransformStream.js::AxiosTransformStream.constructor"
+    },
+    {
+      "node_id": "helpers/AxiosURLSearchParams.js::AxiosURLSearchParams"
+    },
+    {
+      "node_id": "helpers/AxiosURLSearchParams.js::encode"
+    },
+    {
+      "node_id": "helpers/Http2Sessions.js::Http2Sessions.constructor"
+    },
+    {
+      "node_id": "helpers/Http2Sessions.js::Http2Sessions.getSession"
+    },
+    {
+      "node_id": "helpers/ZlibHeaderTransformStream.js::ZlibHeaderTransformStream._transform"
+    },
+    {
+      "node_id": "helpers/bind.js::bind"
+    },
+    {
+      "node_id": "helpers/buildURL.js::buildURL"
+    },
+    {
+      "node_id": "helpers/buildURL.js::encode"
+    },
+    {
+      "node_id": "helpers/callbackify.js::callbackify"
+    },
+    {
+      "node_id": "helpers/combineURLs.js::combineURLs"
+    },
+    {
+      "node_id": "helpers/composeSignals.js::composeSignals"
+    },
+    {
+      "node_id": "helpers/deprecatedMethod.js::deprecatedMethod"
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLBufferAllocation"
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimateDataURLDecodedBytes"
+    },
+    {
+      "node_id": "helpers/estimateDataURLDecodedBytes.js::estimatePercentDecodedBase64Bytes"
+    },
+    {
+      "node_id": "helpers/formDataToJSON.js::formDataToJSON"
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::FormDataPart.constructor"
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::FormDataPart.encode"
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::FormDataPart.escapeName"
+    },
+    {
+      "node_id": "helpers/formDataToStream.js::formDataToStream"
+    },
+    {
+      "node_id": "helpers/fromDataURI.js::fromDataURI"
+    },
+    {
+      "node_id": "helpers/isAbsoluteURL.js::isAbsoluteURL"
+    },
+    {
+      "node_id": "helpers/isAxiosError.js::isAxiosError"
+    },
+    {
+      "node_id": "helpers/normalizeURLForProtocolCheck.js::normalizeURLForProtocolCheck"
+    },
+    {
+      "node_id": "helpers/parseProtocol.js::parseProtocol"
+    },
+    {
+      "node_id": "helpers/readBlob.js::readBlob"
+    },
+    {
+      "node_id": "helpers/resolveConfig.js::resolveConfig"
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::isIPv6ZeroGroup"
+    },
+    {
+      "node_id": "helpers/shouldBypassProxy.js::shouldBypassProxy"
+    },
+    {
+      "node_id": "helpers/speedometer.js::speedometer"
+    },
+    {
+      "node_id": "helpers/spread.js::spread"
+    },
+    {
+      "node_id": "helpers/throttle.js::throttle"
+    },
+    {
+      "node_id": "helpers/toFormData.js::toFormData"
+    },
+    {
+      "node_id": "helpers/toURLEncodedForm.js::toURLEncodedForm"
+    },
+    {
+      "node_id": "helpers/validator.js::assertOptions"
+    },
+    {
+      "node_id": "platform/node/index.js::generateString"
+    },
+    {
+      "node_id": "utils.js::endsWith"
+    },
+    {
+      "node_id": "utils.js::extend"
+    },
+    {
+      "node_id": "utils.js::forEachEntry"
+    },
+    {
+      "node_id": "utils.js::freezeMethods"
+    },
+    {
+      "node_id": "utils.js::getGlobal"
+    },
+    {
+      "node_id": "utils.js::getSafeProp"
+    },
+    {
+      "node_id": "utils.js::inherits"
+    },
+    {
+      "node_id": "utils.js::isArrayBufferView"
+    },
+    {
+      "node_id": "utils.js::isBoolean"
+    },
+    {
+      "node_id": "utils.js::isEmptyObject"
+    },
+    {
+      "node_id": "utils.js::isFormData"
+    },
+    {
+      "node_id": "utils.js::isReactNative"
+    },
+    {
+      "node_id": "utils.js::isReactNativeBlob"
+    },
+    {
+      "node_id": "utils.js::isSafeIterable"
+    },
+    {
+      "node_id": "utils.js::isSpecCompliantForm"
+    },
+    {
+      "node_id": "utils.js::isStream"
+    },
+    {
+      "node_id": "utils.js::isThenable"
+    },
+    {
+      "node_id": "utils.js::kindOfTest"
+    },
+    {
+      "node_id": "utils.js::matchAll"
+    },
+    {
+      "node_id": "utils.js::noop"
+    },
+    {
+      "node_id": "utils.js::stripBOM"
+    },
+    {
+      "node_id": "utils.js::toArray"
+    },
+    {
+      "node_id": "utils.js::toCamelCase"
+    },
+    {
+      "node_id": "utils.js::toFiniteNumber"
+    },
+    {
+      "node_id": "utils.js::toFlatObject"
+    },
+    {
+      "node_id": "utils.js::toJSONObject"
+    },
+    {
+      "node_id": "utils.js::toObjectSet"
+    },
+    {
+      "node_id": "utils.js::toSafeFlatObject"
+    },
+    {
+      "node_id": "utils.js::trim"
+    },
+    {
+      "node_id": "utils.js::typeOfTest"
+    }
+  ]
+}

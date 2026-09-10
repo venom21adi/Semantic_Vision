@@ -2,8 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
   CoverageUnavailableError,
-  DeadCodeUnavailableError,
-  DependencyRiskUnavailableError,
   DEMO_MODE,
   getComplexity,
   getComplexityDiff,
@@ -1183,11 +1181,7 @@ function RepoWorkspace({
       setDeadCode({ status: 'loaded', result })
     } catch (error) {
       if (deadCodeRequestIdRef.current !== requestId) return
-      if (error instanceof DeadCodeUnavailableError) {
-        setDeadCode({ status: 'unavailable', message: error.message })
-      } else {
-        setDeadCode({ status: 'error', message: errorMessage(error) })
-      }
+      setDeadCode({ status: 'error', message: errorMessage(error) })
     }
   }, [repo])
 
@@ -1266,11 +1260,7 @@ function RepoWorkspace({
       setDependencyRisk({ status: 'loaded', result })
     } catch (error) {
       if (dependencyRiskRequestIdRef.current !== requestId) return
-      if (error instanceof DependencyRiskUnavailableError) {
-        setDependencyRisk({ status: 'unavailable', message: error.message })
-      } else {
-        setDependencyRisk({ status: 'error', message: errorMessage(error) })
-      }
+      setDependencyRisk({ status: 'error', message: errorMessage(error) })
     }
   }, [repo])
 

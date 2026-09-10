@@ -1,0 +1,32 @@
+{
+  "groups": [
+    {
+      "node_ids": [
+        "adapters/fetch.js::decodeURIComponentSafe",
+        "adapters/http.js::decodeURIComponentSafe"
+      ],
+      "size": 2
+    },
+    {
+      "node_ids": [
+        "adapters/fetch.js::encodeUTF8",
+        "helpers/resolveConfig.js::encodeUTF8"
+      ],
+      "size": 2
+    },
+    {
+      "node_ids": [
+        "core/AxiosHeaders.js::trimOWS",
+        "helpers/sanitizeHeaderValue.js::trimSPorHTAB"
+      ],
+      "size": 2
+    },
+    {
+      "node_ids": [
+        "helpers/sanitizeHeaderValue.js::sanitizeByteStringHeaderValue",
+        "helpers/sanitizeHeaderValue.js::sanitizeHeaderValue"
+      ],
+      "size": 2
+    }
+  ]
+}

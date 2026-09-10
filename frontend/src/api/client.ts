@@ -58,38 +58,12 @@ export class ApiError extends Error {
   }
 }
 
-/** Thrown only by `getDeadCode`'s demo stub -- a distinct type (not a
- * plain `Error`) so `App.tsx`'s `handleLoadDeadCode` can tell "expected,
- * demo-only unavailability" apart from a real failure and route it to
- * `DeadCodeState`'s `'unavailable'` status instead of `'error'`. */
-export class DeadCodeUnavailableError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'DeadCodeUnavailableError'
-  }
-}
-
-/** Thrown only by `getDependencyRisk`'s demo stub -- this feature makes a
- * real external network call (to osv.dev), which is never appropriate in
- * a public demo build regardless of what a viewer clicks. Unlike
- * `CoverageUnavailableError`, there's no real-backend "unavailable" case
- * this mirrors -- the real backend only ever reports availability via
- * `DependencyRiskResponse.available` (an osv.dev query failure), which the
- * demo build can never legitimately reach in the first place. */
-export class DependencyRiskUnavailableError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'DependencyRiskUnavailableError'
-  }
-}
-
 /** Thrown only by `getCoverageRisk`/`ingestCoverage`'s demo stubs -- the
  * static demo has no user-supplied coverage report to ingest, and unlike
  * `getComplexityHotspots`'s stub, there's no real-world "unavailable" case
  * this route's own response schema already carries (a real backend's
  * `CoverageResponse.available` means "nothing ingested yet," not "this
- * feature doesn't work here"), so this stays a distinct demo-only signal,
- * same reasoning as `DeadCodeUnavailableError`. */
+ * feature doesn't work here"), so this stays a distinct demo-only signal. */
 export class CoverageUnavailableError extends Error {
   constructor(message: string) {
     super(message)
@@ -97,10 +71,9 @@ export class CoverageUnavailableError extends Error {
   }
 }
 
-/** Thrown only by `streamCodeHealthRecommendations`'s demo stub -- this
- * route needs a real backend and a real AI provider, never fakeable in
- * the public demo (same flavor-(b) reasoning as
- * `DependencyRiskUnavailableError`/`CoverageUnavailableError`). */
+/** Thrown by `streamCodeHealthRecommendations` for a demo repo with no
+ * precomputed recommendation (see `scripts/generate_demo_recommendations.py`)
+ * -- same demo-only-signal reasoning as `CoverageUnavailableError`. */
 export class RecommendationsUnavailableError extends Error {
   constructor(message: string) {
     super(message)
@@ -458,23 +431,11 @@ export const getComplexityHotspots = DEMO_MODE
       window_days: windowDays ?? 90,
     })
   : realGetComplexityHotspots
-/** Demo-only: computing this for real needs the live backend's parsed
- * node data (the `has_decorators`/reverse-caller-index analysis in
- * `analysis/dead_code.py`), which the static demo's pre-generated fixture
- * bundle doesn't carry. Throws `DeadCodeUnavailableError` (not a plain
- * error, and not a silently-empty candidate list either) so the Dead Code
- * tab can render its own graceful "not available in demo" state -- the
- * same "a whole tab staying clickable but broken is worse than one that
- * explains itself" reasoning `getComplexityHotspots`'s stub above already
- * follows, just without a `DeadCodeResponse` field to carry the signal
- * (there's no real-world "unavailable" case for this route the way
- * `is_git_repo` is a real one for hotspots, so this stays a demo-only
- * concept rather than a schema addition). */
-export const getDeadCode = DEMO_MODE
-  ? async (_path: string, _language: string): Promise<DeadCodeResponse> => {
-      throw new DeadCodeUnavailableError('Dead-code detection is not available in demo mode')
-    }
-  : realGetDeadCode
+// Fully local/offline analysis (no ingested file, no git/network
+// dependency, unlike `getComplexityHotspots`/`getCoverageRisk`), computed
+// ahead of time by `scripts/build_demo_fixtures.py` against each demo
+// repo's real source, same fixture-replay treatment as `getComplexity`.
+export const getDeadCode = DEMO_MODE ? demoClient.getDeadCode : realGetDeadCode
 export const ingestCoverage = DEMO_MODE
   ? async (
       _path: string,
@@ -489,38 +450,29 @@ export const getCoverageRisk = DEMO_MODE
       throw new CoverageUnavailableError('Coverage ranking is not available in demo mode')
     }
   : realGetCoverageRisk
-// Demo-only: fully local/offline analysis (no ingested file, no git/network
-// dependency), so unlike `getDeadCode`/`getCoverageRisk` this can safely
-// return a real, valid empty response rather than throwing -- the demo's
-// fixture bundle just never happens to contain any duplicate functions.
-export const getDuplicates = DEMO_MODE
-  ? async (_path: string, _language: string): Promise<DuplicatesResponse> => ({ groups: [] })
-  : realGetDuplicates
-export const getDependencyRisk = DEMO_MODE
-  ? async (_path: string, _language: string): Promise<DependencyRiskResponse> => {
-      throw new DependencyRiskUnavailableError(
-        'Dependency risk scanning is not available in demo mode',
-      )
-    }
-  : realGetDependencyRisk
+// Same fixture-replay treatment as `getDeadCode` above -- fully
+// local/offline, precomputed by `build_demo_fixtures.py`.
+export const getDuplicates = DEMO_MODE ? demoClient.getDuplicates : realGetDuplicates
+// Unlike the real route, this never makes a live osv.dev call from the
+// viewer's browser: `build_demo_fixtures.py` made that one real network
+// call at fixture-build time and baked the result into a static JSON
+// file, so a demo viewer's "Scan dependencies" click just replays it.
+// `result.available === false` (baked in if that build-time scan failed)
+// already carries the "unavailable" signal through the normal `'loaded'`
+// state, same as the real backend -- no separate error type needed.
+export const getDependencyRisk = DEMO_MODE ? demoClient.getDependencyRisk : realGetDependencyRisk
 export const getFlowchart = DEMO_MODE ? demoClient.getFlowchart : realGetFlowchart
 export const getOllamaModels = DEMO_MODE ? demoClient.getOllamaModels : realGetOllamaModels
 export const ingestDbtManifest = DEMO_MODE ? demoClient.ingestDbtManifest : realIngestDbtManifest
 export const ingestDbConnection = DEMO_MODE ? demoClient.ingestDbConnection : realIngestDbConnection
 export const streamDoc = DEMO_MODE ? demoClient.streamDoc : realStreamDoc
-// Not a generator function -- it always throws before there's ever
-// anything to yield, and a generator with no `yield` at all is a lint
-// smell (`require-yield`) precisely because it usually signals a mistake
-// like this one. A plain function that throws synchronously still fails
-// a `for await (... of streamCodeHealthRecommendations(...))` at the same
-// point (the iterable expression is evaluated eagerly), so callers don't
-// need to know the difference.
+// Same fake-stream replay as `streamDoc`, from text `generate_demo_
+// recommendations.py` actually generated with a real AI provider (local
+// Ollama) ahead of time, not synthesized here. Still throws
+// `RecommendationsUnavailableError` for a demo repo that script skipped
+// (no local source clone available when fixtures were built).
 export const streamCodeHealthRecommendations = DEMO_MODE
-  ? (..._args: unknown[]): AsyncGenerator<string> => {
-      throw new RecommendationsUnavailableError(
-        'AI recommendations are not available in demo mode',
-      )
-    }
+  ? demoClient.streamCodeHealthRecommendations
   : realStreamCodeHealthRecommendations
 export const detectLanguages = realDetectLanguages
 /** Demo-only: no real-backend concept of an impact-analysis "showcase"

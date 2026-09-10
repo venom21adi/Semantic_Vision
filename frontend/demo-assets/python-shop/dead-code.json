@@ -1,0 +1,82 @@
+{
+  "candidates": [
+    {
+      "node_id": "api/routes.py::advance_order_status_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::cancel_order_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::create_order_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::get_customer_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::high_value_customers_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::list_orders_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::revenue_report_endpoint"
+    },
+    {
+      "node_id": "api/routes.py::top_customers_endpoint"
+    },
+    {
+      "node_id": "db.py::init_db"
+    },
+    {
+      "node_id": "jobs/cleanup.py::archive_old_payments"
+    },
+    {
+      "node_id": "jobs/scheduler.py::run_nightly_jobs"
+    },
+    {
+      "node_id": "models.py::Customer.full_name"
+    },
+    {
+      "node_id": "models.py::Order.is_terminal"
+    },
+    {
+      "node_id": "models.py::today"
+    },
+    {
+      "node_id": "services/customers.py::merge_duplicate_customers"
+    },
+    {
+      "node_id": "services/orders.py::compute_order_total"
+    },
+    {
+      "node_id": "services/payments.py::process_payment"
+    },
+    {
+      "node_id": "services/payments.py::reconcile_payment_methods"
+    },
+    {
+      "node_id": "services/payments.py::refund_payment"
+    },
+    {
+      "node_id": "services/reporting.py::order_status_breakdown"
+    },
+    {
+      "node_id": "services/reporting.py::raw_high_value_customers"
+    },
+    {
+      "node_id": "utils/formatting.py::format_customer_name"
+    },
+    {
+      "node_id": "utils/formatting.py::humanize_status"
+    },
+    {
+      "node_id": "utils/pagination.py::build_page_links"
+    },
+    {
+      "node_id": "utils/validation.py::sanitize_string"
+    },
+    {
+      "node_id": "utils/validation.py::validate_email"
+    }
+  ]
+}

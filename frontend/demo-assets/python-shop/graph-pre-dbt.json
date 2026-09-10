@@ -8,7 +8,8 @@
       "line_start": 0,
       "line_end": 0,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/__init__.py",
@@ -18,7 +19,8 @@
       "line_start": 1,
       "line_end": 1,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py",
@@ -28,7 +30,8 @@
       "line_start": 1,
       "line_end": 77,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::advance_order_status_endpoint",
@@ -38,7 +41,8 @@
       "line_start": 44,
       "line_end": 51,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::cancel_order_endpoint",
@@ -48,7 +52,8 @@
       "line_start": 34,
       "line_end": 41,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::create_order_endpoint",
@@ -58,7 +63,8 @@
       "line_start": 26,
       "line_end": 31,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::get_customer_endpoint",
@@ -68,7 +74,8 @@
       "line_start": 19,
       "line_end": 23,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::high_value_customers_endpoint",
@@ -78,7 +85,8 @@
       "line_start": 64,
       "line_end": 66,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::list_orders_endpoint",
@@ -88,7 +96,8 @@
       "line_start": 54,
       "line_end": 61,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::revenue_report_endpoint",
@@ -98,7 +107,8 @@
       "line_start": 69,
       "line_end": 71,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "api/routes.py::top_customers_endpoint",
@@ -108,7 +118,8 @@
       "line_start": 74,
       "line_end": 77,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::customers.customer_id",
@@ -118,7 +129,8 @@
       "line_start": 19,
       "line_end": 19,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::customers.first_name",
@@ -128,7 +140,8 @@
       "line_start": 20,
       "line_end": 20,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::customers.last_name",
@@ -138,7 +151,8 @@
       "line_start": 21,
       "line_end": 21,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.amount",
@@ -148,7 +162,8 @@
       "line_start": 36,
       "line_end": 36,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.bank_transfer_amount",
@@ -158,7 +173,8 @@
       "line_start": 39,
       "line_end": 39,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.coupon_amount",
@@ -168,7 +184,8 @@
       "line_start": 38,
       "line_end": 38,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.credit_card_amount",
@@ -178,7 +195,8 @@
       "line_start": 37,
       "line_end": 37,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.customer_id",
@@ -188,7 +206,8 @@
       "line_start": 33,
       "line_end": 33,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.gift_card_amount",
@@ -198,7 +217,8 @@
       "line_start": 40,
       "line_end": 40,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.order_date",
@@ -208,7 +228,8 @@
       "line_start": 34,
       "line_end": 34,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.order_id",
@@ -218,7 +239,8 @@
       "line_start": 32,
       "line_end": 32,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "column::orders.status",
@@ -228,7 +250,8 @@
       "line_start": 35,
       "line_end": 35,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "db.py",
@@ -238,7 +261,8 @@
       "line_start": 1,
       "line_end": 28,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "db.py::init_db",
@@ -248,7 +272,8 @@
       "line_start": 14,
       "line_end": 15,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "db.py::session_scope",
@@ -258,7 +283,8 @@
       "line_start": 19,
       "line_end": 28,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": true
     },
     {
       "id": "jobs",
@@ -268,7 +294,8 @@
       "line_start": 0,
       "line_end": 0,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/__init__.py",
@@ -278,7 +305,8 @@
       "line_start": 1,
       "line_end": 1,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/cleanup.py",
@@ -288,7 +316,8 @@
       "line_start": 1,
       "line_end": 40,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/cleanup.py::archive_old_payments",
@@ -298,7 +327,8 @@
       "line_start": 25,
       "line_end": 40,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/cleanup.py::purge_stale_orders",
@@ -308,7 +338,8 @@
       "line_start": 8,
       "line_end": 22,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/scheduler.py",
@@ -318,7 +349,8 @@
       "line_start": 1,
       "line_end": 48,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/scheduler.py::retry_with_backoff",
@@ -328,7 +360,8 @@
       "line_start": 9,
       "line_end": 29,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "jobs/scheduler.py::run_nightly_jobs",
@@ -338,7 +371,8 @@
       "line_start": 32,
       "line_end": 48,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "models.py",
@@ -348,7 +382,8 @@
       "line_start": 1,
       "line_end": 53,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "models.py::Customer",
@@ -358,7 +393,8 @@
       "line_start": 16,
       "line_end": 26,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "models.py::Customer.full_name",
@@ -368,7 +404,8 @@
       "line_start": 25,
       "line_end": 26,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "models.py::Order",
@@ -378,7 +415,8 @@
       "line_start": 29,
       "line_end": 45,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "models.py::Order.is_terminal",
@@ -388,7 +426,8 @@
       "line_start": 44,
       "line_end": 45,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "models.py::today",
@@ -398,7 +437,8 @@
       "line_start": 52,
       "line_end": 53,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services",
@@ -408,7 +448,8 @@
       "line_start": 0,
       "line_end": 0,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/__init__.py",
@@ -418,7 +459,8 @@
       "line_start": 1,
       "line_end": 1,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/customers.py",
@@ -428,7 +470,8 @@
       "line_start": 1,
       "line_end": 75,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/customers.py::flag_high_value_customers",
@@ -438,7 +481,8 @@
       "line_start": 43,
       "line_end": 59,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/customers.py::get_customer",
@@ -448,7 +492,8 @@
       "line_start": 7,
       "line_end": 8,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/customers.py::get_customer_summary",
@@ -458,7 +503,8 @@
       "line_start": 11,
       "line_end": 40,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/customers.py::merge_duplicate_customers",
@@ -468,7 +514,8 @@
       "line_start": 62,
       "line_end": 75,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/notifications.py",
@@ -478,7 +525,8 @@
       "line_start": 1,
       "line_end": 48,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/notifications.py::_send_email",
@@ -488,7 +536,8 @@
       "line_start": 43,
       "line_end": 44,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/notifications.py::_send_sms",
@@ -498,7 +547,8 @@
       "line_start": 47,
       "line_end": 48,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/notifications.py::batch_notify",
@@ -508,7 +558,8 @@
       "line_start": 31,
       "line_end": 40,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/notifications.py::notify_customer",
@@ -518,7 +569,8 @@
       "line_start": 18,
       "line_end": 28,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/notifications.py::render_template",
@@ -528,7 +580,8 @@
       "line_start": 11,
       "line_end": 15,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/orders.py",
@@ -538,7 +591,8 @@
       "line_start": 1,
       "line_end": 107,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/orders.py::cancel_order",
@@ -548,7 +602,8 @@
       "line_start": 67,
       "line_end": 76,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/orders.py::compute_order_total",
@@ -558,7 +613,8 @@
       "line_start": 79,
       "line_end": 93,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/orders.py::create_order",
@@ -568,7 +624,8 @@
       "line_start": 18,
       "line_end": 36,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/orders.py::list_orders_for_customer",
@@ -578,7 +635,8 @@
       "line_start": 96,
       "line_end": 107,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/orders.py::transition_order_status",
@@ -588,7 +646,8 @@
       "line_start": 39,
       "line_end": 64,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/payments.py",
@@ -598,7 +657,8 @@
       "line_start": 1,
       "line_end": 75,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/payments.py::process_payment",
@@ -608,7 +668,8 @@
       "line_start": 17,
       "line_end": 31,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/payments.py::reconcile_payment_methods",
@@ -618,7 +679,8 @@
       "line_start": 50,
       "line_end": 75,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/payments.py::refund_payment",
@@ -628,7 +690,8 @@
       "line_start": 34,
       "line_end": 47,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/payments.py::validate_payment_method",
@@ -638,7 +701,8 @@
       "line_start": 13,
       "line_end": 14,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/reporting.py",
@@ -648,7 +712,8 @@
       "line_start": 1,
       "line_end": 75,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/reporting.py::customer_lifetime_value",
@@ -658,7 +723,8 @@
       "line_start": 14,
       "line_end": 23,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/reporting.py::monthly_revenue_report",
@@ -668,7 +734,8 @@
       "line_start": 36,
       "line_end": 54,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/reporting.py::order_status_breakdown",
@@ -678,7 +745,8 @@
       "line_start": 57,
       "line_end": 65,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/reporting.py::raw_high_value_customers",
@@ -688,7 +756,8 @@
       "line_start": 68,
       "line_end": 75,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "services/reporting.py::top_customers_by_spend",
@@ -698,7 +767,8 @@
       "line_start": 26,
       "line_end": 33,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "table::customers",
@@ -708,7 +778,8 @@
       "line_start": 16,
       "line_end": 26,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "table::orders",
@@ -718,7 +789,8 @@
       "line_start": 29,
       "line_end": 45,
       "source": "orm_model",
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils",
@@ -728,7 +800,8 @@
       "line_start": 0,
       "line_end": 0,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/__init__.py",
@@ -738,7 +811,8 @@
       "line_start": 1,
       "line_end": 1,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/formatting.py",
@@ -748,7 +822,8 @@
       "line_start": 1,
       "line_end": 19,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/formatting.py::format_currency",
@@ -758,7 +833,8 @@
       "line_start": 4,
       "line_end": 7,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/formatting.py::format_customer_name",
@@ -768,7 +844,8 @@
       "line_start": 10,
       "line_end": 12,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/formatting.py::humanize_status",
@@ -778,7 +855,8 @@
       "line_start": 15,
       "line_end": 19,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/pagination.py",
@@ -788,7 +866,8 @@
       "line_start": 1,
       "line_end": 36,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/pagination.py::build_page_links",
@@ -798,7 +877,8 @@
       "line_start": 30,
       "line_end": 36,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/pagination.py::paginate",
@@ -808,7 +888,8 @@
       "line_start": 4,
       "line_end": 27,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/validation.py",
@@ -818,7 +899,8 @@
       "line_start": 1,
       "line_end": 45,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/validation.py::sanitize_string",
@@ -828,7 +910,8 @@
       "line_start": 16,
       "line_end": 22,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/validation.py::validate_email",
@@ -838,7 +921,8 @@
       "line_start": 10,
       "line_end": 13,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     },
     {
       "id": "utils/validation.py::validate_order_payload",
@@ -848,7 +932,8 @@
       "line_start": 25,
       "line_end": 45,
       "source": null,
-      "accessor_kind": null
+      "accessor_kind": null,
+      "has_decorators": false
     }
   ],
   "edges": [

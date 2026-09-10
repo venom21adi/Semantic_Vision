@@ -1,0 +1,11 @@
+{
+  "groups": [
+    {
+      "node_ids": [
+        "services/notifications.py::_send_email",
+        "services/notifications.py::_send_sms"
+      ],
+      "size": 2
+    }
+  ]
+}

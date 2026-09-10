@@ -1,0 +1,3 @@
+{
+  "markdown": "## Top priorities\n\n- `validate_order_payload (utils/validation.py)`: complexity 10, call-chain depth 1 (hotspot)\n- `transition_order_status (services/orders.py)`: complexity 8, call-chain depth 3 (hotspot)\n- `get_customer_summary (services/customers.py)`: complexity 6, call-chain depth 2 (hotspot)\n- `process_payment (services/payments.py)`: complexity 6, call-chain depth 1 (hotspot)\n- `flag_high_value_customers (services/customers.py)`: complexity 5, call-chain depth 1 (hotspot)\n\n## Why these first\n\nTop complexity risks and hotspots prioritize functions that are both complex and frequently changed, increasing the risk of bugs and maintaining difficulties.\n\n## Quick wins\n\n- None\n\n## Notes\n\nNone."
+}

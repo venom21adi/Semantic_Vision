@@ -10,14 +10,17 @@
  * chooses it), not a filesystem path.
  */
 
-import { ApiError } from './client'
+import { ApiError, RecommendationsUnavailableError } from './client'
 import type {
   ComplexityResponse,
   DbConnectionIngestResponse,
   DbtManifestIngestResponse,
+  DeadCodeResponse,
+  DependencyRiskResponse,
   DocIndexResponse,
   DocResponse,
   DocRootResponse,
+  DuplicatesResponse,
   FlowchartResponse,
   FunctionSourceResponse,
   GraphResponse,
@@ -61,6 +64,14 @@ interface DemoBundle {
   functionSource: Record<string, FunctionSourceResponse>
   docs: Record<string, string>
   dbtIngest: DbtManifestIngestResponse | null
+  deadCode: DeadCodeResponse
+  duplicates: DuplicatesResponse
+  dependencyRisk: DependencyRiskResponse
+  /** `null` for a slug this session never ran
+   * `scripts/generate_demo_recommendations.py` for (falls back to
+   * `RecommendationsUnavailableError`, same as a real backend with no AI
+   * provider configured). */
+  recommendations: string | null
 }
 
 const DEMO_BASE = `${import.meta.env.BASE_URL}demo`
@@ -143,13 +154,24 @@ async function fetchBundle(slug: string): Promise<DemoBundle> {
   const base = `${DEMO_BASE}/${slug}`
   const meta = await loadMeta(slug)
 
-  const [complexity, impact, flowchart, functionSource, docs] = await Promise.all([
-    fetchJson<ComplexityResponse>(`${base}/complexity.json`),
-    fetchJson<Record<string, ImpactResponse>>(`${base}/impact.json`),
-    fetchJson<Record<string, FlowchartResponse>>(`${base}/flowchart.json`),
-    fetchJson<Record<string, FunctionSourceResponse>>(`${base}/function-source.json`),
-    fetchJson<Record<string, string>>(`${base}/docs.json`).catch(() => ({})),
-  ])
+  const [complexity, impact, flowchart, functionSource, docs, deadCode, duplicates, dependencyRisk, recommendations] =
+    await Promise.all([
+      fetchJson<ComplexityResponse>(`${base}/complexity.json`),
+      fetchJson<Record<string, ImpactResponse>>(`${base}/impact.json`),
+      fetchJson<Record<string, FlowchartResponse>>(`${base}/flowchart.json`),
+      fetchJson<Record<string, FunctionSourceResponse>>(`${base}/function-source.json`),
+      fetchJson<Record<string, string>>(`${base}/docs.json`).catch(() => ({})),
+      fetchJson<DeadCodeResponse>(`${base}/dead-code.json`).catch(() => ({ candidates: [] })),
+      fetchJson<DuplicatesResponse>(`${base}/duplicates.json`).catch(() => ({ groups: [] })),
+      fetchJson<DependencyRiskResponse>(`${base}/dependency-risk.json`).catch(() => ({
+        available: false,
+        risks: [],
+        message: null,
+      })),
+      fetchJson<{ markdown: string }>(`${base}/recommendations.json`)
+        .then((r) => r.markdown)
+        .catch(() => null),
+    ])
 
   let graphPre: GraphResponse
   let graphPost: GraphResponse | null = null
@@ -165,7 +187,21 @@ async function fetchBundle(slug: string): Promise<DemoBundle> {
     graphPre = await fetchJson<GraphResponse>(`${base}/graph.json`)
   }
 
-  return { meta, graphPre, graphPost, complexity, impact, flowchart, functionSource, docs, dbtIngest }
+  return {
+    meta,
+    graphPre,
+    graphPost,
+    complexity,
+    impact,
+    flowchart,
+    functionSource,
+    docs,
+    dbtIngest,
+    deadCode,
+    duplicates,
+    dependencyRisk,
+    recommendations,
+  }
 }
 
 function loadBundle(slug: string): Promise<DemoBundle> {
@@ -306,6 +342,24 @@ export async function getComplexity(path: string, _language: string): Promise<Co
   return bundle.complexity
 }
 
+export async function getDeadCode(path: string, _language: string): Promise<DeadCodeResponse> {
+  const bundle = await loadBundle(path)
+  return bundle.deadCode
+}
+
+export async function getDuplicates(path: string, _language: string): Promise<DuplicatesResponse> {
+  const bundle = await loadBundle(path)
+  return bundle.duplicates
+}
+
+export async function getDependencyRisk(
+  path: string,
+  _language: string,
+): Promise<DependencyRiskResponse> {
+  const bundle = await loadBundle(path)
+  return bundle.dependencyRisk
+}
+
 export async function getFlowchart(
   path: string,
   _language: string,
@@ -371,6 +425,37 @@ export async function* streamDoc(
     throw new ApiError(
       404,
       'AI documentation is precomputed for a handful of functions in this demo — try one of the highlighted functions, or watch the recording above.',
+    )
+  }
+
+  for (let i = 0; i < markdown.length; i += DOC_CHUNK_SIZE) {
+    if (signal?.aborted) return
+    await delay(DOC_CHUNK_DELAY_MS)
+    if (signal?.aborted) return
+    yield markdown.slice(i, i + DOC_CHUNK_SIZE)
+  }
+}
+
+/** Same fake-stream replay as `streamDoc`, for the Code Health lens's AI
+ * Recommendations tab -- precomputed once per demo repo by
+ * `scripts/generate_demo_recommendations.py` (real Ollama output, not
+ * fabricated text), rather than generated live. `_dependencyRisks` is
+ * ignored: the precomputed markdown already reflects whatever dependency
+ * data was available when that script ran, and there's no live provider
+ * call here to steer with a fresher one. */
+export async function* streamCodeHealthRecommendations(
+  path: string,
+  _language: string,
+  _provider: string,
+  _model: string | undefined,
+  _dependencyRisks: unknown,
+  signal?: AbortSignal,
+): AsyncGenerator<string> {
+  const bundle = await loadBundle(path)
+  const markdown = bundle.recommendations
+  if (!markdown) {
+    throw new RecommendationsUnavailableError(
+      'AI recommendations are precomputed for a subset of repos in this demo — try the Python repo, or watch the recording above.',
     )
   }
 

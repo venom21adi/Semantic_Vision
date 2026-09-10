@@ -1,0 +1,43 @@
+{
+  "available": true,
+  "risks": [
+    {
+      "package": "follow-redirects",
+      "version": "1.16.0",
+      "ecosystem": "npm",
+      "vulnerabilities": [],
+      "importer_node_ids": [
+        "adapters/http.js"
+      ]
+    },
+    {
+      "package": "form-data",
+      "version": "4.0.6",
+      "ecosystem": "npm",
+      "vulnerabilities": [],
+      "importer_node_ids": [
+        "env/classes/FormData.js",
+        "platform/node/classes/FormData.js"
+      ]
+    },
+    {
+      "package": "https-proxy-agent",
+      "version": "5.0.1",
+      "ecosystem": "npm",
+      "vulnerabilities": [],
+      "importer_node_ids": [
+        "adapters/http.js"
+      ]
+    },
+    {
+      "package": "proxy-from-env",
+      "version": "2.1.0",
+      "ecosystem": "npm",
+      "vulnerabilities": [],
+      "importer_node_ids": [
+        "adapters/http.js"
+      ]
+    }
+  ],
+  "message": null
+}

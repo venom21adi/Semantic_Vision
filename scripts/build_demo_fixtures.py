@@ -105,7 +105,7 @@ def build_repo_bundle(client: TestClient, *, slug: str, repo_path: str, language
     stats = parse_result.json()
     print("parsed:", stats)
 
-    graph_pre = client.get("/api/graph", params={"path": repo_path}).json()
+    graph_pre = client.get("/api/graph", params={"path": repo_path, "language": language}).json()
     dump(out_dir / ("graph-pre-dbt.json" if dbt_manifest_path else "graph.json"), graph_pre)
 
     dbt_ingest = None
@@ -121,11 +121,43 @@ def build_repo_bundle(client: TestClient, *, slug: str, repo_path: str, language
         print("dbt ingest:", dbt_ingest)
         dump(out_dir / "dbt-ingest.json", dbt_ingest)
 
-        graph_active = client.get("/api/graph", params={"path": repo_path}).json()
+        graph_active = client.get(
+            "/api/graph", params={"path": repo_path, "language": language}
+        ).json()
         dump(out_dir / "graph-post-dbt.json", graph_active)
 
-    complexity = client.get("/api/complexity", params={"path": repo_path}).json()
+    complexity = client.get(
+        "/api/complexity", params={"path": repo_path, "language": language}
+    ).json()
     dump(out_dir / "complexity.json", complexity)
+
+    dead_code = client.get(
+        "/api/dead-code", params={"path": repo_path, "language": language}
+    ).json()
+    dump(out_dir / "dead-code.json", dead_code)
+
+    duplicates = client.get(
+        "/api/duplicates", params={"path": repo_path, "language": language}
+    ).json()
+    dump(out_dir / "duplicates.json", duplicates)
+
+    # The one endpoint here that makes a real outbound network call
+    # (osv.dev) -- baked into a static fixture at build time so the
+    # deployed demo itself never needs live network access. Degrades to
+    # an "unavailable" fixture rather than failing the whole build if
+    # osv.dev can't be reached from wherever this script runs.
+    try:
+        dep_risk_resp = client.post(
+            "/api/dependencies/risk",
+            params={"path": repo_path, "language": language},
+            json={"confirm_network_access": True},
+        )
+        dep_risk_resp.raise_for_status()
+        dependency_risk = dep_risk_resp.json()
+    except Exception as exc:  # noqa: BLE001
+        print(f"WARNING: dependency risk scan failed ({exc}); writing unavailable fixture")
+        dependency_risk = {"available": False, "risks": [], "message": str(exc)}
+    dump(out_dir / "dependency-risk.json", dependency_risk)
 
     function_ids = [n["id"] for n in graph_active["nodes"] if n["kind"] == "function"]
     table_column_ids = [n["id"] for n in graph_active["nodes"] if n["kind"] in ("table", "column")]
@@ -135,16 +167,22 @@ def build_repo_bundle(client: TestClient, *, slug: str, repo_path: str, language
     source_by_id = {}
 
     for node_id in function_ids + table_column_ids:
-        impact_resp = client.get("/api/impact", params={"path": repo_path, "id": node_id})
+        impact_resp = client.get(
+            "/api/impact", params={"path": repo_path, "id": node_id, "language": language}
+        )
         if impact_resp.status_code == 200:
             impact_by_id[node_id] = impact_resp.json()
 
     for node_id in function_ids:
-        flowchart_resp = client.get("/api/flowchart", params={"path": repo_path, "id": node_id})
+        flowchart_resp = client.get(
+            "/api/flowchart", params={"path": repo_path, "id": node_id, "language": language}
+        )
         if flowchart_resp.status_code == 200:
             flowchart_by_id[node_id] = flowchart_resp.json()
 
-        source_resp = client.get("/api/function-source", params={"path": repo_path, "id": node_id})
+        source_resp = client.get(
+            "/api/function-source", params={"path": repo_path, "id": node_id, "language": language}
+        )
         if source_resp.status_code == 200:
             source_by_id[node_id] = source_resp.json()
 

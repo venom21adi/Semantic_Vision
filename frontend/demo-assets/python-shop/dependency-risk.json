@@ -1,0 +1,16 @@
+{
+  "available": true,
+  "risks": [
+    {
+      "package": "sqlalchemy",
+      "version": null,
+      "ecosystem": "PyPI",
+      "vulnerabilities": [],
+      "importer_node_ids": [
+        "db.py",
+        "models.py"
+      ]
+    }
+  ],
+  "message": null
+}
