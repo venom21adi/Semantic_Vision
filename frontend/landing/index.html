@@ -573,40 +573,98 @@
     transform: none;
   }
 
-  /* ---------- Solution overview cards ---------- */
-  .solution-grid {
+  /* ---------- Solution showcase (auto-cycling tabs + stage) ----------
+     A different motion metaphor from the MCP orbit -- a vertical tab
+     rail with a progress bar that auto-advances through each lens, and
+     a stage panel that swaps in a big icon + short copy. Click a tab to
+     pin it and stop the auto-advance, same pattern as the MCP wheel. */
+  .showcase {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .solution-card {
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    padding: 24px;
-    transition: border-color 0.15s ease, transform 0.15s ease;
+    padding: 10px;
   }
-  .solution-card:hover { border-color: var(--featured-border); transform: translateY(-2px); }
-  .solution-icon {
-    width: 38px; height: 38px;
+  .showcase-tabs { display: flex; flex-direction: column; gap: 2px; position: relative; }
+  .showcase-tab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: 10px;
-    display: grid; place-items: center;
-    background: var(--accent-soft-bg);
-    color: var(--accent-text);
-    margin-bottom: 16px;
+    padding: 11px 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .solution-icon svg { width: 19px; height: 19px; }
-  .solution-tag {
-    font-size: 11.5px;
+  .showcase-tab:hover { background: var(--bg-panel-raised); }
+  .showcase-tab.is-active { background: var(--featured-tint); color: var(--text); border-color: var(--featured-border); }
+  .showcase-tab-icon {
+    width: 30px; height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    background: var(--bg-panel-raised);
+    color: var(--text-dim);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .showcase-tab.is-active .showcase-tab-icon { background: var(--accent); color: #fff; }
+  .showcase-tab-icon svg { width: 15px; height: 15px; }
+  .showcase-tab-text { display: flex; flex-direction: column; gap: 1px; font-size: 13.5px; font-weight: 700; }
+  .showcase-tab-text em {
+    font-style: normal;
+    font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--accent-text);
-    margin-bottom: 6px;
-    display: block;
   }
-  .solution-card h4 { margin: 0 0 8px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-  .solution-card p { margin: 0; color: var(--text-muted); font-size: 14px; }
+  .showcase-progress { height: 2px; background: var(--border-subtle); border-radius: 999px; margin: 8px 12px 4px; overflow: hidden; }
+  .showcase-progress i { display: block; height: 100%; width: 0%; background: var(--accent); border-radius: 999px; }
+  .showcase-progress i.is-animating { transition: width 2.6s linear; width: 100%; }
+
+  .showcase-stage {
+    position: relative;
+    background: var(--bg-panel-raised);
+    border-radius: 14px;
+    min-height: 320px;
+    overflow: hidden;
+  }
+  .showcase-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, var(--hero-glow), transparent 60%);
+    pointer-events: none;
+  }
+  .stage-panel {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+    padding: 40px 44px;
+    position: relative;
+  }
+  .stage-panel.is-active { display: flex; animation: stage-in 0.45s ease; }
+  @keyframes stage-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .stage-icon {
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    display: grid; place-items: center;
+    background: var(--accent-soft-bg);
+    color: var(--accent-text);
+    margin-bottom: 20px;
+  }
+  .stage-icon svg { width: 30px; height: 30px; }
+  .stage-panel h4 { margin: 0 0 10px; font-size: 21px; font-weight: 800; letter-spacing: -0.015em; }
+  .stage-panel p { margin: 0; max-width: 440px; color: var(--text-muted); font-size: 14.5px; line-height: 1.6; }
+
   .solution-more {
     text-align: center;
     margin-top: 44px;
@@ -780,8 +838,9 @@
     width: clamp(92px, 28%, 130px);
     aspect-ratio: 1 / 1;
     border-radius: 999px;
-    background: var(--featured-tint);
+    background: var(--accent-soft-bg);
     border: 1.5px solid var(--featured-border);
+    box-shadow: 0 0 0 8px var(--bg), 0 8px 24px -10px rgba(142, 111, 243, 0.45);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center;
     color: var(--accent-text);
@@ -799,7 +858,9 @@
     transform-origin: 0 0;
     transform: rotate(var(--angle));
     z-index: 0;
+    transition: background 0.2s ease, height 0.2s ease;
   }
+  .mcp-spoke.is-active { background: var(--accent); height: 1.5px; }
   .mcp-node {
     position: absolute;
     top: calc(50% + sin(var(--angle)) * 38%);
@@ -1031,8 +1092,11 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 980px) {
-    .solution-grid { grid-template-columns: repeat(2, 1fr); }
     .privacy-grid { grid-template-columns: repeat(2, 1fr); }
+    .showcase { grid-template-columns: 1fr; }
+    .showcase-tabs { flex-direction: row; flex-wrap: wrap; }
+    .showcase-tab { flex: 1 1 auto; }
+    .showcase-progress { display: none; }
   }
   @media (max-width: 860px) {
     .nav-links { display: none; }
@@ -1041,8 +1105,10 @@
     .feature-row.reverse .feature-shot { order: 2; }
     .trio { grid-template-columns: 1fr; }
     .paths { grid-template-columns: 1fr; }
-    .solution-grid { grid-template-columns: 1fr; }
     .privacy-grid { grid-template-columns: 1fr; }
+    .showcase-tab-text { display: none; }
+    .showcase-tab { padding: 10px; justify-content: center; }
+    .stage-panel { padding: 32px 26px; }
     .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
     .flow-branch-item::before { display: none; }
     section { padding: 76px 0; }
@@ -1214,42 +1280,66 @@
       <h2>Everything you need to understand a codebase.</h2>
     </div>
 
-    <div class="solution-grid" data-reveal>
-      <div class="solution-card">
-        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.6"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <span class="solution-tag">Understand</span>
-        <h4>Interactive Call Graph</h4>
-        <p>The whole repo, on one zoomable screen.</p>
+    <div class="showcase" data-reveal>
+      <div class="showcase-tabs">
+        <button type="button" class="showcase-tab is-active" data-index="0">
+          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.6"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <span class="showcase-tab-text"><em>Understand</em>Interactive Call Graph</span>
+        </button>
+        <button type="button" class="showcase-tab" data-index="1">
+          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="showcase-tab-text"><em>Predict</em>Impact Analysis</span>
+        </button>
+        <button type="button" class="showcase-tab" data-index="2">
+          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <span class="showcase-tab-text"><em>Trace</em>Execution Flowcharts</span>
+        </button>
+        <button type="button" class="showcase-tab" data-index="3">
+          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <span class="showcase-tab-text"><em>Measure</em>Code Health</span>
+        </button>
+        <button type="button" class="showcase-tab" data-index="4">
+          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <span class="showcase-tab-text"><em>Explain</em>AI Documentation</span>
+        </button>
+        <button type="button" class="showcase-tab" data-index="5">
+          <span class="showcase-tab-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <span class="showcase-tab-text"><em>Connect</em>Code-to-Data Lineage</span>
+        </button>
+        <div class="showcase-progress"><i id="showcase-progress-bar"></i></div>
       </div>
-      <div class="solution-card">
-        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <span class="solution-tag">Predict</span>
-        <h4>Impact Analysis</h4>
-        <p>Every caller, before you touch a line.</p>
-      </div>
-      <div class="solution-card">
-        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <span class="solution-tag">Trace</span>
-        <h4>Execution Flowcharts</h4>
-        <p>Branches, loops, and I/O — mapped out.</p>
-      </div>
-      <div class="solution-card">
-        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <span class="solution-tag">Measure</span>
-        <h4>Code Health</h4>
-        <p>The parts of your codebase worth worrying about.</p>
-      </div>
-      <div class="solution-card">
-        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <span class="solution-tag">Explain</span>
-        <h4>AI Documentation</h4>
-        <p>Real docs, generated from real context.</p>
-      </div>
-      <div class="solution-card">
-        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <span class="solution-tag">Connect</span>
-        <h4>Code-to-Data Lineage</h4>
-        <p>Code → models → tables → columns.</p>
+
+      <div class="showcase-stage">
+        <div class="stage-panel is-active" data-index="0">
+          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.5"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="6" r="2.8" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="9" r="2.8" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="19" r="2.8" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h4>Interactive Call Graph</h4>
+          <p>Every directory, file, class, and function — as one zoomable, color-coded graph. Structure that would take an hour of grepping, visible on one screen.</p>
+        </div>
+        <div class="stage-panel" data-index="1">
+          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Impact Analysis</h4>
+          <p>Know what depends on a function, table, or column before you change it — direct and transitive callers, circular chains, the full blast radius.</p>
+        </div>
+        <div class="stage-panel" data-index="2">
+          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <h4>Execution Flowcharts</h4>
+          <p>Trace how a function actually behaves — branches, loops, I/O, and calls to other functions — without stepping through the source by hand.</p>
+        </div>
+        <div class="stage-panel" data-index="3">
+          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h4>Code Health</h4>
+          <p>Find the parts of your codebase worth worrying about: complexity, hotspots, coverage risk, dead code, duplicates, and dependency vulnerabilities.</p>
+        </div>
+        <div class="stage-panel" data-index="4">
+          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="4.4" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h4>AI Documentation</h4>
+          <p>Generate documentation from the actual context around a function or file — source, callers, callees, imports. Local Ollama, OpenAI, or Anthropic.</p>
+        </div>
+        <div class="stage-panel" data-index="5">
+          <div class="stage-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h4>Code-to-Data Lineage</h4>
+          <p>Follow application logic into the data it touches — code → models → tables → columns. SQLAlchemy, dbt manifests, and live database connections.</p>
+        </div>
       </div>
     </div>
 
@@ -1849,21 +1939,110 @@
 })();
 
 (function () {
+  var orbit = document.querySelector('.mcp-orbit');
   var nodes = document.querySelectorAll('.mcp-node');
+  var spokes = document.querySelectorAll('.mcp-spoke');
   var title = document.getElementById('mcp-panel-title');
   var sig = document.getElementById('mcp-panel-sig');
   var desc = document.getElementById('mcp-panel-desc');
   if (!nodes.length || !title) return;
 
-  nodes.forEach(function (btn) {
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var current = 0;
+  var timer = null;
+
+  function activate(index) {
+    current = index;
+    nodes.forEach(function (b) { b.classList.remove('is-active'); });
+    spokes.forEach(function (s) { s.classList.remove('is-active'); });
+    var btn = nodes[index];
+    btn.classList.add('is-active');
+    if (spokes[index]) spokes[index].classList.add('is-active');
+    title.textContent = btn.dataset.title;
+    sig.textContent = btn.dataset.sig;
+    desc.textContent = btn.dataset.desc;
+  }
+
+  function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+  function startAuto() {
+    if (timer || reduceMotion) return;
+    timer = setInterval(function () { activate((current + 1) % nodes.length); }, 2600);
+  }
+
+  nodes.forEach(function (btn, i) {
     btn.addEventListener('click', function () {
-      nodes.forEach(function (b) { b.classList.remove('is-active'); });
-      btn.classList.add('is-active');
-      title.textContent = btn.dataset.title;
-      sig.textContent = btn.dataset.sig;
-      desc.textContent = btn.dataset.desc;
+      stopAuto();
+      activate(i);
     });
   });
+
+  activate(0);
+
+  if (orbit && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) startAuto();
+        else stopAuto();
+      });
+    }, { threshold: 0.4 });
+    io.observe(orbit);
+  } else {
+    startAuto();
+  }
+})();
+
+(function () {
+  var showcase = document.querySelector('.showcase');
+  var tabs = document.querySelectorAll('.showcase-tab');
+  var panels = document.querySelectorAll('.stage-panel');
+  var bar = document.getElementById('showcase-progress-bar');
+  if (!showcase || !tabs.length) return;
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var current = 0;
+  var timer = null;
+
+  function activate(index) {
+    current = index;
+    tabs.forEach(function (t) { t.classList.remove('is-active'); });
+    panels.forEach(function (p) { p.classList.remove('is-active'); });
+    tabs[index].classList.add('is-active');
+    panels[index].classList.add('is-active');
+    if (bar) {
+      bar.classList.remove('is-animating');
+      void bar.offsetWidth;
+      if (timer) bar.classList.add('is-animating');
+    }
+  }
+
+  function stopAuto() {
+    if (timer) { clearInterval(timer); timer = null; }
+    if (bar) bar.classList.remove('is-animating');
+  }
+  function startAuto() {
+    if (timer || reduceMotion) return;
+    if (bar) { bar.classList.remove('is-animating'); void bar.offsetWidth; bar.classList.add('is-animating'); }
+    timer = setInterval(function () { activate((current + 1) % tabs.length); }, 2600);
+  }
+
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener('click', function () {
+      stopAuto();
+      activate(i);
+    });
+  });
+
+  if ('IntersectionObserver' in window) {
+    var io2 = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) startAuto();
+        else stopAuto();
+      });
+    }, { threshold: 0.4 });
+    io2.observe(showcase);
+  } else {
+    startAuto();
+  }
 })();
 </script>
 </body>
