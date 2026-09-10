@@ -128,6 +128,11 @@
   @media (prefers-reduced-motion: reduce) {
     html.js [data-reveal] { opacity: 1; transform: none; transition: none; }
     html { scroll-behavior: auto; }
+    .flow-diagram .flow-node, .flow-diagram .flow-branch-item, .flow-diagram .flow-connector,
+    .workflow-track > * {
+      opacity: 1 !important; transform: none !important; transition: none !important;
+    }
+    .workflow-arrow svg { animation: none !important; }
   }
 
   /* ---------- Nav ---------- */
@@ -348,13 +353,14 @@
 
   /* ---------- Section shell ---------- */
   section { padding: 108px 0; }
-  section.section-tight { padding: 84px 0; }
+  section.section-tight { padding: 52px 0; }
   section + section { border-top: 1px solid var(--border-subtle); }
   .section-head {
     text-align: center;
     max-width: 640px;
     margin: 0 auto 64px;
   }
+  .section-tight .section-head { margin: 0 auto 32px; }
   .section-head.wide { max-width: 760px; }
   .kicker {
     font-size: 12.5px;
@@ -378,36 +384,36 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     font-family: var(--font-mono);
-    font-size: 13.5px;
+    font-size: 13px;
     color: var(--text-dim);
-    margin: 28px 0 32px;
+    margin: 18px 0 20px;
   }
   .pipeline span {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: 8px;
-    padding: 7px 13px;
+    padding: 6px 12px;
   }
   .pipeline .arrow { border: none; background: none; padding: 0; color: var(--text-dim); }
   .problem-copy { max-width: 640px; margin: 0 auto; text-align: center; }
-  .problem-copy p { color: var(--text-muted); font-size: 15.5px; margin: 0 0 14px; }
+  .problem-copy p { color: var(--text-muted); font-size: 15px; margin: 0 0 10px; }
   .problem-verdict {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
-    margin-top: 20px;
+    margin-top: 8px;
   }
   .problem-verdict .dim { color: var(--text-dim); font-weight: 600; }
   .problem-verdict .bright { color: var(--text); }
 
-  .flow-diagram { display: flex; flex-direction: column; align-items: center; margin: 56px auto 0; }
+  .flow-diagram { display: flex; flex-direction: column; align-items: center; margin: 34px auto 0; }
   .flow-node {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: 12px;
-    padding: 13px 24px;
-    font-size: 14px;
+    padding: 10px 22px;
+    font-size: 13.5px;
     font-weight: 600;
     color: var(--text-faint);
     white-space: nowrap;
@@ -417,16 +423,48 @@
     background: var(--featured-tint);
     color: var(--accent-text);
   }
-  .flow-connector { width: 1px; height: 30px; background: var(--border); }
-  .flow-branch { display: flex; gap: 32px; border-top: 1px solid var(--border); margin-top: 30px; }
-  .flow-branch-item { position: relative; padding-top: 30px; }
+  .flow-connector { width: 1px; height: 20px; background: var(--border); }
+  .flow-branch { display: flex; gap: 24px; border-top: 1px solid var(--border); margin-top: 20px; }
+  .flow-branch-item { position: relative; padding-top: 20px; }
   .flow-branch-item::before {
     content: '';
     position: absolute;
     top: 0; left: 50%;
-    width: 1px; height: 30px;
+    width: 1px; height: 20px;
     background: var(--border);
   }
+
+  /* Sequenced reveal: each node/connector/branch-item animates in turn once
+     the diagram scrolls into view, instead of the whole block fading in at
+     once -- makes a static box diagram read as a process instead of a wall
+     of boxes. */
+  .flow-diagram .flow-node,
+  .flow-diagram .flow-branch-item {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .flow-diagram.is-visible .flow-node,
+  .flow-diagram.is-visible .flow-branch-item {
+    opacity: 1;
+    transform: none;
+  }
+  .flow-diagram .flow-connector {
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+  .flow-diagram.is-visible .flow-connector { transform: scaleY(1); }
+  .flow-diagram.is-visible > *:nth-child(1) { transition-delay: 0s; }
+  .flow-diagram.is-visible > *:nth-child(2) { transition-delay: 0.1s; }
+  .flow-diagram.is-visible > *:nth-child(3) { transition-delay: 0.2s; }
+  .flow-diagram.is-visible > *:nth-child(4) { transition-delay: 0.3s; }
+  .flow-diagram.is-visible > *:nth-child(5) { transition-delay: 0.4s; }
+  .flow-diagram.is-visible > *:nth-child(7) { transition-delay: 0.9s; }
+  .flow-diagram.is-visible > *:nth-child(8) { transition-delay: 1s; }
+  .flow-diagram.is-visible .flow-branch-item:nth-child(1) { transition-delay: 0.55s; }
+  .flow-diagram.is-visible .flow-branch-item:nth-child(2) { transition-delay: 0.63s; }
+  .flow-diagram.is-visible .flow-branch-item:nth-child(3) { transition-delay: 0.71s; }
 
   /* ---------- Workflow track ---------- */
   .workflow-track {
@@ -439,10 +477,10 @@
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    padding: 16px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     text-decoration: none;
     color: inherit;
     transition: border-color 0.15s ease, transform 0.15s ease;
@@ -458,15 +496,15 @@
     place-items: center;
   }
   .workflow-step .thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .workflow-step .thumb svg { width: 30px; height: 30px; color: var(--accent-text); }
+  .workflow-step .thumb svg { width: 26px; height: 26px; color: var(--accent-text); }
   .workflow-step .num {
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--text-dim);
     font-weight: 600;
   }
-  .workflow-step h4 { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
-  .workflow-step .q { margin: 0; font-size: 12.5px; color: var(--text-muted); font-style: italic; }
+  .workflow-step h4 { margin: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -0.005em; }
+  .workflow-step .q { margin: 0; font-size: 12px; color: var(--text-muted); font-style: italic; }
   .workflow-arrow {
     display: flex;
     align-items: center;
@@ -474,6 +512,32 @@
     color: var(--text-dim);
   }
   .workflow-arrow svg { width: 14px; height: 14px; }
+
+  /* Staggered reveal, in reading order, plus a continuous drift on the
+     chevrons so the strip reads as a sequence in motion rather than a
+     static row of cards. */
+  .workflow-track > * {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .workflow-track.is-visible > * { opacity: 1; transform: none; }
+  .workflow-track.is-visible > *:nth-child(1) { transition-delay: 0s; }
+  .workflow-track.is-visible > *:nth-child(2) { transition-delay: 0.08s; }
+  .workflow-track.is-visible > *:nth-child(3) { transition-delay: 0.16s; }
+  .workflow-track.is-visible > *:nth-child(4) { transition-delay: 0.24s; }
+  .workflow-track.is-visible > *:nth-child(5) { transition-delay: 0.32s; }
+  .workflow-track.is-visible > *:nth-child(6) { transition-delay: 0.4s; }
+  .workflow-track.is-visible > *:nth-child(7) { transition-delay: 0.48s; }
+  .workflow-track.is-visible > *:nth-child(8) { transition-delay: 0.56s; }
+  .workflow-track.is-visible > *:nth-child(9) { transition-delay: 0.64s; }
+  .workflow-track.is-visible > *:nth-child(10) { transition-delay: 0.72s; }
+  .workflow-track.is-visible > *:nth-child(11) { transition-delay: 0.8s; }
+  @keyframes workflow-arrow-drift {
+    0%, 100% { transform: translateX(0); opacity: 0.55; }
+    50% { transform: translateX(3px); opacity: 1; }
+  }
+  .workflow-arrow svg { animation: workflow-arrow-drift 1.7s ease-in-out infinite; }
 
   /* ---------- Solution overview cards ---------- */
   .solution-grid {
@@ -566,17 +630,17 @@
   .feature-shot img, .hero-shot img { cursor: zoom-in; transition: filter 0.15s ease; }
   .feature-shot img:hover, .hero-shot img:hover { filter: brightness(1.06); }
 
-  /* ---------- Key message callout ---------- */
+  /* ---------- Key message (pull-quote, not a banner) ---------- */
   .key-message {
-    margin-top: 8px;
-    padding: 22px 26px;
-    border-radius: 12px;
-    background: var(--accent-soft-bg);
-    border: 1px solid var(--featured-border);
-    color: var(--accent-text);
-    font-size: 15.5px;
-    font-weight: 600;
-    line-height: 1.5;
+    max-width: 620px;
+    margin: 40px auto 0;
+    padding-left: 20px;
+    border-left: 3px solid var(--accent);
+    color: var(--text);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.45;
   }
 
   /* ---------- Lightbox ---------- */
@@ -869,7 +933,7 @@
     .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
     .flow-branch-item::before { display: none; }
     section { padding: 76px 0; }
-    section.section-tight { padding: 56px 0; }
+    section.section-tight { padding: 40px 0; }
     .hero { padding: 72px 0 60px; }
   }
 </style>
@@ -946,8 +1010,7 @@
       <div class="pipeline">
         <span>grep</span><span class="arrow">→</span><span>jump between files</span><span class="arrow">→</span><span>trace dependencies</span><span class="arrow">→</span><span>build a mental model</span><span class="arrow">→</span><span>hope you didn't miss something</span>
       </div>
-      <div class="problem-verdict"><span class="dim">A git diff tells you</span> <span class="bright">what changed.</span></div>
-      <div class="problem-verdict"><span class="bright">Semantic Vision shows you what that change means.</span></div>
+      <div class="problem-verdict"><span class="dim">A git diff tells you what changed —</span> <span class="bright">Semantic Vision shows you what it means.</span></div>
     </div>
 
     <div class="flow-diagram" data-reveal>
