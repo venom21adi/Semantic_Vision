@@ -729,16 +729,32 @@
 
   /* ---------- MCP diagram ---------- */
   .mcp-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
-  .mcp-copy ul { margin: 18px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
-  .mcp-copy li {
-    font-size: 13.5px;
-    color: var(--text-faint);
+  .mcp-groups { display: flex; flex-direction: column; gap: 16px; margin: 20px 0 0; }
+  .mcp-group-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--accent-text);
+    margin-bottom: 9px;
+  }
+  .mcp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mcp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
-    border-radius: 7px;
-    padding: 7px 11px;
+    border-radius: 999px;
+    padding: 7px 14px;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
   }
+  .mcp-chip:hover { border-color: var(--featured-border); color: var(--accent-text); background: var(--featured-tint); }
+  .mcp-chip::before { content: ''; width: 5px; height: 5px; border-radius: 999px; background: var(--teal-light); flex-shrink: 0; }
   .mcp-diagram {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
@@ -1369,21 +1385,35 @@
       <div class="mcp-copy">
         <h3 style="margin: 0 0 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">Agents can query the same graph you see</h3>
         <p style="margin: 0 0 16px; color: var(--text-muted); font-size: 15px;">Every tool below reuses the same warm-parsed graph as the web app and VS Code extension — an agent never has to re-derive structure it could just ask for.</p>
-        <ul>
-          <li>call graphs</li>
-          <li>impact analysis</li>
-          <li>callees</li>
-          <li>complexity</li>
-          <li>hotspots</li>
-          <li>dead code</li>
-          <li>coverage risk</li>
-          <li>duplicates</li>
-          <li>git-aware complexity diffs</li>
-          <li>execution flow</li>
-          <li>function source</li>
-        </ul>
-        <div class="key-message" style="margin-top: 22px;">Stop making your AI agent grep for context that Semantic Vision already computed.</div>
-        <div style="margin-top: 22px;">
+        <div class="mcp-groups">
+          <div class="mcp-group">
+            <span class="mcp-group-label">Map</span>
+            <div class="mcp-chips">
+              <span class="mcp-chip">call graphs</span>
+              <span class="mcp-chip">callees</span>
+              <span class="mcp-chip">execution flow</span>
+              <span class="mcp-chip">function source</span>
+            </div>
+          </div>
+          <div class="mcp-group">
+            <span class="mcp-group-label">Risk</span>
+            <div class="mcp-chips">
+              <span class="mcp-chip">complexity</span>
+              <span class="mcp-chip">hotspots</span>
+              <span class="mcp-chip">coverage risk</span>
+              <span class="mcp-chip">duplicates</span>
+              <span class="mcp-chip">dead code</span>
+              <span class="mcp-chip">git-aware complexity diffs</span>
+            </div>
+          </div>
+          <div class="mcp-group">
+            <span class="mcp-group-label">Impact</span>
+            <div class="mcp-chips">
+              <span class="mcp-chip">impact analysis</span>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 24px;">
           <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md" target="_blank" rel="noopener">View the MCP tools →</a>
         </div>
       </div>
