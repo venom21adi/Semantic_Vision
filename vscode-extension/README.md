@@ -1,14 +1,25 @@
 # Semantic Vision
 
-**See what an AI agent's edit — or your own — will break, before you merge it.**
+**AI can write your code in seconds. Understand it just as quickly — right inside VS Code.**
 
-Impact analysis, an interactive call graph, execution flowcharts, complexity
-reports, AI-generated documentation, and code-to-data lineage, right inside
-the editor — the same engine as the
+Semantic Vision is a context layer for AI-assisted coding: a map of the
+codebase that you and your AI agents can both use. Impact analysis, an
+interactive call graph, execution flowcharts, seven-signal Code Health,
+AI-generated documentation, and code-to-data lineage — the same engine as the
 [Semantic Vision](https://github.com/venom21adi/Semantic_Vision) web app, as
 a panel next to your code instead of a separate browser tab.
 
 ![Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/main/assets/impact-analysis-demo.gif)
+
+## Why
+
+Whether a teammate wrote it or an AI agent did, code still has to be
+understood before you can trust it. The traditional way — grep, jump between
+files, trace dependencies by hand, build a mental model, hope you didn't
+miss something — takes as long as it ever did, no matter how fast the code
+got written. Semantic Vision replaces all of that with one question:
+right-click a function and see its blast radius, its behavior, or its
+health, in seconds instead of an afternoon.
 
 ## Impact analysis
 
@@ -41,14 +52,20 @@ web app:
 - **Execution flowcharts** — right-click any function for its execution
   flowchart, built from its real AST/CST: entry and return points, decisions
   with Yes/No edges, loops with a visible back-edge, I/O calls, and calls out
-  to other functions. Works for both Python and JS/TS, including `switch`
+  to other functions. Works for Python, JS/TS, and Java, including `switch`
   fallthrough, `do...while`'s bottom-condition check, and labeled
   `break`/`continue`.
-- **Code Health** — a peer lens to the codebase graph, switched via a
-  header tab: a filterable, sortable ranked list across three tabs
-  (Complexity, computed from a real AST walk; Hotspots, complexity ×
-  how often a file actually changes; Dead code, zero-caller candidates).
-  Click any row to see exactly who calls it and what it calls, live.
+- **Code Health** — a peer lens to the codebase graph, switched via a header
+  tab: a filterable, sortable ranked list across seven signals — Complexity
+  (a real AST walk, not a line-count guess), Hotspots (complexity × how
+  often a file actually changes), Dead code (zero-caller candidates),
+  Coverage risk (complexity × blast radius × untested, from a coverage.py or
+  lcov report you provide), Duplicates (identical once names and literals
+  are stripped), Dependencies (known vulnerabilities via osv.dev — opt-in,
+  the one signal that reaches the network), and Recommendations (an AI pass
+  prioritizing across every signal above at once). Click any row to see
+  exactly who calls it and what it calls, live, or diff against any commit
+  to see whether an edit helped or hurt.
 - **AI-generated documentation** — right-click any function and choose
   **Document** to stream real Markdown documentation (Purpose, Parameters,
   Returns, Side Effects, Notes) assembled from its actual source, callers,
@@ -60,6 +77,18 @@ web app:
   connection string to add their tables, models, and columns to the same
   graph, reconciled by name. Flip **Data only** to read it as a pure lineage
   diagram, with impact analysis spanning code and data in one traversal.
+
+## Your AI agent can see the map too
+
+The same analysis this extension shows you is also available to coding
+agents over [MCP](https://modelcontextprotocol.io): call graphs, impact
+analysis, complexity, hotspots, dead code, coverage risk, duplicates,
+execution flow, and more, as tools Claude Code, Cursor, or any
+MCP-compatible agent can call directly — instead of grepping for context
+this project has already computed. Run `semantic-vision-mcp` from the main
+project alongside this extension; see
+[guides/mcp-server.md](https://github.com/venom21adi/Semantic_Vision/blob/main/guides/mcp-server.md)
+for setup.
 
 ## Requirements
 
@@ -85,7 +114,8 @@ app, backed by a FastAPI server that does the actual parsing.
 
 Nothing about your code is ever executed or sent anywhere — parsing is
 static, and the backend runs entirely on your own machine. Nothing leaves it
-unless you explicitly ask for AI-generated docs from a cloud provider.
+unless you explicitly ask for AI-generated docs from a cloud provider, or
+opt in to a dependency vulnerability scan.
 
 ## Getting started
 
@@ -97,8 +127,8 @@ unless you explicitly ask for AI-generated docs from a cloud provider.
 
 ## Learn more
 
-Full documentation, screenshots, and setup guides (AI provider setup,
-code-to-data lineage, multi-language support) live in the main project's
-[README](https://github.com/venom21adi/Semantic_Vision#readme) and
+Full documentation, screenshots, and setup guides (AI provider setup, the
+MCP server, code-to-data lineage, multi-language support) live in the main
+project's [README](https://github.com/venom21adi/Semantic_Vision#readme) and
 [guides/](https://github.com/venom21adi/Semantic_Vision/tree/main/guides)
 directory.
