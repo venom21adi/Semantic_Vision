@@ -2,14 +2,14 @@
 
 **AI can write your code in seconds. Understand it just as quickly — right inside VS Code.**
 
-Semantic Vision is a context layer for AI-assisted coding: a map of the
-codebase that you and your AI agents can both use. Impact analysis, an
+Semantic Vision is a codebase observability layer for AI-assisted coding: a
+map of the codebase that you and your AI agents can both use. Impact analysis, an
 interactive call graph, execution flowcharts, seven-signal Code Health,
 AI-generated documentation, and code-to-data lineage — the same engine as the
 [Semantic Vision](https://github.com/venom21adi/Semantic_Vision) web app, as
 a panel next to your code instead of a separate browser tab.
 
-![Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/main/assets/impact-analysis-demo.gif)
+![Impact analysis run on a real 6,650-node repository: clicking a caller brings it onto the graph, highlighted, while a circular call chain gets flagged automatically](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/impact-analysis-demo.gif)
 
 ## Why
 
@@ -43,40 +43,68 @@ production.
 ## Everything else, in the same panel
 
 Once the graph is open, every other feature works exactly as it does in the
-web app:
+web app.
 
-- **Interactive call graph** — every directory, file, class, and function as
-  a zoomable, color-coded graph with call/import/defines edges, plus
-  real-time search across the whole repo or scoped to one file. Dragged
-  layout and analysis state persist automatically.
-- **Execution flowcharts** — right-click any function for its execution
-  flowchart, built from its real AST/CST: entry and return points, decisions
-  with Yes/No edges, loops with a visible back-edge, I/O calls, and calls out
-  to other functions. Works for Python, JS/TS, and Java, including `switch`
-  fallthrough, `do...while`'s bottom-condition check, and labeled
-  `break`/`continue`.
-- **Code Health** — a peer lens to the codebase graph, switched via a header
-  tab: a filterable, sortable ranked list across seven signals — Complexity
-  (a real AST walk, not a line-count guess), Hotspots (complexity × how
-  often a file actually changes), Dead code (zero-caller candidates),
-  Coverage risk (complexity × blast radius × untested, from a coverage.py or
-  lcov report you provide), Duplicates (identical once names and literals
-  are stripped), Dependencies (known vulnerabilities via osv.dev — opt-in,
-  the one signal that reaches the network), and Recommendations (an AI pass
-  prioritizing across every signal above at once). Click any row to see
-  exactly who calls it and what it calls, live, or diff against any commit
-  to see whether an edit helped or hurt.
-- **AI-generated documentation** — right-click any function and choose
-  **Document** to stream real Markdown documentation (Purpose, Parameters,
-  Returns, Side Effects, Notes) assembled from its actual source, callers,
-  callees, and parent class. Right-click a file for a module-level summary.
-  Pick a local [Ollama](https://ollama.com) model (free, nothing leaves your
-  machine), OpenAI, or Anthropic — nothing is saved until you click **Save**.
-- **Code-to-data lineage** — SQLAlchemy models are detected automatically on
-  every parse; connect a dbt `manifest.json` and/or a live database
-  connection string to add their tables, models, and columns to the same
-  graph, reconciled by name. Flip **Data only** to read it as a pure lineage
-  diagram, with impact analysis spanning code and data in one traversal.
+### Interactive call graph
+
+Every directory, file, class, and function as a zoomable, color-coded graph
+with call/import/defines edges — structure that would otherwise take an
+hour of grepping to piece together by hand. Real-time search across the
+whole repo or scoped to one file, and your dragged layout persists
+automatically.
+
+![Interactive call graph with a selected node and its callers highlighted](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/interactive-call-graph.gif)
+
+### Execution flowcharts
+
+Right-click any function for its execution flowchart, built from its real
+AST/CST: entry and return points, decisions with Yes/No edges, loops with a
+visible back-edge, I/O calls, and calls out to other functions — each in
+its own conventional shape. Works for Python, JS/TS, and Java, including
+`switch` fallthrough, `do...while`'s bottom-condition check, and labeled
+`break`/`continue`.
+
+![An execution flowchart with branches, a loop back-edge, and an I/O call](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/execution-flowchart.png)
+
+### Code Health
+
+A peer lens to the codebase graph, switched via a header tab: a filterable,
+sortable ranked list across seven signals — Complexity (a real AST walk,
+not a line-count guess), Hotspots (complexity × how often a file actually
+changes), Dead code (zero-caller candidates), Coverage risk (complexity ×
+blast radius × untested, from a coverage.py or lcov report you provide),
+Duplicates (identical once names and literals are stripped), Dependencies
+(known vulnerabilities via osv.dev — opt-in, the one signal that reaches
+the network), and Recommendations (an AI pass prioritizing across every
+signal above at once).
+
+![The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/code-health.png)
+
+Click any row to see exactly who calls it and what it calls, live, or diff
+against any commit to see whether an edit helped or hurt.
+
+![Selecting a function shows its direct callers and callees as a relationship graph, colored by complexity](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/code-health-relationships.png)
+
+### AI-generated documentation
+
+Right-click any function and choose **Document** to stream real Markdown
+documentation (Purpose, Parameters, Returns, Side Effects, Notes) assembled
+from its actual source, callers, callees, and parent class. Right-click a
+file for a module-level summary. Pick a local [Ollama](https://ollama.com)
+model (free, nothing leaves your machine), OpenAI, or Anthropic — nothing
+is saved until you click **Save**.
+
+![AI documentation streaming live for a function, alongside its call graph](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/doc-generation.gif)
+
+### Code-to-data lineage
+
+SQLAlchemy models are detected automatically on every parse; connect a dbt
+`manifest.json` and/or a live database connection string to add their
+tables, models, and columns to the same graph, reconciled by name. Flip
+**Data only** to read it as a pure lineage diagram, with impact analysis
+spanning code and data in one traversal.
+
+![Connecting a dbt manifest to a repo, adding table and model nodes to the graph](https://raw.githubusercontent.com/venom21adi/Semantic_Vision/master/assets/code-to-data-lineage.gif)
 
 ## Your AI agent can see the map too
 
@@ -87,7 +115,7 @@ execution flow, and more, as tools Claude Code, Cursor, or any
 MCP-compatible agent can call directly — instead of grepping for context
 this project has already computed. Run `semantic-vision-mcp` from the main
 project alongside this extension; see
-[guides/mcp-server.md](https://github.com/venom21adi/Semantic_Vision/blob/main/guides/mcp-server.md)
+[guides/mcp-server.md](https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md)
 for setup.
 
 ## Requirements
@@ -130,5 +158,5 @@ opt in to a dependency vulnerability scan.
 Full documentation, screenshots, and setup guides (AI provider setup, the
 MCP server, code-to-data lineage, multi-language support) live in the main
 project's [README](https://github.com/venom21adi/Semantic_Vision#readme) and
-[guides/](https://github.com/venom21adi/Semantic_Vision/tree/main/guides)
+[guides/](https://github.com/venom21adi/Semantic_Vision/tree/master/guides)
 directory.
