@@ -140,6 +140,7 @@
     }
     .bento-docs .tline { stroke-dashoffset: 0 !important; }
     .gauge-fill { animation: none !important; stroke-dashoffset: var(--target) !important; filter: none !important; }
+    .trad-step .dot { animation: none !important; border-color: var(--amber) !important; }
   }
 
   /* ---------- Nav ---------- */
@@ -385,34 +386,90 @@
   }
   .section-head p { color: var(--text-muted); font-size: 16px; margin: 0; }
 
-  /* ---------- Problem section: pipeline + flow diagram ---------- */
-  .pipeline {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    margin: 18px 0 20px;
-  }
-  .pipeline span {
+  /* ---------- Problem section: traditional-vs-modern compare ----------
+     A bold split panel instead of a plain pipeline: the traditional side
+     keeps looping through its steps forever (a checklist that never
+     finishes, slow amber pulses) while the Semantic Vision side resolves
+     once and settles -- the pacing difference alone sells "slow vs
+     fast" before anyone reads a word. */
+  .compare { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; margin-top: 12px; }
+  .compare-col {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    padding: 6px 12px;
+    border-radius: var(--radius);
+    padding: 30px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
   }
-  .pipeline .arrow { border: none; background: none; padding: 0; color: var(--text-dim); }
-  .problem-copy { max-width: 640px; margin: 0 auto; text-align: center; }
-  .problem-copy p { color: var(--text-muted); font-size: 15px; margin: 0 0 10px; }
-  .problem-verdict {
-    font-size: 17px;
+  .compare-modern {
+    border-color: var(--featured-border);
+    background: linear-gradient(180deg, var(--featured-tint), var(--bg-panel) 75%);
+  }
+  .compare-vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0;
+    margin: 0 -1px;
+    position: relative;
+    z-index: 2;
+  }
+  .compare-vs span {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 46px; height: 46px;
+    border-radius: 999px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    color: var(--text-dim);
+    box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.25);
+  }
+  .compare-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11.5px;
     font-weight: 700;
-    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
-  .problem-verdict .dim { color: var(--text-dim); font-weight: 600; }
-  .problem-verdict .bright { color: var(--text); }
+  .compare-badge.bad { background: rgba(216, 151, 0, 0.15); color: var(--amber); }
+  .compare-badge.good { background: var(--accent-soft-bg); color: var(--accent-text); }
+  .trad-steps { display: flex; flex-direction: column; gap: 13px; width: 100%; max-width: 260px; text-align: left; }
+  .trad-step { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--text-faint); }
+  .trad-step .dot {
+    width: 10px; height: 10px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    animation: trad-dot 5s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 1s);
+  }
+  @keyframes trad-dot {
+    0%, 100% { background: transparent; border-color: var(--border); transform: scale(1); }
+    8% { background: var(--amber); border-color: var(--amber); transform: scale(1.35); }
+    18% { background: transparent; border-color: var(--border); transform: scale(1); }
+  }
+  .compare-timer { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+  .compare-timer svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .compare-timer.bad { color: var(--amber); }
+  .compare-timer.good { color: var(--teal-light); }
+  .compare-outcome { font-size: 13.5px; font-weight: 700; }
+  .compare-outcome.bad { color: var(--text-dim); }
+  .compare-outcome.good { color: var(--accent-text); }
+  .flow-diagram-compact { margin: 4px auto; }
+  .flow-diagram-compact.is-visible > *:nth-child(3) { transition-delay: 0.15s; }
+  .flow-diagram-compact.is-visible > *:nth-child(4) { transition-delay: 0.85s; }
+  .flow-diagram-compact.is-visible > *:nth-child(5) { transition-delay: 0.95s; }
 
   .flow-diagram { display: flex; flex-direction: column; align-items: center; margin: 34px auto 0; }
   .flow-node {
@@ -1198,6 +1255,8 @@
     .privacy-grid { grid-template-columns: 1fr; }
     .feature-bento { grid-template-columns: 1fr; }
     .health-shots { grid-template-columns: 1fr; }
+    .compare { grid-template-columns: 1fr; gap: 34px; }
+    .compare-vs { width: 100%; height: 0; margin: 0; }
     .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
     .flow-branch-item::before { display: none; }
     section { padding: 76px 0; }
@@ -1269,31 +1328,44 @@
 
 <section id="problem" class="section-tight">
   <div class="container">
-    <div class="section-head" data-reveal>
-      <div class="kicker">AI changed the bottleneck</div>
-      <h2>Code generation got faster.<br />Code understanding didn't.</h2>
-    </div>
-    <div class="problem-copy" data-reveal>
-      <p>AI coding agents can change hundreds of lines across dozens of files in seconds. But understanding those changes still means:</p>
-      <div class="pipeline">
-        <span>grep</span><span class="arrow">→</span><span>jump between files</span><span class="arrow">→</span><span>trace dependencies</span><span class="arrow">→</span><span>build a mental model</span><span class="arrow">→</span><span>hope you didn't miss something</span>
-      </div>
-      <div class="problem-verdict"><span class="dim">A git diff tells you what changed —</span> <span class="bright">Semantic Vision shows you what it means.</span></div>
+    <div class="section-head wide" data-reveal>
+      <div class="kicker">Old way. New way.</div>
+      <h2>The same change. Two completely different afternoons.</h2>
+      <p>AI coding agents can change hundreds of lines in seconds. Understanding what they changed is still where all the time goes — unless you stop grepping and start asking.</p>
     </div>
 
-    <div class="flow-diagram" data-reveal>
-      <div class="flow-node">AI Agent</div>
-      <div class="flow-connector"></div>
-      <div class="flow-node">Code Change</div>
-      <div class="flow-connector"></div>
-      <div class="flow-node accent">Semantic Vision</div>
-      <div class="flow-branch">
-        <div class="flow-branch-item"><div class="flow-node">Impact</div></div>
-        <div class="flow-branch-item"><div class="flow-node">Health</div></div>
-        <div class="flow-branch-item"><div class="flow-node">Lineage</div></div>
+    <div class="compare" data-reveal>
+      <div class="compare-col compare-traditional">
+        <span class="compare-badge bad">Traditional</span>
+        <div class="trad-steps">
+          <div class="trad-step"><span class="dot" style="--i:0"></span>grep the codebase</div>
+          <div class="trad-step"><span class="dot" style="--i:1"></span>jump between files</div>
+          <div class="trad-step"><span class="dot" style="--i:2"></span>trace dependencies by hand</div>
+          <div class="trad-step"><span class="dot" style="--i:3"></span>build a mental model</div>
+          <div class="trad-step"><span class="dot" style="--i:4"></span>hope you didn't miss something</div>
+        </div>
+        <div class="compare-timer bad"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>~15–40 minutes, every single time</div>
+        <span class="compare-outcome bad">Still guessing</span>
       </div>
-      <div class="flow-connector"></div>
-      <div class="flow-node accent">Human + Agent Understanding</div>
+
+      <div class="compare-vs"><span>VS</span></div>
+
+      <div class="compare-col compare-modern">
+        <span class="compare-badge good">With Semantic Vision</span>
+        <div class="flow-diagram flow-diagram-compact" data-reveal>
+          <div class="flow-node accent">Ask Semantic Vision</div>
+          <div class="flow-connector"></div>
+          <div class="flow-branch">
+            <div class="flow-branch-item"><div class="flow-node">Impact</div></div>
+            <div class="flow-branch-item"><div class="flow-node">Health</div></div>
+            <div class="flow-branch-item"><div class="flow-node">Lineage</div></div>
+          </div>
+          <div class="flow-connector"></div>
+          <div class="flow-node accent">Understanding</div>
+        </div>
+        <div class="compare-timer good"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>Seconds — the map's already loaded</div>
+        <span class="compare-outcome good">Confident, every time</span>
+      </div>
     </div>
   </div>
 </section>
