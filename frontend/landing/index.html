@@ -767,66 +767,89 @@
     color: var(--text-dim);
   }
 
-  /* ---------- MCP diagram ---------- */
-  .mcp-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
-
-  .mcp-terminal {
-    border-radius: 12px;
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-panel-raised);
-    overflow: hidden;
-    margin: 16px 0;
-    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.5);
+  /* ---------- MCP orbit ----------
+     A central hub with each MCP tool orbiting it; click one to see what it
+     answers in the panel underneath. Node position uses CSS trig (cos/sin)
+     against --angle so the layout needs no JS math and stays responsive --
+     radius is a % of the (square) orbit, not a fixed pixel count. */
+  .mcp-orbit-wrap { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .mcp-orbit { position: relative; width: 100%; max-width: 440px; aspect-ratio: 1 / 1; margin: 0 auto; }
+  .mcp-hub {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(92px, 28%, 130px);
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    background: var(--featured-tint);
+    border: 1.5px solid var(--featured-border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    color: var(--accent-text);
+    font-weight: 700;
+    font-size: clamp(11px, 3vw, 13.5px);
+    line-height: 1.25;
+    z-index: 2;
+    padding: 8px;
   }
-  .mcp-terminal-bar {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border-subtle);
+  .mcp-hub span { display: block; margin-top: 3px; font-size: 0.82em; opacity: 0.85; }
+  .mcp-spoke {
+    position: absolute; top: 50%; left: 50%;
+    width: 38%; height: 1px;
+    background: var(--border-subtle);
+    transform-origin: 0 0;
+    transform: rotate(var(--angle));
+    z-index: 0;
   }
-  .mcp-terminal-bar .d { width: 9px; height: 9px; border-radius: 999px; background: var(--border); }
-  .mcp-terminal-title { margin-left: 6px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); }
-  .mcp-terminal-body { padding: 16px 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.75; }
-  .mcp-terminal-body .line { color: var(--text-faint); }
-  .mcp-terminal-body .result { margin-top: 10px; color: var(--text-muted); }
-  .tok-fn { color: var(--accent-text); font-weight: 600; }
-  .tok-key { color: var(--teal-light); }
-  .tok-str { color: var(--green); }
-  .tok-num, .tok-bool { color: var(--amber); }
-  .tok-punc { color: var(--text-dim); }
+  .mcp-node {
+    position: absolute;
+    top: calc(50% + sin(var(--angle)) * 38%);
+    left: calc(50% + cos(var(--angle)) * 38%);
+    transform: translate(-50%, -50%);
+    width: clamp(46px, 13%, 58px);
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: var(--bg-panel);
+    border: 1.5px solid var(--border-subtle);
+    color: var(--text-faint);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease, color 0.15s ease;
+    z-index: 1;
+    padding: 2px;
+  }
+  .mcp-node svg { width: 15px; height: 15px; }
+  .mcp-node span { font-size: 8.5px; font-weight: 700; letter-spacing: 0.01em; line-height: 1.1; }
+  .mcp-node:hover { border-color: var(--featured-border); color: var(--accent-text); }
+  .mcp-node.is-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    transform: translate(-50%, -50%) scale(1.14);
+  }
 
-  .mcp-categories { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
-  .mcp-cat { font-size: 13px; color: var(--text-muted); }
-  .mcp-cat strong { color: var(--text-faint); font-weight: 700; margin-right: 6px; }
-  .mcp-diagram {
+  .mcp-panel {
+    width: 100%; max-width: 460px;
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    padding: 40px 24px 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 20px 24px;
+    text-align: left;
   }
-  .mcp-diagram .flow-branch { border-top: none; margin-top: 0; }
-  .mcp-diagram .flow-branch-item::before { display: none; }
-  .mcp-diagram .flow-clients {
-    display: flex;
-    gap: 20px;
-    padding-top: 30px;
-    position: relative;
+  .mcp-panel-title { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .mcp-panel-sig {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--teal-light);
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 3px 8px;
+    margin-bottom: 10px;
   }
-  .mcp-diagram .flow-clients::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 8%;
-    right: 8%;
-    height: 1px;
-    background: var(--border);
-  }
-  .mcp-diagram .flow-clients .flow-branch-item { padding-top: 20px; }
-  .mcp-diagram .flow-clients .flow-branch-item::before { display: block; height: 20px; }
-  .mcp-diagram .flow-node.sm { font-size: 12.5px; padding: 9px 14px; }
+  .mcp-panel-desc { margin: 0; font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+  .mcp-clients-note { text-align: center; font-size: 13px; color: var(--text-dim); margin: 24px auto 0; max-width: 520px; }
 
   /* ---------- Editor mock (VS Code section) ---------- */
   .editor-mock {
@@ -1009,7 +1032,6 @@
   /* ---------- Responsive ---------- */
   @media (max-width: 980px) {
     .solution-grid { grid-template-columns: repeat(2, 1fr); }
-    .mcp-layout { grid-template-columns: 1fr; }
     .privacy-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 860px) {
@@ -1467,50 +1489,77 @@
     <div class="section-head wide" data-reveal>
       <div class="kicker">Built for AI coding agents</div>
       <h2>Your AI agent can see the map too.</h2>
-      <p>Coding agents already know how to edit code. The problem is understanding the structure around that code. Semantic Vision exposes the same structural context through MCP.</p>
+      <p>Coding agents already know how to edit code. The problem is understanding the structure around it. Semantic Vision exposes its analysis as MCP tools — tap one to see what it answers.</p>
     </div>
 
-    <div class="mcp-layout" data-reveal>
-      <div class="mcp-copy">
-        <h3 style="margin: 0 0 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">Agents can query the same graph you see</h3>
-        <p style="margin: 0 0 4px; color: var(--text-muted); font-size: 15px;">An agent asks a question in one call — no grepping, no re-deriving structure it could just ask for.</p>
+    <div class="mcp-orbit-wrap" data-reveal>
+      <div class="mcp-orbit">
+        <div class="mcp-hub">Semantic Vision<span>MCP</span></div>
 
-        <div class="mcp-terminal">
-          <div class="mcp-terminal-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="mcp-terminal-title">agent → semantic-vision · MCP</span></div>
-          <div class="mcp-terminal-body">
-            <div class="line"><span class="tok-fn">get_impact</span><span class="tok-punc">(</span><span class="tok-key">id</span><span class="tok-punc">=</span><span class="tok-str">"process_payment"</span><span class="tok-punc">)</span></div>
-            <div class="line result">
-              <span class="tok-punc">{</span><br />
-              &nbsp;&nbsp;<span class="tok-key">"direct_callers"</span><span class="tok-punc">:</span> <span class="tok-num">4</span><span class="tok-punc">,</span><br />
-              &nbsp;&nbsp;<span class="tok-key">"transitive_callers"</span><span class="tok-punc">:</span> <span class="tok-num">12</span><span class="tok-punc">,</span><br />
-              &nbsp;&nbsp;<span class="tok-key">"circular"</span><span class="tok-punc">:</span> <span class="tok-bool">false</span><br />
-              <span class="tok-punc">}</span>
-            </div>
-          </div>
-        </div>
+        <div class="mcp-spoke" style="--angle:-90deg"></div>
+        <div class="mcp-spoke" style="--angle:-54deg"></div>
+        <div class="mcp-spoke" style="--angle:-18deg"></div>
+        <div class="mcp-spoke" style="--angle:18deg"></div>
+        <div class="mcp-spoke" style="--angle:54deg"></div>
+        <div class="mcp-spoke" style="--angle:90deg"></div>
+        <div class="mcp-spoke" style="--angle:126deg"></div>
+        <div class="mcp-spoke" style="--angle:162deg"></div>
+        <div class="mcp-spoke" style="--angle:198deg"></div>
+        <div class="mcp-spoke" style="--angle:234deg"></div>
 
-        <div class="mcp-categories">
-          <span class="mcp-cat"><strong>Map</strong> call graphs, callees, execution flow, source</span>
-          <span class="mcp-cat"><strong>Risk</strong> complexity, hotspots, coverage, duplicates, dead code</span>
-          <span class="mcp-cat"><strong>Impact</strong> upstream blast radius, across code and data</span>
-        </div>
-
-        <div style="margin-top: 20px;">
-          <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md" target="_blank" rel="noopener">View the MCP tools →</a>
-        </div>
+        <button type="button" class="mcp-node is-active" style="--angle:-90deg" data-title="Call Graph" data-sig="get_graph(path, max_nodes)" data-desc="The full parsed structure — every node and edge in the repo, truncated past max_nodes so a single call can't flood an agent's context.">
+          <svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.6"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Graph</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:-54deg" data-title="Impact Analysis" data-sig="get_impact(path, id, max_depth)" data-desc="The upstream blast radius: everything that directly or transitively depends on a function, table, or column.">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Impact</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:-18deg" data-title="Callees" data-sig="get_callees(path, id)" data-desc="The opposite direction from impact — what this function itself directly calls.">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="12" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 12h9M14 8l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Callees</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:18deg" data-title="Complexity" data-sig="get_complexity(path)" data-desc="Per-function cyclomatic complexity, call-chain depth, and nested-loop flags — plus how it's changed against any commit or branch.">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>Complexity</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:54deg" data-title="Hotspots" data-sig="get_hotspots(path, window_days)" data-desc="Complexity weighted by how often each file actually changes in git history — a practical risk signal, not just a static one.">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" opacity="0.45"/></svg>
+          <span>Hotspots</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:90deg" data-title="Dead Code" data-sig="get_dead_code(path)" data-desc="Functions with zero callers anywhere in the graph — candidates to review, never a verdict.">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Dead code</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:126deg" data-title="Coverage Risk" data-sig="get_coverage_risk(path)" data-desc="Complexity × blast radius × (1 − test coverage), from a coverage.py or lcov report you provide.">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Coverage</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:162deg" data-title="Duplicates" data-sig="get_duplicates(path)" data-desc="Functions whose structure is identical once every name, literal, and comment is stripped away.">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Duplicates</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:198deg" data-title="Execution Flow" data-sig="get_flowchart(path, id)" data-desc="Control-flow breakdown of one function's body — branches, loops, and early returns.">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>Flow</span>
+        </button>
+        <button type="button" class="mcp-node" style="--angle:234deg" data-title="Function Source" data-sig="get_function_source(path, id)" data-desc="The exact source text of one function or file, read by its recorded line range.">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v13H7V3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 13h5M9.5 16.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>Source</span>
+        </button>
       </div>
-      <div class="mcp-diagram">
-        <div class="flow-node accent">Semantic Vision</div>
-        <div class="flow-connector"></div>
-        <div class="flow-node sm">MCP</div>
-        <div class="flow-clients">
-          <div class="flow-branch-item"><div class="flow-node sm">Claude Code</div></div>
-          <div class="flow-branch-item"><div class="flow-node sm">Cursor</div></div>
-          <div class="flow-branch-item"><div class="flow-node sm">Claude Desktop</div></div>
-        </div>
-        <div class="flow-connector"></div>
-        <div class="flow-node accent">Same codebase map</div>
+
+      <div class="mcp-panel">
+        <div class="mcp-panel-title" id="mcp-panel-title">Call Graph</div>
+        <code class="mcp-panel-sig" id="mcp-panel-sig">get_graph(path, max_nodes)</code>
+        <p class="mcp-panel-desc" id="mcp-panel-desc">The full parsed structure — every node and edge in the repo, truncated past max_nodes so a single call can't flood an agent's context.</p>
       </div>
+    </div>
+
+    <p class="mcp-clients-note" data-reveal><code>parse_repo</code> runs once per repo, first. Works with Claude Code, Cursor, Claude Desktop, or any other MCP-compatible agent.</p>
+
+    <div style="text-align: center; margin-top: 18px;" data-reveal>
+      <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md" target="_blank" rel="noopener">View the MCP tools →</a>
     </div>
   </div>
 </section>
@@ -1796,6 +1845,24 @@
   lightboxImg.addEventListener('click', function (e) { e.stopPropagation(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && lightbox.classList.contains('is-open')) close();
+  });
+})();
+
+(function () {
+  var nodes = document.querySelectorAll('.mcp-node');
+  var title = document.getElementById('mcp-panel-title');
+  var sig = document.getElementById('mcp-panel-sig');
+  var desc = document.getElementById('mcp-panel-desc');
+  if (!nodes.length || !title) return;
+
+  nodes.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      nodes.forEach(function (b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      title.textContent = btn.dataset.title;
+      sig.textContent = btn.dataset.sig;
+      desc.textContent = btn.dataset.desc;
+    });
   });
 })();
 </script>
