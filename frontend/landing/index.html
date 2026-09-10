@@ -442,6 +442,16 @@
   }
   .compare-badge.bad { background: rgba(216, 151, 0, 0.15); color: var(--amber); }
   .compare-badge.good { background: var(--accent-soft-bg); color: var(--accent-text); }
+  .compare-pain, .compare-usp {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    text-align: center;
+    max-width: 280px;
+  }
+  .compare-pain { color: var(--text-faint); }
+  .compare-usp { color: var(--accent-text); }
   .trad-steps { display: flex; flex-direction: column; gap: 13px; width: 100%; max-width: 260px; text-align: left; }
   .trad-step { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--text-faint); }
   .trad-step .dot {
@@ -1291,13 +1301,14 @@
     </div>
 
     <div class="scenario-toggle" data-reveal role="tablist" aria-label="Who wrote the code">
-      <button type="button" class="scenario-btn is-active" data-scenario="ai" role="tab" aria-selected="true">Written by an AI agent</button>
-      <button type="button" class="scenario-btn" data-scenario="human" role="tab" aria-selected="false">Written by a person</button>
+      <button type="button" class="scenario-btn is-active" data-scenario="ai" role="tab" aria-selected="true">AI Agent</button>
+      <button type="button" class="scenario-btn" data-scenario="human" role="tab" aria-selected="false">Human</button>
     </div>
 
     <div class="compare" data-reveal>
       <div class="compare-col compare-traditional">
         <span class="compare-badge bad">Traditional</span>
+        <p class="compare-pain step-text" data-ai="Fast to write. Easy to miss what it broke." data-human="The person who knew it left months ago.">Fast to write. Easy to miss what it broke.</p>
         <div class="trad-steps">
           <div class="trad-step">
             <span class="dot" style="--i:0"></span>
@@ -1328,6 +1339,7 @@
 
       <div class="compare-col compare-modern">
         <span class="compare-badge good">With Semantic Vision</span>
+        <p class="compare-usp step-text" data-ai="Catch what the agent missed — before you hit merge." data-human="Give every new hire the senior engineer's mental model.">Catch what the agent missed — before you hit merge.</p>
         <div class="flow-diagram flow-diagram-compact" data-reveal>
           <div class="flow-node accent">Ask Semantic Vision</div>
           <div class="flow-connector"></div>
