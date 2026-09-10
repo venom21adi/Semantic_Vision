@@ -2,7 +2,7 @@
   "name": "semantic-vision",
   "displayName": "Semantic Vision",
   "description": "Codebase observability for AI-assisted coding, in VS Code. Impact analysis, an interactive call graph, execution flowcharts, seven-signal Code Health, AI-generated docs, and code-to-data lineage for Python, JS, TS, and Java. 100% local.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "venom21adi",
   "icon": "media/icon.png",
   "repository": {
