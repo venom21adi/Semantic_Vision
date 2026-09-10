@@ -29,8 +29,23 @@ class ParseRepoRequest(BaseModel):
     `persistence.store.resolve_doc_root`."""
     language: str = "python"
     """A registered `LanguageAdapter.language_id` (see
-    `languages.registry`). A repo is parsed as one language at a time --
-    there's no mixed-language discovery."""
+    `languages.registry`). Each call parses one language; a caller
+    wanting a polyglot repo's full picture calls this once per language
+    (see `POST /api/detect-languages`) -- each is cached under its own
+    `(path, language)` key, so parsing one language never overwrites
+    another already parsed for the same path."""
+
+
+class DetectLanguagesRequest(BaseModel):
+    path: str
+
+
+class DetectLanguagesResponse(BaseModel):
+    detected: list[str]
+    """Registered languages with at least one matching source file in the repo."""
+    supported: list[str]
+    """Every language this build has a registered adapter for, detected or not --
+    lets the UI show a detected-but-unsupported language as a disabled option."""
 
 
 class ParseRepoResponse(BaseModel):

@@ -27,6 +27,7 @@ const docProps = {
   onEditDoc: noop,
   docRoot: '/repo',
   repoPath: '/repo',
+  language: 'python',
   docSaveNoticeDismissed: true,
   onDismissDocSaveNotice: noop,
   onDataSourceIngestComplete: noop,

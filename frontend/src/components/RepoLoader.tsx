@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { detectLanguages } from '../api/client'
 import type { ParseErrorInfo } from '../api/types'
 import { colors, radius, spacing } from '../theme'
 
@@ -9,13 +10,27 @@ export interface RepoLoadStats {
   parseErrors: ParseErrorInfo[]
 }
 
+/** Every language this build knows how to parse, and how it's labeled in
+ * the chip row -- kept in sync with the backend's registered adapters
+ * (`languages/registry.py`) by hand, same as the old `<select>`'s
+ * hardcoded `<option>` list this replaces. */
+const SUPPORTED_LANGUAGE_LABELS: Record<string, string> = {
+  python: 'Python',
+  javascript: 'JavaScript / TypeScript',
+  java: 'Java',
+}
+
+export function languageLabel(language: string): string {
+  return SUPPORTED_LANGUAGE_LABELS[language] ?? language
+}
+
 interface RepoLoaderProps {
-  onLoad: (path: string, docRoot: string, language: string) => void
+  onLoad: (path: string, docRoot: string, languages: string[]) => void
   loading: boolean
   error: string | null
   initialPath?: string
   initialDocRoot?: string
-  initialLanguage?: string
+  initialLanguages?: string[]
   /** The save location actually in effect after the last successful
    * load -- may differ from what was typed (e.g. auto-detected), so the
    * field reflects reality rather than staying stuck on stale input. */
@@ -43,7 +58,7 @@ export function RepoLoader({
   error,
   initialPath,
   initialDocRoot,
-  initialLanguage,
+  initialLanguages,
   resolvedDocRoot,
   stats,
   hasLoadedRepo = false,
@@ -53,7 +68,68 @@ export function RepoLoader({
 }: RepoLoaderProps) {
   const [path, setPath] = useState(initialPath ?? '')
   const [docRoot, setDocRoot] = useState(initialDocRoot ?? '')
-  const [language, setLanguage] = useState(initialLanguage ?? 'python')
+  // Empty by default (not pre-seeded with a language) so the very first
+  // successful detection for a freshly-typed path can pre-check its
+  // findings -- see the detection effect below. A repeat visit still seeds
+  // straight from `initialLanguages` (the user's own past choice for this
+  // path), which detection then leaves alone.
+  const [selectedLanguages, setSelectedLanguages] = useState<ReadonlySet<string>>(
+    () => new Set(initialLanguages ?? []),
+  )
+  // Which languages were actually found in `path`, and which of those this
+  // build knows how to parse -- `null` before the first successful
+  // detection (or while `path` is empty), so the chip row can tell "not
+  // checked yet" apart from "checked, found nothing".
+  const [detection, setDetection] = useState<{ detected: string[]; supported: string[] } | null>(
+    null,
+  )
+  const [detecting, setDetecting] = useState(false)
+
+  // Debounced so typing a path doesn't fire one detection request per
+  // keystroke -- mirrors `App.tsx`'s own `useDebouncedValue` pattern for
+  // the same reason (settle before paying for a request).
+  const [debouncedPath, setDebouncedPath] = useState(path)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedPath(path), 400)
+    return () => clearTimeout(timer)
+  }, [path])
+
+  useEffect(() => {
+    const trimmed = debouncedPath.trim()
+    if (!trimmed) {
+      setDetection(null)
+      return
+    }
+    let cancelled = false
+    setDetecting(true)
+    detectLanguages(trimmed)
+      .then((result) => {
+        if (cancelled) return
+        setDetection(result)
+        // Pre-check every detected, supported language -- but only on the
+        // very first successful detection for a freshly-typed path (an
+        // empty `initialLanguages`-seeded default): once the user has
+        // deliberately checked/unchecked anything, later detections (e.g.
+        // re-typing the same path) shouldn't silently reset their choice.
+        setSelectedLanguages((prev) =>
+          prev.size === 0
+            ? new Set(result.detected.filter((lang) => result.supported.includes(lang)))
+            : prev,
+        )
+      })
+      .catch(() => {
+        // Best-effort: detection failing (bad path, backend unreachable)
+        // just means the chip row falls back to "nothing detected yet" --
+        // the user can still check languages manually and submit.
+        if (!cancelled) setDetection(null)
+      })
+      .finally(() => {
+        if (!cancelled) setDetecting(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [debouncedPath])
 
   // Adjusts `docRoot` when `resolvedDocRoot` changes (a fresh load
   // resolved to a new save location -- possibly auto-detected, so it
@@ -67,11 +143,31 @@ export function RepoLoader({
     if (resolvedDocRoot) setDocRoot(resolvedDocRoot)
   }
 
+  function toggleLanguage(language: string) {
+    setSelectedLanguages((prev) => {
+      const next = new Set(prev)
+      if (next.has(language)) next.delete(language)
+      else next.add(language)
+      return next
+    })
+  }
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     const trimmed = path.trim()
-    if (trimmed) onLoad(trimmed, docRoot.trim(), language)
+    if (trimmed && selectedLanguages.size > 0) {
+      onLoad(trimmed, docRoot.trim(), Array.from(selectedLanguages))
+    }
   }
+
+  // The chip row itself: every supported language, checked/unchecked by
+  // `selectedLanguages`, plus a detected-but-unsupported language shown
+  // disabled with an explanatory tooltip -- so a polyglot repo's
+  // unsupported half doesn't just silently vanish with no explanation.
+  const supportedLanguages = detection?.supported ?? Object.keys(SUPPORTED_LANGUAGE_LABELS)
+  const unsupportedDetected = (detection?.detected ?? []).filter(
+    (lang) => !supportedLanguages.includes(lang),
+  )
 
   // Committing this field is the single place the save location changes:
   // before a repo is loaded, it just seeds the next Load call; once one
@@ -150,35 +246,65 @@ export function RepoLoader({
               into the container automatically.
             </span>
           </div>
-          <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0, alignItems: 'flex-end' }}>
             <div style={{ display: 'flex', flexDirection: 'column', flex: stacked ? 1 : undefined }}>
-              <label htmlFor="repo-language-select" style={fieldLabelStyle}>
-                Language
-              </label>
-              <select
-                id="repo-language-select"
-                value={language}
-                onChange={(event) => setLanguage(event.target.value)}
-                aria-label="Language"
-                title="Which language's parser to use for this repository"
-                style={{
-                  width: stacked ? '100%' : undefined,
-                  padding: '6px 10px',
-                  borderRadius: radius.sm,
-                  border: `1px solid ${colors.border}`,
-                  background: colors.bgPage,
-                  color: colors.textPrimary,
-                  fontSize: 13,
-                }}
+              <span style={fieldLabelStyle}>
+                Languages{detecting ? ' (detecting…)' : ''}
+              </span>
+              <div
+                role="group"
+                aria-label="Languages to parse"
+                style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: stacked ? undefined : 260 }}
               >
-                <option value="python">Python</option>
-                <option value="javascript">JavaScript / TypeScript</option>
-                <option value="java">Java</option>
-              </select>
+                {supportedLanguages.map((lang) => {
+                  const checked = selectedLanguages.has(lang)
+                  return (
+                    <button
+                      key={lang}
+                      type="button"
+                      aria-pressed={checked}
+                      onClick={() => toggleLanguage(lang)}
+                      className="sv-interactive"
+                      title={`Parse this repository's ${languageLabel(lang)} files`}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: radius.full,
+                        border: `1px solid ${checked ? colors.accent : colors.border}`,
+                        background: checked ? colors.accent : colors.bgPage,
+                        color: colors.textPrimary,
+                        fontSize: 12,
+                        fontWeight: checked ? 600 : 400,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {languageLabel(lang)}
+                    </button>
+                  )
+                })}
+                {unsupportedDetected.map((lang) => (
+                  <span
+                    key={lang}
+                    role="note"
+                    aria-label={`${languageLabel(lang)} was detected in this repository, but isn't supported yet`}
+                    title={`${languageLabel(lang)} was detected in this repository, but isn't supported yet`}
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: radius.full,
+                      border: `1px solid ${colors.border}`,
+                      background: 'transparent',
+                      color: colors.textDim,
+                      fontSize: 12,
+                      cursor: 'not-allowed',
+                    }}
+                  >
+                    {languageLabel(lang)} (not supported)
+                  </span>
+                ))}
+              </div>
             </div>
             <button
               type="submit"
-              disabled={loading || path.trim().length === 0}
+              disabled={loading || path.trim().length === 0 || selectedLanguages.size === 0}
               className="sv-interactive"
               title="Parse the repository and build its graph"
               style={{

@@ -144,6 +144,10 @@ interface DetailsPanelProps {
   /** Repo path, needed by the performance report pane's caller drill-down
    * and the data-source pane's ingest calls. */
   repoPath: string
+  /** Which language's parsed graph `repoPath` refers to -- needed by the
+   * data-source pane's ingest calls now that the same path can have more
+   * than one language's `ParseResult` cached server-side. */
+  language: string
   onDataSourceIngestComplete: () => void
   /** See `DataSourcePane`'s prop of the same name -- passed through
    * unchanged, `undefined` outside the static demo build. */
@@ -185,6 +189,7 @@ export function DetailsPanel({
   docSaveNoticeDismissed,
   onDismissDocSaveNotice,
   repoPath,
+  language,
   onDataSourceIngestComplete,
   dataSourceDefaultManifestPath,
   showcaseItems = [],
@@ -390,6 +395,7 @@ export function DetailsPanel({
           <PaneHeader title="Add tables & models" onClose={onClosePane} />
           <DataSourcePane
             path={repoPath}
+            language={language}
             onIngestComplete={onDataSourceIngestComplete}
             defaultManifestPath={dataSourceDefaultManifestPath}
           />

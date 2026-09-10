@@ -388,7 +388,7 @@ What works today, per language:
 | Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |
 | Docker packaging / one-command setup | ✅ | ✅ | ✅ |
 
-Select Python, JavaScript / TypeScript, or Java in the language selector to set the parsing scope.
+Most real repos are polyglot, so Semantic Vision auto-detects which supported languages are present in the path you enter and pre-checks them as chips — Python, JavaScript / TypeScript, and Java can all be selected together for the same repo. Each selected language is parsed independently and shown as its own tab in the dashboard (call graph, Code Health, docs, etc. all scoped to that language); there's no cross-language call linking between tabs yet.
 
 JS/TS uses tree-sitter for static AST resolution—including full support for JSX/TSX. To preserve precision without execution, dynamic patterns (like computed require() calls) are flagged directly in the UI rather than inferred.
 
@@ -433,8 +433,9 @@ npm run dev
 ```
 
 Then open `http://localhost:5173`, enter the absolute path to any local
-repository, pick **Python**, **JavaScript / TypeScript**, or **Java**
-from the language selector, and click **Load**.
+repository. Detected languages (**Python**, **JavaScript / TypeScript**,
+**Java**) are pre-checked as chips — adjust the selection if needed —
+then click **Load**.
 
 By default, everything Semantic Vision saves (layout, impact analysis
 state, generated docs) is written to a `.visualiser/` folder at the

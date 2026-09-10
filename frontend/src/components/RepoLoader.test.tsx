@@ -1,18 +1,40 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import * as client from '../api/client'
 import { RepoLoader } from './RepoLoader'
 
+vi.mock('../api/client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../api/client')>()
+  return { ...actual, detectLanguages: vi.fn() }
+})
+
+const mockedClient = vi.mocked(client)
+
+beforeEach(() => {
+  mockedClient.detectLanguages.mockResolvedValue({
+    detected: ['python'],
+    supported: ['python', 'javascript', 'java'],
+  })
+})
+
+async function waitForChipChecked(name: string) {
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'true'),
+  )
+}
+
 describe('RepoLoader', () => {
-  it('calls onLoad with the trimmed path, an empty doc root, and python by default', async () => {
+  it('calls onLoad with the trimmed path, an empty doc root, and the detected language', async () => {
     const onLoad = vi.fn()
     const user = userEvent.setup()
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
 
     await user.type(screen.getByLabelText('Repository path'), '  /some/repo  ')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitForChipChecked('Python')
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', 'python')
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', ['python'])
   })
 
   it('calls onLoad with a manually typed save location', async () => {
@@ -21,36 +43,84 @@ describe('RepoLoader', () => {
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
 
     await user.type(screen.getByLabelText('Repository path'), '/some/repo')
+    await waitForChipChecked('Python')
     await user.type(screen.getByLabelText('Save location'), '  /my/save/spot  ')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/my/save/spot', 'python')
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/my/save/spot', ['python'])
   })
 
-  it('calls onLoad with the selected language', async () => {
+  it('calls onLoad with every checked language', async () => {
+    mockedClient.detectLanguages.mockResolvedValue({
+      detected: ['python', 'javascript'],
+      supported: ['python', 'javascript', 'java'],
+    })
     const onLoad = vi.fn()
     const user = userEvent.setup()
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
 
     await user.type(screen.getByLabelText('Repository path'), '/some/repo')
-    await user.selectOptions(screen.getByLabelText('Language'), 'javascript')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitForChipChecked('Python')
+    await waitForChipChecked('JavaScript / TypeScript')
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', 'javascript')
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', ['python', 'javascript'])
   })
 
-  it('pre-fills the language from initialLanguage', () => {
+  it('toggles a language off by clicking its chip', async () => {
+    const onLoad = vi.fn()
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
+
+    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
+    await waitForChipChecked('Python')
+    await user.click(screen.getByRole('button', { name: 'JavaScript / TypeScript' }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', ['python', 'javascript'])
+  })
+
+  it('disables Load until at least one language is checked', async () => {
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
+    await waitForChipChecked('Python')
+    await user.click(screen.getByRole('button', { name: 'Python' }))
+
+    expect(screen.getByRole('button', { name: /^load$/i })).toBeDisabled()
+  })
+
+  it('shows a detected-but-unsupported language as a disabled chip', async () => {
+    mockedClient.detectLanguages.mockResolvedValue({
+      detected: ['python', 'go'],
+      supported: ['python', 'javascript', 'java'],
+    })
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
+    await waitForChipChecked('Python')
+
+    expect(screen.getByText(/go \(not supported\)/i)).toBeInTheDocument()
+  })
+
+  it('pre-fills the languages from initialLanguages', () => {
     render(
       <RepoLoader
         onLoad={vi.fn()}
         loading={false}
         error={null}
         stats={null}
-        initialLanguage="javascript"
+        initialLanguages={['javascript']}
       />,
     )
 
-    expect(screen.getByLabelText('Language')).toHaveValue('javascript')
+    expect(screen.getByRole('button', { name: 'JavaScript / TypeScript' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('pre-fills the save location from initialDocRoot', () => {
@@ -179,7 +249,7 @@ describe('RepoLoader', () => {
   it('disables the button for a blank path', () => {
     render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
 
-    expect(screen.getByRole('button', { name: /load/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^load$/i })).toBeDisabled()
   })
 
   it('disables the button and shows a spinner while loading', () => {

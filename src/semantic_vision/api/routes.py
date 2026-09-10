@@ -48,6 +48,8 @@ from semantic_vision.api.schemas import (
     DependencyRisk,
     DependencyRiskRequest,
     DependencyRiskResponse,
+    DetectLanguagesRequest,
+    DetectLanguagesResponse,
     DocIndexResponse,
     DocResponse,
     DocRootResponse,
@@ -72,7 +74,7 @@ from semantic_vision.api.schemas import (
 from semantic_vision.dataflow import db_introspect, dbt_ingest
 from semantic_vision.flowchart.cfg import build_flowchart
 from semantic_vision.languages import UnknownLanguageError
-from semantic_vision.languages.registry import get_adapter
+from semantic_vision.languages.registry import detect_languages, get_adapter, list_adapters
 from semantic_vision.models import Edge, EdgeKind, Node, NodeKind, ParseResult
 from semantic_vision.persistence import store as persistence
 from semantic_vision.repo_parser import parse_repository
@@ -83,6 +85,18 @@ router = APIRouter(prefix="/api")
 @router.get("/health", response_model=HealthResponse)
 def get_health() -> HealthResponse:
     return HealthResponse(status="ok")
+
+
+@router.post("/detect-languages", response_model=DetectLanguagesResponse)
+def detect_languages_route(request: DetectLanguagesRequest) -> DetectLanguagesResponse:
+    path = translate_host_path(request.path)
+    root_path = Path(path)
+    if not root_path.is_dir():
+        raise HTTPException(status_code=400, detail=f"Not a directory: {path}")
+    return DetectLanguagesResponse(
+        detected=detect_languages(root_path),
+        supported=[adapter.language_id for adapter in list_adapters()],
+    )
 
 
 @router.post("/parse-repo", response_model=ParseRepoResponse)
@@ -111,7 +125,7 @@ def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     doc_root = persistence.resolve_doc_root(Path(result.root), doc_root_override)
-    cache.set(path, result)
+    cache.set(path, request.language, result)
     cache.set_doc_root(path, doc_root)
     persistence.write_metadata(
         doc_root,
@@ -128,12 +142,13 @@ def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
     )
 
 
-def _get_cached(path: str) -> ParseResult:
-    result = cache.get(path)
+def _get_cached(path: str, language: str) -> ParseResult:
+    result = cache.get(path, language)
     if result is None:
         raise HTTPException(
             status_code=404,
-            detail=f"Repository not parsed yet: {path}. Call POST /api/parse-repo first.",
+            detail=f"Repository not parsed yet for language {language!r}: {path}. "
+            "Call POST /api/parse-repo first.",
         )
     return result
 
@@ -145,31 +160,33 @@ def _get_doc_root(path: str) -> Path:
 
 
 @router.put("/doc-root", response_model=DocRootResponse)
-def update_doc_root(request: UpdateDocRootRequest, path: str = Query(...)) -> DocRootResponse:
+def update_doc_root(
+    request: UpdateDocRootRequest, path: str = Query(...), language: str = Query("python")
+) -> DocRootResponse:
     """Changes where `.visualiser/` is written for an already-parsed repo,
     without re-parsing -- parsing a large repo can be slow, and relocating
     the save path shouldn't force paying that cost again."""
-    _get_cached(path)
+    _get_cached(path, language)
     doc_root = Path(translate_host_path(request.doc_root)).resolve()
     cache.set_doc_root(path, doc_root)
     return DocRootResponse(doc_root=doc_root.as_posix())
 
 
 @router.get("/graph", response_model=GraphResponse)
-def get_graph(path: str = Query(...)) -> GraphResponse:
-    result = _get_cached(path)
+def get_graph(path: str = Query(...), language: str = Query("python")) -> GraphResponse:
+    result = _get_cached(path, language)
     return GraphResponse(nodes=result.nodes, edges=result.edges)
 
 
 @router.get("/function-source", response_model=FunctionSourceResponse)
 def get_function_source(
-    path: str = Query(...), id: str = Query(...)
+    path: str = Query(...), id: str = Query(...), language: str = Query("python")
 ) -> FunctionSourceResponse:
     """Despite the route/response names (kept for backward compatibility),
     this also serves `FILE` nodes: a `FILE` node's `line_start`/`line_end`
     already span the whole file (see `resolver/symbol_table.py`), so the
     same line-slice below returns its full contents unchanged."""
-    result = _get_cached(path)
+    result = _get_cached(path, language)
     node = next((n for n in result.nodes if n.id == id), None)
     if node is None or node.kind not in (NodeKind.FUNCTION, NodeKind.FILE):
         raise HTTPException(status_code=404, detail=f"Source not found: {id}")
@@ -193,15 +210,17 @@ def get_function_source(
 
 
 @router.get("/graph-state", response_model=GraphStateResponse)
-def get_graph_state(path: str = Query(...)) -> GraphStateResponse:
-    _get_cached(path)
+def get_graph_state(path: str = Query(...), language: str = Query("python")) -> GraphStateResponse:
+    _get_cached(path, language)
     state = persistence.read_graph_state(_get_doc_root(path))
     return GraphStateResponse(positions=state.positions, updated_at=state.updated_at)
 
 
 @router.put("/graph-state", response_model=GraphStateResponse)
-def save_graph_state(request: SaveGraphStateRequest, path: str = Query(...)) -> GraphStateResponse:
-    _get_cached(path)
+def save_graph_state(
+    request: SaveGraphStateRequest, path: str = Query(...), language: str = Query("python")
+) -> GraphStateResponse:
+    _get_cached(path, language)
     state = persistence.write_graph_state(_get_doc_root(path), request.positions)
     return GraphStateResponse(positions=state.positions, updated_at=state.updated_at)
 
@@ -211,12 +230,13 @@ def get_impact(
     path: str = Query(...),
     id: str = Query(...),
     max_depth: int = Query(DEFAULT_MAX_DEPTH, ge=1),
+    language: str = Query("python"),
 ) -> ImpactResponse:
-    result = _get_cached(path)
+    result = _get_cached(path, language)
     if not any(node.id == id for node in result.nodes):
         raise HTTPException(status_code=404, detail=f"Node not found: {id}")
 
-    reverse_index = cache.get_reverse_caller_index(path)
+    reverse_index = cache.get_reverse_caller_index(path, language)
     assert reverse_index is not None, "reverse index is built alongside the cached parse result"
     impact = find_upstream_callers(id, reverse_index, max_depth=max_depth)
     return ImpactResponse(
@@ -225,7 +245,7 @@ def get_impact(
 
 
 def _merge_into_cache(
-    path: str, result: ParseResult, new_nodes: list[Node], new_edges: list[Edge]
+    path: str, language: str, result: ParseResult, new_nodes: list[Node], new_edges: list[Edge]
 ) -> None:
     """Merges freshly-ingested nodes/edges into the already-cached
     `ParseResult` for `path` and re-stores it -- re-running `cache.set`
@@ -255,7 +275,7 @@ def _merge_into_cache(
             "edges": sorted(merged_edges, key=lambda e: (e.source, e.target, e.kind)),
         }
     )
-    cache.set(path, merged)
+    cache.set(path, language, merged)
 
 
 def _strip_previous_dbt_ingest(result: ParseResult) -> ParseResult:
@@ -309,10 +329,10 @@ cache-mutating route, out of scope for this one fix."""
 
 @router.post("/dataflow/dbt-manifest", response_model=DbtManifestIngestResponse)
 def ingest_dbt_manifest(
-    request: DbtManifestIngestRequest, path: str = Query(...)
+    request: DbtManifestIngestRequest, path: str = Query(...), language: str = Query("python")
 ) -> DbtManifestIngestResponse:
     with _dbt_ingest_lock:
-        result = _strip_previous_dbt_ingest(_get_cached(path))
+        result = _strip_previous_dbt_ingest(_get_cached(path, language))
         existing_table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
         existing_column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
 
@@ -321,7 +341,7 @@ def ingest_dbt_manifest(
         except dbt_ingest.DbtManifestError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        _merge_into_cache(path, result, ingested.nodes, ingested.edges)
+        _merge_into_cache(path, language, result, ingested.nodes, ingested.edges)
 
     return DbtManifestIngestResponse(
         models_ingested=ingested.models_ingested,
@@ -376,10 +396,10 @@ _db_introspect_lock = threading.Lock()
 
 @router.post("/dataflow/db-connection", response_model=DbConnectionIngestResponse)
 def ingest_db_connection(
-    request: DbConnectionIngestRequest, path: str = Query(...)
+    request: DbConnectionIngestRequest, path: str = Query(...), language: str = Query("python")
 ) -> DbConnectionIngestResponse:
     with _db_introspect_lock:
-        result = _strip_previous_live_db_ingest(_get_cached(path))
+        result = _strip_previous_live_db_ingest(_get_cached(path, language))
         existing_table_ids = {n.id for n in result.nodes if n.kind == NodeKind.TABLE}
         existing_column_ids = {n.id for n in result.nodes if n.kind == NodeKind.COLUMN}
 
@@ -390,7 +410,7 @@ def ingest_db_connection(
         except db_introspect.DbIntrospectError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        _merge_into_cache(path, result, introspected.nodes, introspected.edges)
+        _merge_into_cache(path, language, result, introspected.nodes, introspected.edges)
 
     return DbConnectionIngestResponse(
         tables_ingested=introspected.tables_ingested,
@@ -402,19 +422,21 @@ def ingest_db_connection(
 
 
 @router.get("/complexity", response_model=ComplexityResponse)
-def get_complexity(path: str = Query(...)) -> ComplexityResponse:
+def get_complexity(path: str = Query(...), language: str = Query("python")) -> ComplexityResponse:
     """Repo-wide, not per-node: the heatmap overlay and the ranked report
     pane both need the whole score set at once, and it's cheap to send in
     one call since it's built lazily on first request and cached from then
     on -- not every parse-repo call pays this cost, only the first repo
     whose complexity is actually looked at."""
-    _get_cached(path)
-    complexity_index = cache.get_or_build_complexity_index(path)
+    _get_cached(path, language)
+    complexity_index = cache.get_or_build_complexity_index(path, language)
     return ComplexityResponse(scores=list(complexity_index.values()))
 
 
 @router.get("/complexity/diff", response_model=ComplexityDiffResponse)
-def get_complexity_diff(path: str = Query(...)) -> ComplexityDiffResponse:
+def get_complexity_diff(
+    path: str = Query(...), language: str = Query("python")
+) -> ComplexityDiffResponse:
     """Compares the repo's current complexity scores against whatever was
     cached the last time this path's complexity was computed (see
     `RepoCache.get_current_and_previous_complexity_index`) -- lets a caller
@@ -422,8 +444,8 @@ def get_complexity_diff(path: str = Query(...)) -> ComplexityDiffResponse:
     less complex, or were added/removed, since the last look. The caller is
     expected to have already reparsed via `POST /api/parse-repo` for
     `current` to reflect any edits; this endpoint itself never reparses."""
-    _get_cached(path)
-    current, previous = cache.get_current_and_previous_complexity_index(path)
+    _get_cached(path, language)
+    current, previous = cache.get_current_and_previous_complexity_index(path, language)
     if previous is None:
         return ComplexityDiffResponse(available=False, current=list(current.values()))
     added, removed, changed = diff_complexity_indexes(previous, current)
@@ -477,7 +499,7 @@ def get_complexity_diff_ref(
     a spurious added+removed pair rather than "changed" -- not solved
     here, see docs/ideas/CODE-HEALTH-DASHBOARD-IDEAS.md's Idea 3a.
     """
-    current_result = _get_cached(path)
+    current_result = _get_cached(path, language)
 
     git_root = find_git_root(current_result.root)
     if git_root is None:
@@ -498,7 +520,7 @@ def get_complexity_diff_ref(
     # deferred into the same try block as those calls, so the on-disk
     # snapshot this response reports isn't affected by how long a ref
     # worktree checkout happens to take.
-    current_index = cache.get_or_build_complexity_index(path) if to_ref is None else None
+    current_index = cache.get_or_build_complexity_index(path, language) if to_ref is None else None
 
     try:
         ref_index = build_ref_complexity_index(git_root, ref, current_result.root, language=adapter)
@@ -530,7 +552,7 @@ def get_complexity_diff_ref(
 
 @router.get("/complexity/hotspots", response_model=HotspotsResponse)
 def get_complexity_hotspots(
-    path: str = Query(...), window_days: int = Query(90, ge=1)
+    path: str = Query(...), window_days: int = Query(90, ge=1), language: str = Query("python")
 ) -> HotspotsResponse:
     """Ranks functions by `cyclomatic_complexity * change_count` (a commit
     touched its file in the last `window_days`) rather than complexity
@@ -541,12 +563,12 @@ def get_complexity_hotspots(
     an error. `compute_file_churn` itself already swallows every git
     failure (no commits yet, git missing, a shallow clone) into an empty
     churn map, so no `GitError` can escape this route at all."""
-    current_result = _get_cached(path)
+    current_result = _get_cached(path, language)
     git_root = find_git_root(current_result.root)
     if git_root is None:
         return HotspotsResponse(is_git_repo=False, scores=[], window_days=window_days)
 
-    complexity_index = cache.get_or_build_complexity_index(path)
+    complexity_index = cache.get_or_build_complexity_index(path, language)
     churn_by_file = cache.get_or_compute_churn(git_root, window_days)
     offset = Path(current_result.root).relative_to(git_root)
     scores = build_hotspot_scores(complexity_index, churn_by_file, offset=offset)
@@ -554,15 +576,15 @@ def get_complexity_hotspots(
 
 
 @router.get("/dead-code", response_model=DeadCodeResponse)
-def get_dead_code(path: str = Query(...)) -> DeadCodeResponse:
+def get_dead_code(path: str = Query(...), language: str = Query("python")) -> DeadCodeResponse:
     """`FUNCTION` nodes with zero real callers, filtered through
     `analysis/dead_code.py`'s false-positive heuristics -- see
     docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 1. Pure graph analysis,
     no git dependency (unlike `/complexity/hotspots`) and nothing new to
     cache: both the reverse index and the parsed nodes it filters are
     already sitting in `RepoCache` from the initial parse."""
-    result = _get_cached(path)
-    reverse_index = cache.get_reverse_caller_index(path)
+    result = _get_cached(path, language)
+    reverse_index = cache.get_reverse_caller_index(path, language)
     assert reverse_index is not None, "reverse index is built alongside the cached parse result"
     candidates = find_dead_code_candidates(result.nodes, reverse_index, root=Path(result.root))
     return DeadCodeResponse(candidates=candidates)
@@ -570,7 +592,7 @@ def get_dead_code(path: str = Query(...)) -> DeadCodeResponse:
 
 @router.post("/coverage/ingest", response_model=CoverageIngestResponse)
 def ingest_coverage(
-    request: CoverageIngestRequest, path: str = Query(...)
+    request: CoverageIngestRequest, path: str = Query(...), language: str = Query("python")
 ) -> CoverageIngestResponse:
     """Reads a coverage.py XML or lcov report the user's own test-runner
     already produced (see docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 4)
@@ -582,12 +604,12 @@ def ingest_coverage(
     read-strip-merge-write across the whole cached `ParseResult`, while
     this is a pure parse-then-store into `RepoCache.set_coverage_line_hits`,
     which is already atomic under its own internal lock."""
-    result = _get_cached(path)  # 404s if this repo hasn't been parsed yet
+    result = _get_cached(path, language)  # 404s if this repo hasn't been parsed yet
     try:
         line_hits_by_file = coverage_ingest.parse_coverage_file(request.path)
     except coverage_ingest.CoverageParseError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    cache.set_coverage_line_hits(path, line_hits_by_file)
+    cache.set_coverage_line_hits(path, language, line_hits_by_file)
 
     # `files_matched` cross-checks the report's own file paths against
     # this repo's actual parsed `Node.file` values, not just "how many
@@ -608,7 +630,7 @@ def ingest_coverage(
 
 
 @router.get("/coverage/risk", response_model=CoverageResponse)
-def get_coverage_risk(path: str = Query(...)) -> CoverageResponse:
+def get_coverage_risk(path: str = Query(...), language: str = Query("python")) -> CoverageResponse:
     """Ranks functions by `complexity x (1 + blast radius) x (1 -
     coverage)` -- see docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 4.
     `available=False` until `POST /api/coverage/ingest` has been called at
@@ -619,30 +641,30 @@ def get_coverage_risk(path: str = Query(...)) -> CoverageResponse:
     per request -- it calls `find_upstream_callers` once per function,
     the same per-node BFS cost `GET /api/impact` normally only pays once
     per request, not once per function in the whole repo."""
-    _get_cached(path)
-    line_hits_by_file = cache.get_coverage_line_hits(path)
+    _get_cached(path, language)
+    line_hits_by_file = cache.get_coverage_line_hits(path, language)
     if line_hits_by_file is None:
         return CoverageResponse(available=False, scores=[])
 
-    scores = cache.get_or_build_coverage_risk_scores(path, line_hits_by_file)
+    scores = cache.get_or_build_coverage_risk_scores(path, language, line_hits_by_file)
     return CoverageResponse(available=True, scores=scores)
 
 
 @router.get("/duplicates", response_model=DuplicatesResponse)
-def get_duplicates(path: str = Query(...)) -> DuplicatesResponse:
+def get_duplicates(path: str = Query(...), language: str = Query("python")) -> DuplicatesResponse:
     """Groups functions whose normalized AST shape hashes identically --
     see docs/ideas/REPO-INTELLIGENCE-IDEAS.md's Idea 2 (exact-shape hashing
     only, not near-miss similarity matching). Pure static analysis, no git
     or ingested-file dependency; lazily built and cached the same way
     complexity is (see `RepoCache.get_or_build_duplicate_groups`)."""
-    _get_cached(path)
-    groups = cache.get_or_build_duplicate_groups(path)
+    _get_cached(path, language)
+    groups = cache.get_or_build_duplicate_groups(path, language)
     return DuplicatesResponse(groups=groups)
 
 
 @router.post("/dependencies/risk", response_model=DependencyRiskResponse)
 def get_dependency_risk(
-    request: DependencyRiskRequest, path: str = Query(...)
+    request: DependencyRiskRequest, path: str = Query(...), language: str = Query("python")
 ) -> DependencyRiskResponse:
     """Cross-references packages this repo's code *actually imports* (via
     the resolver's own `external::` edge targets) against packages
@@ -662,7 +684,7 @@ def get_dependency_risk(
             detail="Dependency risk scanning requires confirm_network_access=true "
             "-- it queries osv.dev, the one outbound network call this project makes.",
         )
-    result = _get_cached(path)
+    result = _get_cached(path, language)
     declared = find_declared_dependencies(Path(result.root))
     external_edges = [
         (edge.source, edge.target)
@@ -694,7 +716,7 @@ def get_dependency_risk(
 
 @router.post("/code-health/recommendations")
 def get_code_health_recommendations(
-    request: CodeHealthRecommendationsRequest, path: str = Query(...)
+    request: CodeHealthRecommendationsRequest, path: str = Query(...), language: str = Query("python")
 ) -> StreamingResponse:
     """Streams AI-generated, prioritized recommendations across every Code
     Health signal at once -- the first cross-signal endpoint in this
@@ -710,10 +732,10 @@ def get_code_health_recommendations(
     supplied them -- `request.dependency_risks` -- never fetched here,
     since that would mean silently making the app's one live network call
     just because this button was clicked."""
-    result = _get_cached(path)
+    result = _get_cached(path, language)
     nodes_by_id = {n.id: n for n in result.nodes}
-    complexity_index = cache.get_or_build_complexity_index(path)
-    duplicate_groups = cache.get_or_build_duplicate_groups(path)
+    complexity_index = cache.get_or_build_complexity_index(path, language)
+    duplicate_groups = cache.get_or_build_duplicate_groups(path, language)
 
     git_root = find_git_root(result.root)
     hotspot_scores = []
@@ -722,10 +744,10 @@ def get_code_health_recommendations(
         offset = Path(result.root).relative_to(git_root)
         hotspot_scores = build_hotspot_scores(complexity_index, churn_by_file, offset=offset)
 
-    line_hits_by_file = cache.get_coverage_line_hits(path)
+    line_hits_by_file = cache.get_coverage_line_hits(path, language)
     coverage_scores = None
     if line_hits_by_file is not None:
-        coverage_scores = cache.get_or_build_coverage_risk_scores(path, line_hits_by_file)
+        coverage_scores = cache.get_or_build_coverage_risk_scores(path, language, line_hits_by_file)
 
     dependency_vulnerabilities = None
     if request.dependency_risks is not None:
@@ -752,8 +774,10 @@ def get_code_health_recommendations(
 
 
 @router.get("/flowchart", response_model=FlowchartResponse)
-def get_flowchart(path: str = Query(...), id: str = Query(...)) -> FlowchartResponse:
-    result = _get_cached(path)
+def get_flowchart(
+    path: str = Query(...), id: str = Query(...), language: str = Query("python")
+) -> FlowchartResponse:
+    result = _get_cached(path, language)
     node = next((n for n in result.nodes if n.id == id), None)
     if node is None or node.kind != NodeKind.FUNCTION:
         raise HTTPException(status_code=404, detail=f"Function not found: {id}")
@@ -768,15 +792,17 @@ def get_flowchart(path: str = Query(...), id: str = Query(...)) -> FlowchartResp
 
 
 @router.get("/docs", response_model=DocIndexResponse)
-def list_docs(path: str = Query(...)) -> DocIndexResponse:
-    _get_cached(path)
+def list_docs(path: str = Query(...), language: str = Query("python")) -> DocIndexResponse:
+    _get_cached(path, language)
     index = persistence.read_docs_index(_get_doc_root(path))
     return DocIndexResponse(entries=index.entries)
 
 
 @router.get("/doc", response_model=DocResponse)
-def get_doc(path: str = Query(...), id: str = Query(...)) -> DocResponse:
-    _get_cached(path)
+def get_doc(
+    path: str = Query(...), id: str = Query(...), language: str = Query("python")
+) -> DocResponse:
+    _get_cached(path, language)
     doc_root = _get_doc_root(path)
     index = persistence.read_docs_index(doc_root)
     entry = next((e for e in index.entries if e.node_id == id), None)
@@ -792,9 +818,12 @@ def get_doc(path: str = Query(...), id: str = Query(...)) -> DocResponse:
 
 @router.post("/generate-doc")
 def generate_doc(
-    request: GenerateDocRequest, path: str = Query(...), id: str = Query(...)
+    request: GenerateDocRequest,
+    path: str = Query(...),
+    id: str = Query(...),
+    language: str = Query("python"),
 ) -> StreamingResponse:
-    result = _get_cached(path)
+    result = _get_cached(path, language)
     node = next((n for n in result.nodes if n.id == id), None)
     if node is None or node.kind not in (NodeKind.FUNCTION, NodeKind.FILE):
         raise HTTPException(status_code=404, detail=f"Node not found: {id}")
@@ -818,8 +847,13 @@ def get_ollama_models() -> OllamaModelsResponse:
 
 
 @router.post("/doc", response_model=DocResponse)
-def save_doc(request: SaveDocRequest, path: str = Query(...), id: str = Query(...)) -> DocResponse:
-    result = _get_cached(path)
+def save_doc(
+    request: SaveDocRequest,
+    path: str = Query(...),
+    id: str = Query(...),
+    language: str = Query("python"),
+) -> DocResponse:
+    result = _get_cached(path, language)
     if not any(n.id == id for n in result.nodes):
         raise HTTPException(status_code=404, detail=f"Node not found: {id}")
 

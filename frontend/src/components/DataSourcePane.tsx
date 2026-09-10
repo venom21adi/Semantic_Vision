@@ -5,6 +5,7 @@ import { RecordingLightbox } from './RecordingLightbox'
 
 interface DataSourcePaneProps {
   path: string
+  language: string
   /** Called after either ingest succeeds, so the caller can re-fetch the
    * graph -- the new `Table`/`DBT_MODEL` nodes/edges only exist in the
    * backend's cached `ParseResult` until then, not yet in this app's own
@@ -39,7 +40,12 @@ function columnsClause(result: { columns_reconciled: number; columns_created: nu
   return ` — ${total} column${total === 1 ? '' : 's'}`
 }
 
-export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: DataSourcePaneProps) {
+export function DataSourcePane({
+  path,
+  language,
+  onIngestComplete,
+  defaultManifestPath,
+}: DataSourcePaneProps) {
   const [manifestPath, setManifestPath] = useState(defaultManifestPath ?? '')
   const [manifestState, setManifestState] = useState<IngestState>({ status: 'idle' })
   const [connectionString, setConnectionString] = useState('')
@@ -52,7 +58,7 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
     if (!trimmed) return
     setManifestState({ status: 'submitting' })
     try {
-      const result = await ingestDbtManifest(path, trimmed)
+      const result = await ingestDbtManifest(path, language, trimmed)
       setManifestState({
         status: 'success',
         summary: `${result.models_ingested} model${result.models_ingested === 1 ? '' : 's'} ingested — ${result.tables_reconciled} table${result.tables_reconciled === 1 ? '' : 's'} matched, ${result.tables_created} new${columnsClause(result)}.`,
@@ -69,7 +75,7 @@ export function DataSourcePane({ path, onIngestComplete, defaultManifestPath }: 
     if (!trimmed) return
     setConnectionState({ status: 'submitting' })
     try {
-      const result = await ingestDbConnection(path, trimmed)
+      const result = await ingestDbConnection(path, language, trimmed)
       setConnectionState({
         status: 'success',
         summary: `${result.tables_ingested} table${result.tables_ingested === 1 ? '' : 's'} introspected — ${result.tables_reconciled} matched, ${result.tables_created} new${columnsClause(result)}.`,

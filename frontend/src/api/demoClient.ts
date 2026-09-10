@@ -220,17 +220,25 @@ export async function parseRepo(
   }
 }
 
-export function updateDocRoot(_path: string, docRoot: string): Promise<DocRootResponse> {
+export function updateDocRoot(
+  _path: string,
+  _language: string,
+  docRoot: string,
+): Promise<DocRootResponse> {
   return Promise.resolve({ doc_root: docRoot })
 }
 
-export async function getGraph(path: string): Promise<GraphResponse> {
+export async function getGraph(path: string, _language: string): Promise<GraphResponse> {
   const bundle = await loadBundle(path)
   if (dbtIngestedSlugs.has(path) && bundle.graphPost) return bundle.graphPost
   return bundle.graphPre
 }
 
-export async function getFunctionSource(path: string, id: string): Promise<FunctionSourceResponse> {
+export async function getFunctionSource(
+  path: string,
+  _language: string,
+  id: string,
+): Promise<FunctionSourceResponse> {
   const bundle = await loadBundle(path)
   const found = bundle.functionSource[id]
   if (!found) throw new ApiError(404, `No source found for: ${id}`)
@@ -239,6 +247,7 @@ export async function getFunctionSource(path: string, id: string): Promise<Funct
 
 export async function getImpact(
   path: string,
+  _language: string,
   id: string,
   _maxDepth?: number,
 ): Promise<ImpactResponse> {
@@ -248,13 +257,14 @@ export async function getImpact(
   return found
 }
 
-export function getGraphState(path: string): Promise<GraphStateResponse> {
+export function getGraphState(path: string, _language: string): Promise<GraphStateResponse> {
   const saved = readLocalJson<GraphStateResponse>(localStorageKey(path, 'graph-state'))
   return Promise.resolve(saved ?? { positions: {}, updated_at: null })
 }
 
 export function saveGraphState(
   path: string,
+  _language: string,
   positions: Record<string, NodePosition>,
 ): Promise<GraphStateResponse> {
   const result: GraphStateResponse = { positions, updated_at: new Date().toISOString() }
@@ -262,7 +272,7 @@ export function saveGraphState(
   return Promise.resolve(result)
 }
 
-export function getDocsIndex(path: string): Promise<DocIndexResponse> {
+export function getDocsIndex(path: string, _language: string): Promise<DocIndexResponse> {
   const prefix = localStorageKey(path, 'doc:')
   const entries: DocIndexResponse['entries'] = []
   for (let i = 0; i < localStorage.length; i++) {
@@ -274,24 +284,33 @@ export function getDocsIndex(path: string): Promise<DocIndexResponse> {
   return Promise.resolve({ entries })
 }
 
-export function getDoc(path: string, id: string): Promise<DocResponse> {
+export function getDoc(path: string, _language: string, id: string): Promise<DocResponse> {
   const saved = readLocalJson<DocResponse>(localStorageKey(path, `doc:${id}`))
   if (!saved) return Promise.reject(new ApiError(404, `No saved documentation for: ${id}`))
   return Promise.resolve(saved)
 }
 
-export function saveDoc(path: string, id: string, markdown: string): Promise<DocResponse> {
+export function saveDoc(
+  path: string,
+  _language: string,
+  id: string,
+  markdown: string,
+): Promise<DocResponse> {
   const result: DocResponse = { node_id: id, markdown, updated_at: new Date().toISOString() }
   writeLocalJson(localStorageKey(path, `doc:${id}`), result)
   return Promise.resolve(result)
 }
 
-export async function getComplexity(path: string): Promise<ComplexityResponse> {
+export async function getComplexity(path: string, _language: string): Promise<ComplexityResponse> {
   const bundle = await loadBundle(path)
   return bundle.complexity
 }
 
-export async function getFlowchart(path: string, id: string): Promise<FlowchartResponse> {
+export async function getFlowchart(
+  path: string,
+  _language: string,
+  id: string,
+): Promise<FlowchartResponse> {
   const bundle = await loadBundle(path)
   const found = bundle.flowchart[id]
   if (!found) throw new ApiError(404, `No flowchart available for: ${id}`)
@@ -304,6 +323,7 @@ export function getOllamaModels(): Promise<OllamaModelsResponse> {
 
 export async function ingestDbtManifest(
   path: string,
+  _language: string,
   _manifestPath: string,
 ): Promise<DbtManifestIngestResponse> {
   const bundle = await loadBundle(path)
@@ -319,6 +339,7 @@ export async function ingestDbtManifest(
 
 export function ingestDbConnection(
   _path: string,
+  _language: string,
   _connectionString: string,
 ): Promise<DbConnectionIngestResponse> {
   return Promise.reject(
@@ -338,6 +359,7 @@ function delay(ms: number): Promise<void> {
 
 export async function* streamDoc(
   path: string,
+  _language: string,
   id: string,
   _provider: string,
   _model: string | undefined,

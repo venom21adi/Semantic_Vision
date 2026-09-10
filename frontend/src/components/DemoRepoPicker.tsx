@@ -3,7 +3,7 @@ import { loadDemoRepoList, type DemoRepoMeta } from '../api/demoClient'
 import { colors, radius, spacing } from '../theme'
 
 interface DemoRepoPickerProps {
-  onLoad: (path: string, docRoot: string, language: string) => void
+  onLoad: (path: string, docRoot: string, languages: string[]) => void
   loading: boolean
   error: string | null
 }
@@ -11,8 +11,9 @@ interface DemoRepoPickerProps {
 /** Replaces `RepoLoader` in the static demo build's empty state -- there's
  * no filesystem to type a path into, so this offers the precomputed
  * repos as cards instead. Still calls the same `onLoad(path, docRoot,
- * language)` signature `App.tsx` already wires up, with `path` set to the
- * repo's demo slug (see `demoClient.ts`). */
+ * languages)` signature `App.tsx` already wires up, with `path` set to the
+ * repo's demo slug (see `demoClient.ts`) and a single-element `languages`
+ * array -- every demo repo is a fixed single language, never polyglot. */
 export function DemoRepoPicker({ onLoad, loading, error }: DemoRepoPickerProps) {
   const [repos, setRepos] = useState<DemoRepoMeta[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -45,7 +46,7 @@ export function DemoRepoPicker({ onLoad, loading, error }: DemoRepoPickerProps) 
             key={repo.slug}
             type="button"
             disabled={loading}
-            onClick={() => onLoad(repo.slug, '', repo.language)}
+            onClick={() => onLoad(repo.slug, '', [repo.language])}
             className="sv-interactive"
             style={{
               textAlign: 'left',

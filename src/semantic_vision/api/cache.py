@@ -73,17 +73,23 @@ class RepoCache:
         self._duplicate_lock = threading.Lock()
 
     @staticmethod
-    def _key(path: str) -> str:
+    def _path_key(path: str) -> str:
         return Path(path).resolve().as_posix()
 
-    def get(self, path: str) -> ParseResult | None:
-        return self._results.get(self._key(path))
+    @staticmethod
+    def _key(path: str, language: str) -> str:
+        return f"{RepoCache._path_key(path)}::{language}"
 
-    def get_reverse_caller_index(self, path: str) -> dict[str, list[tuple[str, EdgeKind]]] | None:
-        return self._reverse_indexes.get(self._key(path))
+    def get(self, path: str, language: str) -> ParseResult | None:
+        return self._results.get(self._key(path, language))
 
-    def get_or_build_complexity_index(self, path: str) -> dict[str, ComplexityScore]:
-        key = self._key(path)
+    def get_reverse_caller_index(
+        self, path: str, language: str
+    ) -> dict[str, list[tuple[str, EdgeKind]]] | None:
+        return self._reverse_indexes.get(self._key(path, language))
+
+    def get_or_build_complexity_index(self, path: str, language: str) -> dict[str, ComplexityScore]:
+        key = self._key(path, language)
         existing = self._complexity_indexes.get(key)
         if existing is not None:
             return existing
@@ -96,7 +102,7 @@ class RepoCache:
             return index
 
     def get_current_and_previous_complexity_index(
-        self, path: str
+        self, path: str, language: str
     ) -> tuple[dict[str, ComplexityScore], dict[str, ComplexityScore] | None]:
         """The pair `GET /api/complexity/diff` needs: the current index
         (building it if nothing's cached yet) and whatever baseline was
@@ -116,7 +122,7 @@ class RepoCache:
         (triggered by an explicit compare action, always right after a
         reparse) than a plain `GET /api/complexity`.
         """
-        key = self._key(path)
+        key = self._key(path, language)
         with self._complexity_lock:
             current = self._complexity_indexes.get(key)
             if current is None:
@@ -124,8 +130,8 @@ class RepoCache:
                 self._complexity_indexes[key] = current
             return current, self._previous_complexity_indexes.get(key)
 
-    def set(self, path: str, result: ParseResult) -> None:
-        key = self._key(path)
+    def set(self, path: str, language: str, result: ParseResult) -> None:
+        key = self._key(path, language)
         self._results[key] = result
         # Built once here, at parse time, rather than per impact query.
         self._reverse_indexes[key] = build_reverse_caller_index(result.edges)
@@ -167,25 +173,26 @@ class RepoCache:
             self._duplicate_indexes.pop(key, None)
 
     def set_coverage_line_hits(
-        self, path: str, line_hits_by_file: dict[str, dict[int, int]]
+        self, path: str, language: str, line_hits_by_file: dict[str, dict[int, int]]
     ) -> None:
         with self._coverage_lock:
-            key = self._key(path)
+            key = self._key(path, language)
             self._coverage_line_hits[key] = line_hits_by_file
             # A fresh ingest invalidates any risk ranking built from the
             # previous one -- otherwise a re-ingest (a corrected coverage
             # report, say) would silently keep serving stale scores.
             self._coverage_risk_scores.pop(key, None)
 
-    def get_coverage_line_hits(self, path: str) -> dict[str, dict[int, int]] | None:
-        return self._coverage_line_hits.get(self._key(path))
+    def get_coverage_line_hits(self, path: str, language: str) -> dict[str, dict[int, int]] | None:
+        return self._coverage_line_hits.get(self._key(path, language))
 
     def get_or_build_coverage_risk_scores(
         self,
         path: str,
+        language: str,
         line_hits_by_file: dict[str, dict[int, int]],
     ) -> list[CoverageRiskScore]:
-        key = self._key(path)
+        key = self._key(path, language)
         existing = self._coverage_risk_scores.get(key)
         if existing is not None:
             return existing
@@ -195,15 +202,15 @@ class RepoCache:
                 return existing
             scores = build_coverage_risk_scores(
                 self._results[key].nodes,
-                self.get_or_build_complexity_index(path),
+                self.get_or_build_complexity_index(path, language),
                 self._reverse_indexes[key],
                 line_hits_by_file,
             )
             self._coverage_risk_scores[key] = scores
             return scores
 
-    def get_or_build_duplicate_groups(self, path: str) -> list[DuplicateGroup]:
-        key = self._key(path)
+    def get_or_build_duplicate_groups(self, path: str, language: str) -> list[DuplicateGroup]:
+        key = self._key(path, language)
         existing = self._duplicate_indexes.get(key)
         if existing is not None:
             return existing
@@ -216,7 +223,7 @@ class RepoCache:
             return groups
 
     def get_or_compute_churn(self, git_root: Path, window_days: int) -> dict[str, int]:
-        key = f"{self._key(str(git_root))}::{window_days}"
+        key = f"{self._path_key(str(git_root))}::{window_days}"
         existing = self._churn_indexes.get(key)
         if existing is not None:
             return existing
@@ -229,14 +236,14 @@ class RepoCache:
             return churn
 
     def get_doc_root(self, path: str) -> Path | None:
-        return self._doc_roots.get(self._key(path))
+        return self._doc_roots.get(self._path_key(path))
 
     def set_doc_root(self, path: str, doc_root: Path) -> None:
         # Kept independent of `set()` so the save location can be changed
         # (via `PUT /api/doc-root`) without forcing a re-parse -- the
         # whole point of letting it be scoped separately from what's
         # parsed in the first place.
-        self._doc_roots[self._key(path)] = doc_root
+        self._doc_roots[self._path_key(path)] = doc_root
 
     def clear(self) -> None:
         self._results.clear()

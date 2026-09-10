@@ -135,66 +135,91 @@ function realParseRepo(
   })
 }
 
-function realUpdateDocRoot(path: string, docRoot: string): Promise<DocRootResponse> {
-  return request<DocRootResponse>(`/api/doc-root?path=${encodeURIComponent(path)}`, {
-    method: 'PUT',
-    body: JSON.stringify({ doc_root: docRoot }),
-  })
-}
-
-function realGetGraph(path: string): Promise<GraphResponse> {
-  return request<GraphResponse>(`/api/graph?path=${encodeURIComponent(path)}`)
-}
-
-function realGetFunctionSource(path: string, id: string): Promise<FunctionSourceResponse> {
-  return request<FunctionSourceResponse>(
-    `/api/function-source?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+function realUpdateDocRoot(path: string, language: string, docRoot: string): Promise<DocRootResponse> {
+  return request<DocRootResponse>(
+    `/api/doc-root?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+    { method: 'PUT', body: JSON.stringify({ doc_root: docRoot }) },
   )
 }
 
-function realGetGraphState(path: string): Promise<GraphStateResponse> {
-  return request<GraphStateResponse>(`/api/graph-state?path=${encodeURIComponent(path)}`)
+function realGetGraph(path: string, language: string): Promise<GraphResponse> {
+  return request<GraphResponse>(
+    `/api/graph?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
+}
+
+function realGetFunctionSource(
+  path: string,
+  language: string,
+  id: string,
+): Promise<FunctionSourceResponse> {
+  return request<FunctionSourceResponse>(
+    `/api/function-source?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}&language=${encodeURIComponent(language)}`,
+  )
+}
+
+function realGetGraphState(path: string, language: string): Promise<GraphStateResponse> {
+  return request<GraphStateResponse>(
+    `/api/graph-state?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
 }
 
 function realSaveGraphState(
   path: string,
+  language: string,
   positions: Record<string, NodePosition>,
 ): Promise<GraphStateResponse> {
-  return request<GraphStateResponse>(`/api/graph-state?path=${encodeURIComponent(path)}`, {
-    method: 'PUT',
-    body: JSON.stringify({ positions }),
-  })
-}
-
-function realGetDocsIndex(path: string): Promise<DocIndexResponse> {
-  return request<DocIndexResponse>(`/api/docs?path=${encodeURIComponent(path)}`)
-}
-
-function realGetDoc(path: string, id: string): Promise<DocResponse> {
-  return request<DocResponse>(
-    `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+  return request<GraphStateResponse>(
+    `/api/graph-state?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+    { method: 'PUT', body: JSON.stringify({ positions }) },
   )
 }
 
-function realGetImpact(path: string, id: string, maxDepth?: number): Promise<ImpactResponse> {
-  const params = new URLSearchParams({ path, id })
+function realGetDocsIndex(path: string, language: string): Promise<DocIndexResponse> {
+  return request<DocIndexResponse>(
+    `/api/docs?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
+}
+
+function realGetDoc(path: string, language: string, id: string): Promise<DocResponse> {
+  return request<DocResponse>(
+    `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}&language=${encodeURIComponent(language)}`,
+  )
+}
+
+function realGetImpact(
+  path: string,
+  language: string,
+  id: string,
+  maxDepth?: number,
+): Promise<ImpactResponse> {
+  const params = new URLSearchParams({ path, id, language })
   if (maxDepth !== undefined) params.set('max_depth', String(maxDepth))
   return request<ImpactResponse>(`/api/impact?${params.toString()}`)
 }
 
-function realSaveDoc(path: string, id: string, markdown: string): Promise<DocResponse> {
+function realSaveDoc(
+  path: string,
+  language: string,
+  id: string,
+  markdown: string,
+): Promise<DocResponse> {
   return request<DocResponse>(
-    `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+    `/api/doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}&language=${encodeURIComponent(language)}`,
     { method: 'POST', body: JSON.stringify({ markdown }) },
   )
 }
 
-function realGetComplexity(path: string): Promise<ComplexityResponse> {
-  return request<ComplexityResponse>(`/api/complexity?path=${encodeURIComponent(path)}`)
+function realGetComplexity(path: string, language: string): Promise<ComplexityResponse> {
+  return request<ComplexityResponse>(
+    `/api/complexity?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
 }
 
-function realGetComplexityDiff(path: string): Promise<ComplexityDiffResponse> {
-  return request<ComplexityDiffResponse>(`/api/complexity/diff?path=${encodeURIComponent(path)}`)
+function realGetComplexityDiff(path: string, language: string): Promise<ComplexityDiffResponse> {
+  return request<ComplexityDiffResponse>(
+    `/api/complexity/diff?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
 }
 
 function realGetGitRefs(path: string): Promise<GitRefsResponse> {
@@ -203,54 +228,69 @@ function realGetGitRefs(path: string): Promise<GitRefsResponse> {
 
 function realGetComplexityDiffRef(
   path: string,
+  language: string,
   ref: string,
   toRef?: string,
 ): Promise<ComplexityRefDiffResponse> {
-  const params = new URLSearchParams({ path, ref })
+  const params = new URLSearchParams({ path, ref, language })
   if (toRef) params.set('to_ref', toRef)
   return request<ComplexityRefDiffResponse>(`/api/complexity/diff-ref?${params.toString()}`)
 }
 
-function realGetComplexityHotspots(path: string, windowDays?: number): Promise<HotspotsResponse> {
-  const params = new URLSearchParams({ path })
+function realGetComplexityHotspots(
+  path: string,
+  language: string,
+  windowDays?: number,
+): Promise<HotspotsResponse> {
+  const params = new URLSearchParams({ path, language })
   if (windowDays !== undefined) params.set('window_days', String(windowDays))
   return request<HotspotsResponse>(`/api/complexity/hotspots?${params.toString()}`)
 }
 
-function realGetDeadCode(path: string): Promise<DeadCodeResponse> {
-  return request<DeadCodeResponse>(`/api/dead-code?path=${encodeURIComponent(path)}`)
+function realGetDeadCode(path: string, language: string): Promise<DeadCodeResponse> {
+  return request<DeadCodeResponse>(
+    `/api/dead-code?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
 }
 
-function realIngestCoverage(path: string, coveragePath: string): Promise<CoverageIngestResponse> {
+function realIngestCoverage(
+  path: string,
+  language: string,
+  coveragePath: string,
+): Promise<CoverageIngestResponse> {
   return request<CoverageIngestResponse>(
-    `/api/coverage/ingest?path=${encodeURIComponent(path)}`,
+    `/api/coverage/ingest?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
     { method: 'POST', body: JSON.stringify({ path: coveragePath }) },
   )
 }
 
-function realGetCoverageRisk(path: string): Promise<CoverageResponse> {
-  return request<CoverageResponse>(`/api/coverage/risk?path=${encodeURIComponent(path)}`)
+function realGetCoverageRisk(path: string, language: string): Promise<CoverageResponse> {
+  return request<CoverageResponse>(
+    `/api/coverage/risk?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
 }
 
-function realGetDuplicates(path: string): Promise<DuplicatesResponse> {
-  return request<DuplicatesResponse>(`/api/duplicates?path=${encodeURIComponent(path)}`)
+function realGetDuplicates(path: string, language: string): Promise<DuplicatesResponse> {
+  return request<DuplicatesResponse>(
+    `/api/duplicates?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
+  )
 }
 
-function realGetDependencyRisk(path: string): Promise<DependencyRiskResponse> {
+function realGetDependencyRisk(path: string, language: string): Promise<DependencyRiskResponse> {
   // `confirm_network_access: true` is only ever sent here -- this
   // function is only ever called from an explicit, user-triggered "Scan
   // dependencies" click (see `CodeHealthSidebar.tsx`'s `DependenciesPane`),
   // never automatically. The backend still enforces this server-side too
   // (a 400 if the flag isn't `true`), regardless of what this client sends.
   return request<DependencyRiskResponse>(
-    `/api/dependencies/risk?path=${encodeURIComponent(path)}`,
+    `/api/dependencies/risk?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
     { method: 'POST', body: JSON.stringify({ confirm_network_access: true }) },
   )
 }
 
-function realGetFlowchart(path: string, id: string): Promise<FlowchartResponse> {
+function realGetFlowchart(path: string, language: string, id: string): Promise<FlowchartResponse> {
   return request<FlowchartResponse>(
-    `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+    `/api/flowchart?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}&language=${encodeURIComponent(language)}`,
   )
 }
 
@@ -258,35 +298,45 @@ function realGetOllamaModels(): Promise<OllamaModelsResponse> {
   return request<OllamaModelsResponse>('/api/ollama-models')
 }
 
+function realDetectLanguages(path: string): Promise<{ detected: string[]; supported: string[] }> {
+  return request<{ detected: string[]; supported: string[] }>('/api/detect-languages', {
+    method: 'POST',
+    body: JSON.stringify({ path }),
+  })
+}
+
 function realIngestDbtManifest(
   path: string,
+  language: string,
   manifestPath: string,
 ): Promise<DbtManifestIngestResponse> {
   return request<DbtManifestIngestResponse>(
-    `/api/dataflow/dbt-manifest?path=${encodeURIComponent(path)}`,
+    `/api/dataflow/dbt-manifest?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
     { method: 'POST', body: JSON.stringify({ path: manifestPath }) },
   )
 }
 
 function realIngestDbConnection(
   path: string,
+  language: string,
   connectionString: string,
 ): Promise<DbConnectionIngestResponse> {
   return request<DbConnectionIngestResponse>(
-    `/api/dataflow/db-connection?path=${encodeURIComponent(path)}`,
+    `/api/dataflow/db-connection?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
     { method: 'POST', body: JSON.stringify({ connection_string: connectionString }) },
   )
 }
 
 async function* realStreamDoc(
   path: string,
+  language: string,
   id: string,
   provider: DocProvider,
   model: string | undefined,
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
   const response = await fetch(
-    `${API_BASE_URL}/api/generate-doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}`,
+    `${API_BASE_URL}/api/generate-doc?path=${encodeURIComponent(path)}&id=${encodeURIComponent(id)}&language=${encodeURIComponent(language)}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -315,13 +365,14 @@ async function* realStreamDoc(
 
 async function* realStreamCodeHealthRecommendations(
   path: string,
+  language: string,
   provider: DocProvider,
   model: string | undefined,
   dependencyRisks: DependencyRisk[] | undefined,
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
   const response = await fetch(
-    `${API_BASE_URL}/api/code-health/recommendations?path=${encodeURIComponent(path)}`,
+    `${API_BASE_URL}/api/code-health/recommendations?path=${encodeURIComponent(path)}&language=${encodeURIComponent(language)}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -367,8 +418,8 @@ export const getComplexity = DEMO_MODE ? demoClient.getComplexity : realGetCompl
  * unconditionally replaces the dashboard's ranked list with `current`, so
  * returning `[]` here would silently blank it out on every demo compare). */
 export const getComplexityDiff = DEMO_MODE
-  ? async (path: string): Promise<ComplexityDiffResponse> => {
-      const { scores } = await demoClient.getComplexity(path)
+  ? async (path: string, language: string): Promise<ComplexityDiffResponse> => {
+      const { scores } = await demoClient.getComplexity(path, language)
       return { available: false, current: scores, added: [], removed: [], changed: [] }
     }
   : realGetComplexityDiff
@@ -384,7 +435,12 @@ export const getGitRefs = DEMO_MODE
  * than fabricating a fake diff) matches how this file treats every other
  * demo-unreachable call. */
 export const getComplexityDiffRef = DEMO_MODE
-  ? async (_path: string, _ref: string, _toRef?: string): Promise<ComplexityRefDiffResponse> => {
+  ? async (
+      _path: string,
+      _language: string,
+      _ref: string,
+      _toRef?: string,
+    ): Promise<ComplexityRefDiffResponse> => {
       throw new Error('Git ref comparison is not available in demo mode')
     }
   : realGetComplexityDiffRef
@@ -396,7 +452,7 @@ export const getComplexityDiffRef = DEMO_MODE
  * but broken would be a worse demo experience than a tab that explains
  * itself. */
 export const getComplexityHotspots = DEMO_MODE
-  ? async (_path: string, windowDays?: number): Promise<HotspotsResponse> => ({
+  ? async (_path: string, _language: string, windowDays?: number): Promise<HotspotsResponse> => ({
       is_git_repo: false,
       scores: [],
       window_days: windowDays ?? 90,
@@ -415,17 +471,21 @@ export const getComplexityHotspots = DEMO_MODE
  * `is_git_repo` is a real one for hotspots, so this stays a demo-only
  * concept rather than a schema addition). */
 export const getDeadCode = DEMO_MODE
-  ? async (_path: string): Promise<DeadCodeResponse> => {
+  ? async (_path: string, _language: string): Promise<DeadCodeResponse> => {
       throw new DeadCodeUnavailableError('Dead-code detection is not available in demo mode')
     }
   : realGetDeadCode
 export const ingestCoverage = DEMO_MODE
-  ? async (_path: string, _coveragePath: string): Promise<CoverageIngestResponse> => {
+  ? async (
+      _path: string,
+      _language: string,
+      _coveragePath: string,
+    ): Promise<CoverageIngestResponse> => {
       throw new CoverageUnavailableError('Coverage ingestion is not available in demo mode')
     }
   : realIngestCoverage
 export const getCoverageRisk = DEMO_MODE
-  ? async (_path: string): Promise<CoverageResponse> => {
+  ? async (_path: string, _language: string): Promise<CoverageResponse> => {
       throw new CoverageUnavailableError('Coverage ranking is not available in demo mode')
     }
   : realGetCoverageRisk
@@ -434,10 +494,10 @@ export const getCoverageRisk = DEMO_MODE
 // return a real, valid empty response rather than throwing -- the demo's
 // fixture bundle just never happens to contain any duplicate functions.
 export const getDuplicates = DEMO_MODE
-  ? async (_path: string): Promise<DuplicatesResponse> => ({ groups: [] })
+  ? async (_path: string, _language: string): Promise<DuplicatesResponse> => ({ groups: [] })
   : realGetDuplicates
 export const getDependencyRisk = DEMO_MODE
-  ? async (_path: string): Promise<DependencyRiskResponse> => {
+  ? async (_path: string, _language: string): Promise<DependencyRiskResponse> => {
       throw new DependencyRiskUnavailableError(
         'Dependency risk scanning is not available in demo mode',
       )
@@ -456,12 +516,13 @@ export const streamDoc = DEMO_MODE ? demoClient.streamDoc : realStreamDoc
 // point (the iterable expression is evaluated eagerly), so callers don't
 // need to know the difference.
 export const streamCodeHealthRecommendations = DEMO_MODE
-  ? (): AsyncGenerator<string> => {
+  ? (..._args: unknown[]): AsyncGenerator<string> => {
       throw new RecommendationsUnavailableError(
         'AI recommendations are not available in demo mode',
       )
     }
   : realStreamCodeHealthRecommendations
+export const detectLanguages = realDetectLanguages
 /** Demo-only: no real-backend concept of an impact-analysis "showcase"
  * function exists, so the real app always gets an empty list rather than
  * a second code path every consumer has to branch on. */

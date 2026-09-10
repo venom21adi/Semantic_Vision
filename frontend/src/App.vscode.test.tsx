@@ -14,6 +14,7 @@ vi.mock('./api/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./api/client')>()
   return {
     ...actual,
+    detectLanguages: vi.fn(),
     parseRepo: vi.fn(),
     updateDocRoot: vi.fn(),
     getGraph: vi.fn(),
@@ -69,6 +70,10 @@ async function loadSampleRepoInsideVscode() {
   vi.resetModules()
   const { default: App } = await import('./App')
 
+  mockedClient.detectLanguages.mockResolvedValue({
+    detected: ['python'],
+    supported: ['python', 'javascript', 'java'],
+  })
   mockedClient.getGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.saveGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.parseRepo.mockResolvedValue({
@@ -84,7 +89,10 @@ async function loadSampleRepoInsideVscode() {
   const user = userEvent.setup()
   render(<App />)
   await user.type(screen.getByLabelText('Repository path'), '/repo')
-  await user.click(screen.getByRole('button', { name: /load/i }))
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+  )
+  await user.click(screen.getByRole('button', { name: /^load$/i }))
   await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
   return user
 }
@@ -169,6 +177,6 @@ describe('App inside the VS Code extension webview', () => {
     window.postMessage({ command: 'runImpactAnalysis', nodeId: 'app.py::Greeter.greet' }, '*')
 
     await waitFor(() => expect(screen.getByText(/Direct callers/)).toBeInTheDocument())
-    expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
+    expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'python', 'app.py::Greeter.greet')
   }, TEST_TIMEOUT_MS)
 })

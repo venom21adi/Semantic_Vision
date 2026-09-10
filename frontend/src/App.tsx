@@ -58,7 +58,7 @@ import type { GitRefsState } from './components/RefPicker'
 import { DetailsPanel, type ActivePane } from './components/DetailsPanel'
 import { DemoRepoPicker } from './components/DemoRepoPicker'
 import { DemoRepoPill } from './components/DemoRepoPill'
-import { RepoLoader } from './components/RepoLoader'
+import { languageLabel, RepoLoader } from './components/RepoLoader'
 import { RepoPill } from './components/RepoPill'
 import { Sidebar, type GraphView } from './components/Sidebar'
 import { FlowchartCanvas } from './flowchart/FlowchartCanvas'
@@ -84,14 +84,14 @@ import {
   getDetailsWidth,
   getLastRepoPath,
   getRememberedDocRoot,
-  getRememberedLanguage,
+  getRememberedLanguages,
   getSidebarCollapsed,
   isDocSaveNoticeDismissed,
   setDetailsCollapsed,
   setDetailsWidth,
   setLastRepoPath,
   setRememberedDocRoot,
-  setRememberedLanguage,
+  setRememberedLanguages,
   setSidebarCollapsed,
 } from './utils/localStorage'
 
@@ -149,7 +149,6 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 interface LoadedRepo {
   path: string
-  docRoot: string
   nodes: GraphNode[]
   edges: GraphEdge[]
   nodeCount: number
@@ -223,7 +222,36 @@ type HostMessage =
   | { command: 'activeFileChanged'; file: string }
   | { command: 'runImpactAnalysis'; nodeId: string }
 
-export default function App() {
+interface RepoWorkspaceProps {
+  language: string
+  path: string
+  docRoot: string
+  nodeCount: number
+  edgeCount: number
+  parseErrors: ParseErrorInfo[]
+  hidden: boolean
+}
+
+/** One loaded language's entire workspace -- graph canvas, sidebar, Code
+ * Health dashboard, details panel. Mounted once per language selected in
+ * the repo loader (see `App` below), which owns the shared chrome (logo,
+ * repo pill, language tab strip) and the initial `parseRepo` call for
+ * every selected language; this component's own mount effect only fetches
+ * the graph/graph-state for its own `language`, since parsing already
+ * happened before it was ever mounted. Kept mounted (toggled via `hidden`,
+ * not unmounted) when the user switches tabs, so switching languages never
+ * loses scroll position, selection, or in-flight fetches -- the same
+ * "switching lenses doesn't destroy the other lens's state" contract the
+ * Graph/Code Health lens toggle below already follows, just one level up. */
+function RepoWorkspace({
+  language,
+  path,
+  docRoot,
+  nodeCount,
+  edgeCount,
+  parseErrors,
+  hidden,
+}: RepoWorkspaceProps) {
   const [repo, setRepo] = useState<LoadedRepo | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -524,28 +552,28 @@ export default function App() {
     void refreshOllamaModels()
   }, [refreshOllamaModels])
 
-  const handleLoad = useCallback(async (path: string, docRoot: string, language: string) => {
+  // Parsing already happened in `App`'s `handleLoad` (once per selected
+  // language, before this component was ever mounted) -- this only fetches
+  // the graph/graph-state for its own `language` and `path`, which `App`
+  // has already resolved (a pasted host path translated, a relative doc
+  // root resolved against the repo's own `.git` root, etc.).
+  const handleLoad = useCallback(async () => {
     setLoading(true)
     setLoadError(null)
     try {
-      const parseResult = await parseRepo(path, docRoot || undefined, language || undefined)
       const [graph, graphState] = await Promise.all([
-        getGraph(parseResult.path),
-        getGraphState(parseResult.path),
+        getGraph(path, language),
+        getGraphState(path, language),
       ])
       setRepo({
-        path: parseResult.path,
-        docRoot: parseResult.doc_root,
+        path,
         nodes: graph.nodes,
         edges: graph.edges,
-        nodeCount: parseResult.node_count,
-        edgeCount: parseResult.edge_count,
-        parseErrors: parseResult.parse_errors,
+        nodeCount,
+        edgeCount,
+        parseErrors,
         positions: graphState.positions,
       })
-      setLastRepoPath(path)
-      setRememberedDocRoot(path, parseResult.doc_root)
-      setRememberedLanguage(path, language)
       setSelectedNodeId(null)
       setPane(null)
       setView('codebase')
@@ -583,8 +611,8 @@ export default function App() {
       // set for exactly that case (see `guava-base`'s `meta.json`); `null`
       // for every other demo repo, whose own directory shape already
       // collapses fine, and always for a non-demo repo.
-      const defaultVisibleIds = DEMO_MODE ? await getDefaultVisibleIds(parseResult.path) : null
-      const underThreshold = parseResult.node_count <= LARGE_GRAPH_NODE_THRESHOLD
+      const defaultVisibleIds = DEMO_MODE ? await getDefaultVisibleIds(path) : null
+      const underThreshold = nodeCount <= LARGE_GRAPH_NODE_THRESHOLD
       setVisibleIds(
         defaultVisibleIds
           ? new Set(
@@ -597,25 +625,23 @@ export default function App() {
               : new Set(),
       )
       setExpandBlockedNotice(null)
-      setShowcaseIds(DEMO_MODE ? await getImpactShowcaseIds(parseResult.path) : [])
+      setShowcaseIds(DEMO_MODE ? await getImpactShowcaseIds(path) : [])
     } catch (error) {
       setLoadError(errorMessage(error))
     } finally {
       setLoading(false)
     }
-  }, [resetHealthState])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetHealthState, path, language, nodeCount, edgeCount, parseErrors])
 
-  const handleChangeDocRoot = useCallback(async (newDocRoot: string) => {
-    const current = repoRef.current
-    const trimmed = newDocRoot.trim()
-    if (!current || !trimmed) return
-    try {
-      const result = await updateDocRoot(current.path, trimmed)
-      setRememberedDocRoot(current.path, result.doc_root)
-      setRepo((prev) => (prev ? { ...prev, docRoot: result.doc_root } : prev))
-    } catch (error) {
-      setLoadError(errorMessage(error))
-    }
+  // `path`/`language` are stable for this component's whole lifetime (see
+  // this component's own doc comment -- `App` mounts one instance per
+  // selected language, keyed on it), so this fires exactly once, right
+  // after mount, instead of being triggered by a form submission the way
+  // a single-repo `RepoLoader` would.
+  useEffect(() => {
+    void handleLoad()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleDismissDocSaveNotice = useCallback(() => {
@@ -853,7 +879,7 @@ export default function App() {
       }
       setPane({ kind: 'source', status: 'loading' })
       try {
-        const result = await getFunctionSource(repo.path, nodeId)
+        const result = await getFunctionSource(repo.path, language, nodeId)
         setPane({ kind: 'source', status: 'loaded', source: result.source })
       } catch (error) {
         setPane({ kind: 'source', status: 'error', message: errorMessage(error) })
@@ -868,7 +894,7 @@ export default function App() {
       cancelGeneration()
       setPane({ kind: 'doc', status: 'loading' })
       try {
-        const result = await getDoc(repo.path, nodeId)
+        const result = await getDoc(repo.path, language, nodeId)
         setPane({ kind: 'doc', status: 'loaded', markdown: result.markdown, saved: true })
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
@@ -893,6 +919,7 @@ export default function App() {
       const model = docProvider === 'ollama' ? ollamaModel || undefined : undefined
       for await (const chunk of streamDoc(
         repo.path,
+        language,
         selectedNodeId,
         docProvider,
         model,
@@ -918,7 +945,7 @@ export default function App() {
     const current = paneRef.current
     if (!repo || !selectedNodeId || current?.kind !== 'doc' || current.status !== 'loaded') return
     try {
-      await saveDoc(repo.path, selectedNodeId, current.markdown)
+      await saveDoc(repo.path, language, selectedNodeId, current.markdown)
       setPane({ kind: 'doc', status: 'loaded', markdown: current.markdown, saved: true })
     } catch (error) {
       setPane({ kind: 'doc', status: 'error', message: errorMessage(error) })
@@ -941,7 +968,7 @@ export default function App() {
       setSelectedNodeId(nodeId)
       setFlowchartState({ status: 'loading', label })
       try {
-        const data = await getFlowchart(repo.path, nodeId)
+        const data = await getFlowchart(repo.path, language, nodeId)
         setFlowchartState({ status: 'loaded', label, data })
       } catch (error) {
         setFlowchartState({ status: 'error', label, message: errorMessage(error) })
@@ -964,7 +991,7 @@ export default function App() {
       if (!repo) return
       setPane({ kind: 'impact', status: 'loading' })
       try {
-        const result = await getImpact(repo.path, nodeId)
+        const result = await getImpact(repo.path, language, nodeId)
         setPane({ kind: 'impact', status: 'loaded', result })
       } catch (error) {
         setPane({ kind: 'impact', status: 'error', message: errorMessage(error) })
@@ -994,7 +1021,7 @@ export default function App() {
     setGitRefs({ status: 'loading' })
     const requestId = ++dashboardRequestIdRef.current
     try {
-      const result = await getComplexity(repo.path)
+      const result = await getComplexity(repo.path, language)
       if (dashboardRequestIdRef.current !== requestId) return
       setDashboard({ status: 'loaded', scores: result.scores })
     } catch (error) {
@@ -1049,16 +1076,8 @@ export default function App() {
     const mode: DiffMode = { kind: 'last-look' }
     setDashboardDiff({ status: 'loading', mode })
     try {
-      // `getLastRepoPath()`, not `repo.path` -- `setRememberedLanguage` was
-      // written under the *raw* path passed to `handleLoad`, but `repo.path`
-      // is the backend-resolved one (`cache.py`'s own `Path(path).resolve()`);
-      // they can differ (Windows path separators, relative vs. resolved), so
-      // looking up by `repo.path` would silently miss and reparse with the
-      // wrong language. Mirrors exactly how `rememberedLanguage` is looked up
-      // for the initial load below.
-      const language = getRememberedLanguage(getLastRepoPath() ?? repo.path) ?? undefined
-      const parseResult = await parseRepo(repo.path, repo.docRoot, language)
-      const graph = await getGraph(parseResult.path)
+      const parseResult = await parseRepo(repo.path, docRoot, language)
+      const graph = await getGraph(parseResult.path, language)
       if (dashboardDiffRequestIdRef.current !== requestId) return
       setRepo((prev) =>
         prev
@@ -1079,7 +1098,7 @@ export default function App() {
       // (a plain `visibleIds.size`, `Sidebar.tsx`) forever after.
       const freshNodeIds = new Set(graph.nodes.map((node) => node.id))
       setVisibleIds((prev) => new Set([...prev].filter((id) => freshNodeIds.has(id))))
-      const diffResult = await getComplexityDiff(repo.path)
+      const diffResult = await getComplexityDiff(repo.path, language)
       if (dashboardDiffRequestIdRef.current !== requestId) return
       setDashboard({ status: 'loaded', scores: diffResult.current })
       setDashboardDiff({ status: 'loaded', mode, result: diffResult })
@@ -1112,7 +1131,7 @@ export default function App() {
       const mode: DiffMode = { kind: 'ref', ref, label, toRef, toLabel }
       setDashboardDiff({ status: 'loading', mode })
       try {
-        const result = await getComplexityDiffRef(repo.path, ref, toRef)
+        const result = await getComplexityDiffRef(repo.path, language, ref, toRef)
         if (dashboardDiffRequestIdRef.current !== requestId) return
         setDashboardDiff({ status: 'loaded', mode, result })
       } catch (error) {
@@ -1140,7 +1159,7 @@ export default function App() {
       const requestId = ++hotspotsRequestIdRef.current
       setHotspots({ status: 'loading', windowDays })
       try {
-        const result = await getComplexityHotspots(repo.path, windowDays)
+        const result = await getComplexityHotspots(repo.path, language, windowDays)
         if (hotspotsRequestIdRef.current !== requestId) return
         setHotspots({ status: 'loaded', windowDays, result })
       } catch (error) {
@@ -1159,7 +1178,7 @@ export default function App() {
     const requestId = ++deadCodeRequestIdRef.current
     setDeadCode({ status: 'loading' })
     try {
-      const result = await getDeadCode(repo.path)
+      const result = await getDeadCode(repo.path, language)
       if (deadCodeRequestIdRef.current !== requestId) return
       setDeadCode({ status: 'loaded', result })
     } catch (error) {
@@ -1183,7 +1202,7 @@ export default function App() {
     const requestId = ++coverageRequestIdRef.current
     setCoverage({ status: 'loading' })
     try {
-      const result = await getCoverageRisk(repo.path)
+      const result = await getCoverageRisk(repo.path, language)
       if (coverageRequestIdRef.current !== requestId) return
       setCoverage({ status: 'loaded', result })
     } catch (error) {
@@ -1205,7 +1224,7 @@ export default function App() {
       if (!repo) return
       setCoverageIngest({ status: 'submitting' })
       try {
-        const result = await ingestCoverage(repo.path, coveragePath)
+        const result = await ingestCoverage(repo.path, language, coveragePath)
         setCoverageIngest({ status: 'success', result })
         await handleLoadCoverageRisk()
       } catch (error) {
@@ -1224,7 +1243,7 @@ export default function App() {
     const requestId = ++duplicatesRequestIdRef.current
     setDuplicates({ status: 'loading' })
     try {
-      const result = await getDuplicates(repo.path)
+      const result = await getDuplicates(repo.path, language)
       if (duplicatesRequestIdRef.current !== requestId) return
       setDuplicates({ status: 'loaded', result })
     } catch (error) {
@@ -1242,7 +1261,7 @@ export default function App() {
     const requestId = ++dependencyRiskRequestIdRef.current
     setDependencyRisk({ status: 'submitting' })
     try {
-      const result = await getDependencyRisk(repo.path)
+      const result = await getDependencyRisk(repo.path, language)
       if (dependencyRiskRequestIdRef.current !== requestId) return
       setDependencyRisk({ status: 'loaded', result })
     } catch (error) {
@@ -1278,6 +1297,7 @@ export default function App() {
           : undefined
       for await (const chunk of streamCodeHealthRecommendations(
         repo.path,
+        language,
         docProvider,
         model,
         dependencyRisks,
@@ -1316,7 +1336,7 @@ export default function App() {
     const current = repoRef.current
     if (!current) return
     try {
-      const graph = await getGraph(current.path)
+      const graph = await getGraph(current.path, language)
       // A `Table`/`DBT_MODEL` node has no `defines` edge pointing at it
       // (nothing "contains" it the way a file contains a function), so
       // it's root-level by `rootNodeIds`'s definition -- without this, a
@@ -1338,7 +1358,7 @@ export default function App() {
       // confirmation for the ingest itself -- a failed refresh just means
       // the canvas catches up on the next reload instead of live.
     }
-  }, [])
+  }, [language])
 
   // Clicking empty canvas space already deselects (calls this with
   // `null`); it also clears the active pane, so an Impact
@@ -1520,27 +1540,25 @@ export default function App() {
   const handleAutoSavePositions = useCallback((positions: Record<string, NodePosition>) => {
     const current = repoRef.current
     if (!current) return
-    void saveGraphState(current.path, positions).catch(() => {
+    void saveGraphState(current.path, language, positions).catch(() => {
       // Best-effort: a failed autosave shouldn't interrupt the user.
     })
     setRepo((prev) => (prev ? { ...prev, positions: { ...prev.positions, ...positions } } : prev))
-  }, [])
+  }, [language])
 
   const showFileViewPlaceholder =
     repo !== null && view === 'file' && (!selectedNode || selectedNode.kind === 'directory')
 
   const showEmptySelectionPlaceholder = repo !== null && view === 'codebase' && visibleIds.size === 0
 
-  const lastRepoPath = getLastRepoPath()
-  const rememberedDocRoot = lastRepoPath ? getRememberedDocRoot(lastRepoPath) : null
-  const rememberedLanguage = lastRepoPath ? getRememberedLanguage(lastRepoPath) : null
-
   return (
     <div
+      hidden={hidden}
       style={{
-        display: 'flex',
+        display: hidden ? 'none' : 'flex',
         flexDirection: 'column',
-        height: '100vh',
+        flex: 1,
+        minHeight: 0,
         background: colors.bgPage,
         color: colors.textPrimary,
         fontFamily: font.ui,
@@ -1556,63 +1574,15 @@ export default function App() {
           borderBottom: `1px solid ${colors.bgPanel}`,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, flexShrink: 0 }}>
-          <LogoMark size={20} />
-          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Semantic Vision
+        <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
+          <LensTabButton label="Codebase Graph" active={lens === 'graph'} onClick={handleActivateGraphLens} />
+          <LensTabButton label="Code Health" active={lens === 'health'} onClick={() => void handleActivateHealthLens()} />
+        </div>
+        {loadError && (
+          <span role="alert" style={{ fontSize: 12, color: colors.danger }}>
+            {loadError}
           </span>
-          {DEMO_MODE && (
-            <a
-              href="https://github.com/venom21adi/Semantic_Vision"
-              target="_blank"
-              rel="noreferrer"
-              title="Static demo with precomputed data -- no backend. Get it for your own repo on GitHub."
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.03em',
-                textTransform: 'uppercase',
-                color: colors.accent,
-                border: `1px solid ${colors.accent}`,
-                borderRadius: radius.full,
-                padding: '2px 7px',
-                textDecoration: 'none',
-              }}
-            >
-              Static demo · Get it for your repo →
-            </a>
-          )}
-        </div>
-        {repo && (
-          <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
-            <LensTabButton label="Codebase Graph" active={lens === 'graph'} onClick={handleActivateGraphLens} />
-            <LensTabButton label="Code Health" active={lens === 'health'} onClick={() => void handleActivateHealthLens()} />
-          </div>
         )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {repo && DEMO_MODE && (
-            <DemoRepoPill slug={repo.path} onSwitch={() => setRepo(null)} />
-          )}
-          {repo && !DEMO_MODE && (
-            <RepoPill
-              onLoad={handleLoad}
-              loading={loading}
-              error={loadError}
-              initialPath={lastRepoPath ?? undefined}
-              initialDocRoot={rememberedDocRoot ?? undefined}
-              initialLanguage={rememberedLanguage ?? undefined}
-              resolvedDocRoot={repo.docRoot}
-              onChangeDocRoot={handleChangeDocRoot}
-              stats={{
-                path: repo.path,
-                nodeCount: repo.nodeCount,
-                edgeCount: repo.edgeCount,
-                parseErrors: repo.parseErrors,
-              }}
-            />
-          )}
-        </div>
-        <HelpGuide />
       </header>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         {repo && lens === 'graph' && (
@@ -1700,42 +1670,22 @@ export default function App() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: spacing.lg,
+                    gap: spacing.md,
                   }}
                 >
-                  <LogoMark size={40} bare />
-                  <div style={{ fontSize: 15, color: colors.textMuted }}>
-                    Load a repository to see its codebase graph.
-                  </div>
-                  <div style={{ width: '100%', maxWidth: 640, padding: `0 ${spacing.md}px` }}>
-                    {DEMO_MODE ? (
-                      <DemoRepoPicker onLoad={handleLoad} loading={loading} error={loadError} />
-                    ) : (
-                      <RepoLoader
-                        onLoad={handleLoad}
-                        loading={loading}
-                        error={loadError}
-                        initialPath={lastRepoPath ?? undefined}
-                        initialDocRoot={rememberedDocRoot ?? undefined}
-                        initialLanguage={rememberedLanguage ?? undefined}
-                        resolvedDocRoot={null}
-                        stats={null}
-                      />
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      maxWidth: 360,
-                      textAlign: 'center',
-                      fontSize: 12,
-                      color: colors.textDim,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    Once it's in, right-click any node for docs, impact analysis, and execution
-                    flowcharts — see the <strong>?</strong> in the top-right corner for a full
-                    walkthrough.
-                  </div>
+                  {loading && (
+                    <>
+                      <span className="spinner" aria-hidden="true" />
+                      <div style={{ fontSize: 13, color: colors.textMuted }}>
+                        Loading {languageLabel(language)}…
+                      </div>
+                    </>
+                  )}
+                  {loadError && (
+                    <span role="alert" style={{ fontSize: 13, color: colors.danger }}>
+                      {loadError}
+                    </span>
+                  )}
                 </div>
               )}
               {repo && !flowchartState && showFileViewPlaceholder && (
@@ -1843,13 +1793,14 @@ export default function App() {
               onGenerateDoc={handleGenerateDoc}
               onSaveDoc={handleSaveDoc}
               onEditDoc={handleEditDoc}
-              docRoot={repo?.docRoot ?? ''}
+              docRoot={docRoot}
               docSaveNoticeDismissed={docSaveNoticeDismissed}
               onDismissDocSaveNotice={handleDismissDocSaveNotice}
               repoPath={repo?.path ?? ''}
+              language={language}
               onDataSourceIngestComplete={handleDataSourceIngestComplete}
               dataSourceDefaultManifestPath={
-                DEMO_MODE && repo?.path === 'python-shop'
+                DEMO_MODE && path === 'python-shop'
                   ? 'jaffle_shop/target/manifest.json (bundled with this demo)'
                   : undefined
               }
@@ -1863,6 +1814,263 @@ export default function App() {
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+interface LoadedLanguageInfo {
+  /** The backend-resolved path (`ParseRepoResponse.path`) -- may differ
+   * from the raw path typed into the loader (Windows separators, a
+   * relative vs. resolved form), same distinction `RepoWorkspace` used to
+   * navigate via `getLastRepoPath()` before this refactor made `path` a
+   * stable prop instead. */
+  path: string
+  nodeCount: number
+  edgeCount: number
+  parseErrors: ParseErrorInfo[]
+}
+
+/** Owns the multi-language session: which languages are loaded, the shared
+ * repo path/save location every one of them was parsed from, and the
+ * chrome (logo, repo pill, language tab strip, help guide) that surrounds
+ * whichever `RepoWorkspace` instances are currently mounted. Each
+ * `RepoWorkspace` below is its own fully independent dashboard (own lens,
+ * own Code Health state, own selection) -- this component never reaches
+ * into one, it only decides which one is visible. */
+export default function App() {
+  const [languages, setLanguages] = useState<string[]>([])
+  const [activeLanguage, setActiveLanguage] = useState<string | null>(null)
+  const [repoInfo, setRepoInfo] = useState<Record<string, LoadedLanguageInfo>>({})
+  const [docRoot, setDocRoot] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
+
+  const handleLoad = useCallback(
+    async (path: string, requestedDocRoot: string, selectedLanguages: string[]) => {
+      setLoading(true)
+      setLoadError(null)
+      try {
+        const parseResults = await Promise.all(
+          selectedLanguages.map((lang) =>
+            parseRepo(path, requestedDocRoot || undefined, lang || undefined),
+          ),
+        )
+        const nextInfo: Record<string, LoadedLanguageInfo> = {}
+        selectedLanguages.forEach((lang, index) => {
+          const result = parseResults[index]
+          nextInfo[lang] = {
+            path: result.path,
+            nodeCount: result.node_count,
+            edgeCount: result.edge_count,
+            parseErrors: result.parse_errors,
+          }
+        })
+        // Every language was just parsed from the same `path`, so every
+        // `ParseRepoResponse.doc_root` in `parseResults` resolves to the
+        // same value (save location is a repo-path-level concept, not a
+        // per-language one -- see `RepoCache`'s own doc-root storage) --
+        // any one of them is the canonical value.
+        setDocRoot(parseResults[0].doc_root)
+        setRepoInfo(nextInfo)
+        setLanguages(selectedLanguages)
+        setActiveLanguage(selectedLanguages[0])
+        setLastRepoPath(path)
+        setRememberedDocRoot(path, parseResults[0].doc_root)
+        setRememberedLanguages(path, selectedLanguages)
+      } catch (error) {
+        setLoadError(errorMessage(error))
+      } finally {
+        setLoading(false)
+      }
+    },
+    [],
+  )
+
+  const handleChangeDocRoot = useCallback(
+    async (newDocRoot: string) => {
+      const trimmed = newDocRoot.trim()
+      const anyLoadedLanguage = languages[0]
+      const path = anyLoadedLanguage ? repoInfo[anyLoadedLanguage]?.path : undefined
+      if (!trimmed || !path || !anyLoadedLanguage) return
+      try {
+        const result = await updateDocRoot(path, anyLoadedLanguage, trimmed)
+        setRememberedDocRoot(path, result.doc_root)
+        setDocRoot(result.doc_root)
+      } catch (error) {
+        setLoadError(errorMessage(error))
+      }
+    },
+    [languages, repoInfo],
+  )
+
+  const handleSwitchRepo = useCallback(() => {
+    setLanguages([])
+    setActiveLanguage(null)
+    setRepoInfo({})
+  }, [])
+
+  const lastRepoPath = getLastRepoPath()
+  const rememberedDocRoot = lastRepoPath ? getRememberedDocRoot(lastRepoPath) : null
+  const rememberedLanguages = lastRepoPath ? getRememberedLanguages(lastRepoPath) : null
+
+  const activeInfo = activeLanguage ? repoInfo[activeLanguage] : null
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        background: colors.bgPage,
+        color: colors.textPrimary,
+        fontFamily: font.ui,
+      }}
+    >
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: spacing.lg,
+          padding: spacing.md,
+          borderBottom: `1px solid ${colors.bgPanel}`,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, flexShrink: 0 }}>
+          <LogoMark size={20} />
+          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' }}>
+            Semantic Vision
+          </span>
+          {DEMO_MODE && (
+            <a
+              href="https://github.com/venom21adi/Semantic_Vision"
+              target="_blank"
+              rel="noreferrer"
+              title="Static demo with precomputed data -- no backend. Get it for your own repo on GitHub."
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.03em',
+                textTransform: 'uppercase',
+                color: colors.accent,
+                border: `1px solid ${colors.accent}`,
+                borderRadius: radius.full,
+                padding: '2px 7px',
+                textDecoration: 'none',
+              }}
+            >
+              Static demo · Get it for your repo →
+            </a>
+          )}
+        </div>
+        {languages.length > 1 && (
+          <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
+            {languages.map((lang) => (
+              <LensTabButton
+                key={lang}
+                label={languageLabel(lang)}
+                active={lang === activeLanguage}
+                onClick={() => setActiveLanguage(lang)}
+              />
+            ))}
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {languages.length > 0 && DEMO_MODE && (
+            <DemoRepoPill slug={activeInfo?.path ?? ''} onSwitch={handleSwitchRepo} />
+          )}
+          {languages.length > 0 && !DEMO_MODE && activeInfo && (
+            <RepoPill
+              onLoad={handleLoad}
+              loading={loading}
+              error={loadError}
+              initialPath={lastRepoPath ?? undefined}
+              initialDocRoot={rememberedDocRoot ?? undefined}
+              initialLanguages={rememberedLanguages ?? undefined}
+              resolvedDocRoot={docRoot}
+              onChangeDocRoot={handleChangeDocRoot}
+              stats={{
+                path: activeInfo.path,
+                nodeCount: activeInfo.nodeCount,
+                edgeCount: activeInfo.edgeCount,
+                parseErrors: activeInfo.parseErrors,
+              }}
+            />
+          )}
+        </div>
+        <HelpGuide />
+      </header>
+      {languages.length === 0 ? (
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: spacing.lg,
+          }}
+        >
+          <LogoMark size={40} bare />
+          <div style={{ fontSize: 15, color: colors.textMuted }}>
+            Load a repository to see its codebase graph.
+          </div>
+          <div style={{ width: '100%', maxWidth: 640, padding: `0 ${spacing.md}px` }}>
+            {DEMO_MODE ? (
+              <DemoRepoPicker onLoad={handleLoad} loading={loading} error={loadError} />
+            ) : (
+              <RepoLoader
+                onLoad={handleLoad}
+                loading={loading}
+                error={loadError}
+                initialPath={lastRepoPath ?? undefined}
+                initialDocRoot={rememberedDocRoot ?? undefined}
+                initialLanguages={rememberedLanguages ?? undefined}
+                resolvedDocRoot={null}
+                stats={null}
+              />
+            )}
+          </div>
+          <div
+            style={{
+              maxWidth: 360,
+              textAlign: 'center',
+              fontSize: 12,
+              color: colors.textDim,
+              lineHeight: 1.5,
+            }}
+          >
+            Once it's in, right-click any node for docs, impact analysis, and execution
+            flowcharts — see the <strong>?</strong> in the top-right corner for a full
+            walkthrough.
+          </div>
+        </div>
+      ) : (
+        languages.map((lang) => {
+          const info = repoInfo[lang]
+          if (!info) return null
+          return (
+            <RepoWorkspace
+              // Keyed on path too, not just language: loading a different
+              // repo while a language of the same name is already active
+              // (e.g. via the header's RepoPill) must force a fresh mount
+              // -- same language, different `path`, means this instance's
+              // own `useEffect(() => { load() }, [])` needs to re-run,
+              // which a bare `key={lang}` would never trigger since React
+              // reuses the existing instance across a prop-only change.
+              key={`${lang}:${info.path}`}
+              language={lang}
+              path={info.path}
+              docRoot={docRoot}
+              nodeCount={info.nodeCount}
+              edgeCount={info.edgeCount}
+              parseErrors={info.parseErrors}
+              hidden={lang !== activeLanguage}
+            />
+          )
+        })
+      )}
     </div>
   )
 }

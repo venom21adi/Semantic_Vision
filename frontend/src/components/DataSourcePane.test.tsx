@@ -24,13 +24,14 @@ describe('DataSourcePane', () => {
     })
     const onIngestComplete = vi.fn()
 
-    render(<DataSourcePane path="/repo" onIngestComplete={onIngestComplete} />)
+    render(<DataSourcePane path="/repo" language="python" onIngestComplete={onIngestComplete} />)
 
     await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
     await user.click(screen.getByRole('button', { name: /^ingest$/i }))
 
     expect(mockedClient.ingestDbtManifest).toHaveBeenCalledWith(
       '/repo',
+      'python',
       '/repo/target/manifest.json',
     )
     await waitFor(() => {
@@ -50,7 +51,7 @@ describe('DataSourcePane', () => {
       columns_created: 0,
     })
 
-    render(<DataSourcePane path="/repo" onIngestComplete={vi.fn()} />)
+    render(<DataSourcePane path="/repo" language="python" onIngestComplete={vi.fn()} />)
 
     await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/repo/target/manifest.json')
     await user.click(screen.getByRole('button', { name: /^ingest$/i }))
@@ -66,7 +67,7 @@ describe('DataSourcePane', () => {
     mockedClient.ingestDbtManifest.mockRejectedValue(new ApiError(400, 'Not valid JSON'))
     const onIngestComplete = vi.fn()
 
-    render(<DataSourcePane path="/repo" onIngestComplete={onIngestComplete} />)
+    render(<DataSourcePane path="/repo" language="python" onIngestComplete={onIngestComplete} />)
 
     await user.type(screen.getByLabelText(/dbt manifest.json path/i), '/bad/manifest.json')
     await user.click(screen.getByRole('button', { name: /^ingest$/i }))
@@ -88,7 +89,7 @@ describe('DataSourcePane', () => {
     })
     const onIngestComplete = vi.fn()
 
-    render(<DataSourcePane path="/repo" onIngestComplete={onIngestComplete} />)
+    render(<DataSourcePane path="/repo" language="python" onIngestComplete={onIngestComplete} />)
 
     const input = screen.getByLabelText(/database connection string/i)
     await user.type(input, 'postgresql://readonly@host/db')
@@ -96,6 +97,7 @@ describe('DataSourcePane', () => {
 
     expect(mockedClient.ingestDbConnection).toHaveBeenCalledWith(
       '/repo',
+      'python',
       'postgresql://readonly@host/db',
     )
     await waitFor(() => {
@@ -111,7 +113,7 @@ describe('DataSourcePane', () => {
     mockedClient.ingestDbConnection.mockRejectedValue(new ApiError(400, 'Could not connect'))
     const onIngestComplete = vi.fn()
 
-    render(<DataSourcePane path="/repo" onIngestComplete={onIngestComplete} />)
+    render(<DataSourcePane path="/repo" language="python" onIngestComplete={onIngestComplete} />)
 
     const input = screen.getByLabelText(/database connection string/i)
     await user.type(input, 'not-a-valid-url')
@@ -128,7 +130,7 @@ describe('DataSourcePane', () => {
   })
 
   it('disables submit buttons while empty', () => {
-    render(<DataSourcePane path="/repo" onIngestComplete={vi.fn()} />)
+    render(<DataSourcePane path="/repo" language="python" onIngestComplete={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: /^ingest$/i })).toBeDisabled()
     expect(screen.getByRole('button', { name: /^connect$/i })).toBeDisabled()

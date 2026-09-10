@@ -4,12 +4,12 @@ import { RepoLoader, type RepoLoadStats } from './RepoLoader'
 
 interface RepoPillProps {
   stats: RepoLoadStats
-  onLoad: (path: string, docRoot: string, language: string) => void
+  onLoad: (path: string, docRoot: string, languages: string[]) => void
   loading: boolean
   error: string | null
   initialPath?: string
   initialDocRoot?: string
-  initialLanguage?: string
+  initialLanguages?: string[]
   resolvedDocRoot?: string | null
   onChangeDocRoot?: (newDocRoot: string) => void
 }
@@ -27,7 +27,7 @@ export function RepoPill({
   error,
   initialPath,
   initialDocRoot,
-  initialLanguage,
+  initialLanguages,
   resolvedDocRoot,
   onChangeDocRoot,
 }: RepoPillProps) {
@@ -123,7 +123,7 @@ export function RepoPill({
             error={error}
             initialPath={initialPath}
             initialDocRoot={initialDocRoot}
-            initialLanguage={initialLanguage}
+            initialLanguages={initialLanguages}
             resolvedDocRoot={resolvedDocRoot}
             hasLoadedRepo
             onChangeDocRoot={onChangeDocRoot}

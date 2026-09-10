@@ -17,6 +17,7 @@ vi.mock('./api/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./api/client')>()
   return {
     ...actual,
+    detectLanguages: vi.fn(),
     parseRepo: vi.fn(),
     updateDocRoot: vi.fn(),
     getGraph: vi.fn(),
@@ -71,7 +72,14 @@ async function loadSampleRepo() {
   const user = userEvent.setup()
   render(<App />)
   await user.type(screen.getByLabelText('Repository path'), '/repo')
-  await user.click(screen.getByRole('button', { name: /load/i }))
+  // Waits for auto-detection's chip pre-check (see `RepoLoader`) rather
+  // than clicking immediately -- the Load button stays disabled until at
+  // least one language is checked, and detection is async (debounced,
+  // then a `detectLanguages` round-trip).
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+  )
+  await user.click(screen.getByRole('button', { name: /^load$/i }))
   await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
   return user
 }
@@ -101,6 +109,10 @@ async function backToGraphLens(user: ReturnType<typeof userEvent.setup>) {
 beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
+  mockedClient.detectLanguages.mockResolvedValue({
+    detected: ['python'],
+    supported: ['python', 'javascript', 'java'],
+  })
   mockedClient.getGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.saveGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.parseRepo.mockResolvedValue({
@@ -124,12 +136,16 @@ describe('App', () => {
     ).toHaveTextContent('2 nodes, 1 edges')
   })
 
-  it('loads a repository with the selected language and remembers it per repo path', async () => {
+  it('loads a repository with the selected languages and remembers them per repo path', async () => {
     const user = userEvent.setup()
     const { unmount } = render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.selectOptions(screen.getByLabelText('Language'), 'javascript')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: 'Python' }))
+    await user.click(screen.getByRole('button', { name: 'JavaScript / TypeScript' }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
 
     expect(mockedClient.parseRepo).toHaveBeenCalledWith('/repo', undefined, 'javascript')
@@ -137,7 +153,10 @@ describe('App', () => {
     unmount()
     render(<App />)
 
-    expect(screen.getByLabelText('Language')).toHaveValue('javascript')
+    expect(screen.getByRole('button', { name: 'JavaScript / TypeScript' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 
   it('shows a load error from the API', async () => {
@@ -146,7 +165,10 @@ describe('App', () => {
     render(<App />)
 
     await user.type(screen.getByLabelText('Repository path'), '/nope')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Not a directory'))
   })
@@ -178,7 +200,11 @@ describe('App', () => {
     await waitFor(() =>
       expect(document.querySelector('code')).toHaveTextContent('def greet(self): ...'),
     )
-    expect(mockedClient.getFunctionSource).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
+    expect(mockedClient.getFunctionSource).toHaveBeenCalledWith(
+      '/repo',
+      'python',
+      'app.py::Greeter.greet',
+    )
   })
 
   it('fetches saved documentation via the context menu, or reports none saved', async () => {
@@ -229,6 +255,7 @@ describe('App', () => {
     )
     expect(mockedClient.streamDoc).toHaveBeenCalledWith(
       '/repo',
+      'python',
       'app.py::Greeter.greet',
       'ollama',
       undefined,
@@ -240,6 +267,7 @@ describe('App', () => {
 
     await waitFor(() => expect(mockedClient.saveDoc).toHaveBeenCalledWith(
       '/repo',
+      'python',
       'app.py::Greeter.greet',
       '# greet\n\nReturns a greeting.',
     ))
@@ -271,6 +299,7 @@ describe('App', () => {
     await waitFor(() =>
       expect(mockedClient.streamDoc).toHaveBeenCalledWith(
         '/repo',
+        'python',
         'app.py::Greeter.greet',
         'ollama',
         'qwen2.5-coder:3b',
@@ -304,7 +333,7 @@ describe('App', () => {
       expect(screen.getByRole('heading', { name: 'greet', level: 1 })).toBeInTheDocument(),
     )
 
-    const signal = mockedClient.streamDoc.mock.calls[0][4]
+    const signal = mockedClient.streamDoc.mock.calls[0][5]
     expect(signal?.aborted).toBe(false)
 
     // Selecting a different node cancels the in-flight generation
@@ -333,7 +362,7 @@ describe('App', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Impact Analysis' }))
 
     await waitFor(() => expect(screen.getByText(/Direct callers/)).toBeInTheDocument())
-    expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
+    expect(mockedClient.getImpact).toHaveBeenCalledWith('/repo', 'python', 'app.py::Greeter.greet')
 
     await user.click(screen.getByRole('button', { name: 'View caller app.py' }))
 
@@ -510,7 +539,9 @@ describe('App', () => {
     await user.type(saveLocationInput, '/new/root')
     await user.tab()
 
-    await waitFor(() => expect(mockedClient.updateDocRoot).toHaveBeenCalledWith('/repo', '/new/root'))
+    await waitFor(() =>
+      expect(mockedClient.updateDocRoot).toHaveBeenCalledWith('/repo', 'python', '/new/root'),
+    )
     expect(mockedClient.parseRepo).toHaveBeenCalledTimes(1)
     await waitFor(() => expect(screen.getByText(/new\/root/)).toBeInTheDocument())
   })
@@ -518,7 +549,7 @@ describe('App', () => {
   it('fetches saved graph-state positions when loading a repository', async () => {
     await loadSampleRepo()
 
-    expect(mockedClient.getGraphState).toHaveBeenCalledWith('/repo')
+    expect(mockedClient.getGraphState).toHaveBeenCalledWith('/repo', 'python')
   })
 
   it('auto-saves node positions to the backend on the save interval', async () => {
@@ -527,14 +558,21 @@ describe('App', () => {
       const user = userEvent.setup({ delay: null })
       render(<App />)
       await user.type(screen.getByLabelText('Repository path'), '/repo')
-      await user.click(screen.getByRole('button', { name: /load/i }))
+      await vi.advanceTimersByTimeAsync(400)
+      await vi.waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute(
+          'aria-pressed',
+          'true',
+        ),
+      )
+      await user.click(screen.getByRole('button', { name: /^load$/i }))
       await vi.waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
 
       await vi.advanceTimersByTimeAsync(AUTO_SAVE_POSITIONS_INTERVAL_MS)
 
       // Exact match, not a subset check: every rendered node's position
       // must be included, not just the one this test happens to name.
-      expect(mockedClient.saveGraphState).toHaveBeenCalledWith('/repo', {
+      expect(mockedClient.saveGraphState).toHaveBeenCalledWith('/repo', 'python', {
         'app.py': { x: expect.any(Number), y: expect.any(Number) },
         'app.py::Greeter.greet': { x: expect.any(Number), y: expect.any(Number) },
       })
@@ -590,7 +628,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
 
     await waitFor(() =>
       expect(
@@ -616,7 +657,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -647,7 +691,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -692,7 +739,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
 
     await waitFor(() => expect(screen.getByTestId('rf__node-pkg/a.py')).toBeInTheDocument())
     expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
@@ -744,7 +794,14 @@ describe('App', () => {
       const user = userEvent.setup({ delay: null })
       render(<App />)
       await user.type(screen.getByLabelText('Repository path'), '/repo')
-      await user.click(screen.getByRole('button', { name: /load/i }))
+      await vi.advanceTimersByTimeAsync(400)
+      await vi.waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute(
+          'aria-pressed',
+          'true',
+        ),
+      )
+      await user.click(screen.getByRole('button', { name: /^load$/i }))
       await vi.waitFor(() => screen.getByTestId('rf__node-pkg/a.py'))
 
       const tree = screen.getByRole('tree')
@@ -802,7 +859,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -844,7 +904,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -900,7 +963,10 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -954,7 +1020,7 @@ describe('App', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Execution Flowchart' }))
 
     await waitFor(() => expect(screen.getByText('Execution flowchart: greet')).toBeInTheDocument())
-    expect(mockedClient.getFlowchart).toHaveBeenCalledWith('/repo', 'app.py::Greeter.greet')
+    expect(mockedClient.getFlowchart).toHaveBeenCalledWith('/repo', 'python', 'app.py::Greeter.greet')
     expect(screen.getByText('def greet(self):')).toBeInTheDocument()
     expect(screen.getByText('return path')).toBeInTheDocument()
 
@@ -1004,7 +1070,7 @@ describe('App', () => {
 
     await openHealthLens(user)
 
-    expect(mockedClient.getComplexity).toHaveBeenCalledWith('/repo')
+    expect(mockedClient.getComplexity).toHaveBeenCalledWith('/repo', 'python')
     expect(screen.getByText('greet')).toBeInTheDocument()
     expect(screen.getByText('Complexity 4')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Code Health' })).toHaveAttribute('aria-pressed', 'true')
@@ -1157,7 +1223,9 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Compare to last look' }))
 
     expect(mockedClient.parseRepo).toHaveBeenLastCalledWith('/repo', '/repo', 'python')
-    await waitFor(() => expect(mockedClient.getComplexityDiff).toHaveBeenCalledWith('/repo'))
+    await waitFor(() =>
+      expect(mockedClient.getComplexityDiff).toHaveBeenCalledWith('/repo', 'python'),
+    )
     await waitFor(() => expect(screen.getByText(/Changed/)).toBeInTheDocument())
     // The ranked list itself refreshes from `diffResult.current`, not a
     // separate `getComplexity` re-fetch.
@@ -1224,7 +1292,12 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Compare' }))
 
     await waitFor(() =>
-      expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith('/repo', 'abc1234', undefined),
+      expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith(
+        '/repo',
+        'python',
+        'abc1234',
+        undefined,
+      ),
     )
     // Never reparses -- diff-ref compares state already reflected in
     // `repo`/`dashboard` against the ref, unlike "Compare to last look".
@@ -1263,7 +1336,12 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Compare' }))
 
     await waitFor(() =>
-      expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith('/repo', 'main', 'feature'),
+      expect(mockedClient.getComplexityDiffRef).toHaveBeenCalledWith(
+        '/repo',
+        'python',
+        'main',
+        'feature',
+      ),
     )
     // Ref-vs-ref never touches current on-disk state either -- no reparse.
     expect(mockedClient.parseRepo).toHaveBeenCalledTimes(1)
@@ -1285,7 +1363,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: 'Hotspots' }))
 
-    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledWith('/repo', 90))
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledWith('/repo', 'python', 90))
     await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
   })
 
@@ -1311,7 +1389,7 @@ describe('App', () => {
     // complexity fetch hasn't resolved yet.
     await user.click(screen.getByRole('button', { name: 'Hotspots' }))
 
-    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledWith('/repo', 90))
+    await waitFor(() => expect(mockedClient.getComplexityHotspots).toHaveBeenCalledWith('/repo', 'python', 90))
     await waitFor(() => expect(screen.getByText(/app\.py::hot/)).toBeInTheDocument())
 
     resolveComplexity({ scores: [] })
@@ -1366,7 +1444,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: 'Dead code' }))
 
-    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledWith('/repo'))
+    await waitFor(() => expect(mockedClient.getDeadCode).toHaveBeenCalledWith('/repo', 'python'))
     await waitFor(() => expect(screen.getByText(/app\.py::orphan/)).toBeInTheDocument())
   })
 

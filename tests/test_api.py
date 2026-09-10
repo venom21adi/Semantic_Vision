@@ -66,6 +66,47 @@ def test_parse_repo_javascript_success():
     assert body["path"] == (FIXTURES / "js_repo").resolve().as_posix()
 
 
+def test_parse_repo_same_path_different_languages_are_cached_independently():
+    """Regression test for the multi-language cache key: parsing the same
+    path under two languages must not let the second overwrite the first."""
+    repo_path = str(FIXTURES / "simple_repo")
+    resp_py = client.post("/api/parse-repo", json={"path": repo_path, "language": "python"})
+    assert resp_py.status_code == 200
+    resp_js = client.post("/api/parse-repo", json={"path": repo_path, "language": "javascript"})
+    assert resp_js.status_code == 200
+
+    graph_py = client.get("/api/graph", params={"path": repo_path, "language": "python"})
+    graph_js = client.get("/api/graph", params={"path": repo_path, "language": "javascript"})
+
+    assert len(graph_py.json()["nodes"]) == 5
+    assert len(graph_js.json()["nodes"]) == 0
+
+
+def test_detect_languages_reports_python_for_python_only_repo():
+    resp = client.post("/api/detect-languages", json={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["detected"] == ["python"]
+    assert set(body["supported"]) >= {"python", "javascript", "java"}
+
+
+def test_detect_languages_reports_javascript_for_js_repo():
+    resp = client.post("/api/detect-languages", json={"path": str(FIXTURES / "js_repo")})
+
+    assert resp.status_code == 200
+    assert resp.json()["detected"] == ["javascript"]
+
+
+def test_detect_languages_rejects_a_non_directory_path(tmp_path: Path):
+    not_a_dir = tmp_path / "nope.txt"
+    not_a_dir.write_text("x")
+
+    resp = client.post("/api/detect-languages", json={"path": str(not_a_dir)})
+
+    assert resp.status_code == 400
+
+
 def test_parse_repo_unknown_language_returns_400():
     resp = client.post(
         "/api/parse-repo",
@@ -596,7 +637,9 @@ def test_complexity_index_is_not_resurrected_by_a_reparse_racing_a_build(monkeyp
 
     monkeypatch.setattr(cache_module, "build_complexity_index", slow_build)
 
-    builder = threading.Thread(target=lambda: cache.get_or_build_complexity_index(repo_path))
+    builder = threading.Thread(
+        target=lambda: cache.get_or_build_complexity_index(repo_path, "python")
+    )
     builder.start()
     assert build_started.wait(timeout=5), "background build never started"
 
@@ -625,7 +668,7 @@ def test_complexity_index_is_not_resurrected_by_a_reparse_racing_a_build(monkeyp
     # cleared -- the next access would be served from cache (count stays 1)
     # instead of rebuilding.
     assert calls["count"] == 1
-    cache.get_or_build_complexity_index(repo_path)
+    cache.get_or_build_complexity_index(repo_path, "python")
     assert calls["count"] == 2
 
 
@@ -1540,7 +1583,7 @@ def test_get_current_and_previous_complexity_index_uses_a_single_lock_acquisitio
     counting_lock = _CountingLock(cache._complexity_lock)
     monkeypatch.setattr(cache, "_complexity_lock", counting_lock)
 
-    cache.get_current_and_previous_complexity_index(repo_path)
+    cache.get_current_and_previous_complexity_index(repo_path, "python")
 
     assert counting_lock.enter_count == 1
 

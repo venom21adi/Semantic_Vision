@@ -3,6 +3,20 @@
 All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+- **Polyglot repo support.** Loading a repo path now auto-detects every
+  supported language present (Python, JavaScript/TypeScript, Java) and lets
+  you select any combination via chips instead of picking exactly one. Each
+  selected language is parsed and cached independently
+  (`POST /api/detect-languages`, cache keys now include the language), and
+  the dashboard shows one tab per loaded language with isolated graph/Code
+  Health/docs state — switching tabs doesn't lose or mix up state between
+  languages. No cross-language call linking yet; each tab is still an
+  island.
+
 ## [0.2.0] - 2026-08-24
 
 ### Added

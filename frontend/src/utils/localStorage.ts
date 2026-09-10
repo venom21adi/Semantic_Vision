@@ -48,26 +48,26 @@ export function setRememberedDocRoot(repoPath: string, docRoot: string): void {
 
 const LANGUAGES_KEY = 'semantic-vision:languages'
 
-function readLanguages(): Record<string, string> {
+function readLanguages(): Record<string, string[]> {
   try {
     const raw = localStorage.getItem(LANGUAGES_KEY)
     if (!raw) return {}
     const parsed: unknown = JSON.parse(raw)
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, string>) : {}
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, string[]>) : {}
   } catch {
     return {}
   }
 }
 
-export function getRememberedLanguage(repoPath: string): string | null {
+export function getRememberedLanguages(repoPath: string): string[] | null {
   return readLanguages()[repoPath] ?? null
 }
 
-export function setRememberedLanguage(repoPath: string, language: string): void {
+export function setRememberedLanguages(repoPath: string, languages: string[]): void {
   try {
-    const languages = readLanguages()
-    languages[repoPath] = language
-    localStorage.setItem(LANGUAGES_KEY, JSON.stringify(languages))
+    const stored = readLanguages()
+    stored[repoPath] = languages
+    localStorage.setItem(LANGUAGES_KEY, JSON.stringify(stored))
   } catch {
     // Best-effort only.
   }

@@ -4,10 +4,13 @@ constructing one `LanguageAdapter` and calling `register` here.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from semantic_vision.languages.base import LanguageAdapter
 from semantic_vision.languages.java import JAVA_ADAPTER
 from semantic_vision.languages.javascript import JAVASCRIPT_ADAPTER
 from semantic_vision.languages.python import PYTHON_ADAPTER
+from semantic_vision.parser.discovery import discover_files
 
 
 class UnknownLanguageError(ValueError):
@@ -37,3 +40,18 @@ def get_adapter(language_id: str) -> LanguageAdapter:
 register(PYTHON_ADAPTER)
 register(JAVASCRIPT_ADAPTER)
 register(JAVA_ADAPTER)
+
+
+def list_adapters() -> list[LanguageAdapter]:
+    return list(_ADAPTERS.values())
+
+
+def detect_languages(root: Path) -> list[str]:
+    """Which registered languages have at least one matching source file
+    under `root` -- used to pre-select languages in the repo loader UI
+    instead of requiring the user to already know what's in their repo."""
+    return [
+        adapter.language_id
+        for adapter in _ADAPTERS.values()
+        if discover_files(root, adapter.file_extensions)
+    ]

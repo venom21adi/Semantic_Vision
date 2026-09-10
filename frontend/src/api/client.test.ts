@@ -77,7 +77,7 @@ describe('api client', () => {
       .mockResolvedValue(new Response(JSON.stringify({ doc_root: '/resolved' }), { status: 200 }))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    const result = await updateDocRoot('/repo', '/new-location')
+    const result = await updateDocRoot('/repo', 'python', '/new-location')
 
     expect(result.doc_root).toBe('/resolved')
     const [url, init] = fetchMock.mock.calls[0]
@@ -96,7 +96,7 @@ describe('api client', () => {
       .mockResolvedValue(new Response(JSON.stringify({ scores }), { status: 200 }))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    const result = await getComplexity('/some path/with spaces')
+    const result = await getComplexity('/some path/with spaces', 'python')
 
     expect(result.scores).toEqual(scores)
     const [url] = fetchMock.mock.calls[0]
@@ -110,7 +110,7 @@ describe('api client', () => {
       .mockResolvedValue(new Response(JSON.stringify({ nodes: [], edges: [] }), { status: 200 }))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    await getGraph('/some path/with spaces')
+    await getGraph('/some path/with spaces', 'python')
 
     const [url] = fetchMock.mock.calls[0]
     expect(String(url)).toContain(encodeURIComponent('/some path/with spaces'))
@@ -127,7 +127,7 @@ describe('api client', () => {
       )
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    const result = await getFlowchart('/some path', 'app.py::Greeter.greet')
+    const result = await getFlowchart('/some path', 'python', 'app.py::Greeter.greet')
 
     expect(result.target).toBe('x')
     const [url] = fetchMock.mock.calls[0]
@@ -144,7 +144,7 @@ describe('api client', () => {
       )
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    await expect(getFunctionSource('/repo', 'x')).rejects.toMatchObject({
+    await expect(getFunctionSource('/repo', 'python', 'x')).rejects.toMatchObject({
       status: 404,
       message: 'Function not found: x',
     })
@@ -166,7 +166,7 @@ describe('api client', () => {
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
     const chunks: string[] = []
-    for await (const chunk of streamDoc('/repo', 'app.py::greet', 'ollama', 'llama3.2:3b')) {
+    for await (const chunk of streamDoc('/repo', 'python', 'app.py::greet', 'ollama', 'llama3.2:3b')) {
       chunks.push(chunk)
     }
 
@@ -183,7 +183,7 @@ describe('api client', () => {
       .mockResolvedValue(new Response(streamFrom(['Hi']), { status: 200 }))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    for await (const _chunk of streamDoc('/repo', 'app.py::greet', 'openai', undefined)) {
+    for await (const _chunk of streamDoc('/repo', 'python', 'app.py::greet', 'openai', undefined)) {
       // drain
     }
 
@@ -198,7 +198,7 @@ describe('api client', () => {
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
     const iterate = async () => {
-      for await (const _chunk of streamDoc('/repo', 'app.py::greet', 'ollama', undefined)) {
+      for await (const _chunk of streamDoc('/repo', 'python', 'app.py::greet', 'ollama', undefined)) {
         // never reached
       }
     }
@@ -215,7 +215,7 @@ describe('api client', () => {
     )
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    const result = await saveDoc('/repo', 'app.py::greet', '# greet')
+    const result = await saveDoc('/repo', 'python', 'app.py::greet', '# greet')
 
     expect(result.markdown).toBe('# greet')
     const [url, init] = fetchMock.mock.calls[0]
@@ -238,7 +238,7 @@ describe('api client', () => {
       .mockResolvedValue(new Response(JSON.stringify({ nodes: [], edges: [] }), { status: 200 }))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    await freshGetGraph('/repo')
+    await freshGetGraph('/repo', 'python')
 
     const [url] = fetchMock.mock.calls[0]
     expect(String(url)).toMatch(/^http:\/\/localhost:59321\/api\/graph/)
@@ -266,7 +266,7 @@ describe('api client', () => {
     })
 
     const { getComplexityDiff: demoGetComplexityDiff } = await import('./client')
-    const result = await demoGetComplexityDiff('any-path')
+    const result = await demoGetComplexityDiff('any-path', 'python')
 
     expect(result).toEqual({
       available: false,
