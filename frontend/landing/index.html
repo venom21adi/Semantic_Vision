@@ -583,15 +583,26 @@
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    padding: 26px 24px;
+    padding: 24px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
   }
+  .solution-card:hover { border-color: var(--featured-border); transform: translateY(-2px); }
+  .solution-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    background: var(--accent-soft-bg);
+    color: var(--accent-text);
+    margin-bottom: 16px;
+  }
+  .solution-icon svg { width: 19px; height: 19px; }
   .solution-tag {
     font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--accent-text);
-    margin-bottom: 14px;
+    margin-bottom: 6px;
     display: block;
   }
   .solution-card h4 { margin: 0 0 8px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
@@ -653,6 +664,35 @@
     flex-shrink: 0;
     margin-top: 3px;
   }
+
+  /* ---------- Signal grid (Code Health) ---------- */
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .signal-tile {
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 13px 14px;
+    transition: border-color 0.15s ease;
+  }
+  .signal-tile:hover { border-color: var(--featured-border); }
+  .signal-icon {
+    width: 24px; height: 24px;
+    display: grid; place-items: center;
+    color: var(--teal-light);
+    margin-bottom: 8px;
+  }
+  .signal-icon svg { width: 16px; height: 16px; }
+  .signal-tile h5 { margin: 0 0 3px; font-size: 13.5px; font-weight: 700; letter-spacing: -0.005em; }
+  .signal-tile p { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  .signal-tile-muted { background: transparent; border-style: dashed; display: flex; flex-direction: column; justify-content: center; }
+  .signal-tile-muted h5 { color: var(--text-dim); }
+  .signal-grid-3 { grid-template-columns: repeat(3, 1fr); }
+
   .feature-shot {
     border-radius: var(--radius);
     border: 1px solid var(--border);
@@ -729,32 +769,36 @@
 
   /* ---------- MCP diagram ---------- */
   .mcp-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
-  .mcp-groups { display: flex; flex-direction: column; gap: 16px; margin: 20px 0 0; }
-  .mcp-group-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--accent-text);
-    margin-bottom: 9px;
-  }
-  .mcp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .mcp-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    color: var(--text-faint);
-    background: var(--bg-panel);
+
+  .mcp-terminal {
+    border-radius: 12px;
     border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 7px 14px;
-    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    background: var(--bg-panel-raised);
+    overflow: hidden;
+    margin: 16px 0;
+    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.5);
   }
-  .mcp-chip:hover { border-color: var(--featured-border); color: var(--accent-text); background: var(--featured-tint); }
-  .mcp-chip::before { content: ''; width: 5px; height: 5px; border-radius: 999px; background: var(--teal-light); flex-shrink: 0; }
+  .mcp-terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .mcp-terminal-bar .d { width: 9px; height: 9px; border-radius: 999px; background: var(--border); }
+  .mcp-terminal-title { margin-left: 6px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); }
+  .mcp-terminal-body { padding: 16px 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.75; }
+  .mcp-terminal-body .line { color: var(--text-faint); }
+  .mcp-terminal-body .result { margin-top: 10px; color: var(--text-muted); }
+  .tok-fn { color: var(--accent-text); font-weight: 600; }
+  .tok-key { color: var(--teal-light); }
+  .tok-str { color: var(--green); }
+  .tok-num, .tok-bool { color: var(--amber); }
+  .tok-punc { color: var(--text-dim); }
+
+  .mcp-categories { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .mcp-cat { font-size: 13px; color: var(--text-muted); }
+  .mcp-cat strong { color: var(--text-faint); font-weight: 700; margin-right: 6px; }
   .mcp-diagram {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
@@ -1150,34 +1194,40 @@
 
     <div class="solution-grid" data-reveal>
       <div class="solution-card">
+        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><line x1="6" y1="6" x2="18" y2="9" stroke="currentColor" stroke-width="1.6"/><line x1="6" y1="6" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><line x1="18" y1="9" x2="11" y2="19" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <span class="solution-tag">Understand</span>
         <h4>Interactive Call Graph</h4>
-        <p>See directories, files, classes, functions, imports, and calls as one interactive graph — structure that would take an hour of jumping between files, visible on one screen.</p>
+        <p>The whole repo, on one zoomable screen.</p>
       </div>
       <div class="solution-card">
+        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <span class="solution-tag">Predict</span>
         <h4>Impact Analysis</h4>
-        <p>Know what depends on a function, table, or column before you change it. See direct and transitive callers, circular call chains, and the full blast radius.</p>
+        <p>Every caller, before you touch a line.</p>
       </div>
       <div class="solution-card">
+        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 12l2.5 2.5L8 17M13 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         <span class="solution-tag">Trace</span>
         <h4>Execution Flowcharts</h4>
-        <p>Trace how a function actually behaves — branches, loops, I/O, and calls to other functions — without manually stepping through the source.</p>
+        <p>Branches, loops, and I/O — mapped out.</p>
       </div>
       <div class="solution-card">
+        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         <span class="solution-tag">Measure</span>
         <h4>Code Health</h4>
-        <p>Find the parts of your codebase worth worrying about: complexity, hotspots, coverage risk, dead code, duplicates, and dependency vulnerabilities.</p>
+        <p>The parts of your codebase worth worrying about.</p>
       </div>
       <div class="solution-card">
+        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <span class="solution-tag">Explain</span>
         <h4>AI Documentation</h4>
-        <p>Generate documentation from the actual context around a function or file — source, callers, callees, and imports. Local Ollama, OpenAI, or Anthropic.</p>
+        <p>Real docs, generated from real context.</p>
       </div>
       <div class="solution-card">
+        <div class="solution-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <span class="solution-tag">Connect</span>
         <h4>Code-to-Data Lineage</h4>
-        <p>Follow application logic into the data it touches — code → models → tables → columns. SQLAlchemy, dbt manifests, and live database connections.</p>
+        <p>Code → models → tables → columns.</p>
       </div>
     </div>
 
@@ -1283,23 +1333,49 @@
     <div class="feature-row" data-reveal>
       <div class="feature-copy">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h3>See which functions are actually worth worrying about</h3>
-        <p>
-          <strong>Complexity</strong> ranks every function by cyclomatic
-          complexity, computed from a real AST walk — decisions,
-          boolean-operator chains, comprehension filters, <code>match</code>
-          cases, and nested-loop hotspots all count, not just a line-count
-          guess.
-        </p>
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Hotspots</strong> weights that same complexity by how often each file actually changes — a moderately complex function edited constantly is a bigger practical risk than a complex one nobody touches</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Dead code</strong> surfaces zero-caller functions to review — candidates, never a verdict</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Coverage</strong> ranks by complexity × blast radius × (1 − test coverage) — point it at a coverage.py or lcov report you already generated</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Duplicates</strong> groups functions whose structure is identical once names, literals, and comments are stripped away</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Dependencies</strong> flags known vulnerabilities (via osv.dev) in packages you actually import, then graphs exactly which of your own files import a vulnerable one — opt-in, the one feature here that calls out to the network</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Recommendations</strong> asks an AI provider to prioritize across every signal above at once — the kind of cross-signal correlation easy to miss skimming six ranked lists one at a time</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Filter by name, file, complexity tier, or call depth, and sort any of the ranked lists</span></li>
-        </ul>
+        <h3>Seven signals, one ranked list</h3>
+        <p>Every function scored on real AST complexity — not a line-count guess — then cross-cut by how often it changes, how well it's tested, and what it depends on.</p>
+        <div class="signal-grid">
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <h5>Complexity</h5>
+            <p>Cyclomatic, from a real AST walk</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" opacity="0.45"/></svg></div>
+            <h5>Hotspots</h5>
+            <p>Complexity × how often it changes</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="currentColor" stroke-width="1.6"/></svg></div>
+            <h5>Dead code</h5>
+            <p>Zero-caller candidates to review</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+            <h5>Coverage</h5>
+            <p>Complexity × blast radius × untested</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+            <h5>Duplicates</h5>
+            <p>Identical once names are stripped</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 11v10" stroke="currentColor" stroke-width="1.5"/></svg></div>
+            <h5>Dependencies</h5>
+            <p>Known CVEs — opt-in, via osv.dev</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+            <h5>Recommendations</h5>
+            <p>AI prioritization, across every signal</p>
+          </div>
+          <div class="signal-tile signal-tile-muted">
+            <h5>+ filters</h5>
+            <p>By name, file, tier, or call depth</p>
+          </div>
+        </div>
       </div>
       <div class="feature-shot"><img src="./img/code-health.png" alt="The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats" loading="lazy" width="1600" height="900" /></div>
     </div>
@@ -1341,11 +1417,24 @@
     <div class="feature-row" data-reveal>
       <div class="feature-copy">
         <h3>Detected automatically, or connected explicitly</h3>
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>SQLAlchemy models</strong> — declarative classes are detected on every parse, no setup: each becomes a table node with columns, foreign keys as edges, every reading/writing function connected down to the specific column.</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>dbt</strong> — point it at a <code>manifest.json</code> your own <code>dbt compile</code> already produced to pull in every model, its <code>ref()</code> dependencies, and the table it materializes.</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>A live database</strong> — paste a read-only connection string to introspect the real schema and see where your ORM models have drifted from what's actually deployed.</span></li>
-        </ul>
+        <p>Three sources feed the same graph, reconciled by table name — the same table only ever shows up once.</p>
+        <div class="signal-grid signal-grid-3">
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="15" width="16" height="5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><path d="M8 9v2.5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5V9" stroke="currentColor" stroke-width="1.6"/></svg></div>
+            <h5>SQLAlchemy models</h5>
+            <p>Detected automatically on every parse — no setup</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h5>dbt</h5>
+            <p>Point it at a manifest.json you already have</p>
+          </div>
+          <div class="signal-tile">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="6" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M5 6v12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V6" stroke="currentColor" stroke-width="1.6"/><path d="M5 12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6" stroke="currentColor" stroke-width="1.6"/></svg></div>
+            <h5>A live database</h5>
+            <p>Read-only connection, to see schema drift</p>
+          </div>
+        </div>
       </div>
       <div class="feature-shot"><img src="./img/dbt-lineage-ingest.png" alt="Connecting a dbt manifest to a repo, adding table and model nodes to the graph" loading="lazy" width="1450" height="950" /></div>
     </div>
@@ -1384,36 +1473,29 @@
     <div class="mcp-layout" data-reveal>
       <div class="mcp-copy">
         <h3 style="margin: 0 0 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">Agents can query the same graph you see</h3>
-        <p style="margin: 0 0 16px; color: var(--text-muted); font-size: 15px;">Every tool below reuses the same warm-parsed graph as the web app and VS Code extension — an agent never has to re-derive structure it could just ask for.</p>
-        <div class="mcp-groups">
-          <div class="mcp-group">
-            <span class="mcp-group-label">Map</span>
-            <div class="mcp-chips">
-              <span class="mcp-chip">call graphs</span>
-              <span class="mcp-chip">callees</span>
-              <span class="mcp-chip">execution flow</span>
-              <span class="mcp-chip">function source</span>
-            </div>
-          </div>
-          <div class="mcp-group">
-            <span class="mcp-group-label">Risk</span>
-            <div class="mcp-chips">
-              <span class="mcp-chip">complexity</span>
-              <span class="mcp-chip">hotspots</span>
-              <span class="mcp-chip">coverage risk</span>
-              <span class="mcp-chip">duplicates</span>
-              <span class="mcp-chip">dead code</span>
-              <span class="mcp-chip">git-aware complexity diffs</span>
-            </div>
-          </div>
-          <div class="mcp-group">
-            <span class="mcp-group-label">Impact</span>
-            <div class="mcp-chips">
-              <span class="mcp-chip">impact analysis</span>
+        <p style="margin: 0 0 4px; color: var(--text-muted); font-size: 15px;">An agent asks a question in one call — no grepping, no re-deriving structure it could just ask for.</p>
+
+        <div class="mcp-terminal">
+          <div class="mcp-terminal-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="mcp-terminal-title">agent → semantic-vision · MCP</span></div>
+          <div class="mcp-terminal-body">
+            <div class="line"><span class="tok-fn">get_impact</span><span class="tok-punc">(</span><span class="tok-key">id</span><span class="tok-punc">=</span><span class="tok-str">"process_payment"</span><span class="tok-punc">)</span></div>
+            <div class="line result">
+              <span class="tok-punc">{</span><br />
+              &nbsp;&nbsp;<span class="tok-key">"direct_callers"</span><span class="tok-punc">:</span> <span class="tok-num">4</span><span class="tok-punc">,</span><br />
+              &nbsp;&nbsp;<span class="tok-key">"transitive_callers"</span><span class="tok-punc">:</span> <span class="tok-num">12</span><span class="tok-punc">,</span><br />
+              &nbsp;&nbsp;<span class="tok-key">"circular"</span><span class="tok-punc">:</span> <span class="tok-bool">false</span><br />
+              <span class="tok-punc">}</span>
             </div>
           </div>
         </div>
-        <div style="margin-top: 24px;">
+
+        <div class="mcp-categories">
+          <span class="mcp-cat"><strong>Map</strong> call graphs, callees, execution flow, source</span>
+          <span class="mcp-cat"><strong>Risk</strong> complexity, hotspots, coverage, duplicates, dead code</span>
+          <span class="mcp-cat"><strong>Impact</strong> upstream blast radius, across code and data</span>
+        </div>
+
+        <div style="margin-top: 20px;">
           <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md" target="_blank" rel="noopener">View the MCP tools →</a>
         </div>
       </div>
