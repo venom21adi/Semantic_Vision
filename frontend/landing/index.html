@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Semantic Vision — Understand any codebase in minutes</title>
-<meta name="description" content="Interactive call graphs, impact analysis, execution flowcharts, Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations), AI-generated documentation, and code-to-data lineage for Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
+<title>Semantic Vision — The context layer for AI-assisted coding</title>
+<meta name="description" content="AI can write your code in seconds. Semantic Vision helps you understand it: interactive call graphs, impact analysis, execution flowcharts, Code Health, AI-generated documentation, code-to-data lineage, and an MCP server so your AI agent sees the same map. Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
 <meta property="og:title" content="Semantic Vision" />
-<meta property="og:description" content="Understand any Python, JavaScript, TypeScript, or Java codebase in minutes, not days." />
+<meta property="og:description" content="The context layer for AI-assisted coding. Understand any Python, JavaScript, TypeScript, or Java codebase — and let your AI agent understand it too." />
 <meta property="og:image" content="./img/Banner.png" />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#121317" />
@@ -301,7 +301,7 @@
   .hero p.lede {
     font-size: clamp(16px, 1.6vw, 19px);
     color: var(--text-muted);
-    max-width: 620px;
+    max-width: 640px;
     margin: 0 auto 38px;
   }
   .hero-ctas {
@@ -348,11 +348,14 @@
 
   /* ---------- Section shell ---------- */
   section { padding: 108px 0; }
+  section.section-tight { padding: 84px 0; }
+  section + section { border-top: 1px solid var(--border-subtle); }
   .section-head {
     text-align: center;
     max-width: 640px;
     margin: 0 auto 64px;
   }
+  .section-head.wide { max-width: 760px; }
   .kicker {
     font-size: 12.5px;
     font-weight: 700;
@@ -368,6 +371,139 @@
     margin: 0 0 14px;
   }
   .section-head p { color: var(--text-muted); font-size: 16px; margin: 0; }
+
+  /* ---------- Problem section: pipeline + flow diagram ---------- */
+  .pipeline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin: 28px 0 32px;
+  }
+  .pipeline span {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 7px 13px;
+  }
+  .pipeline .arrow { border: none; background: none; padding: 0; color: var(--text-dim); }
+  .problem-copy { max-width: 640px; margin: 0 auto; text-align: center; }
+  .problem-copy p { color: var(--text-muted); font-size: 15.5px; margin: 0 0 14px; }
+  .problem-verdict {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+  }
+  .problem-verdict .dim { color: var(--text-dim); font-weight: 600; }
+  .problem-verdict .bright { color: var(--text); }
+
+  .flow-diagram { display: flex; flex-direction: column; align-items: center; margin: 56px auto 0; }
+  .flow-node {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 13px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+  .flow-node.accent {
+    border-color: var(--featured-border);
+    background: var(--featured-tint);
+    color: var(--accent-text);
+  }
+  .flow-connector { width: 1px; height: 30px; background: var(--border); }
+  .flow-branch { display: flex; gap: 32px; border-top: 1px solid var(--border); margin-top: 30px; }
+  .flow-branch-item { position: relative; padding-top: 30px; }
+  .flow-branch-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    width: 1px; height: 30px;
+    background: var(--border);
+  }
+
+  /* ---------- Workflow track ---------- */
+  .workflow-track {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    align-items: stretch;
+  }
+  .workflow-step {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.workflow-step:hover { border-color: var(--featured-border); transform: translateY(-2px); }
+  .workflow-step .thumb {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    aspect-ratio: 16 / 10;
+    background: var(--bg-panel-raised);
+    display: grid;
+    place-items: center;
+  }
+  .workflow-step .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .workflow-step .thumb svg { width: 30px; height: 30px; color: var(--accent-text); }
+  .workflow-step .num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+  .workflow-step h4 { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+  .workflow-step .q { margin: 0; font-size: 12.5px; color: var(--text-muted); font-style: italic; }
+  .workflow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+  }
+  .workflow-arrow svg { width: 14px; height: 14px; }
+
+  /* ---------- Solution overview cards ---------- */
+  .solution-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .solution-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 26px 24px;
+  }
+  .solution-tag {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-text);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .solution-card h4 { margin: 0 0 8px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .solution-card p { margin: 0; color: var(--text-muted); font-size: 14px; }
+  .solution-more {
+    text-align: center;
+    margin-top: 44px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+  }
 
   /* ---------- Feature rows ---------- */
   .feature-row {
@@ -430,6 +566,19 @@
   .feature-shot img, .hero-shot img { cursor: zoom-in; transition: filter 0.15s ease; }
   .feature-shot img:hover, .hero-shot img:hover { filter: brightness(1.06); }
 
+  /* ---------- Key message callout ---------- */
+  .key-message {
+    margin-top: 8px;
+    padding: 22px 26px;
+    border-radius: 12px;
+    background: var(--accent-soft-bg);
+    border: 1px solid var(--featured-border);
+    color: var(--accent-text);
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
   /* ---------- Lightbox ---------- */
   .lightbox {
     position: fixed;
@@ -480,10 +629,85 @@
     color: var(--text-dim);
   }
 
-  /* ---------- Trio (VS Code / local-private / persistence) ---------- */
+  /* ---------- MCP diagram ---------- */
+  .mcp-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+  .mcp-copy ul { margin: 18px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  .mcp-copy li {
+    font-size: 13.5px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 7px;
+    padding: 7px 11px;
+  }
+  .mcp-diagram {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 40px 24px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .mcp-diagram .flow-branch { border-top: none; margin-top: 0; }
+  .mcp-diagram .flow-branch-item::before { display: none; }
+  .mcp-diagram .flow-clients {
+    display: flex;
+    gap: 20px;
+    padding-top: 30px;
+    position: relative;
+  }
+  .mcp-diagram .flow-clients::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 8%;
+    right: 8%;
+    height: 1px;
+    background: var(--border);
+  }
+  .mcp-diagram .flow-clients .flow-branch-item { padding-top: 20px; }
+  .mcp-diagram .flow-clients .flow-branch-item::before { display: block; height: 20px; }
+  .mcp-diagram .flow-node.sm { font-size: 12.5px; padding: 9px 14px; }
+
+  /* ---------- Editor mock (VS Code section) ---------- */
+  .editor-mock {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+  }
+  .editor-mock .chrome {
+    display: flex; align-items: center; gap: 7px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border-subtle);
+  }
+  .editor-mock .chrome .d { width: 10px; height: 10px; border-radius: 999px; background: var(--border); }
+  .editor-mock .body { display: grid; grid-template-columns: 44px 1fr 1fr; min-height: 260px; }
+  .editor-mock .rail {
+    background: var(--bg-panel-raised);
+    border-right: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    padding: 16px 0;
+  }
+  .editor-mock .rail span { width: 18px; height: 18px; border-radius: 5px; background: var(--border); }
+  .editor-mock .rail span.on { background: var(--accent); }
+  .editor-mock .code {
+    padding: 18px 16px;
+    border-right: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .editor-mock .code i {
+    display: block; height: 8px; border-radius: 4px;
+    background: var(--border-subtle);
+  }
+  .editor-mock .panel { padding: 16px; display: flex; align-items: center; justify-content: center; }
+  .editor-mock .panel svg { width: 100%; height: 100%; max-height: 210px; }
+
+  /* ---------- Trio (persistence) ---------- */
   .trio {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
   .trio-card {
@@ -495,6 +719,28 @@
   .trio-card .feature-icon { margin-bottom: 16px; }
   .trio-card h4 { margin: 0 0 10px; font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
   .trio-card p { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+  /* ---------- Privacy checklist ---------- */
+  .privacy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .privacy-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-faint);
+  }
+  .privacy-item svg { width: 17px; height: 17px; color: var(--green); flex-shrink: 0; }
+  .privacy-note { text-align: center; color: var(--text-dim); font-size: 13px; margin-top: 22px; }
 
   /* ---------- Benchmarks ---------- */
   .bench-wrap {
@@ -583,7 +829,9 @@
     padding: 72px 32px;
   }
   .cta-banner h2 { font-size: clamp(24px, 3vw, 32px); margin: 0 0 14px; letter-spacing: -0.02em; }
-  .cta-banner p { color: var(--text-muted); margin: 0 0 30px; }
+  .cta-banner p { color: var(--text-muted); margin: 0 0 12px; }
+  .cta-banner .ctas { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 22px 0 18px; }
+  .cta-banner .fine { font-size: 13px; color: var(--text-dim); }
 
   /* ---------- Footer ---------- */
   footer { border-top: 1px solid var(--border-subtle); padding: 44px 0; }
@@ -594,12 +842,20 @@
     flex-wrap: wrap;
     gap: 18px;
   }
-  .footer-links { display: flex; gap: 24px; font-size: 13.5px; color: var(--text-dim); }
+  .footer-brand-col p { margin: 4px 0 0; font-size: 13px; color: var(--text-dim); }
+  .footer-links { display: flex; gap: 24px; font-size: 13.5px; color: var(--text-dim); flex-wrap: wrap; }
   .footer-links a { text-decoration: none; }
   .footer-links a:hover { color: var(--text-faint); }
   .footer-note { font-size: 13px; color: var(--text-dim); }
 
   /* ---------- Responsive ---------- */
+  @media (max-width: 980px) {
+    .workflow-track { grid-template-columns: repeat(3, 1fr); }
+    .workflow-arrow { display: none; }
+    .solution-grid { grid-template-columns: repeat(2, 1fr); }
+    .mcp-layout { grid-template-columns: 1fr; }
+    .privacy-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (max-width: 860px) {
     .nav-links { display: none; }
     .feature-row { grid-template-columns: 1fr; gap: 32px; }
@@ -607,7 +863,13 @@
     .feature-row.reverse .feature-shot { order: 2; }
     .trio { grid-template-columns: 1fr; }
     .paths { grid-template-columns: 1fr; }
+    .workflow-track { grid-template-columns: repeat(2, 1fr); }
+    .solution-grid { grid-template-columns: 1fr; }
+    .privacy-grid { grid-template-columns: 1fr; }
+    .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
+    .flow-branch-item::before { display: none; }
     section { padding: 76px 0; }
+    section.section-tight { padding: 56px 0; }
     .hero { padding: 72px 0 60px; }
   }
 </style>
@@ -625,10 +887,9 @@
     </a>
     <div class="nav-links">
       <a href="#features">Features</a>
-      <a href="#code-health">Code Health</a>
-      <a href="#lineage">Data lineage</a>
-      <a href="#benchmarks">Benchmarks</a>
-      <a href="#get-started">Get started</a>
+      <a href="#mcp">For AI Agents</a>
+      <a href="#vscode">VS Code</a>
+      <a href="#privacy">Privacy</a>
       <a href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">GitHub</a>
     </div>
     <div class="nav-cta">
@@ -644,24 +905,20 @@
 
 <header class="hero" id="top">
   <div class="container hero-inner">
-    <div class="eyebrow"><span class="dot"></span> Live static demo explore three real repos, no install</div>
-    <h1>See what your AI agent's edit <span class="grad">will break, before you merge it.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> Codebase observability for the AI era</div>
+    <h1>AI can write your code in seconds. <span class="grad">Understand it just as quickly.</span></h1>
     <p class="lede">
-    Impact analysis for AI-assisted coding. See every direct and transitive caller, detect circular call chains, 
-    and visualize the full blast radius before approving a change. 
-    Explore interactive call graphs, trace execution with flowcharts, 
-    identify complexity hotspots, generate context-aware AI documentation, 
-    and follow dependencies from code to tables and columns with code-to-data lineage.
+      Give yourself — and your AI coding agents — a map of the codebase. Trace dependencies,
+      understand impact, follow execution, measure code health, generate documentation, and
+      connect application logic to the data it touches.
     </p>
     <div class="hero-ctas">
       <a class="btn btn-primary" href="./app/">Try the live demo →</a>
-      <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install VS Code extension</a>
+      <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install for VS Code</a>
     </div>
     <div class="hero-badges">
-      <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg>100% local &amp; private</span>
-      <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="1.6"/></svg>Python 3.12+ · Node 20+</span>
-      <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" stroke="currentColor" stroke-width="1.6"/></svg>MIT licensed</span>
-      <span><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Static analysis code never runs</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="1.6"/></svg>Python · JavaScript / TypeScript · Java</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg>100% local · No account · No telemetry</span>
     </div>
 
     <div class="hero-shot" data-reveal>
@@ -678,13 +935,134 @@
 
 <main>
 
-<section id="features">
+<section id="problem" class="section-tight">
   <div class="container">
     <div class="section-head" data-reveal>
-      <div class="kicker">Explore the code</div>
-      <h2>Every feature that would take an hour of grepping — on one screen</h2>
-      <p>Everything below is a right-click away, on the exact code you loaded, not a rough summary.</p>
+      <div class="kicker">AI changed the bottleneck</div>
+      <h2>Code generation got faster.<br />Code understanding didn't.</h2>
     </div>
+    <div class="problem-copy" data-reveal>
+      <p>AI coding agents can change hundreds of lines across dozens of files in seconds. But understanding those changes still means:</p>
+      <div class="pipeline">
+        <span>grep</span><span class="arrow">→</span><span>jump between files</span><span class="arrow">→</span><span>trace dependencies</span><span class="arrow">→</span><span>build a mental model</span><span class="arrow">→</span><span>hope you didn't miss something</span>
+      </div>
+      <div class="problem-verdict"><span class="dim">A git diff tells you</span> <span class="bright">what changed.</span></div>
+      <div class="problem-verdict"><span class="bright">Semantic Vision shows you what that change means.</span></div>
+    </div>
+
+    <div class="flow-diagram" data-reveal>
+      <div class="flow-node">AI Agent</div>
+      <div class="flow-connector"></div>
+      <div class="flow-node">Code Change</div>
+      <div class="flow-connector"></div>
+      <div class="flow-node accent">Semantic Vision — Context Layer</div>
+      <div class="flow-branch">
+        <div class="flow-branch-item"><div class="flow-node">Impact</div></div>
+        <div class="flow-branch-item"><div class="flow-node">Health</div></div>
+        <div class="flow-branch-item"><div class="flow-node">Lineage</div></div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-node accent">Human + Agent Understanding</div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow" class="section-tight">
+  <div class="container">
+    <div class="section-head wide" data-reveal>
+      <div class="kicker">After your AI agent changes the code</div>
+      <h2>From code change to confidence.</h2>
+      <p>The code changed. Now the real questions begin.</p>
+    </div>
+    <div class="workflow-track" data-reveal>
+      <a class="workflow-step" href="#features">
+        <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="num">01 · Change</span>
+        <h4>The agent makes a change</h4>
+        <p class="q">Changes process_payment(). Now what?</p>
+      </a>
+      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a class="workflow-step" href="#features">
+        <div class="thumb"><img src="./img/impact-analysis.png" alt="Impact analysis blast radius" loading="lazy" /></div>
+        <span class="num">02 · Impact</span>
+        <h4>See the blast radius</h4>
+        <p class="q">What actually depends on this?</p>
+      </a>
+      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a class="workflow-step" href="#code-health">
+        <div class="thumb"><img src="./img/code-health.png" alt="Code Health ranked list" loading="lazy" /></div>
+        <span class="num">03 · Health</span>
+        <h4>Check the health of the change</h4>
+        <p class="q">Did this make the code better or worse?</p>
+      </a>
+      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a class="workflow-step" href="#features">
+        <div class="thumb"><img src="./img/execution-flowchart.png" alt="Execution flowchart" loading="lazy" /></div>
+        <span class="num">04 · Behavior</span>
+        <h4>Understand the behavior</h4>
+        <p class="q">What does this function actually do?</p>
+      </a>
+      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a class="workflow-step" href="#lineage">
+        <div class="thumb"><img src="./img/dbt-lineage-impact.png" alt="Code-to-data lineage" loading="lazy" /></div>
+        <span class="num">05 · Data</span>
+        <h4>Follow the data</h4>
+        <p class="q">What data does this change affect?</p>
+      </a>
+      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a class="workflow-step" href="#mcp">
+        <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="5" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.6V13M12 13 6.6 17M12 13l5.4 4" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <span class="num">06 · Agent</span>
+        <h4>Let the agent see it too</h4>
+        <p class="q">Can my AI agent use this context itself?</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <div class="section-head wide" data-reveal>
+      <div class="kicker">One map. Six ways to understand your code.</div>
+      <h2>Everything you need to understand a codebase.</h2>
+    </div>
+
+    <div class="solution-grid" data-reveal>
+      <div class="solution-card">
+        <span class="solution-tag">Understand</span>
+        <h4>Interactive Call Graph</h4>
+        <p>See directories, files, classes, functions, imports, and calls as one interactive graph — structure that would take an hour of jumping between files, visible on one screen.</p>
+      </div>
+      <div class="solution-card">
+        <span class="solution-tag">Predict</span>
+        <h4>Impact Analysis</h4>
+        <p>Know what depends on a function, table, or column before you change it. See direct and transitive callers, circular call chains, and the full blast radius.</p>
+      </div>
+      <div class="solution-card">
+        <span class="solution-tag">Trace</span>
+        <h4>Execution Flowcharts</h4>
+        <p>Trace how a function actually behaves — branches, loops, I/O, and calls to other functions — without manually stepping through the source.</p>
+      </div>
+      <div class="solution-card">
+        <span class="solution-tag">Measure</span>
+        <h4>Code Health</h4>
+        <p>Find the parts of your codebase worth worrying about: complexity, hotspots, coverage risk, dead code, duplicates, and dependency vulnerabilities.</p>
+      </div>
+      <div class="solution-card">
+        <span class="solution-tag">Explain</span>
+        <h4>AI Documentation</h4>
+        <p>Generate documentation from the actual context around a function or file — source, callers, callees, and imports. Local Ollama, OpenAI, or Anthropic.</p>
+      </div>
+      <div class="solution-card">
+        <span class="solution-tag">Connect</span>
+        <h4>Code-to-Data Lineage</h4>
+        <p>Follow application logic into the data it touches — code → models → tables → columns. SQLAlchemy, dbt manifests, and live database connections.</p>
+      </div>
+    </div>
+
+    <div class="solution-more" data-reveal>See each one on the exact code you loaded ↓</div>
+
+    <div style="height: 24px"></div>
 
     <div class="feature-row" data-reveal>
       <div class="feature-copy">
@@ -777,8 +1155,8 @@
   <div class="container">
     <div class="section-head" data-reveal>
       <div class="kicker">Code Health</div>
-      <h2>Score a change, not just a snapshot</h2>
-      <p>A filterable, sortable ranked list across seven tabs — right next to the graph, not a separate tool.</p>
+      <h2>Don't just review what changed. Review what it did to the codebase.</h2>
+      <p>Complexity and blast radius tell you where a change matters. Coverage tells you whether that area is actually tested. Git history tells you which code keeps changing. Semantic Vision brings those signals together.</p>
     </div>
 
     <div class="feature-row" data-reveal>
@@ -826,14 +1204,16 @@
       </div>
       <div class="feature-shot"><img src="./img/code-health-relationships.png" alt="Selecting a function shows its direct callers and callees as a relationship graph, colored by complexity" loading="lazy" width="1600" height="900" /></div>
     </div>
+
+    <div class="key-message" data-reveal>Know whether an AI-generated change made your code healthier — not just whether the tests passed.</div>
   </div>
 </section>
 
 <section id="lineage">
   <div class="container">
     <div class="section-head" data-reveal>
-      <div class="kicker">Code-to-data lineage</div>
-      <h2>See where your code touches your data — down to the column</h2>
+      <div class="kicker">Code → data</div>
+      <h2>Your code doesn't exist in isolation.</h2>
       <p>Three sources feed the same graph, reconciled by table name, so the same table only ever shows up once.</p>
     </div>
 
@@ -867,62 +1247,124 @@
       </div>
       <div class="feature-shot"><img src="./img/dbt-lineage-impact.png" alt="Impact analysis run on the customers table: direct callers include the dbt model that materializes it, the SQLAlchemy class mapped to it, and every function that reads it" loading="lazy" width="1450" height="950" /></div>
     </div>
+
+    <div class="key-message" data-reveal>Rename a column. Drop a table. Change a dbt model. See what actually depends on it before you make the change.</div>
   </div>
 </section>
 
-<section id="workflow">
+<section id="mcp">
+  <div class="container">
+    <div class="section-head wide" data-reveal>
+      <div class="kicker">Built for AI coding agents</div>
+      <h2>Your AI agent can see the map too.</h2>
+      <p>Coding agents already know how to edit code. The problem is understanding the structure around that code. Semantic Vision exposes the same structural context through MCP.</p>
+    </div>
+
+    <div class="mcp-layout" data-reveal>
+      <div class="mcp-copy">
+        <h3 style="margin: 0 0 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">Agents can query the same graph you see</h3>
+        <p style="margin: 0 0 16px; color: var(--text-muted); font-size: 15px;">Every tool below reuses the same warm-parsed graph as the web app and VS Code extension — an agent never has to re-derive structure it could just ask for.</p>
+        <ul>
+          <li>call graphs</li>
+          <li>impact analysis</li>
+          <li>callees</li>
+          <li>complexity</li>
+          <li>hotspots</li>
+          <li>dead code</li>
+          <li>coverage risk</li>
+          <li>duplicates</li>
+          <li>git-aware complexity diffs</li>
+          <li>execution flow</li>
+          <li>function source</li>
+        </ul>
+        <div class="key-message" style="margin-top: 22px;">Stop making your AI agent grep for context that Semantic Vision already computed.</div>
+        <div style="margin-top: 22px;">
+          <a class="btn btn-ghost btn-sm" href="https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md" target="_blank" rel="noopener">View the MCP tools →</a>
+        </div>
+      </div>
+      <div class="mcp-diagram">
+        <div class="flow-node accent">Semantic Vision</div>
+        <div class="flow-connector"></div>
+        <div class="flow-node sm">MCP</div>
+        <div class="flow-clients">
+          <div class="flow-branch-item"><div class="flow-node sm">Claude Code</div></div>
+          <div class="flow-branch-item"><div class="flow-node sm">Cursor</div></div>
+          <div class="flow-branch-item"><div class="flow-node sm">Claude Desktop</div></div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-node accent">Same codebase map</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="vscode">
   <div class="container">
     <div class="section-head" data-reveal>
-      <div class="kicker">Fits how you already work</div>
-      <h2>Zero setup, fully local, picks up where you left off</h2>
+      <div class="kicker">In your editor</div>
+      <h2>Don't leave VS Code to understand your code.</h2>
+      <p>Install the Semantic Vision extension and get the full experience directly beside your code.</p>
     </div>
-    <div class="trio">
-      <div class="trio-card" data-reveal>
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 9h4M8 13h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h4>Right inside your editor</h4>
-        <p>Install the VS Code extension and get the full graph, impact analysis, and everything else in a panel next to your code — no separate browser tab, no Python or <code>uv</code> to install, the backend ships bundled in.</p>
+    <div class="feature-row" data-reveal>
+      <div class="feature-copy">
+        <h3>No separate browser tab. No Python or uv installation required.</h3>
+        <p>The backend ships bundled with the extension — open any Python, JS/TS, or Java repo and get the full graph, impact analysis, Code Health, flowcharts, AI docs, and lineage in a panel next to your code.</p>
+        <div style="margin-top: 8px;">
+          <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install the VS Code extension →</a>
+        </div>
       </div>
-      <div class="trio-card" data-reveal>
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <h4>Pick up exactly where you left off</h4>
-        <p>Dragged layout, saved docs, and analysis state persist locally and restore instantly. Save location defaults to the repo's <code>.git</code> root, auto-detected even from a scoped-down subfolder.</p>
-      </div>
-      <div class="trio-card" data-reveal>
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <h4>Fast, local, and private</h4>
-        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS and Java. No account, no cloud, no telemetry. Code is never executed, and nothing leaves your machine unless you explicitly ask for AI docs.</p>
+      <div class="editor-mock">
+        <div class="chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>
+        <div class="body">
+          <div class="rail"><span class="on"></span><span></span><span></span><span></span></div>
+          <div class="code">
+            <i style="width: 55%"></i><i style="width: 80%"></i><i style="width: 40%"></i>
+            <i style="width: 70%"></i><i style="width: 30%"></i><i style="width: 65%"></i>
+            <i style="width: 50%"></i><i style="width: 75%"></i><i style="width: 45%"></i>
+          </div>
+          <div class="panel">
+            <svg viewBox="0 0 160 140" fill="none">
+              <circle cx="30" cy="20" r="7" fill="var(--accent)"/>
+              <circle cx="90" cy="45" r="9" fill="var(--accent-text)"/>
+              <circle cx="140" cy="20" r="6" fill="var(--teal-light)"/>
+              <circle cx="55" cy="95" r="7" fill="var(--teal-light)"/>
+              <circle cx="120" cy="100" r="6" fill="var(--accent)"/>
+              <circle cx="20" cy="120" r="5" fill="var(--accent-text)"/>
+              <path d="M30 20 90 45M90 45 140 20M90 45 55 95M90 45 120 100M55 95 20 120" stroke="var(--border)" stroke-width="1.4"/>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="kicker">Your code stays yours</div>
+      <h2>Fast, local, and private.</h2>
+      <p>Semantic Vision performs its code analysis locally. Your code is never executed as part of static analysis.</p>
+    </div>
+    <div class="privacy-grid" data-reveal>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No account</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No cloud</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No telemetry</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Static analysis</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Runs locally</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Python / JS / TS / Java</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>AI features are opt-in</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>MIT licensed</div>
+    </div>
+    <p class="privacy-note">Dependency vulnerability scanning (osv.dev) and AI providers (Ollama, OpenAI, Anthropic) are the only features that reach the network — both explicitly opt-in.</p>
   </div>
 </section>
 
 <section id="benchmarks">
   <div class="container">
     <div class="section-head" data-reveal>
-      <div class="kicker">Real numbers</div>
-      <h2>Benchmarked against real, well-known open-source repos</h2>
-      <p>Not this project's own fixtures — one large, popular repo per supported language.</p>
-    </div>
-    <div class="bench-wrap" data-reveal>
-      <table class="bench">
-        <thead>
-          <tr><th>Language</th><th>Repo</th><th>Files</th><th>Parse — cold</th><th>Parse — warm</th><th>Render in browser</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="lang">Python</td><td>fastapi/fastapi</td><td class="num">1,138</td><td class="num">23.25s</td><td class="warm">4.08s</td><td class="num">7.20–7.84s</td></tr>
-          <tr><td class="lang">JavaScript</td><td>three.js</td><td class="num">752</td><td class="num">29.33s</td><td class="warm">1.98s</td><td class="num">4.88–5.01s</td></tr>
-          <tr><td class="lang">TypeScript</td><td>nestjs/nest</td><td class="num">1,907</td><td class="num">39.68s</td><td class="warm">2.48s</td><td class="num">6.85–6.88s</td></tr>
-          <tr><td class="lang">Java</td><td>google/guava</td><td class="num">615</td><td class="num">9.83s</td><td class="warm">2.52s</td><td class="num">4.73–7.63s</td></tr>
-        </tbody>
-      </table>
-      <div class="bench-foot">"Cold" is the first read of a fresh clone; "warm" is a second parse of the identical files right after — the only variable that changes is OS file-cache state. Full methodology on <a href="https://github.com/venom21adi/Semantic_Vision/tree/master/benchmarks" target="_blank" rel="noopener" style="color: var(--accent-text)">GitHub</a>.</div>
-    </div>
-
-    <div style="height: 56px"></div>
-
-    <div class="section-head" data-reveal>
       <div class="kicker">Language support</div>
-      <h2>What works today</h2>
+      <h2>Works across your stack.</h2>
     </div>
     <div class="matrix-wrap" data-reveal>
       <table class="matrix">
@@ -938,10 +1380,32 @@
         </tbody>
       </table>
     </div>
+
+    <div style="height: 56px"></div>
+
+    <div class="section-head" data-reveal>
+      <div class="kicker">Real numbers</div>
+      <h2>Real repositories. Real performance.</h2>
+      <p>Not this project's own fixtures — one large, popular repo per supported language.</p>
+    </div>
+    <div class="bench-wrap" data-reveal>
+      <table class="bench">
+        <thead>
+          <tr><th>Language</th><th>Repo</th><th>Files</th><th>Parse — cold</th><th>Parse — warm</th><th>Render in browser</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lang">Python</td><td>fastapi/fastapi</td><td class="num">1,138</td><td class="num">23.25s</td><td class="warm">4.08s</td><td class="num">7.20–7.84s</td></tr>
+          <tr><td class="lang">JavaScript</td><td>three.js</td><td class="num">752</td><td class="num">29.33s</td><td class="warm">1.98s</td><td class="num">4.88–5.01s</td></tr>
+          <tr><td class="lang">TypeScript</td><td>nestjs/nest</td><td class="num">1,907</td><td class="num">39.68s</td><td class="warm">2.48s</td><td class="num">6.85–6.88s</td></tr>
+          <tr><td class="lang">Java</td><td>google/guava</td><td class="num">615</td><td class="num">9.83s</td><td class="warm">2.52s</td><td class="num">4.73–7.63s</td></tr>
+        </tbody>
+      </table>
+      <div class="bench-foot">"Cold" is the first read of a fresh clone; "warm" is a second parse of the identical files right after — the only variable that changes is OS file-cache state. <a href="https://github.com/venom21adi/Semantic_Vision/tree/master/benchmarks" target="_blank" rel="noopener" style="color: var(--accent-text)">View benchmark methodology →</a></div>
+    </div>
   </div>
 </section>
 
-<section id="get-started">
+<section id="get-started" class="section-tight">
   <div class="container">
     <div class="section-head" data-reveal>
       <div class="kicker">Get started</div>
@@ -967,15 +1431,34 @@
         <a class="btn btn-ghost" href="https://github.com/venom21adi/Semantic_Vision#-quick-start" target="_blank" rel="noopener">Read the setup guide →</a>
       </div>
     </div>
+
+    <div style="height: 40px"></div>
+
+    <div class="trio" data-reveal>
+      <div class="trio-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h4>Pick up exactly where you left off</h4>
+        <p>Dragged layout, saved docs, and analysis state persist locally and restore instantly. Save location defaults to the repo's <code>.git</code> root, auto-detected even from a scoped-down subfolder.</p>
+      </div>
+      <div class="trio-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h4>What's under the hood</h4>
+        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS and Java. Code is never executed.</p>
+      </div>
+    </div>
   </div>
 </section>
 
 <section id="final-cta">
   <div class="container">
     <div class="cta-banner" data-reveal>
-      <h2>See it on your own code, in the next two minutes.</h2>
-      <p>No signup, no data leaves your machine unless you ask for AI docs.</p>
-      <a class="btn btn-primary" href="./app/">Try the live demo →</a>
+      <h2>Understand your codebase before you change it.</h2>
+      <p>Explore Semantic Vision on a real repository. No installation required.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="./app/">Try the live demo →</a>
+        <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install for VS Code</a>
+      </div>
+      <p class="fine">Open source · MIT licensed · Local &amp; private</p>
     </div>
   </div>
 </section>
@@ -984,19 +1467,23 @@
 
 <footer>
   <div class="container footer-inner">
-    <a class="brand" href="#top" style="font-size: 14px;">
-      <span class="brand-mark" style="width: 22px; height: 22px;">
-        <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><line x1="6" y1="6" x2="18" y2="9" stroke="white" stroke-width="1.4"/><line x1="6" y1="6" x2="11" y2="19" stroke="white" stroke-width="1.4"/><line x1="18" y1="9" x2="11" y2="19" stroke="white" stroke-width="1.4"/><circle cx="6" cy="6" r="2.4" fill="white"/><circle cx="18" cy="9" r="2.4" fill="white"/><circle cx="11" cy="19" r="2.4" fill="white"/></svg>
-      </span>
-      Semantic Vision
-    </a>
+    <div class="footer-brand-col">
+      <a class="brand" href="#top" style="font-size: 14px;">
+        <span class="brand-mark" style="width: 22px; height: 22px;">
+          <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><line x1="6" y1="6" x2="18" y2="9" stroke="white" stroke-width="1.4"/><line x1="6" y1="6" x2="11" y2="19" stroke="white" stroke-width="1.4"/><line x1="18" y1="9" x2="11" y2="19" stroke="white" stroke-width="1.4"/><circle cx="6" cy="6" r="2.4" fill="white"/><circle cx="18" cy="9" r="2.4" fill="white"/><circle cx="11" cy="19" r="2.4" fill="white"/></svg>
+        </span>
+        Semantic Vision
+      </a>
+      <p>Codebase observability for you and your AI agents.</p>
+    </div>
     <div class="footer-links">
       <a href="https://github.com/venom21adi/Semantic_Vision" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">VS Code Extension</a>
-      <a href="https://github.com/venom21adi/Semantic_Vision/issues" target="_blank" rel="noopener">Report an issue</a>
+      <a href="https://github.com/venom21adi/Semantic_Vision#readme" target="_blank" rel="noopener">Documentation</a>
+      <a href="https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md" target="_blank" rel="noopener">MCP</a>
+      <a href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">VS Code</a>
+      <a href="https://github.com/venom21adi/Semantic_Vision/issues" target="_blank" rel="noopener">Issues</a>
       <a href="https://github.com/venom21adi/Semantic_Vision/blob/master/LICENSE" target="_blank" rel="noopener">MIT License</a>
     </div>
-    <div class="footer-note">Static analysis only — your code is never executed.</div>
   </div>
 </footer>
 
