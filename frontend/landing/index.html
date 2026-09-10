@@ -129,10 +129,10 @@
     html.js [data-reveal] { opacity: 1; transform: none; transition: none; }
     html { scroll-behavior: auto; }
     .flow-diagram .flow-node, .flow-diagram .flow-branch-item, .flow-diagram .flow-connector,
-    .workflow-track > * {
+    .workflow-scroll .workflow-pipeline, .workflow-scroll .workflow-row {
       opacity: 1 !important; transform: none !important; transition: none !important;
     }
-    .workflow-arrow svg { animation: none !important; }
+    .rail-glow, .node, .workflow-step { animation: none !important; }
   }
 
   /* ---------- Nav ---------- */
@@ -466,12 +466,61 @@
   .flow-diagram.is-visible .flow-branch-item:nth-child(2) { transition-delay: 0.63s; }
   .flow-diagram.is-visible .flow-branch-item:nth-child(3) { transition-delay: 0.71s; }
 
-  /* ---------- Workflow track ---------- */
-  .workflow-track {
+  /* ---------- Workflow pipeline ----------
+     A rail with a continuously traveling glow runs above the six steps;
+     each step's node dot -- and the card below it -- lights up as the
+     glow passes, so the whole strip reads as one ongoing flow through the
+     pipeline rather than six static cards. Runs forever, not just once on
+     scroll-into-view. */
+  .workflow-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .workflow-pipeline { position: relative; height: 16px; min-width: 900px; margin: 0 0 18px; }
+  .workflow-rail {
+    position: absolute;
+    left: 1%; right: 1%; top: 50%;
+    height: 2px;
+    background: var(--border-subtle);
+    border-radius: 999px;
+    transform: translateY(-50%);
+    overflow: hidden;
+  }
+  .rail-glow {
+    position: absolute;
+    top: 0; left: -22%;
+    width: 22%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--accent) 45%, var(--teal-light) 60%, transparent);
+    animation: rail-run 4.2s linear infinite;
+  }
+  .rail-glow-2 { animation-delay: 2.1s; }
+  @keyframes rail-run {
+    0% { left: -22%; }
+    100% { left: 100%; }
+  }
+  .workflow-nodes {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    align-items: center;
+  }
+  .node {
+    width: 9px; height: 9px;
+    border-radius: 999px;
+    background: var(--border);
+    justify-self: center;
+    animation: node-pulse 4.2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.7s);
+  }
+  @keyframes node-pulse {
+    0%, 88%, 100% { background: var(--border); box-shadow: none; }
+    6% { background: var(--accent); box-shadow: 0 0 0 5px rgba(142, 111, 243, 0.25); }
+  }
+
+  .workflow-row {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 8px;
     align-items: stretch;
+    min-width: 900px;
   }
   .workflow-step {
     background: var(--bg-panel);
@@ -483,9 +532,15 @@
     gap: 8px;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s ease, transform 0.15s ease;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    animation: step-glow 4.2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.7s);
   }
   a.workflow-step:hover { border-color: var(--featured-border); transform: translateY(-2px); }
+  @keyframes step-glow {
+    0%, 88%, 100% { border-color: var(--border-subtle); box-shadow: none; }
+    6% { border-color: var(--featured-border); box-shadow: 0 0 0 3px var(--featured-tint); }
+  }
   .workflow-step .thumb {
     border-radius: 8px;
     overflow: hidden;
@@ -505,39 +560,18 @@
   }
   .workflow-step h4 { margin: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -0.005em; }
   .workflow-step .q { margin: 0; font-size: 12px; color: var(--text-muted); font-style: italic; }
-  .workflow-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-dim);
-  }
-  .workflow-arrow svg { width: 14px; height: 14px; }
 
-  /* Staggered reveal, in reading order, plus a continuous drift on the
-     chevrons so the strip reads as a sequence in motion rather than a
-     static row of cards. */
-  .workflow-track > * {
+  .workflow-scroll[data-reveal] .workflow-pipeline,
+  .workflow-scroll[data-reveal] .workflow-row {
     opacity: 0;
     transform: translateY(10px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
-  .workflow-track.is-visible > * { opacity: 1; transform: none; }
-  .workflow-track.is-visible > *:nth-child(1) { transition-delay: 0s; }
-  .workflow-track.is-visible > *:nth-child(2) { transition-delay: 0.08s; }
-  .workflow-track.is-visible > *:nth-child(3) { transition-delay: 0.16s; }
-  .workflow-track.is-visible > *:nth-child(4) { transition-delay: 0.24s; }
-  .workflow-track.is-visible > *:nth-child(5) { transition-delay: 0.32s; }
-  .workflow-track.is-visible > *:nth-child(6) { transition-delay: 0.4s; }
-  .workflow-track.is-visible > *:nth-child(7) { transition-delay: 0.48s; }
-  .workflow-track.is-visible > *:nth-child(8) { transition-delay: 0.56s; }
-  .workflow-track.is-visible > *:nth-child(9) { transition-delay: 0.64s; }
-  .workflow-track.is-visible > *:nth-child(10) { transition-delay: 0.72s; }
-  .workflow-track.is-visible > *:nth-child(11) { transition-delay: 0.8s; }
-  @keyframes workflow-arrow-drift {
-    0%, 100% { transform: translateX(0); opacity: 0.55; }
-    50% { transform: translateX(3px); opacity: 1; }
+  .workflow-scroll.is-visible .workflow-pipeline,
+  .workflow-scroll.is-visible .workflow-row {
+    opacity: 1;
+    transform: none;
   }
-  .workflow-arrow svg { animation: workflow-arrow-drift 1.7s ease-in-out infinite; }
 
   /* ---------- Solution overview cards ---------- */
   .solution-grid {
@@ -914,8 +948,6 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 980px) {
-    .workflow-track { grid-template-columns: repeat(3, 1fr); }
-    .workflow-arrow { display: none; }
     .solution-grid { grid-template-columns: repeat(2, 1fr); }
     .mcp-layout { grid-template-columns: 1fr; }
     .privacy-grid { grid-template-columns: repeat(2, 1fr); }
@@ -927,7 +959,6 @@
     .feature-row.reverse .feature-shot { order: 2; }
     .trio { grid-template-columns: 1fr; }
     .paths { grid-template-columns: 1fr; }
-    .workflow-track { grid-template-columns: repeat(2, 1fr); }
     .solution-grid { grid-template-columns: 1fr; }
     .privacy-grid { grid-template-columns: 1fr; }
     .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
@@ -1018,7 +1049,7 @@
       <div class="flow-connector"></div>
       <div class="flow-node">Code Change</div>
       <div class="flow-connector"></div>
-      <div class="flow-node accent">Semantic Vision — Context Layer</div>
+      <div class="flow-node accent">Semantic Vision</div>
       <div class="flow-branch">
         <div class="flow-branch-item"><div class="flow-node">Impact</div></div>
         <div class="flow-branch-item"><div class="flow-node">Health</div></div>
@@ -1037,48 +1068,59 @@
       <h2>From code change to confidence.</h2>
       <p>The code changed. Now the real questions begin.</p>
     </div>
-    <div class="workflow-track" data-reveal>
-      <a class="workflow-step" href="#features">
-        <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <span class="num">01 · Change</span>
-        <h4>The agent makes a change</h4>
-        <p class="q">Changes process_payment(). Now what?</p>
-      </a>
-      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <a class="workflow-step" href="#features">
-        <div class="thumb"><img src="./img/impact-analysis.png" alt="Impact analysis blast radius" loading="lazy" /></div>
-        <span class="num">02 · Impact</span>
-        <h4>See the blast radius</h4>
-        <p class="q">What actually depends on this?</p>
-      </a>
-      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <a class="workflow-step" href="#code-health">
-        <div class="thumb"><img src="./img/code-health.png" alt="Code Health ranked list" loading="lazy" /></div>
-        <span class="num">03 · Health</span>
-        <h4>Check the health of the change</h4>
-        <p class="q">Did this make the code better or worse?</p>
-      </a>
-      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <a class="workflow-step" href="#features">
-        <div class="thumb"><img src="./img/execution-flowchart.png" alt="Execution flowchart" loading="lazy" /></div>
-        <span class="num">04 · Behavior</span>
-        <h4>Understand the behavior</h4>
-        <p class="q">What does this function actually do?</p>
-      </a>
-      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <a class="workflow-step" href="#lineage">
-        <div class="thumb"><img src="./img/dbt-lineage-impact.png" alt="Code-to-data lineage" loading="lazy" /></div>
-        <span class="num">05 · Data</span>
-        <h4>Follow the data</h4>
-        <p class="q">What data does this change affect?</p>
-      </a>
-      <div class="workflow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <a class="workflow-step" href="#mcp">
-        <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="5" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.6V13M12 13 6.6 17M12 13l5.4 4" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <span class="num">06 · Agent</span>
-        <h4>Let the agent see it too</h4>
-        <p class="q">Can my AI agent use this context itself?</p>
-      </a>
+    <div class="workflow-scroll" data-reveal>
+      <div class="workflow-pipeline">
+        <div class="workflow-rail">
+          <span class="rail-glow"></span>
+          <span class="rail-glow rail-glow-2"></span>
+        </div>
+        <div class="workflow-nodes">
+          <span class="node" style="--i:0"></span>
+          <span class="node" style="--i:1"></span>
+          <span class="node" style="--i:2"></span>
+          <span class="node" style="--i:3"></span>
+          <span class="node" style="--i:4"></span>
+          <span class="node" style="--i:5"></span>
+        </div>
+      </div>
+      <div class="workflow-row">
+        <a class="workflow-step" href="#features" style="--i:0">
+          <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="num">01 · Change</span>
+          <h4>The agent makes a change</h4>
+          <p class="q">Changes process_payment(). Now what?</p>
+        </a>
+        <a class="workflow-step" href="#features" style="--i:1">
+          <div class="thumb"><img src="./img/impact-analysis.png" alt="Impact analysis blast radius" loading="lazy" /></div>
+          <span class="num">02 · Impact</span>
+          <h4>See the blast radius</h4>
+          <p class="q">What actually depends on this?</p>
+        </a>
+        <a class="workflow-step" href="#code-health" style="--i:2">
+          <div class="thumb"><img src="./img/code-health.png" alt="Code Health ranked list" loading="lazy" /></div>
+          <span class="num">03 · Health</span>
+          <h4>Check the health of the change</h4>
+          <p class="q">Did this make the code better or worse?</p>
+        </a>
+        <a class="workflow-step" href="#features" style="--i:3">
+          <div class="thumb"><img src="./img/execution-flowchart.png" alt="Execution flowchart" loading="lazy" /></div>
+          <span class="num">04 · Behavior</span>
+          <h4>Understand the behavior</h4>
+          <p class="q">What does this function actually do?</p>
+        </a>
+        <a class="workflow-step" href="#lineage" style="--i:4">
+          <div class="thumb"><img src="./img/dbt-lineage-impact.png" alt="Code-to-data lineage" loading="lazy" /></div>
+          <span class="num">05 · Data</span>
+          <h4>Follow the data</h4>
+          <p class="q">What data does this change affect?</p>
+        </a>
+        <a class="workflow-step" href="#mcp" style="--i:5">
+          <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="5" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.6V13M12 13 6.6 17M12 13l5.4 4" stroke="currentColor" stroke-width="1.6"/></svg></div>
+          <span class="num">06 · Agent</span>
+          <h4>Let the agent see it too</h4>
+          <p class="q">Can my AI agent use this context itself?</p>
+        </a>
+      </div>
     </div>
   </div>
 </section>
