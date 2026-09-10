@@ -466,6 +466,31 @@
   .compare-outcome { font-size: 13.5px; font-weight: 700; }
   .compare-outcome.bad { color: var(--text-dim); }
   .compare-outcome.good { color: var(--accent-text); }
+
+  .scenario-toggle {
+    display: flex;
+    width: max-content;
+    gap: 4px;
+    margin: 4px auto 28px;
+    padding: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+  }
+  .scenario-btn {
+    background: none;
+    border: none;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-family: var(--font-ui);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .scenario-btn:hover { color: var(--text); }
+  .scenario-btn.is-active { background: var(--accent); color: #fff; }
   .flow-diagram-compact { margin: 4px auto; }
   .flow-diagram-compact.is-visible > *:nth-child(3) { transition-delay: 0.15s; }
   .flow-diagram-compact.is-visible > *:nth-child(4) { transition-delay: 0.85s; }
@@ -1330,22 +1355,42 @@
   <div class="container">
     <div class="section-head wide" data-reveal>
       <div class="kicker">Old way. New way.</div>
-      <h2>The same change. Two completely different afternoons.</h2>
-      <p>AI coding agents can change hundreds of lines in seconds. Understanding what they changed is still where all the time goes — unless you stop grepping and start asking.</p>
+      <h2>The same problem. Two completely different afternoons.</h2>
+      <p>Whether a teammate wrote it or an AI agent did, code still has to be understood before you can trust it. See what changes when you stop grepping and start asking.</p>
+    </div>
+
+    <div class="scenario-toggle" data-reveal role="tablist" aria-label="Who wrote the code">
+      <button type="button" class="scenario-btn is-active" data-scenario="ai" role="tab" aria-selected="true">Written by an AI agent</button>
+      <button type="button" class="scenario-btn" data-scenario="human" role="tab" aria-selected="false">Written by a person</button>
     </div>
 
     <div class="compare" data-reveal>
       <div class="compare-col compare-traditional">
         <span class="compare-badge bad">Traditional</span>
         <div class="trad-steps">
-          <div class="trad-step"><span class="dot" style="--i:0"></span>grep the codebase</div>
-          <div class="trad-step"><span class="dot" style="--i:1"></span>jump between files</div>
-          <div class="trad-step"><span class="dot" style="--i:2"></span>trace dependencies by hand</div>
-          <div class="trad-step"><span class="dot" style="--i:3"></span>build a mental model</div>
-          <div class="trad-step"><span class="dot" style="--i:4"></span>hope you didn't miss something</div>
+          <div class="trad-step">
+            <span class="dot" style="--i:0"></span>
+            <span class="step-text" data-ai="grep the codebase" data-human="skim the README (if it's current)">grep the codebase</span>
+          </div>
+          <div class="trad-step">
+            <span class="dot" style="--i:1"></span>
+            <span class="step-text" data-ai="jump between files" data-human="grep for where things live">jump between files</span>
+          </div>
+          <div class="trad-step">
+            <span class="dot" style="--i:2"></span>
+            <span class="step-text" data-ai="trace dependencies by hand" data-human="trace imports file by file">trace dependencies by hand</span>
+          </div>
+          <div class="trad-step">
+            <span class="dot" style="--i:3"></span>
+            <span class="step-text" data-ai="build a mental model" data-human="ask around, hope someone remembers">build a mental model</span>
+          </div>
+          <div class="trad-step">
+            <span class="dot" style="--i:4"></span>
+            <span class="step-text" data-ai="hope you didn't miss something" data-human="guess how the pieces fit together">hope you didn't miss something</span>
+          </div>
         </div>
-        <div class="compare-timer bad"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>~15–40 minutes, every single time</div>
-        <span class="compare-outcome bad">Still guessing</span>
+        <div class="compare-timer bad"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="step-text" id="trad-timer-text" data-ai="~15–40 minutes, every single time" data-human="~Hours to days, before you're productive">~15–40 minutes, every single time</span></div>
+        <span class="compare-outcome bad step-text" id="trad-outcome-text" data-ai="Still guessing" data-human="Still finding your footing">Still guessing</span>
       </div>
 
       <div class="compare-vs"><span>VS</span></div>
@@ -2251,6 +2296,25 @@
   }
 })();
 
+(function () {
+  var buttons = document.querySelectorAll('.scenario-btn');
+  var texts = document.querySelectorAll('.compare .step-text');
+  if (!buttons.length || !texts.length) return;
+
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var scenario = btn.dataset.scenario;
+      buttons.forEach(function (b) {
+        b.classList.toggle('is-active', b === btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      texts.forEach(function (el) {
+        var next = el.dataset[scenario];
+        if (next) el.textContent = next;
+      });
+    });
+  });
+})();
 </script>
 </body>
 </html>
