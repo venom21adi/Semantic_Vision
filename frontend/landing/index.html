@@ -777,7 +777,36 @@
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
   }
-  .gauge-card { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 92px; }
+  .gauge-card {
+    display: flex; flex-direction: column; align-items: center; gap: 10px; width: 92px;
+    background: none; border: none; padding: 6px; border-radius: 12px; cursor: pointer;
+    font-family: var(--font-ui);
+    transition: background 0.15s ease;
+  }
+  .gauge-card:hover { background: var(--bg-panel-raised); }
+  .gauge-card.is-active { background: var(--featured-tint); }
+  .gauge-card.is-active .gauge-label { color: var(--accent-text); }
+  .gauge-card.is-active .gauge-icon { color: var(--accent-text); }
+  .gauge-panel {
+    flex-basis: 100%;
+    text-align: center;
+    max-width: 560px;
+    margin: 6px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .gauge-panel-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; color: var(--accent-text); }
+  .gauge-panel-desc { margin: 0; font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+
+  .health-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .health-shots figure { margin: 0; }
+  .health-shots img {
+    width: 100%; height: auto; display: block;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
+  }
+  .health-shots figcaption { margin-top: 12px; font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
   .gauge { position: relative; width: 80px; height: 80px; }
   .gauge svg { width: 80px; height: 80px; transform: rotate(-90deg); display: block; }
   .gauge-track { fill: none; stroke: var(--border-subtle); stroke-width: 6; }
@@ -823,8 +852,8 @@
     box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.65);
   }
   .feature-shot img, .feature-shot video { width: 100%; height: auto; display: block; }
-  .feature-shot img, .hero-shot img { cursor: zoom-in; transition: filter 0.15s ease; }
-  .feature-shot img:hover, .hero-shot img:hover { filter: brightness(1.06); }
+  .feature-shot img, .hero-shot img, .health-shots img { cursor: zoom-in; transition: filter 0.15s ease; }
+  .feature-shot img:hover, .hero-shot img:hover, .health-shots img:hover { filter: brightness(1.06); }
 
   /* ---------- Key message (pull-quote, not a banner) ---------- */
   .key-message {
@@ -1168,6 +1197,7 @@
     .paths { grid-template-columns: 1fr; }
     .privacy-grid { grid-template-columns: 1fr; }
     .feature-bento { grid-template-columns: 1fr; }
+    .health-shots { grid-template-columns: 1fr; }
     .flow-branch { flex-direction: column; gap: 14px; border-top: none; padding-left: 30px; border-left: 1px solid var(--border); }
     .flow-branch-item::before { display: none; }
     section { padding: 76px 0; }
@@ -1531,7 +1561,7 @@
     </div>
 
     <div class="health-gauges" data-reveal>
-      <div class="gauge-card">
+      <button type="button" class="gauge-card is-active" data-title="Complexity" data-desc="Every function ranked by cyclomatic complexity, computed from a real AST walk — decisions, boolean chains, comprehensions, and nested loops, not a line-count guess.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1541,8 +1571,8 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
         </div>
         <span class="gauge-label">Complexity</span>
-      </div>
-      <div class="gauge-card">
+      </button>
+      <button type="button" class="gauge-card" data-title="Hotspots" data-desc="That same complexity weighted by how often the file actually changes — a moderately complex function edited constantly is riskier than a complex one nobody touches.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1552,8 +1582,8 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" opacity="0.45"/></svg></span>
         </div>
         <span class="gauge-label">Hotspots</span>
-      </div>
-      <div class="gauge-card">
+      </button>
+      <button type="button" class="gauge-card" data-title="Dead Code" data-desc="Functions with zero callers anywhere in the graph, surfaced to review — candidates, never a verdict.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1563,8 +1593,8 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="currentColor" stroke-width="1.6"/></svg></span>
         </div>
         <span class="gauge-label">Dead code</span>
-      </div>
-      <div class="gauge-card">
+      </button>
+      <button type="button" class="gauge-card" data-title="Coverage" data-desc="Ranked by complexity × blast radius × (1 − test coverage) — point it at a coverage.py or lcov report you already generated.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1574,8 +1604,8 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></span>
         </div>
         <span class="gauge-label">Coverage</span>
-      </div>
-      <div class="gauge-card">
+      </button>
+      <button type="button" class="gauge-card" data-title="Duplicates" data-desc="Functions whose structure is identical once every name, literal, and comment is stripped away — an exact-shape match, not a near-miss.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad5" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1585,8 +1615,8 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></span>
         </div>
         <span class="gauge-label">Duplicates</span>
-      </div>
-      <div class="gauge-card">
+      </button>
+      <button type="button" class="gauge-card" data-title="Dependencies" data-desc="Known vulnerabilities (via osv.dev) in packages you import, graphed down to exactly which of your files import one — opt-in, the only signal that reaches the network.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad6" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1596,8 +1626,8 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 11v10" stroke="currentColor" stroke-width="1.5"/></svg></span>
         </div>
         <span class="gauge-label">Dependencies</span>
-      </div>
-      <div class="gauge-card">
+      </button>
+      <button type="button" class="gauge-card" data-title="Recommendations" data-desc="An AI provider prioritizes across every signal above at once — the cross-signal correlation that's easy to miss skimming six ranked lists one at a time.">
         <div class="gauge">
           <svg viewBox="0 0 80 80">
             <defs><linearGradient id="gaugeGrad7" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--teal-light)"/></linearGradient></defs>
@@ -1607,79 +1637,23 @@
           <span class="gauge-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></span>
         </div>
         <span class="gauge-label">Recommendations</span>
+      </button>
+
+      <div class="gauge-panel">
+        <div class="gauge-panel-title" id="gauge-panel-title">Complexity</div>
+        <p class="gauge-panel-desc" id="gauge-panel-desc">Every function ranked by cyclomatic complexity, computed from a real AST walk — decisions, boolean chains, comprehensions, and nested loops, not a line-count guess.</p>
       </div>
     </div>
 
-    <div class="feature-row" data-reveal>
-      <div class="feature-copy">
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h3>Seven signals, one ranked list</h3>
-        <p>Every function scored on real AST complexity — not a line-count guess — then cross-cut by how often it changes, how well it's tested, and what it depends on.</p>
-        <div class="signal-grid">
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
-            <h5>Complexity</h5>
-            <p>Cyclomatic, from a real AST walk</p>
-          </div>
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" opacity="0.45"/></svg></div>
-            <h5>Hotspots</h5>
-            <p>Complexity × how often it changes</p>
-          </div>
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="currentColor" stroke-width="1.6"/></svg></div>
-            <h5>Dead code</h5>
-            <p>Zero-caller candidates to review</p>
-          </div>
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
-            <h5>Coverage</h5>
-            <p>Complexity × blast radius × untested</p>
-          </div>
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
-            <h5>Duplicates</h5>
-            <p>Identical once names are stripped</p>
-          </div>
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 11v10" stroke="currentColor" stroke-width="1.5"/></svg></div>
-            <h5>Dependencies</h5>
-            <p>Known CVEs — opt-in, via osv.dev</p>
-          </div>
-          <div class="signal-tile">
-            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg></div>
-            <h5>Recommendations</h5>
-            <p>AI prioritization, across every signal</p>
-          </div>
-          <div class="signal-tile signal-tile-muted">
-            <h5>+ filters</h5>
-            <p>By name, file, tier, or call depth</p>
-          </div>
-        </div>
-      </div>
-      <div class="feature-shot"><img src="./img/code-health.png" alt="The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats" loading="lazy" width="1600" height="900" /></div>
-    </div>
-
-    <div class="feature-row reverse" data-reveal>
-      <div class="feature-copy">
-        <h3>Click a row to see who calls it — and what it calls</h3>
-        <p>
-          Selecting any function shows its direct callers and callees as a
-          live relationship graph, colored by complexity — the same
-          information a callers-only drill-down used to take an extra click
-          to reveal, now visible the moment you click a row.
-        </p>
-        <p>
-          Also git-aware: <strong>Compare to last look</strong> diffs the
-          current state against whatever it showed last time (useful right
-          after an AI agent's session), or type a commit or branch into the
-          ref picker to diff against any point in the repo's history — added
-          / removed / changed functions, each with its before-and-after
-          complexity, so "did this edit help or hurt" is a glance instead of
-          a manual <code>git diff</code> read-through.
-        </p>
-      </div>
-      <div class="feature-shot"><img src="./img/code-health-relationships.png" alt="Selecting a function shows its direct callers and callees as a relationship graph, colored by complexity" loading="lazy" width="1600" height="900" /></div>
+    <div class="health-shots" data-reveal>
+      <figure>
+        <img src="./img/code-health.png" alt="The Code Health lens's Complexity tab: a filterable, sortable ranked list of every function next to summary stats" loading="lazy" width="1600" height="900" />
+        <figcaption>Filter and sort any ranked list — by name, file, tier, or call depth.</figcaption>
+      </figure>
+      <figure>
+        <img src="./img/code-health-relationships.png" alt="Selecting a function shows its direct callers and callees as a relationship graph, colored by complexity" loading="lazy" width="1600" height="900" />
+        <figcaption>Click a row for its live callers/callees, or diff against any commit to see whether an edit helped or hurt.</figcaption>
+      </figure>
     </div>
 
     <div class="key-message" data-reveal>Know whether an AI-generated change made your code healthier — not just whether the tests passed.</div>
@@ -2094,7 +2068,7 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   }
 
-  document.querySelectorAll('.feature-shot img, .hero-shot img').forEach(function (img) {
+  document.querySelectorAll('.feature-shot img, .hero-shot img, .health-shots img').forEach(function (img) {
     img.addEventListener('click', function () { open(img); });
   });
 
@@ -2154,6 +2128,52 @@
       });
     }, { threshold: 0.4 });
     io.observe(orbit);
+  } else {
+    startAuto();
+  }
+})();
+
+(function () {
+  var gauges = document.querySelector('.health-gauges');
+  var cards = document.querySelectorAll('.gauge-card');
+  var title = document.getElementById('gauge-panel-title');
+  var desc = document.getElementById('gauge-panel-desc');
+  if (!gauges || !cards.length || !title) return;
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var current = 0;
+  var timer = null;
+
+  function activate(index) {
+    current = index;
+    cards.forEach(function (c) { c.classList.remove('is-active'); });
+    var card = cards[index];
+    card.classList.add('is-active');
+    title.textContent = card.dataset.title;
+    desc.textContent = card.dataset.desc;
+  }
+
+  function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+  function startAuto() {
+    if (timer || reduceMotion) return;
+    timer = setInterval(function () { activate((current + 1) % cards.length); }, 2800);
+  }
+
+  cards.forEach(function (card, i) {
+    card.addEventListener('click', function () {
+      stopAuto();
+      activate(i);
+    });
+  });
+
+  if ('IntersectionObserver' in window) {
+    var ioGauges = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) startAuto();
+        else stopAuto();
+      });
+    }, { threshold: 0.4 });
+    ioGauges.observe(gauges);
   } else {
     startAuto();
   }
