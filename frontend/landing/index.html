@@ -128,11 +128,9 @@
   @media (prefers-reduced-motion: reduce) {
     html.js [data-reveal] { opacity: 1; transform: none; transition: none; }
     html { scroll-behavior: auto; }
-    .flow-diagram .flow-node, .flow-diagram .flow-branch-item, .flow-diagram .flow-connector,
-    .workflow-scroll .workflow-pipeline, .workflow-scroll .workflow-row {
+    .flow-diagram .flow-node, .flow-diagram .flow-branch-item, .flow-diagram .flow-connector {
       opacity: 1 !important; transform: none !important; transition: none !important;
     }
-    .rail-glow, .node, .workflow-step { animation: none !important; }
     .bento-graph .dot, .bento-impact .ring, .bento-flow .dot, .bento-bars rect,
     .bento-docs .spark, .bento-docs .tline, .bento-lineage .dot {
       animation: none !important;
@@ -555,111 +553,20 @@
   .flow-diagram.is-visible .flow-branch-item:nth-child(2) { transition-delay: 0.63s; }
   .flow-diagram.is-visible .flow-branch-item:nth-child(3) { transition-delay: 0.71s; }
 
-  /* ---------- Workflow pipeline ----------
-     A rail with a continuously traveling glow runs above the six steps;
-     each step's node dot -- and the card below it -- lights up as the
-     glow passes, so the whole strip reads as one ongoing flow through the
-     pipeline rather than six static cards. Runs forever, not just once on
-     scroll-into-view. */
-  .workflow-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-  .workflow-pipeline { position: relative; height: 16px; min-width: 900px; margin: 0 0 18px; }
-  .workflow-rail {
-    position: absolute;
-    left: 1%; right: 1%; top: 50%;
-    height: 2px;
-    background: var(--border-subtle);
-    border-radius: 999px;
-    transform: translateY(-50%);
-    overflow: hidden;
+  /* ---------- Compare capstone ---------- */
+  .compare-capstone {
+    text-align: center;
+    max-width: 640px;
+    margin: 40px auto 0;
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
-  .rail-glow {
-    position: absolute;
-    top: 0; left: -22%;
-    width: 22%; height: 100%;
-    background: linear-gradient(90deg, transparent, var(--accent) 45%, var(--teal-light) 60%, transparent);
-    animation: rail-run 4.2s linear infinite;
-  }
-  .rail-glow-2 { animation-delay: 2.1s; }
-  @keyframes rail-run {
-    0% { left: -22%; }
-    100% { left: 100%; }
-  }
-  .workflow-nodes {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    align-items: center;
-  }
-  .node {
-    width: 9px; height: 9px;
-    border-radius: 999px;
-    background: var(--border);
-    justify-self: center;
-    animation: node-pulse 4.2s ease-in-out infinite;
-    animation-delay: calc(var(--i) * 0.7s);
-  }
-  @keyframes node-pulse {
-    0%, 88%, 100% { background: var(--border); box-shadow: none; }
-    6% { background: var(--accent); box-shadow: 0 0 0 5px rgba(142, 111, 243, 0.25); }
-  }
-
-  .workflow-row {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    align-items: stretch;
-    min-width: 900px;
-  }
-  .workflow-step {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius);
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-    animation: step-glow 4.2s ease-in-out infinite;
-    animation-delay: calc(var(--i) * 0.7s);
-  }
-  a.workflow-step:hover { border-color: var(--featured-border); transform: translateY(-2px); }
-  @keyframes step-glow {
-    0%, 88%, 100% { border-color: var(--border-subtle); box-shadow: none; }
-    6% { border-color: var(--featured-border); box-shadow: 0 0 0 3px var(--featured-tint); }
-  }
-  .workflow-step .thumb {
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border-subtle);
-    aspect-ratio: 16 / 10;
-    background: var(--bg-panel-raised);
-    display: grid;
-    place-items: center;
-  }
-  .workflow-step .thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .workflow-step .thumb svg { width: 26px; height: 26px; color: var(--accent-text); }
-  .workflow-step .num {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    font-weight: 600;
-  }
-  .workflow-step h4 { margin: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -0.005em; }
-  .workflow-step .q { margin: 0; font-size: 12px; color: var(--text-muted); font-style: italic; }
-
-  .workflow-scroll[data-reveal] .workflow-pipeline,
-  .workflow-scroll[data-reveal] .workflow-row {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .workflow-scroll.is-visible .workflow-pipeline,
-  .workflow-scroll.is-visible .workflow-row {
-    opacity: 1;
-    transform: none;
+  .compare-capstone .grad {
+    background: linear-gradient(135deg, var(--accent-text), var(--teal-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   /* ---------- Feature bento ----------
@@ -1436,70 +1343,8 @@
         <span class="compare-outcome good">Confident, every time</span>
       </div>
     </div>
-  </div>
-</section>
 
-<section id="workflow" class="section-tight">
-  <div class="container">
-    <div class="section-head wide" data-reveal>
-      <div class="kicker">After your AI agent changes the code</div>
-      <h2>From code change to confidence.</h2>
-      <p>The code changed. Now the real questions begin.</p>
-    </div>
-    <div class="workflow-scroll" data-reveal>
-      <div class="workflow-pipeline">
-        <div class="workflow-rail">
-          <span class="rail-glow"></span>
-          <span class="rail-glow rail-glow-2"></span>
-        </div>
-        <div class="workflow-nodes">
-          <span class="node" style="--i:0"></span>
-          <span class="node" style="--i:1"></span>
-          <span class="node" style="--i:2"></span>
-          <span class="node" style="--i:3"></span>
-          <span class="node" style="--i:4"></span>
-          <span class="node" style="--i:5"></span>
-        </div>
-      </div>
-      <div class="workflow-row">
-        <a class="workflow-step" href="#features" style="--i:0">
-          <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <span class="num">01 · Change</span>
-          <h4>The agent makes a change</h4>
-          <p class="q">Changes process_payment(). Now what?</p>
-        </a>
-        <a class="workflow-step" href="#features" style="--i:1">
-          <div class="thumb"><img src="./img/impact-analysis.png" alt="Impact analysis blast radius" loading="lazy" /></div>
-          <span class="num">02 · Impact</span>
-          <h4>See the blast radius</h4>
-          <p class="q">What actually depends on this?</p>
-        </a>
-        <a class="workflow-step" href="#code-health" style="--i:2">
-          <div class="thumb"><img src="./img/code-health.png" alt="Code Health ranked list" loading="lazy" /></div>
-          <span class="num">03 · Health</span>
-          <h4>Check the health of the change</h4>
-          <p class="q">Did this make the code better or worse?</p>
-        </a>
-        <a class="workflow-step" href="#features" style="--i:3">
-          <div class="thumb"><img src="./img/execution-flowchart.png" alt="Execution flowchart" loading="lazy" /></div>
-          <span class="num">04 · Behavior</span>
-          <h4>Understand the behavior</h4>
-          <p class="q">What does this function actually do?</p>
-        </a>
-        <a class="workflow-step" href="#lineage" style="--i:4">
-          <div class="thumb"><img src="./img/dbt-lineage-impact.png" alt="Code-to-data lineage" loading="lazy" /></div>
-          <span class="num">05 · Data</span>
-          <h4>Follow the data</h4>
-          <p class="q">What data does this change affect?</p>
-        </a>
-        <a class="workflow-step" href="#mcp" style="--i:5">
-          <div class="thumb"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="5" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="19" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.6V13M12 13 6.6 17M12 13l5.4 4" stroke="currentColor" stroke-width="1.6"/></svg></div>
-          <span class="num">06 · Agent</span>
-          <h4>Let the agent see it too</h4>
-          <p class="q">Can my AI agent use this context itself?</p>
-        </a>
-      </div>
-    </div>
+    <p class="compare-capstone" data-reveal>From code change to <span class="grad">confidence.</span></p>
   </div>
 </section>
 
