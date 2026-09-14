@@ -271,11 +271,16 @@ function realGetOllamaModels(): Promise<OllamaModelsResponse> {
   return request<OllamaModelsResponse>('/api/ollama-models')
 }
 
-function realDetectLanguages(path: string): Promise<{ detected: string[]; supported: string[] }> {
-  return request<{ detected: string[]; supported: string[] }>('/api/detect-languages', {
-    method: 'POST',
-    body: JSON.stringify({ path }),
-  })
+function realDetectLanguages(
+  path: string,
+): Promise<{ detected: string[]; supported: string[]; default_doc_root: string }> {
+  return request<{ detected: string[]; supported: string[]; default_doc_root: string }>(
+    '/api/detect-languages',
+    {
+      method: 'POST',
+      body: JSON.stringify({ path }),
+    },
+  )
 }
 
 function realIngestDbtManifest(

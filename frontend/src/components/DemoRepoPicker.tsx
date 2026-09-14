@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { loadDemoRepoList, type DemoRepoMeta } from '../api/demoClient'
+import { languageLabel } from './RepoLoader'
 import { colors, radius, spacing } from '../theme'
 
 interface DemoRepoPickerProps {
@@ -9,14 +10,17 @@ interface DemoRepoPickerProps {
 }
 
 /** Replaces `RepoLoader` in the static demo build's empty state -- there's
- * no filesystem to type a path into, so this offers the precomputed
- * repos as cards instead. Still calls the same `onLoad(path, docRoot,
- * languages)` signature `App.tsx` already wires up, with `path` set to the
- * repo's demo slug (see `demoClient.ts`) and a single-element `languages`
- * array -- every demo repo is a fixed single language, never polyglot. */
+ * no filesystem to type a path into, so step one offers the precomputed
+ * repos as cards instead of a path field. Step two mirrors `RepoLoader`'s
+ * own language-confirmation step, even though a demo repo only ever has
+ * one fixed language to confirm (never polyglot) and there's no
+ * save-location step -- a demo build never persists anything. Still calls
+ * the same `onLoad(path, docRoot, languages)` signature `App.tsx` already
+ * wires up, with `path` set to the repo's demo slug (see `demoClient.ts`). */
 export function DemoRepoPicker({ onLoad, loading, error }: DemoRepoPickerProps) {
   const [repos, setRepos] = useState<DemoRepoMeta[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [selected, setSelected] = useState<DemoRepoMeta | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -32,8 +36,92 @@ export function DemoRepoPicker({ onLoad, loading, error }: DemoRepoPickerProps) 
     }
   }, [])
 
+  if (selected) {
+    return (
+      <div style={{ width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: spacing.sm }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: colors.textDim }}>Step 2 of 2</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>
+            Confirm the language to load
+          </span>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '6px 10px',
+            borderRadius: radius.sm,
+            border: `1px solid ${colors.accent}`,
+            background: colors.accent,
+            color: colors.textPrimary,
+            fontSize: 13,
+          }}
+        >
+          <input type="checkbox" checked readOnly aria-label={`Load ${languageLabel(selected.language)}`} />
+          {languageLabel(selected.language)}
+        </div>
+        <span style={{ display: 'block', marginTop: 5, fontSize: 11, color: colors.textDim }}>
+          {selected.displayName} is a fixed single-language demo repo, so there's nothing else to
+          pick — and nothing is saved in demo mode, so there's no save-location step either.
+        </span>
+        {error && (
+          <span role="alert" style={{ display: 'block', marginTop: 6, color: colors.danger, fontSize: 12 }}>
+            {error}
+          </span>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: spacing.sm }}>
+          <button
+            type="button"
+            onClick={() => setSelected(null)}
+            className="sv-interactive"
+            style={{
+              padding: '6px 14px',
+              borderRadius: radius.sm,
+              border: `1px solid ${colors.border}`,
+              background: 'transparent',
+              color: colors.textMuted,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => onLoad(selected.slug, '', [selected.language])}
+            className="sv-interactive"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '7px 16px',
+              borderRadius: radius.sm,
+              border: 'none',
+              background: loading ? colors.disabled : colors.accent,
+              color: colors.textPrimary,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: loading ? 'default' : 'pointer',
+            }}
+          >
+            {loading && <span className="spinner" aria-hidden="true" />}
+            {loading ? 'Loading…' : 'Load'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: colors.textDim }}>Step 1 of 2</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>
+          Choose a demo repository
+        </span>
+      </div>
       <div
         style={{
           display: 'grid',
@@ -46,7 +134,7 @@ export function DemoRepoPicker({ onLoad, loading, error }: DemoRepoPickerProps) 
             key={repo.slug}
             type="button"
             disabled={loading}
-            onClick={() => onLoad(repo.slug, '', [repo.language])}
+            onClick={() => setSelected(repo)}
             className="sv-interactive"
             style={{
               textAlign: 'left',

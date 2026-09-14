@@ -46,6 +46,10 @@ class DetectLanguagesResponse(BaseModel):
     supported: list[str]
     """Every language this build has a registered adapter for, detected or not --
     lets the UI show a detected-but-unsupported language as a disabled option."""
+    default_doc_root: str
+    """Where `.visualiser/` would be written if the repo were loaded without an
+    explicit save-location override -- the nearest ancestor `.git` root, or the
+    repo path itself if none is found. Previewed to the user before loading."""
 
 
 class ParseRepoResponse(BaseModel):

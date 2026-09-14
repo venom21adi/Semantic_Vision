@@ -96,6 +96,7 @@ def detect_languages_route(request: DetectLanguagesRequest) -> DetectLanguagesRe
     return DetectLanguagesResponse(
         detected=detect_languages(root_path),
         supported=[adapter.language_id for adapter in list_adapters()],
+        default_doc_root=persistence.resolve_doc_root(root_path.resolve(), None).as_posix(),
     )
 
 

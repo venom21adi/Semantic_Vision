@@ -68,18 +68,29 @@ const sampleGraph: GraphResponse = {
 
 const emptyGraphState: GraphStateResponse = { positions: {}, updated_at: null }
 
+/** Drives the load wizard from its "Repository path" step through to
+ * "Load"/"Apply": types the path (unless it's already prefilled and
+ * `path` is omitted), waits for detection's checklist to appear (already
+ * pre-checked -- see `RepoLoader`), advances to the save-location step,
+ * and clicks the final button. */
+async function runLoadWizard(user: ReturnType<typeof userEvent.setup>, path?: string) {
+  if (path !== undefined) {
+    const input = screen.getByLabelText('Repository path')
+    await user.clear(input)
+    await user.type(input, path)
+  }
+  await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
+  await waitFor(() =>
+    expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked(),
+  )
+  await user.click(screen.getByRole('button', { name: /next: save location/i }))
+  await user.click(screen.getByRole('button', { name: /^(load|apply)$/i }))
+}
+
 async function loadSampleRepo() {
   const user = userEvent.setup()
   render(<App />)
-  await user.type(screen.getByLabelText('Repository path'), '/repo')
-  // Waits for auto-detection's chip pre-check (see `RepoLoader`) rather
-  // than clicking immediately -- the Load button stays disabled until at
-  // least one language is checked, and detection is async (debounced,
-  // then a `detectLanguages` round-trip).
-  await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-  )
-  await user.click(screen.getByRole('button', { name: /^load$/i }))
+  await runLoadWizard(user, '/repo')
   await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
   return user
 }
@@ -87,9 +98,18 @@ async function loadSampleRepo() {
 /** Once a repo is loaded, the load form moves into the header's repo pill
  * popover (see `RepoPill`) instead of staying visible -- tests that need
  * to read or change the path/language/save-location fields after loading
- * have to open it first. */
+ * have to open it first. The popover starts back at the wizard's first
+ * step every time, prefilled with the repo's current path/languages. */
 async function openRepoPill(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: /^Current repository:/ }))
+}
+
+/** From the just-opened repo pill popover (step 1, prefilled), advances to
+ * the save-location step without changing the path or languages. */
+async function openRepoPillToSaveLocation(user: ReturnType<typeof userEvent.setup>) {
+  await openRepoPill(user)
+  await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
+  await user.click(screen.getByRole('button', { name: /next: save location/i }))
 }
 
 /** Switches to the Code Health lens via the header tab and waits for
@@ -112,6 +132,7 @@ beforeEach(() => {
   mockedClient.detectLanguages.mockResolvedValue({
     detected: ['python'],
     supported: ['python', 'javascript', 'java'],
+    default_doc_root: '/repo',
   })
   mockedClient.getGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.saveGraphState.mockResolvedValue(emptyGraphState)
@@ -140,23 +161,25 @@ describe('App', () => {
     const user = userEvent.setup()
     const { unmount } = render(<App />)
     await user.type(screen.getByLabelText('Repository path'), '/repo')
+    await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+      expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked(),
     )
-    await user.click(screen.getByRole('button', { name: 'Python' }))
-    await user.click(screen.getByRole('button', { name: 'JavaScript / TypeScript' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Load Python' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Load JavaScript / TypeScript' }))
+    await user.click(screen.getByRole('button', { name: /next: save location/i }))
     await user.click(screen.getByRole('button', { name: /^load$/i }))
     await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
 
-    expect(mockedClient.parseRepo).toHaveBeenCalledWith('/repo', undefined, 'javascript')
+    // The save-location step is pre-filled with the detected default rather
+    // than left blank, so it's sent explicitly instead of as `undefined`.
+    expect(mockedClient.parseRepo).toHaveBeenCalledWith('/repo', '/repo', 'javascript')
 
     unmount()
     render(<App />)
+    await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
 
-    expect(screen.getByRole('button', { name: 'JavaScript / TypeScript' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(screen.getByRole('checkbox', { name: 'Load JavaScript / TypeScript' })).toBeChecked()
   })
 
   it('shows a load error from the API', async () => {
@@ -164,11 +187,7 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.type(screen.getByLabelText('Repository path'), '/nope')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/nope')
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Not a directory'))
   })
@@ -464,14 +483,22 @@ describe('App', () => {
     })
 
     const user = await loadSampleRepo()
-    await openRepoPill(user)
+    await openRepoPillToSaveLocation(user)
 
     expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/git-root')
 
+    // Clicking around a second instance fires document-level pointerdown
+    // events that close the first instance's still-open popover (see
+    // `RepoPill`'s outside-click handling) -- the value above is already
+    // captured, so that's fine; asserted again below on whichever instance
+    // is left.
+    const secondUser = userEvent.setup()
     render(<App />)
-    // The just-opened popover's field (first instance) and the fresh
-    // second instance's empty-state field both match now.
-    expect(screen.getAllByLabelText('Save location')[1]).toHaveValue('/auto/detected/git-root')
+    // The fresh second instance's empty-state wizard, walked through to its
+    // own save-location step, remembers the same resolved value.
+    await secondUser.click(screen.getByRole('button', { name: /next: pick languages/i }))
+    await secondUser.click(screen.getByRole('button', { name: /next: save location/i }))
+    expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/git-root')
   })
 
   it('shows a save-location notice on a loaded doc, and lets the user dismiss it for good', async () => {
@@ -533,11 +560,11 @@ describe('App', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Document' }))
     await waitFor(() => expect(screen.getByText(/original\/root/)).toBeInTheDocument())
 
-    await openRepoPill(user)
+    await openRepoPillToSaveLocation(user)
     const saveLocationInput = screen.getByLabelText('Save location')
     await user.clear(saveLocationInput)
     await user.type(saveLocationInput, '/new/root')
-    await user.tab()
+    await user.click(screen.getByRole('button', { name: /^apply$/i }))
 
     await waitFor(() =>
       expect(mockedClient.updateDocRoot).toHaveBeenCalledWith('/repo', 'python', '/new/root'),
@@ -558,13 +585,11 @@ describe('App', () => {
       const user = userEvent.setup({ delay: null })
       render(<App />)
       await user.type(screen.getByLabelText('Repository path'), '/repo')
-      await vi.advanceTimersByTimeAsync(400)
+      await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
       await vi.waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute(
-          'aria-pressed',
-          'true',
-        ),
+        expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked(),
       )
+      await user.click(screen.getByRole('button', { name: /next: save location/i }))
       await user.click(screen.getByRole('button', { name: /^load$/i }))
       await vi.waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
 
@@ -627,11 +652,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
 
     await waitFor(() =>
       expect(
@@ -656,11 +677,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -690,11 +707,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -738,11 +751,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
 
     await waitFor(() => expect(screen.getByTestId('rf__node-pkg/a.py')).toBeInTheDocument())
     expect(screen.getByTestId('rf__node-pkg/b.py')).toBeInTheDocument()
@@ -794,13 +803,11 @@ describe('App', () => {
       const user = userEvent.setup({ delay: null })
       render(<App />)
       await user.type(screen.getByLabelText('Repository path'), '/repo')
-      await vi.advanceTimersByTimeAsync(400)
+      await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
       await vi.waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute(
-          'aria-pressed',
-          'true',
-        ),
+        expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked(),
       )
+      await user.click(screen.getByRole('button', { name: /next: save location/i }))
       await user.click(screen.getByRole('button', { name: /^load$/i }))
       await vi.waitFor(() => screen.getByTestId('rf__node-pkg/a.py'))
 
@@ -858,11 +865,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -903,11 +906,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -962,11 +961,7 @@ describe('App', () => {
     })
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Repository path'), '/repo')
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
-    )
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await runLoadWizard(user, '/repo')
     await waitFor(() =>
       expect(
         screen.getByText('Select a directory or file in the sidebar to add it to the canvas.'),
@@ -1149,7 +1144,9 @@ describe('App', () => {
     await openRepoPill(user)
     await user.clear(screen.getByLabelText('Repository path'))
     await user.type(screen.getByLabelText('Repository path'), '/other-repo')
-    await user.click(screen.getByRole('button', { name: /load/i }))
+    await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
+    await user.click(screen.getByRole('button', { name: /next: save location/i }))
+    await user.click(screen.getByRole('button', { name: /^apply$/i }))
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Complexity' })).not.toBeInTheDocument())
 
     resolveComplexity({ scores: [{ node_id: 'stale', cyclomatic_complexity: 1, call_chain_depth: 0, has_nested_loops: false }] })

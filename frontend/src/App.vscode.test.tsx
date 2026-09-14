@@ -73,6 +73,7 @@ async function loadSampleRepoInsideVscode() {
   mockedClient.detectLanguages.mockResolvedValue({
     detected: ['python'],
     supported: ['python', 'javascript', 'java'],
+    default_doc_root: '/repo',
   })
   mockedClient.getGraphState.mockResolvedValue(emptyGraphState)
   mockedClient.saveGraphState.mockResolvedValue(emptyGraphState)
@@ -89,9 +90,11 @@ async function loadSampleRepoInsideVscode() {
   const user = userEvent.setup()
   render(<App />)
   await user.type(screen.getByLabelText('Repository path'), '/repo')
+  await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'true'),
+    expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked(),
   )
+  await user.click(screen.getByRole('button', { name: /next: save location/i }))
   await user.click(screen.getByRole('button', { name: /^load$/i }))
   await waitFor(() => screen.getByTestId('rf__node-app.py::Greeter.greet'))
   return user

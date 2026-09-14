@@ -117,7 +117,6 @@ export function RepoPill({
         >
           <RepoLoader
             bare
-            stacked
             onLoad={onLoad}
             loading={loading}
             error={error}

@@ -98,6 +98,13 @@ def test_detect_languages_reports_javascript_for_js_repo():
     assert resp.json()["detected"] == ["javascript"]
 
 
+def test_detect_languages_reports_the_default_doc_root():
+    resp = client.post("/api/detect-languages", json={"path": str(FIXTURES / "simple_repo")})
+
+    assert resp.status_code == 200
+    assert resp.json()["default_doc_root"]
+
+
 def test_detect_languages_rejects_a_non_directory_path(tmp_path: Path):
     not_a_dir = tmp_path / "nope.txt"
     not_a_dir.write_text("x")

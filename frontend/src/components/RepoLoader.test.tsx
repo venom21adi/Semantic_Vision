@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as client from '../api/client'
@@ -15,36 +15,88 @@ beforeEach(() => {
   mockedClient.detectLanguages.mockResolvedValue({
     detected: ['python'],
     supported: ['python', 'javascript', 'java'],
+    default_doc_root: '/detected/default/root',
   })
 })
 
-async function waitForChipChecked(name: string) {
-  await waitFor(() =>
-    expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'true'),
-  )
+/** Advances to the languages step. When `path` is given, types it in first
+ * (clearing whatever's already there); when omitted, uses whatever value
+ * the field already has (e.g. from `initialPath`) without retyping it. */
+async function goToLanguageStep(user: ReturnType<typeof userEvent.setup>, path?: string) {
+  if (path !== undefined) {
+    const input = screen.getByLabelText('Repository path')
+    await user.clear(input)
+    await user.type(input, path)
+  }
+  await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
+  await screen.findByText(/which languages should be loaded/i)
+}
+
+async function goToSaveLocationStep(user: ReturnType<typeof userEvent.setup>, path?: string) {
+  await goToLanguageStep(user, path)
+  await user.click(screen.getByRole('button', { name: /next: save location/i }))
+  await screen.findByLabelText('Save location')
 }
 
 describe('RepoLoader', () => {
-  it('calls onLoad with the trimmed path, an empty doc root, and the detected language', async () => {
-    const onLoad = vi.fn()
+  it('scans the path, moves to the languages step, and pre-checks what it detected', async () => {
     const user = userEvent.setup()
-    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
 
-    await user.type(screen.getByLabelText('Repository path'), '  /some/repo  ')
-    await waitForChipChecked('Python')
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await goToLanguageStep(user, '/some/repo')
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', ['python'])
+    expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked()
   })
 
-  it('calls onLoad with a manually typed save location', async () => {
+  it('disables the scan button until a path is typed', () => {
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    expect(screen.getByRole('button', { name: /next: pick languages/i })).toBeDisabled()
+  })
+
+  it('shows a detected-but-unsupported language as a disabled checkbox', async () => {
+    mockedClient.detectLanguages.mockResolvedValue({
+      detected: ['python', 'go'],
+      supported: ['python', 'javascript', 'java'],
+      default_doc_root: '/detected/default/root',
+    })
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    await goToLanguageStep(user, '/some/repo')
+
+    expect(screen.getByText(/go \(detected, not supported yet\)/i)).toBeInTheDocument()
+  })
+
+  it('proceeds to the save-location step pre-filled with the detected default', async () => {
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    await goToSaveLocationStep(user, '/some/repo')
+
+    expect(screen.getByLabelText('Save location')).toHaveValue('/detected/default/root')
+  })
+
+  it('calls onLoad with the path, detected default doc root, and checked language', async () => {
     const onLoad = vi.fn()
     const user = userEvent.setup()
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
 
-    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
-    await waitForChipChecked('Python')
-    await user.type(screen.getByLabelText('Save location'), '  /my/save/spot  ')
+    await goToSaveLocationStep(user, '  /some/repo  ')
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/detected/default/root', ['python'])
+  })
+
+  it('calls onLoad with a manually edited save location', async () => {
+    const onLoad = vi.fn()
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
+
+    await goToSaveLocationStep(user, '/some/repo')
+    const input = screen.getByLabelText('Save location')
+    await user.clear(input)
+    await user.type(input, '  /my/save/spot  ')
     await user.click(screen.getByRole('button', { name: /^load$/i }))
 
     expect(onLoad).toHaveBeenCalledWith('/some/repo', '/my/save/spot', ['python'])
@@ -54,58 +106,71 @@ describe('RepoLoader', () => {
     mockedClient.detectLanguages.mockResolvedValue({
       detected: ['python', 'javascript'],
       supported: ['python', 'javascript', 'java'],
+      default_doc_root: '/detected/default/root',
     })
     const onLoad = vi.fn()
     const user = userEvent.setup()
     render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
 
-    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
-    await waitForChipChecked('Python')
-    await waitForChipChecked('JavaScript / TypeScript')
+    await goToSaveLocationStep(user, '/some/repo')
     await user.click(screen.getByRole('button', { name: /^load$/i }))
 
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', ['python', 'javascript'])
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/detected/default/root', [
+      'python',
+      'javascript',
+    ])
   })
 
-  it('toggles a language off by clicking its chip', async () => {
-    const onLoad = vi.fn()
-    const user = userEvent.setup()
-    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
-
-    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
-    await waitForChipChecked('Python')
-    await user.click(screen.getByRole('button', { name: 'JavaScript / TypeScript' }))
-    await user.click(screen.getByRole('button', { name: /^load$/i }))
-
-    expect(onLoad).toHaveBeenCalledWith('/some/repo', '', ['python', 'javascript'])
-  })
-
-  it('disables Load until at least one language is checked', async () => {
-    const user = userEvent.setup()
-    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
-
-    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
-    await waitForChipChecked('Python')
-    await user.click(screen.getByRole('button', { name: 'Python' }))
-
-    expect(screen.getByRole('button', { name: /^load$/i })).toBeDisabled()
-  })
-
-  it('shows a detected-but-unsupported language as a disabled chip', async () => {
+  it('toggles a language off via its checkbox', async () => {
     mockedClient.detectLanguages.mockResolvedValue({
-      detected: ['python', 'go'],
+      detected: ['python', 'javascript'],
       supported: ['python', 'javascript', 'java'],
+      default_doc_root: '/detected/default/root',
     })
+    const onLoad = vi.fn()
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={onLoad} loading={false} error={null} stats={null} />)
+
+    await goToLanguageStep(user, '/some/repo')
+    await user.click(screen.getByRole('checkbox', { name: 'Load JavaScript / TypeScript' }))
+    await user.click(screen.getByRole('button', { name: /next: save location/i }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(onLoad).toHaveBeenCalledWith('/some/repo', '/detected/default/root', ['python'])
+  })
+
+  it('disables Next until at least one language is checked', async () => {
     const user = userEvent.setup()
     render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
 
-    await user.type(screen.getByLabelText('Repository path'), '/some/repo')
-    await waitForChipChecked('Python')
+    await goToLanguageStep(user, '/some/repo')
+    await user.click(screen.getByRole('checkbox', { name: 'Load Python' }))
 
-    expect(screen.getByText(/go \(not supported\)/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /next: save location/i })).toBeDisabled()
   })
 
-  it('pre-fills the languages from initialLanguages', () => {
+  it('going Back from languages to path preserves the typed path', async () => {
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    await goToLanguageStep(user, '/some/repo')
+    await user.click(screen.getByRole('button', { name: /back/i }))
+
+    expect(screen.getByLabelText('Repository path')).toHaveValue('/some/repo')
+  })
+
+  it('going Back from save-location to languages preserves the checked languages', async () => {
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
+
+    await goToSaveLocationStep(user, '/some/repo')
+    await user.click(screen.getByRole('button', { name: /back/i }))
+
+    expect(screen.getByRole('checkbox', { name: 'Load Python' })).toBeChecked()
+  })
+
+  it('pre-fills languages from initialLanguages instead of the freshly detected ones', async () => {
+    const user = userEvent.setup()
     render(
       <RepoLoader
         onLoad={vi.fn()}
@@ -116,14 +181,22 @@ describe('RepoLoader', () => {
       />,
     )
 
-    expect(screen.getByRole('button', { name: 'JavaScript / TypeScript' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    expect(screen.getByRole('button', { name: 'Python' })).toHaveAttribute('aria-pressed', 'false')
+    await goToLanguageStep(user, '/some/repo')
+
+    expect(screen.getByRole('checkbox', { name: 'Load JavaScript / TypeScript' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Load Python' })).not.toBeChecked()
   })
 
-  it('pre-fills the save location from initialDocRoot', () => {
+  it('pre-fills the path from initialPath', () => {
+    render(
+      <RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} initialPath="/last/repo" />,
+    )
+
+    expect(screen.getByLabelText('Repository path')).toHaveValue('/last/repo')
+  })
+
+  it('pre-fills the save-location step from initialDocRoot rather than the detected default', async () => {
+    const user = userEvent.setup()
     render(
       <RepoLoader
         onLoad={vi.fn()}
@@ -134,55 +207,14 @@ describe('RepoLoader', () => {
       />,
     )
 
+    await goToSaveLocationStep(user, '/some/repo')
+
     expect(screen.getByLabelText('Save location')).toHaveValue('/remembered/save')
   })
 
-  it('updates the save location field when resolvedDocRoot changes', () => {
-    const { rerender } = render(
-      <RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />,
-    )
-
-    expect(screen.getByLabelText('Save location')).toHaveValue('')
-
-    rerender(
-      <RepoLoader
-        onLoad={vi.fn()}
-        loading={false}
-        error={null}
-        stats={null}
-        resolvedDocRoot="/auto/detected/root"
-      />,
-    )
-
-    expect(screen.getByLabelText('Save location')).toHaveValue('/auto/detected/root')
-  })
-
-  it('commits a save-location change live on blur once a repo is loaded', async () => {
-    const onChangeDocRoot = vi.fn()
-    const user = userEvent.setup()
-    render(
-      <RepoLoader
-        onLoad={vi.fn()}
-        loading={false}
-        error={null}
-        stats={null}
-        resolvedDocRoot="/repo/.visualiser"
-        hasLoadedRepo={true}
-        onChangeDocRoot={onChangeDocRoot}
-      />,
-    )
-
-    const input = screen.getByLabelText('Save location')
-    await user.clear(input)
-    await user.type(input, '/new/save/spot')
-    await user.tab()
-
-    expect(onChangeDocRoot).toHaveBeenCalledWith('/new/save/spot')
-  })
-
-  it('commits a save-location change on Enter without submitting the load form', async () => {
-    const onChangeDocRoot = vi.fn()
+  it('applies a save-location-only change live instead of reloading, once a repo is loaded', async () => {
     const onLoad = vi.fn()
+    const onChangeDocRoot = vi.fn()
     const user = userEvent.setup()
     render(
       <RepoLoader
@@ -190,88 +222,72 @@ describe('RepoLoader', () => {
         loading={false}
         error={null}
         stats={null}
+        initialPath="/some/repo"
+        initialLanguages={['python']}
         resolvedDocRoot="/repo/.visualiser"
-        hasLoadedRepo={true}
+        hasLoadedRepo
         onChangeDocRoot={onChangeDocRoot}
       />,
     )
 
+    await goToSaveLocationStep(user, '/some/repo')
     const input = screen.getByLabelText('Save location')
     await user.clear(input)
-    await user.type(input, '/new/save/spot{Enter}')
+    await user.type(input, '/new/save/spot')
+    await user.click(screen.getByRole('button', { name: /^apply$/i }))
 
     expect(onChangeDocRoot).toHaveBeenCalledWith('/new/save/spot')
     expect(onLoad).not.toHaveBeenCalled()
   })
 
-  it('snaps a cleared save-location field back to the resolved value instead of leaving it blank', async () => {
+  it('reloads instead of a live doc-root change when the path changed too', async () => {
+    const onLoad = vi.fn()
     const onChangeDocRoot = vi.fn()
     const user = userEvent.setup()
     render(
       <RepoLoader
-        onLoad={vi.fn()}
+        onLoad={onLoad}
         loading={false}
         error={null}
         stats={null}
+        initialPath="/some/repo"
+        initialLanguages={['python']}
         resolvedDocRoot="/repo/.visualiser"
-        hasLoadedRepo={true}
+        hasLoadedRepo
         onChangeDocRoot={onChangeDocRoot}
       />,
     )
 
-    const input = screen.getByLabelText('Save location')
-    await user.clear(input)
-    await user.tab()
+    const pathInput = screen.getByLabelText('Repository path')
+    await user.clear(pathInput)
+    await user.type(pathInput, '/a/different/repo')
+    await user.click(screen.getByRole('button', { name: /next: pick languages/i }))
+    await screen.findByText(/which languages should be loaded/i)
+    await user.click(screen.getByRole('button', { name: /next: save location/i }))
+    await user.click(screen.getByRole('button', { name: /^apply$/i }))
 
+    expect(onLoad).toHaveBeenCalledWith('/a/different/repo', '/repo/.visualiser', ['python'])
     expect(onChangeDocRoot).not.toHaveBeenCalled()
-    expect(input).toHaveValue('/repo/.visualiser')
   })
 
-  it('does not commit a save-location change live before any repo is loaded', async () => {
-    const onChangeDocRoot = vi.fn()
+  it('shows an error message on the save-location step', async () => {
     const user = userEvent.setup()
-    render(
-      <RepoLoader
-        onLoad={vi.fn()}
-        loading={false}
-        error={null}
-        stats={null}
-        onChangeDocRoot={onChangeDocRoot}
-      />,
-    )
-
-    await user.type(screen.getByLabelText('Save location'), '/new/save/spot')
-    await user.tab()
-
-    expect(onChangeDocRoot).not.toHaveBeenCalled()
-  })
-
-  it('disables the button for a blank path', () => {
-    render(<RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} />)
-
-    expect(screen.getByRole('button', { name: /^load$/i })).toBeDisabled()
-  })
-
-  it('disables the button and shows a spinner while loading', () => {
-    render(<RepoLoader onLoad={vi.fn()} loading={true} error={null} stats={null} />)
-
-    const button = screen.getByRole('button', { name: /loading/i })
-    expect(button).toBeDisabled()
-    expect(button.querySelector('.spinner')).toBeInTheDocument()
-  })
-
-  it('shows an error message when provided', () => {
     render(<RepoLoader onLoad={vi.fn()} loading={false} error="Directory not found" stats={null} />)
+
+    await goToSaveLocationStep(user, '/some/repo')
 
     expect(screen.getByRole('alert')).toHaveTextContent('Directory not found')
   })
 
-  it('pre-fills the path from initialPath', () => {
-    render(
-      <RepoLoader onLoad={vi.fn()} loading={false} error={null} stats={null} initialPath="/last/repo" />,
-    )
+  it('disables the final button and shows a spinner while loading', async () => {
+    const user = userEvent.setup()
+    render(<RepoLoader onLoad={vi.fn()} loading={true} error={null} stats={null} />)
 
-    expect(screen.getByLabelText('Repository path')).toHaveValue('/last/repo')
+    await goToSaveLocationStep(user, '/some/repo')
+
+    const button = screen.getByRole('button', { name: /loading/i })
+    expect(button).toBeDisabled()
+    expect(button.querySelector('.spinner')).toBeInTheDocument()
   })
 
   it('shows success stats without a details toggle when there are no parse errors', () => {
