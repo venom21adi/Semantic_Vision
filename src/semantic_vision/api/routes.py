@@ -117,7 +117,7 @@ def parse_repo(request: ParseRepoRequest) -> ParseRepoResponse:
     read_root = None
     root_path = Path(path)
     if root_path.is_dir():
-        read_root = sync_to_fast_cache(root_path.resolve(), adapter.file_extensions)
+        read_root = sync_to_fast_cache(root_path.resolve(), adapter.language_id, adapter.file_extensions)
 
     try:
         result = parse_repository(path, language=adapter, read_root=read_root)

@@ -53,7 +53,21 @@ function readLanguages(): Record<string, string[]> {
     const raw = localStorage.getItem(LANGUAGES_KEY)
     if (!raw) return {}
     const parsed: unknown = JSON.parse(raw)
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, string[]>) : {}
+    if (!parsed || typeof parsed !== 'object') return {}
+    // This key predates multi-language support, when it stored one plain
+    // string per path (e.g. `{"path": "javascript"}`) instead of
+    // `string[]` -- an install that used the app before that change still
+    // has old string values sitting here. Trusting one as-is without this
+    // check feeds `new Set("javascript")` into `RepoLoader`'s selection
+    // state, which splits it into individual characters ({j,a,v,s,c,r,i,
+    // p,t}) and submits each as its own (invalid) language on Load. A
+    // legacy string value is dropped (treated as absent, same as a path
+    // never seen before) rather than trusted.
+    const entries = Object.entries(parsed as Record<string, unknown>).filter(
+      (entry): entry is [string, string[]] =>
+        Array.isArray(entry[1]) && entry[1].every((lang) => typeof lang === 'string'),
+    )
+    return Object.fromEntries(entries)
   } catch {
     return {}
   }

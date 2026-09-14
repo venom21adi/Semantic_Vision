@@ -4,11 +4,13 @@ import {
   getDetailsCollapsed,
   getLastRepoPath,
   getRememberedDocRoot,
+  getRememberedLanguages,
   getSidebarCollapsed,
   isDocSaveNoticeDismissed,
   setDetailsCollapsed,
   setLastRepoPath,
   setRememberedDocRoot,
+  setRememberedLanguages,
   setSidebarCollapsed,
 } from './localStorage'
 
@@ -61,6 +63,44 @@ describe('localStorage helpers', () => {
     setRememberedDocRoot('/repo-a', '/save/a-new')
 
     expect(getRememberedDocRoot('/repo-a')).toBe('/save/a-new')
+  })
+
+  it('returns null for languages that were never remembered', () => {
+    expect(getRememberedLanguages('/some/repo')).toBeNull()
+  })
+
+  it('round-trips remembered languages per repo path', () => {
+    setRememberedLanguages('/repo-a', ['python'])
+    setRememberedLanguages('/repo-b', ['python', 'javascript'])
+
+    expect(getRememberedLanguages('/repo-a')).toEqual(['python'])
+    expect(getRememberedLanguages('/repo-b')).toEqual(['python', 'javascript'])
+  })
+
+  it('ignores a legacy single-string value stored under the same key', () => {
+    // This key predates multi-language support, when it stored one plain
+    // string per path instead of `string[]` -- an install that used the
+    // app before that change still has old string values sitting here.
+    // Regression test: trusting one as-is fed `new Set("javascript")`
+    // into `RepoLoader`'s selection state, which split it into individual
+    // characters and submitted each as its own invalid `language` on
+    // Load (surfacing as a baffling "Unknown language: 't'" backend
+    // error, the one specific letter varying by request-race timing).
+    localStorage.setItem(
+      'semantic-vision:languages',
+      JSON.stringify({ '/legacy-repo': 'javascript' }),
+    )
+
+    expect(getRememberedLanguages('/legacy-repo')).toBeNull()
+  })
+
+  it('ignores a legacy value whose array contains non-string entries', () => {
+    localStorage.setItem(
+      'semantic-vision:languages',
+      JSON.stringify({ '/repo': ['python', 42] }),
+    )
+
+    expect(getRememberedLanguages('/repo')).toBeNull()
   })
 
   it('the doc-save notice starts un-dismissed and can be dismissed', () => {

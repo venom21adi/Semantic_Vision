@@ -44,8 +44,17 @@ _MANIFEST_NAME = "manifest.json"
 _TREE_DIRNAME = "tree"
 
 
-def _cache_key(root: Path) -> str:
-    return hashlib.sha256(root.as_posix().encode("utf-8")).hexdigest()[:24]
+def _cache_key(root: Path, language_id: str) -> str:
+    """Keyed on `language_id` too, not just `root`: a polyglot repo parses
+    each selected language into the same `root` independently (see
+    `routes.py`'s `parse_repo`, called once per language, concurrently via
+    the frontend's `Promise.all`). A single shared mirror directory would
+    have each language's sync see the *other* language's files as "stale"
+    (absent from its own `extensions` filter) and delete them -- and since
+    the calls run concurrently, as a race that could delete files out from
+    under the other language's in-flight parse. One mirror directory per
+    language avoids both."""
+    return hashlib.sha256(f"{root.as_posix()}::{language_id}".encode("utf-8")).hexdigest()[:24]
 
 
 def _load_manifest(manifest_path: Path) -> dict[str, list[int]]:
@@ -93,17 +102,18 @@ def _walk_with_stats(root: Path, extensions: frozenset[str]) -> dict[str, tuple[
     return found
 
 
-def sync_to_fast_cache(root: Path, extensions: frozenset[str]) -> Path | None:
+def sync_to_fast_cache(root: Path, language_id: str, extensions: frozenset[str]) -> Path | None:
     """Mirrors every file under `root` matching `extensions` into fast
     local storage, copying only what's new or changed since the last call
-    for this same `root`. Returns the mirror directory to parse from, or
-    `None` if no fast-cache directory is configured (e.g. outside Docker),
-    in which case the caller should read `root` directly as before."""
+    for this same `root` and `language_id`. Returns the mirror directory to
+    parse from, or `None` if no fast-cache directory is configured (e.g.
+    outside Docker), in which case the caller should read `root` directly
+    as before."""
     cache_dir = os.environ.get(FAST_CACHE_DIR_ENV, "")
     if not cache_dir:
         return None
 
-    repo_cache_dir = Path(cache_dir) / _cache_key(root)
+    repo_cache_dir = Path(cache_dir) / _cache_key(root, language_id)
     tree_dir = repo_cache_dir / _TREE_DIRNAME
     manifest_path = repo_cache_dir / _MANIFEST_NAME
     tree_dir.mkdir(parents=True, exist_ok=True)
