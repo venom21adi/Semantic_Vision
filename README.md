@@ -457,6 +457,11 @@ cp .env.example .env      # Windows CMD: copy .env.example .env
 docker compose up --build
 ```
 
+Pre-built images are also published to GHCR on every change to `master`
+(`ghcr.io/venom21adi/semantic_vision-backend` and
+`ghcr.io/venom21adi/semantic_vision-frontend`, tagged `latest` and by
+commit SHA) if you'd rather pull than build locally.
+
 Open `http://localhost:5173` — with no further setup, it mounts the
 project's own repo, so `/workspace/repo` gets you a ready-to-explore
 demo. To point it at one of your own repos, set `REPO_PATH` in `.env`

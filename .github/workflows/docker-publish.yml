@@ -1,0 +1,62 @@
+# Builds and publishes the backend and frontend Docker images to GHCR.
+#
+# Uses the repo's own GITHUB_TOKEN (via `packages: write` permission) to
+# authenticate to ghcr.io -- no separate PAT/secret needed, unlike the VS
+# Code Marketplace publish workflow which requires a real Marketplace
+# account token.
+
+name: Publish Docker Images
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "Dockerfile"
+      - "frontend/Dockerfile"
+      - "src/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "frontend/src/**"
+      - "frontend/package.json"
+      - "frontend/package-lock.json"
+      - ".github/workflows/docker-publish.yml"
+  workflow_dispatch: {}
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/semantic_vision-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/semantic_vision-frontend
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
