@@ -367,7 +367,7 @@ subfolder for performance — and can be changed at any time.
 
 <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> **Fast, local, and private** — a FastAPI backend statically parses
 your code (Python's own `ast` module for Python, [`tree-sitter`](https://tree-sitter.github.io/tree-sitter/)
-for JavaScript/TypeScript and Java), a React frontend renders it. No account, no
+for JavaScript/TypeScript, Java, and Go), a React frontend renders it. No account, no
 cloud, no telemetry, nothing installed beyond a Python and a Node
 toolchain you already have.
 
@@ -497,7 +497,7 @@ changed. See ["Why the first load is slow"](guides/docker-setup.md#why-the-first
 The fastest way to try Semantic Vision: install it straight from the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
 (search **Semantic Vision**, or `ext install venom21adi.semantic-vision`)
-and open a Python, JavaScript/TypeScript, or Java repo — no Python, no
+and open a Python, JavaScript/TypeScript, Java, or Go repo — no Python, no
 `uv`, nothing beyond VS Code itself. The backend it needs ships bundled
 inside the extension for Windows, macOS (Intel and Apple Silicon), and
 Linux.
@@ -523,7 +523,7 @@ Semantic Vision has three parts:
 
 - **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
   repository (Python's `ast` module, or `tree-sitter` for
-  JavaScript/TypeScript and Java, chosen per load), resolves imports and
+  JavaScript/TypeScript, Java, and Go, chosen per load), resolves imports and
   call sites into a graph of nodes and edges, and serves it over a small
   REST API. Parsing is purely static: your code is never executed. AI
   documentation is generated separately, on demand, via

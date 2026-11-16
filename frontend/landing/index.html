@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Semantic Vision — Codebase observability for AI-assisted coding</title>
-<meta name="description" content="AI can write your code in seconds. Semantic Vision helps you understand it: interactive call graphs, impact analysis, execution flowcharts, Code Health, AI-generated documentation, code-to-data lineage, and an MCP server so your AI agent sees the same map. Python, JavaScript, TypeScript, and Java. 100% local and private — try the live demo, no install." />
+<meta name="description" content="AI can write your code in seconds. Semantic Vision helps you understand it: interactive call graphs, impact analysis, execution flowcharts, Code Health, AI-generated documentation, code-to-data lineage, and an MCP server so your AI agent sees the same map. Python, JavaScript, TypeScript, Java, and Go. 100% local and private — try the live demo, no install." />
 <meta property="og:title" content="Semantic Vision" />
-<meta property="og:description" content="Codebase observability for AI-assisted coding. Understand any Python, JavaScript, TypeScript, or Java codebase — and let your AI agent understand it too." />
+<meta property="og:description" content="Codebase observability for AI-assisted coding. Understand any Python, JavaScript, TypeScript, Java, or Go codebase — and let your AI agent understand it too." />
 <meta property="og:image" content="./img/Banner.png" />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#121317" />
@@ -1274,7 +1274,7 @@
       <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install for VS Code</a>
     </div>
     <div class="hero-badges">
-      <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="1.6"/></svg>Python · JavaScript / TypeScript · Java</span>
+      <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="1.6"/></svg>Python · JavaScript / TypeScript · Java · Go</span>
       <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg>100% local · No account · No telemetry</span>
     </div>
 
@@ -1725,7 +1725,7 @@
     <div class="feature-row" data-reveal>
       <div class="feature-copy">
         <h3>No separate browser tab. No Python or uv installation required.</h3>
-        <p>The backend ships bundled with the extension — open any Python, JS/TS, or Java repo and get the full graph, impact analysis, Code Health, flowcharts, AI docs, and lineage in a panel next to your code.</p>
+        <p>The backend ships bundled with the extension — open any Python, JS/TS, Java, or Go repo and get the full graph, impact analysis, Code Health, flowcharts, AI docs, and lineage in a panel next to your code.</p>
         <div style="margin-top: 8px;">
           <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install the VS Code extension →</a>
         </div>
@@ -1769,7 +1769,7 @@
       <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No telemetry</div>
       <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Static analysis</div>
       <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Runs locally</div>
-      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Python / JS / TS / Java</div>
+      <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Python / JS / TS / Java / Go</div>
       <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>AI features are opt-in</div>
       <div class="privacy-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>MIT licensed</div>
     </div>
@@ -1785,15 +1785,15 @@
     </div>
     <div class="matrix-wrap" data-reveal>
       <table class="matrix">
-        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th><th>Java</th></tr></thead>
+        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th><th>Java</th><th>Go</th></tr></thead>
         <tbody>
-          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -1815,6 +1815,7 @@
           <tr><td class="lang">JavaScript</td><td>three.js</td><td class="num">752</td><td class="num">29.33s</td><td class="warm">1.98s</td><td class="num">4.88–5.01s</td></tr>
           <tr><td class="lang">TypeScript</td><td>nestjs/nest</td><td class="num">1,907</td><td class="num">39.68s</td><td class="warm">2.48s</td><td class="num">6.85–6.88s</td></tr>
           <tr><td class="lang">Java</td><td>google/guava</td><td class="num">615</td><td class="num">9.83s</td><td class="warm">2.52s</td><td class="num">4.73–7.63s</td></tr>
+          <tr><td class="lang">Go</td><td>gohugoio/hugo</td><td class="num">914</td><td class="num" title="The fresh clone was still in the OS file cache, so no cold read was measured">n/a</td><td class="warm">4.28s</td><td class="num">8.04–8.39s</td></tr>
         </tbody>
       </table>
       <div class="bench-foot">"Cold" is the first read of a fresh clone; "warm" is a second parse of the identical files right after — the only variable that changes is OS file-cache state. <a href="https://github.com/venom21adi/Semantic_Vision/tree/master/benchmarks" target="_blank" rel="noopener" style="color: var(--accent-text)">View benchmark methodology →</a></div>
@@ -1838,7 +1839,7 @@
       <div class="path-card" data-reveal>
         <span class="path-tag">Fastest for real use</span>
         <h4>VS Code extension</h4>
-        <p>Install from the Marketplace and open any Python, JS/TS, or Java repo. The backend ships bundled — no Python or Node toolchain required.</p>
+        <p>Install from the Marketplace and open any Python, JS/TS, Java, or Go repo. The backend ships bundled — no Python or Node toolchain required.</p>
         <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">View on Marketplace →</a>
       </div>
       <div class="path-card" data-reveal>
@@ -1860,7 +1861,7 @@
       <div class="trio-card">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <h4>What's under the hood</h4>
-        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS and Java. Code is never executed.</p>
+        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS, Java, and Go. Code is never executed.</p>
       </div>
     </div>
   </div>
