@@ -169,16 +169,25 @@ def make_resolve_imports(go_modules: dict[str, str]):  # noqa: ANN201
     """Builds the adapter's `resolve_imports`, closed over the repo's
     `go.mod` map (empty -> heuristic fallback)."""
 
+    # `package_dirs_of` scans every module; doing that once per *file* made
+    # import resolution quadratic. The set is the same for every file of one
+    # parse, so cache it per `modules` dict (identity + size, since
+    # `bind_root` hands each parse a fresh closure).
+    cached: tuple[int, int, set[str]] | None = None
+
     def resolve_imports(
         rel_path: str,
         raw: RawModule,
         module_by_dotted: dict[str, str],
         modules: dict[str, ModuleIndex],
     ) -> ImportResolution:
+        nonlocal cached
         del module_by_dotted  # Go resolves by package directory, not file path.
         bindings: dict[str, ImportBinding] = {}
         edges: list[Edge] = []
-        package_dirs = package_dirs_of(modules)
+        if cached is None or cached[0] != id(modules) or cached[1] != len(modules):
+            cached = (id(modules), len(modules), package_dirs_of(modules))
+        package_dirs = cached[2]
         for imp in raw.imports:
             _bind_import(rel_path, imp, go_modules, package_dirs, bindings, edges)
         return ImportResolution(bindings=bindings, edges=edges)

@@ -122,6 +122,22 @@ def _dotted_name(node: Node | None) -> str | None:
 # package-level function/method into call edges, and drops the rest.
 REF_PREFIX = "ref:"
 
+# Stand-in root for a method call whose receiver expression has no name:
+# `x.(T).m()`, `f().m()`, `items[i].m()`. For an *unexported* `m` that is
+# still resolvable -- Go only lets the same package call it -- see
+# `languages/go.py`'s `_unexported_method_candidates`. Never used for an
+# exported name, which proves nothing about the receiver's type.
+UNKNOWN_RECEIVER = "?"
+
+
+def _unknown_receiver_method(function: Node | None) -> str | None:
+    if function is None or function.type != "selector_expression":
+        return None
+    field = _text(function.child_by_field_name("field")) or ""
+    if field[:1].islower() or field[:1] == "_":
+        return f"{UNKNOWN_RECEIVER}.{field}"
+    return None
+
 
 def _local_names(func: Node) -> frozenset[str]:
     """Every name `func` binds *locally*: parameters, named results, `:=`,
@@ -183,15 +199,19 @@ def _ref_name(
         return None
     dotted = _dotted_name(node)
     if dotted is None:
-        return None
+        unknown = _unknown_receiver_method(node)
+        return REF_PREFIX + unknown if unknown is not None else None
     root, sep, rest = dotted.partition(".")
     if receiver is not None and root == receiver:
         if not sep or receiver_type is None:
             return None
         dotted = f"{receiver_type}.{rest}"
     elif root in local_names:
-        # A local variable/parameter, not a package-level function.
-        return None
+        # A local variable/parameter, not a package-level function. If it is
+        # a *method value* on one (`resolver.resolveExternalRef`), an
+        # unexported method name still pins the package down.
+        unknown = _unknown_receiver_method(node)
+        return REF_PREFIX + unknown if unknown is not None and sep else None
     return REF_PREFIX + dotted
 
 
@@ -224,7 +244,10 @@ def _collect_calls(
 
     t = node.type
     if t == "call_expression":
-        dotted = _dotted_name(node.child_by_field_name("function"))
+        function = node.child_by_field_name("function")
+        dotted = _dotted_name(function)
+        if dotted is None:
+            dotted = _unknown_receiver_method(function)
         if dotted is not None and receiver is not None:
             root, sep, rest = dotted.partition(".")
             if root == receiver and sep:
@@ -239,6 +262,18 @@ def _collect_calls(
         name = _type_name(node.child_by_field_name("type"))
         if name is not None:
             calls.append(RawCall(dotted=name, lineno=_line(node)))
+    elif t == "type_conversion_expression":
+        # tree-sitter-go parses `f[A, B](x)` -- a call to a generic function
+        # with explicit type arguments -- as a generic *type conversion*,
+        # because the bracketed list looks like type arguments. It is a call
+        # either way (a generic type conversion `List[int](x)` resolves to the
+        # class instead), so record it. Plain conversions like `[]byte(s)`
+        # have no nameable generic type and are skipped.
+        type_node = node.child_by_field_name("type")
+        if type_node is not None and type_node.type == "generic_type":
+            name = _type_name(type_node)
+            if name is not None:
+                calls.append(RawCall(dotted=name, lineno=_line(node)))
     elif t == "keyed_element":
         # `Key: value` -- only the value can be a function reference.
         elements = [c for c in node.named_children if c.type == "literal_element"]
@@ -434,6 +469,7 @@ def extract_module(tree: tree_sitter.Tree, rel_path: str) -> RawModule:
             module.imports.extend(_extract_imports(child))
         elif child.type in ("var_declaration", "const_declaration"):
             module.variables.extend(_extract_value_specs(child))
+            _collect_calls(child, module.module_calls, None, None, _local_names(child))
         elif child.type == "type_declaration":
             for spec in child.named_children:
                 if spec.type not in ("type_spec", "type_alias"):

@@ -24,7 +24,7 @@ from pathlib import Path
 from semantic_vision.languages.base import LanguageAdapter, ParseSyntaxError
 from semantic_vision.models import Edge, EdgeKind
 from semantic_vision.parser import go_extractor
-from semantic_vision.parser.extractor import RawModule
+from semantic_vision.parser.extractor import RawFunction, RawModule
 from semantic_vision.resolver import go_imports
 from semantic_vision.resolver.calls import resolve_calls
 from semantic_vision.resolver.imports import ImportBinding
@@ -54,6 +54,7 @@ GO_BUILTIN_NAMES = frozenset(
 )  # fmt: skip
 
 _UNRESOLVED = "unresolved::"
+_MODULE_SCOPE = "<package-level>"
 
 
 def parse_file(source: str, rel_path: str) -> RawModule:
@@ -78,14 +79,51 @@ class _PackageIndex:
     def __init__(self) -> None:
         self._key: int | None = None
         self._by_dir: dict[str, list[ModuleIndex]] = {}
+        self._methods_by_dir: dict[str, dict[str, list[str]]] = {}
+        # Filled in as each file is parsed (see `record`), per directory.
+        self.field_names: dict[str, set[str]] = {}
+        self.embedding_types: set[tuple[str, str]] = set()
+        self.type_names: dict[str, set[str]] = {}
+
+    def record(self, rel_path: str, raw: RawModule) -> None:
+        """Remember each struct's field names and which types embed another
+        type, so `_unexported_method_candidates` can tell a field read from a
+        method value and know when a method might be promoted."""
+        directory = _dir_of(rel_path)
+        fields = self.field_names.setdefault(directory, set())
+        types = self.type_names.setdefault(directory, set())
+        for cls in raw.classes:
+            if not cls.declared_elsewhere:
+                types.add(cls.name)
+            for attr in cls.attributes:
+                fields.add(attr.name)
+                embedded = (attr.annotation or "").lstrip("*").split("[", 1)[0]
+                if embedded.rsplit(".", 1)[-1] == attr.name:
+                    self.embedding_types.add((directory, cls.name))
+
+    def _ensure(self, modules: dict[str, ModuleIndex]) -> None:
+        if self._key == id(modules):
+            return
+        self._by_dir = {}
+        self._methods_by_dir = {}
+        for rel_path, index in sorted(modules.items()):
+            directory = _dir_of(rel_path)
+            self._by_dir.setdefault(directory, []).append(index)
+            named = self._methods_by_dir.setdefault(directory, {})
+            for (_type_name, method_name), method_id in index.methods.items():
+                named.setdefault(method_name, []).append(method_id)
+        self._key = id(modules)
 
     def files_in(self, directory: str, modules: dict[str, ModuleIndex]) -> list[ModuleIndex]:
-        if self._key != id(modules):
-            self._by_dir = {}
-            for rel_path, index in sorted(modules.items()):
-                self._by_dir.setdefault(_dir_of(rel_path), []).append(index)
-            self._key = id(modules)
+        self._ensure(modules)
         return self._by_dir.get(directory, [])
+
+    def methods_named(
+        self, directory: str, name: str, modules: dict[str, ModuleIndex]
+    ) -> list[str]:
+        """Ids of every method called `name` in the package at `directory`."""
+        self._ensure(modules)
+        return self._methods_by_dir.get(directory, {}).get(name, [])
 
 
 def _lookup(
@@ -122,6 +160,59 @@ def _lookup(
             return class_id
         stub_fallback = stub_fallback or class_id
     return stub_fallback
+
+
+# More candidates than this and an ambiguous edge to each would be noise, not
+# information -- a generic name like `reset` defined on a dozen types.
+_MAX_METHOD_CANDIDATES = 5
+
+
+def _unexported_method_candidates(
+    label: str,
+    own_dir: str,
+    modules: dict[str, ModuleIndex],
+    package_index: _PackageIndex,
+    local_prefixes: dict[str | None, ImportBinding],
+) -> list[str]:
+    """Candidate targets for `x.method(...)` where `x` is a variable of
+    unknown type and `method` is **unexported**.
+
+    Go only lets code in the *same package* call an unexported method, so
+    the receiver's type must live in this package: the candidates are exactly
+    the methods of that name defined here. An exported name proves nothing
+    (it could belong to any imported type, `buf.String()`), so those are left
+    alone. Several same-named methods are all returned, to be emitted as
+    *ambiguous* edges rather than guessed between; past
+    `_MAX_METHOD_CANDIDATES` none are, since that many edges say nothing.
+    """
+    parts = label.split(".")
+    if len(parts) < 2:
+        return []
+    method = parts[-1]
+    if not method or not method[0].islower() and method[0] != "_":
+        return []
+    if any(label.startswith(prefix + ".") for prefix in local_prefixes if prefix):
+        return []
+    # A field and a method can share a name on different types, and a read of
+    # a field (`s.siteVector` as an argument) or a call of a func-typed field
+    # looks exactly like a method value or call. If the name is a struct field
+    # anywhere in this package it is too ambiguous to claim as a method.
+    if method in package_index.field_names.get(own_dir, ()):
+        return []
+    # `this.m()` renders as `Type.m`. With the receiver type known and no `m`
+    # declared on it, the only way the call is valid is a method *promoted*
+    # from an embedded type, so don't fall back to every same-named method in
+    # the package unless the type embeds something.
+    if (
+        len(parts) == 2
+        and parts[0] in package_index.type_names.get(own_dir, ())
+        and (own_dir, parts[0]) not in package_index.embedding_types
+    ):
+        return []
+    candidates = package_index.methods_named(own_dir, method, modules)
+    if not candidates or len(candidates) > _MAX_METHOD_CANDIDATES:
+        return []
+    return sorted(set(candidates))
 
 
 def _resolve_package_scope(
@@ -174,7 +265,20 @@ def _resolve_package_scope(
 
         if target is not None:
             resolved.append(Edge(source=edge.source, target=target, kind=EdgeKind.CALLS))
-        elif not is_ref:
+            continue
+
+        if not is_ref or label.startswith(go_extractor.UNKNOWN_RECEIVER + "."):
+            candidates = _unexported_method_candidates(
+                label, own_dir, modules, package_index, local_prefixes
+            )
+            if candidates:
+                resolved.extend(
+                    Edge(source=edge.source, target=c, kind=EdgeKind.CALLS, ambiguous=True)
+                    for c in candidates
+                )
+                continue
+
+        if not is_ref:
             # A function-value reference that names nothing known is
             # simply not an edge (most are plain variables); an unresolved
             # *call* stays visible as `unresolved::...`.
@@ -191,6 +295,7 @@ def _build_adapter(go_modules: dict[str, str]) -> LanguageAdapter:
     def parse(source: str, rel_path: str) -> RawModule:
         raw = parse_file(source, rel_path)
         stub_ids.update(f"{rel_path}::{c.name}" for c in raw.classes if c.declared_elsewhere)
+        package_index.record(rel_path, raw)
         return raw
 
     shared_resolve_calls = functools.partial(
@@ -211,6 +316,17 @@ def _build_adapter(go_modules: dict[str, str]) -> LanguageAdapter:
         edges = shared_resolve_calls(
             rel_path, raw, module_index, bindings, modules, module_by_dotted
         )
+        if raw.module_calls:
+            # Package-level initializers have no enclosing function: resolve
+            # them as the calls of a throwaway one, then attribute the
+            # resulting edges to the file itself.
+            holder = RawFunction(name=_MODULE_SCOPE, lineno=0, end_lineno=0)
+            holder.calls = raw.module_calls
+            scoped = RawModule(rel_path=rel_path, functions=[holder])
+            for edge in shared_resolve_calls(
+                rel_path, scoped, module_index, bindings, modules, module_by_dotted
+            ):
+                edges.append(edge.model_copy(update={"source": rel_path}))
         return _resolve_package_scope(
             rel_path, edges, bindings, modules, package_index, stub_ids
         )

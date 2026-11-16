@@ -118,6 +118,11 @@ class RawModule:
     classes: list[RawClass] = field(default_factory=list)
     functions: list[RawFunction] = field(default_factory=list)
     variables: list[RawVariable] = field(default_factory=list)
+    module_calls: list[RawCall] = field(default_factory=list)
+    """Go only: calls and function-value references made by package-level
+    `var`/`const` initializers (`var cmd = &Command{Run: run}`), which have
+    no enclosing function. Resolved like any other call, but attributed to
+    the *file* node. Always empty for other languages."""
 
 
 def _dotted_name(expr: ast.expr) -> str | None:
