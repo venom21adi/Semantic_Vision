@@ -211,3 +211,51 @@ def test_function_values_are_references_not_dead_code(tmp_path):
     assert "unused" in dead
     assert not dead & {"viaCb", "keyed", "inSlice", "Server.handle"}
     assert "Server.String" not in dead  # exported method: may satisfy an interface
+
+
+# Second review round ----------------------------------------------------------
+
+
+def test_local_variable_or_parameter_named_like_a_function_is_not_a_reference(tmp_path):
+    repo = make_repo(
+        tmp_path,
+        {
+            "a.go": "package a\n\nfunc h() {}\nfunc handler() {}\n\n"
+            "func F() {\n\th := 1\n\tuse(h)\n}\n\n"
+            "func G(h int) {\n\tuse(h)\n}\n\n"
+            "func Reg(handler func()) {\n\trun(handler)\n\t_ = Point{h: handler}\n}\n"
+        },
+    )
+    found = calls(parse_repository(repo, language="go"))
+    assert ("a.go::F", "a.go::h") not in found
+    assert ("a.go::G", "a.go::h") not in found
+    assert ("a.go::Reg", "a.go::handler") not in found
+
+
+def test_function_values_in_return_assignment_send_and_var_are_references(tmp_path):
+    repo = make_repo(
+        tmp_path,
+        {
+            "a.go": "package a\n\nfunc ret() {}\nfunc asg() {}\nfunc snd() {}\nfunc vr() {}\n\n"
+            "func F(ch chan func()) func() {\n\tf := asg\n\tf()\n\tch <- snd\n"
+            "\tvar g = vr\n\t_ = g\n\treturn ret\n}\n"
+        },
+    )
+    found = calls(parse_repository(repo, language="go"))
+    for target in ("ret", "asg", "snd", "vr"):
+        assert ("a.go::F", f"a.go::{target}") in found, target
+
+
+def test_receiver_shadowed_by_select_receive_or_variadic_closure_param(tmp_path):
+    repo = make_repo(
+        tmp_path,
+        {
+            "a.go": "package a\n\ntype S struct{}\ntype Other struct{}\n\n"
+            "func (s *S) m() {}\nfunc (o *Other) m() {}\n\n"
+            "func (s *S) A(ch chan *Other) {\n\tselect {\n\tcase s := <-ch:\n\t\ts.m()\n\t}\n}\n\n"
+            "func (s *S) B() {\n\tf := func(s ...*Other) {\n\t\ts.m()\n\t}\n\tf()\n}\n"
+        },
+    )
+    found = calls(parse_repository(repo, language="go"))
+    assert ("a.go::S.A", "a.go::S.m") not in found
+    assert ("a.go::S.B", "a.go::S.m") not in found
