@@ -21,7 +21,7 @@ every supported language (JavaScript and TypeScript share one adapter, so they t
 | JavaScript | [three.js](threejs.md) | `src/` only | 752 | 6,014 | 27,316 | 0 | 29.33 | 1.98 | 3.12 | 3.21–3.50 | 4.88–5.01 |
 | TypeScript | [nestjs/nest](nest.md) | full repo | 1,907 | 6,848 | 24,528 | 2 | 39.68 | 2.48 | 5.32 | 5.69–5.76 | 6.85–6.88 |
 | Java | [google/guava](guava.md) | `guava/` only | 615 | 14,087 | 47,390 | 5 | 9.83 | 2.52 | 2.14 | 4.21–7.10 | 4.73–7.63 |
-| Go | [gohugoio/hugo](hugo.md) | full repo | 914 | 10,780 | 71,798 | 0 | 4.28 † | 4.27–4.35 | 4.95–5.21 | 5.66–6.34 | 8.04–8.39 |
+| Go | [gohugoio/hugo](hugo.md) | full repo | 914 | 10,780 | 73,947 | 0 | 4.45 † | 4.38–4.43 | 4.96–5.32 | 5.45–6.35 | 7.90–8.46 |
 
 † Not a true cold read: the Go clone had been written seconds earlier, so its files were still in the OS file cache and there is no cold/warm gap to report. See [hugo.md](hugo.md).
 
@@ -58,9 +58,11 @@ for guava tracks the other three languages closely despite the larger graph. See
 **Go (hugo)** was added with Milestone 13. It parsed with **zero errors** — the one risk specific to
 Go, since it uses a generic tree-sitter grammar rather than Go's own parser — and loads in line
 with the rest, though with the largest edge count of the set. Its call graph also shows the cost of
-having no type inference most clearly: 27,712 of its call edges stay `unresolved` (mostly calls
-on typed local variables), which makes its dead-code list over-report. [hugo.md](hugo.md) has the
-numbers and a spot-checked example of each limit.
+having no type inference most clearly: 26,991 of its call edges stay `unresolved` (mostly calls
+on typed local variables). A Go-specific rule — only the same package can call an unexported
+method — recovers 1,438 of them as ambiguous edges and cut the dead-code list from 603 candidates
+(7.4% of functions) to 147 (1.8%). [hugo.md](hugo.md) has the numbers, what remains, and a
+spot-checked example of each limit.
 
 ## Case study: when the default view doesn't collapse much
 

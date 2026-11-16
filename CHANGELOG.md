@@ -12,7 +12,10 @@ All notable changes to this project are documented here. Format follows
   `import`-ed local packages resolve via `go.mod`), methods grouped by
   receiver type, complexity, execution flowcharts (`switch`/type-switch/
   `select`, explicit `fallthrough`, labeled `break`/`continue`), AI-doc
-  context, duplicates, and dead-code heuristics (`init`, `_test.go`).
+  context, duplicates, and dead-code heuristics (`init`, `_test.go`, exported methods,
+  function values, package-level initializers). Calls on variables of unknown type are linked
+  to same-package *unexported* methods as ambiguous edges, since only the same package can
+  call them (dead-code candidates on gohugoio/hugo: 7.4% -> 1.8%).
   Built on `tree-sitter-go` rather than the Go-subprocess helper the build
   plan originally specced, so no Go toolchain is needed anywhere.
 - **Java support** at full parity with Python and JS/TS: call graph, import
