@@ -57,17 +57,25 @@ def _match(node: TSNode) -> tuple[str, TSNode, int] | None:
 
 
 def _build_index(tree: tree_sitter.Tree) -> DefIndex:
+    """Indexes only top-level declarations -- unlike Java or JS, every Go
+    definition the extractor turns into a graph node (functions, methods,
+    package-level types) sits at the top of the file; function-local types
+    are never nodes. Skipping function bodies matters: a full-tree walk
+    visited ~1.7M nodes on Hugo and dominated the complexity-index build."""
     index: DefIndex = {}
 
-    def walk(node: TSNode) -> None:
+    def add(node: TSNode) -> None:
         match = _match(node)
         if match is not None:
             name, def_node, line = match
             index.setdefault((line, name), def_node)
-        for child in node.children:
-            walk(child)
 
-    walk(tree.root_node)
+    for child in tree.root_node.named_children:
+        if child.type == "type_declaration":
+            for spec in child.named_children:
+                add(spec)
+        else:
+            add(child)
     return index
 
 
