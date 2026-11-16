@@ -61,11 +61,18 @@ function parseArgs() {
   if (!args.repo) {
     console.error(
       'Usage: node scripts/benchmark-load.js --repo <path> [--label <name>] ' +
-        '[--timeout <ms>] [--language python|javascript] [--no-report]',
+        '[--timeout <ms>] [--language python|javascript|java|go] [--no-report]',
     )
     process.exit(1)
   }
   return args
+}
+
+const LANGUAGE_LABELS = {
+  python: 'Python',
+  javascript: 'JavaScript / TypeScript',
+  java: 'Java',
+  go: 'Go',
 }
 
 async function main() {
@@ -83,16 +90,30 @@ async function main() {
 
   try {
     await page.goto(app, { timeout: 30000 })
+    // The loader is a 3-step wizard (path -> languages -> save location).
+    // Language detection pre-checks *every* language found at the path, and a
+    // polyglot repo (e.g. Hugo's JS assets next to its Go) would otherwise
+    // load several languages at once and skew the timing -- so make the
+    // selection exactly the requested language. Loading a language the repo
+    // has none of selects 0 matching files and reports "0 nodes, 0 edges" with
+    // no error banner, which would then hang waiting for a node that was never
+    // going to render.
     await page.getByLabel('Repository path').fill(repo)
-    // RepoLoader's language <select> defaults to 'python' (RepoLoader.tsx) --
-    // a JS/TS repo loaded without this selects 0 matching files and reports
-    // "0 nodes, 0 edges" with no error banner, which then hangs waiting for a
-    // node that was never going to render. Confirmed as the real cause of
-    // an earlier "TIMED OUT (render)" on this exact repo, before this fix.
-    await page.getByLabel('Language').selectOption(language)
+    await page.getByRole('button', { name: /next: pick languages/i }).click()
+    const wanted = LANGUAGE_LABELS[language]
+    if (!wanted) throw new Error(`Unknown --language ${language}`)
+    const group = page.getByRole('group', { name: 'Languages to parse' })
+    await group.waitFor({ timeout: 30000 })
+    for (const label of Object.values(LANGUAGE_LABELS)) {
+      const box = group.getByLabel(`Load ${label}`, { exact: true })
+      if ((await box.count()) === 0) continue
+      if (label === wanted) await box.check()
+      else await box.uncheck()
+    }
+    await page.getByRole('button', { name: /next: save location/i }).click()
 
     const clickStart = Date.now()
-    await page.getByRole('button', { name: /load/i }).click()
+    await page.getByRole('button', { name: /^load$/i }).click()
 
     const dataOk = await page
       .waitForSelector('[data-testid="repo-status"]', { timeout })
@@ -126,6 +147,10 @@ async function main() {
         // keeps this a real click per checkbox (still fires React's
         // onChange, unlike setting `.checked` directly) without paying
         // that per-action round-trip 157 times over.
+        // `repo-status` appears as soon as data arrives, which can be a beat
+        // before the tree has mounted its root items -- clicking before they
+        // exist would silently click nothing and then time out on render.
+        await page.waitForSelector('ul[role="tree"] > li input[type="checkbox"]', { timeout })
         await page.evaluate(() => {
           const boxes = document.querySelectorAll(
             'ul[role="tree"] > li > div[role="treeitem"] > input[type="checkbox"]',

@@ -12,8 +12,8 @@ along the way), see this project's internal `docs/PERFORMANCE-REPORT.md`.
 
 ## Results
 
-Four comparable repos — similar scale, similar (nested, not flat) directory shape — one per
-supported language:
+Five comparable repos — similar scale, similar (nested, not flat) directory shape — covering
+every supported language (JavaScript and TypeScript share one adapter, so they take two rows):
 
 | Language | Repo | Scope | Files | Nodes | Edges | Parse errors | Backend parse — cold (s) | Backend parse — warm (s) | API round trip (s) | Browser: time to data (s) | Browser: time to render (s) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -21,6 +21,9 @@ supported language:
 | JavaScript | [three.js](threejs.md) | `src/` only | 752 | 6,014 | 27,316 | 0 | 29.33 | 1.98 | 3.12 | 3.21–3.50 | 4.88–5.01 |
 | TypeScript | [nestjs/nest](nest.md) | full repo | 1,907 | 6,848 | 24,528 | 2 | 39.68 | 2.48 | 5.32 | 5.69–5.76 | 6.85–6.88 |
 | Java | [google/guava](guava.md) | `guava/` only | 615 | 14,087 | 47,390 | 5 | 9.83 | 2.52 | 2.14 | 4.21–7.10 | 4.73–7.63 |
+| Go | [gohugoio/hugo](hugo.md) | full repo | 914 | 10,780 | 71,798 | 0 | 4.28 † | 4.27–4.35 | 4.95–5.21 | 5.66–6.34 | 8.04–8.39 |
+
+† Not a true cold read: the Go clone had been written seconds earlier, so its files were still in the OS file cache and there is no cold/warm gap to report. See [hugo.md](hugo.md).
 
 *"Backend parse — cold" is the first read of a fresh shallow clone at the pinned commit (below),
 never before touched by this machine's OS file cache. "— warm" is a second parse of the exact same
@@ -51,6 +54,13 @@ heavily-documented classes with many methods each), not a parsing-cost anomaly �
 for guava tracks the other three languages closely despite the larger graph. See
 [guava.md](guava.md) for a real, confirmed Java-specific correctness finding this run surfaced
 (overloaded methods colliding on one graph node id) that's unrelated to performance.
+
+**Go (hugo)** was added with Milestone 13. It parsed with **zero errors** — the one risk specific to
+Go, since it uses a generic tree-sitter grammar rather than Go's own parser — and loads in line
+with the rest, though with the largest edge count of the set. Its call graph also shows the cost of
+having no type inference most clearly: 27,712 of its call edges stay `unresolved` (mostly calls
+on typed local variables), which makes its dead-code list over-report. [hugo.md](hugo.md) has the
+numbers and a spot-checked example of each limit.
 
 ## Case study: when the default view doesn't collapse much
 
@@ -96,7 +106,7 @@ tier was intentionally skipped for this one.
   repo above the app's 300-node large-graph threshold, the canvas starts with nothing selected by
   design; the script checks every top-level sidebar item before timing the render, the same
   action a person opening a large repo would take.
-- Both scripts accept `--language python|javascript|java` (one JS/TS adapter covers JS/TS/JSX/TSX
+- Both scripts accept `--language python|javascript|java|go` (one JS/TS adapter covers JS/TS/JSX/TSX
   together) and `--no-report`, which was used throughout so this folder's own runs never touched
   the project's internal `docs/PERFORMANCE-REPORT.md`.
 - Each number above is the range across two consecutive runs on the same machine, immediately
@@ -172,6 +182,7 @@ Every repo here except nest required a scoping decision, made explicit rather th
 | [mrdoob/three.js](https://github.com/mrdoob/three.js) | `3744db754b77106a4b2921fcc0a77f0964b823a7` | 2026-08-27 |
 | [nestjs/nest](https://github.com/nestjs/nest) | `cd5ee129162d1d4b9cccfaf2def4cfb051bfe927` | 2026-08-28 |
 | [google/guava](https://github.com/google/guava) | `7e41f72b3e84818e3b997a4bbde5851d01c67ca3` | 2025-04-11 |
+| [gohugoio/hugo](https://github.com/gohugoio/hugo) | `7a15e87270b517093ecbffcae5e5610d783e476c` | 2026-11-13 |
 | [webpack/webpack](https://github.com/webpack/webpack) (case study) | `0b2952e15bb1aa9a198acbbfdcb9a0dc1aabb5af` | 2026-08-27 |
 | [apache/superset](https://github.com/apache/superset) (case study) | `1c8d58a77bda36f892cc27298ed87ded43e6ef9f` | 2026-08-29 |
 
@@ -180,3 +191,6 @@ Milestone 12 (Java language support) — same v0.2.0, same methodology. Java's b
 were filled in 2026-09-07 in a follow-up pass, after root-causing why the harness wasn't
 completing for any repo that session (a dead `data-testid` selector left behind by an unrelated
 UI change, not a performance issue) — see [guava.md](guava.md) for the fix.
+Go (hugo) added 2026-11-16 following Milestone 13 (Go language support), on the post-0.2.0
+master that includes it; the browser harness and `benchmark_repo_load.py` were repaired for the
+wizard-based loader and per-language graph cache in the same pass — see [hugo.md](hugo.md).

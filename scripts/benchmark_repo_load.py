@@ -126,7 +126,9 @@ def benchmark_api(result: RepoResult, client: httpx.Client, language: str) -> No
     result.api_parse_seconds = time.perf_counter() - start
 
     start = time.perf_counter()
-    resp = client.get("/api/graph", params={"path": result.path}, timeout=600)
+    resp = client.get(
+        "/api/graph", params={"path": result.path, "language": language}, timeout=600
+    )
     resp.raise_for_status()
     result.api_graph_seconds = time.perf_counter() - start
     result.api_graph_payload_bytes = len(resp.content)
