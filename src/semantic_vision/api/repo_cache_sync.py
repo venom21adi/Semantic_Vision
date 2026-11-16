@@ -68,7 +68,9 @@ def _write_manifest(manifest_path: Path, manifest: dict[str, list[int]]) -> None
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
-def _walk_with_stats(root: Path, extensions: frozenset[str]) -> dict[str, tuple[Path, int, int]]:
+def _walk_with_stats(
+    root: Path, extensions: frozenset[str], extra_excluded_dirs: frozenset[str] = frozenset()
+) -> dict[str, tuple[Path, int, int]]:
     """Combined discovery + stat in one pass: for every matching file
     under `root`, one `os.scandir` call gets both its name and (via
     `DirEntry.stat()`) its size/mtime from the same directory read,
@@ -90,7 +92,11 @@ def _walk_with_stats(root: Path, extensions: frozenset[str]) -> dict[str, tuple[
         with os.scandir(dir_path) as entries:
             for entry in entries:
                 if entry.is_dir(follow_symlinks=False):
-                    if entry.name in EXCLUDED_DIR_NAMES or entry.name.startswith("."):
+                    if (
+                        entry.name in EXCLUDED_DIR_NAMES
+                        or entry.name in extra_excluded_dirs
+                        or entry.name.startswith(".")
+                    ):
                         continue
                     _walk(Path(entry.path))
                 elif entry.name.endswith(tuple(extensions)):
@@ -102,7 +108,12 @@ def _walk_with_stats(root: Path, extensions: frozenset[str]) -> dict[str, tuple[
     return found
 
 
-def sync_to_fast_cache(root: Path, language_id: str, extensions: frozenset[str]) -> Path | None:
+def sync_to_fast_cache(
+    root: Path,
+    language_id: str,
+    extensions: frozenset[str],
+    extra_excluded_dirs: frozenset[str] = frozenset(),
+) -> Path | None:
     """Mirrors every file under `root` matching `extensions` into fast
     local storage, copying only what's new or changed since the last call
     for this same `root` and `language_id`. Returns the mirror directory to
@@ -119,7 +130,7 @@ def sync_to_fast_cache(root: Path, language_id: str, extensions: frozenset[str])
     tree_dir.mkdir(parents=True, exist_ok=True)
 
     previous_manifest = _load_manifest(manifest_path)
-    current_files = _walk_with_stats(root, extensions)
+    current_files = _walk_with_stats(root, extensions, extra_excluded_dirs)
 
     new_manifest: dict[str, list[int]] = {}
     for rel_path, (path, size, mtime_ns) in current_files.items():

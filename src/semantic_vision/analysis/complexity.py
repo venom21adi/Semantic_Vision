@@ -18,10 +18,10 @@ from pathlib import Path
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, java_locate, ts_locate
+from semantic_vision import ast_locate, go_locate, java_locate, ts_locate
 from semantic_vision.ast_locate import locate
 from semantic_vision.models import Edge, EdgeKind, NodeKind, ParseResult
-from semantic_vision.parser import java_extractor, javascript_extractor
+from semantic_vision.parser import go_extractor, java_extractor, javascript_extractor
 from semantic_vision.parser.java_extractor import (
     _TYPE_DECLARATION_TYPES as _JAVA_TYPE_DECLARATION_TYPES,
 )
@@ -31,6 +31,7 @@ from semantic_vision.parser.javascript_extractor import (
 
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
 _JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
+_GO_EXTENSIONS = frozenset(go_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
@@ -39,6 +40,10 @@ def _is_js_file(file: str) -> bool:
 
 def _is_java_file(file: str) -> bool:
     return file.endswith(tuple(_JAVA_EXTENSIONS))
+
+
+def _is_go_file(file: str) -> bool:
+    return file.endswith(tuple(_GO_EXTENSIONS))
 
 
 # Matches `analysis.impact.DEFAULT_MAX_DEPTH`, for consistency across the
@@ -348,6 +353,63 @@ def _java_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
     return complexity, max_loop_depth >= 2
 
 
+_GO_DECISION_TYPES = frozenset(
+    {
+        "if_statement",
+        "for_statement",  # Go's only loop keyword: covers `for {}`,
+        # `for cond {}`, three-clause `for`, and `for range` alike.
+        "expression_case",  # a `switch` case (one point per case value,
+        # mirroring the Java/Python per-branch counting); `default_case`
+        # is a distinct node type and so is never counted.
+        "type_case",  # a type-switch case
+        "communication_case",  # a `select` case
+    }
+)
+# `&&`/`||` share `binary_expression` with every comparison operator, same
+# overloaded-node-type situation as the other tree-sitter grammars here.
+_GO_LOGICAL_OPERATORS = frozenset({"&&", "||"})
+# Closures (`func_literal`) are deliberately *not* a nested scope: they are
+# not separate graph nodes, and `go_extractor` attributes their calls to the
+# enclosing function, so their branching is that function's branching too.
+_GO_NESTED_SCOPE_TYPES = frozenset({"function_declaration", "method_declaration"})
+
+
+def _go_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
+    """The Go analogue of `_java_cyclomatic_complexity`: +1 per `if`/`for`/
+    non-default `switch`/`select` case, +1 per `&&`/`||`."""
+    complexity = 1
+    loop_depth = 0
+    max_loop_depth = 0
+
+    def visit(node: tree_sitter.Node) -> None:
+        nonlocal complexity, loop_depth, max_loop_depth
+        is_loop = node.type == "for_statement"
+
+        if node.type in _GO_DECISION_TYPES:
+            complexity += 1
+        elif node.type == "binary_expression":
+            operator = node.child_by_field_name("operator")
+            if operator is not None and operator.text.decode("utf-8") in _GO_LOGICAL_OPERATORS:
+                complexity += 1
+
+        if is_loop:
+            loop_depth += 1
+            max_loop_depth = max(max_loop_depth, loop_depth)
+
+        for child in node.children:
+            if child.type not in _GO_NESTED_SCOPE_TYPES:
+                visit(child)
+
+        if is_loop:
+            loop_depth -= 1
+
+    for child in def_node.children:
+        if child.type not in _GO_NESTED_SCOPE_TYPES:
+            visit(child)
+
+    return complexity, max_loop_depth >= 2
+
+
 def build_complexity_index(
     result: ParseResult, max_call_chain_depth: int = DEFAULT_MAX_CALL_CHAIN_DEPTH
 ) -> dict[str, ComplexityScore]:
@@ -362,6 +424,8 @@ def build_complexity_index(
     ts_indices: dict[str, ts_locate.DefIndex] = {}
     java_trees: dict[str, tree_sitter.Tree | None] = {}
     java_indices: dict[str, java_locate.DefIndex] = {}
+    go_trees: dict[str, tree_sitter.Tree | None] = {}
+    go_indices: dict[str, go_locate.DefIndex] = {}
     forward_index = build_forward_call_index(result.edges)
 
     scores: dict[str, ComplexityScore] = {}
@@ -386,6 +450,17 @@ def build_complexity_index(
             java_def_node = java_locate.locate(root, node, java_trees, java_indices)
             if java_def_node is not None:
                 complexity, has_nested_loops = _java_cyclomatic_complexity(java_def_node)
+                scores[node.id] = ComplexityScore(
+                    node_id=node.id,
+                    cyclomatic_complexity=complexity,
+                    call_chain_depth=depth,
+                    has_nested_loops=has_nested_loops,
+                )
+                continue
+        elif _is_go_file(node.file):
+            go_def_node = go_locate.locate(root, node, go_trees, go_indices)
+            if go_def_node is not None:
+                complexity, has_nested_loops = _go_cyclomatic_complexity(go_def_node)
                 scores[node.id] = ComplexityScore(
                     node_id=node.id,
                     cyclomatic_complexity=complexity,

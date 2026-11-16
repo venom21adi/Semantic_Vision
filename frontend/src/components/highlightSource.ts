@@ -6,6 +6,7 @@
 // already loaded app-wide (`main.tsx`) for the AI-doc pane's code blocks
 // (`rehype-highlight`), so no new CSS is needed either -- this reuses it.
 import hljs from 'highlight.js/lib/core'
+import go from 'highlight.js/lib/languages/go'
 import javascript from 'highlight.js/lib/languages/javascript'
 import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
@@ -13,11 +14,13 @@ import typescript from 'highlight.js/lib/languages/typescript'
 hljs.registerLanguage('python', python)
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('go', go)
 
 function languageForFile(file: string): string | null {
   if (file.endsWith('.py')) return 'python'
   if (file.endsWith('.ts') || file.endsWith('.tsx')) return 'typescript'
   if (file.endsWith('.js') || file.endsWith('.jsx')) return 'javascript'
+  if (file.endsWith('.go')) return 'go'
   return null
 }
 

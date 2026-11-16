@@ -41,7 +41,14 @@ def parse_repository(
 
     read_path = Path(read_root).resolve() if read_root is not None else root_path
 
-    files = discover_files(read_path, adapter.file_extensions)
+    if adapter.bind_root is not None:
+        # Per-repository setup (e.g. Go reading `go.mod` module paths). Uses
+        # the real `root_path`, not `read_path`: a fast-cache mirror only
+        # copies files matching the adapter's extensions, so manifests like
+        # `go.mod` never reach it.
+        adapter = adapter.bind_root(root_path)
+
+    files = discover_files(read_path, adapter.file_extensions, adapter.excluded_dirs)
     all_rel_paths = [f.relative_to(read_path).as_posix() for f in files]
 
     raw_modules: dict[str, RawModule] = {}

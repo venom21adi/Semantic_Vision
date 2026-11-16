@@ -18,6 +18,7 @@ const SUPPORTED_LANGUAGE_LABELS: Record<string, string> = {
   python: 'Python',
   javascript: 'JavaScript / TypeScript',
   java: 'Java',
+  go: 'Go',
 }
 
 export function languageLabel(language: string): string {

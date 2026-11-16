@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from semantic_vision.languages.base import LanguageAdapter
+from semantic_vision.languages.go import GO_ADAPTER
 from semantic_vision.languages.java import JAVA_ADAPTER
 from semantic_vision.languages.javascript import JAVASCRIPT_ADAPTER
 from semantic_vision.languages.python import PYTHON_ADAPTER
@@ -40,6 +41,7 @@ def get_adapter(language_id: str) -> LanguageAdapter:
 register(PYTHON_ADAPTER)
 register(JAVASCRIPT_ADAPTER)
 register(JAVA_ADAPTER)
+register(GO_ADAPTER)
 
 
 def list_adapters() -> list[LanguageAdapter]:
@@ -53,5 +55,5 @@ def detect_languages(root: Path) -> list[str]:
     return [
         adapter.language_id
         for adapter in _ADAPTERS.values()
-        if discover_files(root, adapter.file_extensions)
+        if discover_files(root, adapter.file_extensions, adapter.excluded_dirs)
     ]

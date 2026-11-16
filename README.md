@@ -375,20 +375,20 @@ toolchain you already have.
 
 What works today, per language:
 
-| Feature | Python | JavaScript / TypeScript | Java |
-|---|:---:|:---:|:---:|
-| Call graph — imports, classes, functions, calls | ✅ | ✅ | ✅ |
-| Interactive graph visualization | ✅ | ✅ | ✅ |
-| Search | ✅ | ✅ | ✅ |
-| Persisted layout & view state | ✅ | ✅ | ✅ |
-| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ |
-| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations) | ✅ | ✅ | ✅ |
-| AI-generated documentation | ✅ | ✅ | ✅ |
-| Execution flowcharts | ✅ | ✅ | ✅ |
-| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — |
-| Docker packaging / one-command setup | ✅ | ✅ | ✅ |
+| Feature | Python | JavaScript / TypeScript | Java | Go |
+|---|:---:|:---:|:---:|:---:|
+| Call graph — imports, classes, functions, calls | ✅ | ✅ | ✅ | ✅ |
+| Interactive graph visualization | ✅ | ✅ | ✅ | ✅ |
+| Search | ✅ | ✅ | ✅ | ✅ |
+| Persisted layout & view state | ✅ | ✅ | ✅ | ✅ |
+| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ | ✅ |
+| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations) | ✅ | ✅ | ✅ | ✅ |
+| AI-generated documentation | ✅ | ✅ | ✅ | ✅ |
+| Execution flowcharts | ✅ | ✅ | ✅ | ✅ |
+| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — | — |
+| Docker packaging / one-command setup | ✅ | ✅ | ✅ | ✅ |
 
-Most real repos are polyglot, so Semantic Vision auto-detects which supported languages are present in the path you enter and pre-checks them as chips — Python, JavaScript / TypeScript, and Java can all be selected together for the same repo. Each selected language is parsed independently and shown as its own tab in the dashboard (call graph, Code Health, docs, etc. all scoped to that language); there's no cross-language call linking between tabs yet.
+Most real repos are polyglot, so Semantic Vision auto-detects which supported languages are present in the path you enter and pre-checks them as chips — Python, JavaScript / TypeScript, Java, and Go can all be selected together for the same repo. Each selected language is parsed independently and shown as its own tab in the dashboard (call graph, Code Health, docs, etc. all scoped to that language); there's no cross-language call linking between tabs yet.
 
 JS/TS uses tree-sitter for static AST resolution—including full support for JSX/TSX. To preserve precision without execution, dynamic patterns (like computed require() calls) are flagged directly in the UI rather than inferred.
 
@@ -434,7 +434,7 @@ npm run dev
 
 Then open `http://localhost:5173`, enter the absolute path to any local
 repository. Detected languages (**Python**, **JavaScript / TypeScript**,
-**Java**) are pre-checked as chips — adjust the selection if needed —
+**Java**, **Go**) are pre-checked as chips — adjust the selection if needed —
 then click **Load**.
 
 By default, everything Semantic Vision saves (layout, impact analysis

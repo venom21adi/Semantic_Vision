@@ -72,6 +72,8 @@ def _is_test_file(rel_file: str) -> bool:
         return True
     if ".test." in lower or ".spec." in lower:
         return True
+    if lower.endswith("_test.go"):
+        return True
     if lower.endswith(".java"):
         # Case-preserved (not `lower`) and boundary-checked -- Java class
         # names are always CapitalCase, so a real test class reads as
@@ -175,6 +177,9 @@ def find_dead_code_candidates(
         if _is_dunder(node.label):
             continue
         if node.label.lower() == "main":
+            continue
+        if node.file.endswith(".go") and node.label.partition("#")[0] == "init":
+            # Go runs every `init` automatically, never via a call.
             continue
         if _is_test_file(node.file) or _looks_like_test_name(node.label):
             continue

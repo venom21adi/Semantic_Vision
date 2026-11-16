@@ -17,13 +17,13 @@ from typing import Literal
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, java_locate, ts_locate
+from semantic_vision import ast_locate, go_locate, java_locate, ts_locate
 from semantic_vision.analysis.complexity import ComplexityScore
 from semantic_vision.analysis.coverage import CoverageRiskScore
 from semantic_vision.analysis.duplicates import DuplicateGroup
 from semantic_vision.analysis.hotspots import HotspotScore
 from semantic_vision.models import EdgeKind, Node, NodeKind, ParseResult
-from semantic_vision.parser import java_extractor, javascript_extractor
+from semantic_vision.parser import go_extractor, java_extractor, javascript_extractor
 from semantic_vision.parser.javascript_extractor import _CLASS_DECLARATION_TYPES
 
 MAX_CONTEXT_TOKENS = 2000
@@ -39,6 +39,7 @@ AnyDefNode = ast_locate.DefNode | tree_sitter.Node
 
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
 _JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
+_GO_EXTENSIONS = frozenset(go_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
@@ -47,6 +48,10 @@ def _is_js_file(file: str) -> bool:
 
 def _is_java_file(file: str) -> bool:
     return file.endswith(tuple(_JAVA_EXTENSIONS))
+
+
+def _is_go_file(file: str) -> bool:
+    return file.endswith(tuple(_GO_EXTENSIONS))
 
 
 _FENCE_LANGUAGE_BY_EXTENSION = {
@@ -60,6 +65,7 @@ _FENCE_LANGUAGE_BY_EXTENSION = {
     ".mjs": "javascript",
     ".cjs": "javascript",
     ".java": "java",
+    ".go": "go",
 }
 
 
@@ -279,6 +285,19 @@ def _render_java_signature(def_node: tree_sitter.Node, *, strip_decorators: bool
     return header or None
 
 
+def _render_go_signature(def_node: tree_sitter.Node) -> str | None:
+    """The Go analogue of `_render_java_signature`: slices the real header
+    (everything before the body block, so a method keeps its receiver and a
+    function its result type) straight out of the source. Go has no
+    decorators/annotations, so there is nothing to strip. A `type_spec`
+    (a struct/interface node) has no `body` field and renders whole."""
+    body = def_node.child_by_field_name("body")
+    end = body.start_byte if body is not None else def_node.end_byte
+    header_bytes = def_node.text[: end - def_node.start_byte]
+    header = " ".join(header_bytes.decode("utf-8").split())
+    return header or None
+
+
 def _render_signature(
     def_node: AnyDefNode, label: str, file: str, *, strip_decorators: bool
 ) -> str | None:
@@ -290,6 +309,8 @@ def _render_signature(
     if isinstance(def_node, tree_sitter.Node):
         if _is_java_file(file):
             return _render_java_signature(def_node, strip_decorators=strip_decorators)
+        if _is_go_file(file):
+            return _render_go_signature(def_node)
         return _render_ts_signature(def_node, label, strip_decorators=strip_decorators)
     return _render_py_signature(def_node, strip_decorators=strip_decorators)
 
@@ -308,6 +329,12 @@ def _locate(
         return ts_locate.locate(root, node, ts_trees, ts_indices)
     if _is_java_file(node.file):
         return java_locate.locate(root, node, java_trees, java_indices)
+    if _is_go_file(node.file):
+        # Go shares Java's tree-sitter cache slots rather than getting a
+        # fourth pair threaded through every function here: the caches are
+        # keyed by file path and a parse holds exactly one language, so a
+        # Go file can never collide with a Java one.
+        return go_locate.locate(root, node, java_trees, java_indices)
     return ast_locate.locate(root, node, ast_trees, ast_indices)
 
 
@@ -465,6 +492,8 @@ def _fallback_signature(node: Node) -> str:
         # recoverable here, and there's no single keyword that fits every
         # method the way `def`/`function` do for Python/JS.
         return f"{node.label}(...)"
+    if _is_go_file(node.file):
+        return f"func {node.label}(...)"
     keyword = "function" if _is_js_file(node.file) else "def"
     return f"{keyword} {node.label}(...):"
 

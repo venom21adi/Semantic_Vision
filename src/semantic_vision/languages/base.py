@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 
 from semantic_vision.models import Edge
 from semantic_vision.parser.extractor import RawModule
@@ -50,3 +51,11 @@ class LanguageAdapter:
         ],
         list[Edge],
     ]
+    excluded_dirs: frozenset[str] = frozenset()
+    """Directory names skipped during discovery in addition to the shared
+    exclusions (e.g. Go's `vendor`)."""
+    bind_root: Callable[[Path], LanguageAdapter] | None = None
+    """Optional per-repository setup hook: given the repository root,
+    returns the adapter to actually parse with (typically `self` with
+    `resolve_imports`/`resolve_calls` closed over repo-level facts such as
+    Go's `go.mod` module path). Called once per `parse_repository`."""

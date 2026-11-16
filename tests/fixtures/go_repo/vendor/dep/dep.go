@@ -1,0 +1,3 @@
+package dep
+
+func Vendored() {}

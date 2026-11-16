@@ -22,6 +22,7 @@
     "javascript",
     "python",
     "java",
+    "go",
     "typescript",
     "code-analysis",
     "developer-tools"
@@ -43,7 +44,7 @@
         {
           "command": "semanticVision.impactAnalysisAtCursor",
           "group": "navigation",
-          "when": "editorTextFocus && (resourceLangId == python || resourceLangId == javascript || resourceLangId == javascriptreact || resourceLangId == typescript || resourceLangId == typescriptreact || resourceLangId == java)"
+          "when": "editorTextFocus && (resourceLangId == python || resourceLangId == javascript || resourceLangId == javascriptreact || resourceLangId == typescript || resourceLangId == typescriptreact || resourceLangId == java || resourceLangId == go)"
         }
       ]
     },

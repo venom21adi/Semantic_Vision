@@ -7,6 +7,14 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Go support** at full parity with the other languages: call graph (a Go
+  package is a directory, so same-package calls across files and
+  `import`-ed local packages resolve via `go.mod`), methods grouped by
+  receiver type, complexity, execution flowcharts (`switch`/type-switch/
+  `select`, explicit `fallthrough`, labeled `break`/`continue`), AI-doc
+  context, duplicates, and dead-code heuristics (`init`, `_test.go`).
+  Built on `tree-sitter-go` rather than the Go-subprocess helper the build
+  plan originally specced, so no Go toolchain is needed anywhere.
 - **Java support** at full parity with Python and JS/TS: call graph, import
   resolution, complexity scoring, execution flowcharts, and AI-doc context.
 - **Code-to-Data Lineage.** SQLAlchemy model/relationship parsing,

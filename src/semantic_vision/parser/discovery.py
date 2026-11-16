@@ -15,9 +15,15 @@ EXCLUDED_DIR_NAMES = frozenset(
 )
 
 
-def discover_files(root: Path, extensions: frozenset[str]) -> list[Path]:
+def discover_files(
+    root: Path,
+    extensions: frozenset[str],
+    extra_excluded_dirs: frozenset[str] = frozenset(),
+) -> list[Path]:
     """Recursively find files under `root` whose name ends with one of
-    `extensions` (e.g. `frozenset({".py"})`).
+    `extensions` (e.g. `frozenset({".py"})`). `extra_excluded_dirs` adds
+    language-specific directory names to skip on top of the shared ones
+    (e.g. Go's `vendor`).
 
     Hidden directories (leading `.`, e.g. `.git`, `.venv`) and common
     non-source directories are skipped. The result is sorted for
@@ -26,7 +32,11 @@ def discover_files(root: Path, extensions: frozenset[str]) -> list[Path]:
     discovered: list[Path] = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [
-            d for d in dirnames if d not in EXCLUDED_DIR_NAMES and not d.startswith(".")
+            d
+            for d in dirnames
+            if d not in EXCLUDED_DIR_NAMES
+            and d not in extra_excluded_dirs
+            and not d.startswith(".")
         ]
         for filename in filenames:
             if filename.endswith(tuple(extensions)):
