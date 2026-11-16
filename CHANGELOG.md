@@ -7,6 +7,36 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Java support** at full parity with Python and JS/TS: call graph, import
+  resolution, complexity scoring, execution flowcharts, and AI-doc context.
+- **Code-to-Data Lineage.** SQLAlchemy model/relationship parsing,
+  function-to-table read/write detection, dbt `manifest.json` ingestion, and
+  read-only live database introspection, surfaced as table nodes on the graph
+  and a "Connect data source" panel. See `guides/data-lineage.md`.
+- **Code Health dashboard.** A full-width view (replacing the old complexity
+  side pane and canvas heatmap) with ranked complexity, hotspots
+  (complexity x git churn), dead-code candidates, coverage risk, duplicate
+  functions, opt-in dependency/security risk (OSV), and AI-prioritized
+  recommendations. Complexity can be diffed against the last look, a commit,
+  or two arbitrary refs via a scratch `git worktree`.
+- **MCP server** (`semantic-vision-mcp`) exposing the graph, impact analysis,
+  complexity (including ref diffs), hotspots, dead code, coverage risk,
+  duplicates, flowcharts, and source lookup to any MCP-compatible coding
+  agent. See `guides/mcp-server.md`.
+- **VS Code extension** (Marketplace, currently 1.4.2): embedded graph panel,
+  click-to-jump, and a right-click Impact Analysis command; the backend ships
+  as a standalone per-platform executable.
+- **Repo loading wizard** (path, then languages, then save location) and
+  GHCR Docker image publishing via CI.
+
+### Changed
+
+- Landing page and extension listing repositioned around "codebase
+  observability"; graph edges now route orthogonally with an edge-kind
+  legend and filter.
+- Fixed an O(files x tree size) definition lookup in JS/TS parsing and a
+  getter/setter node-id collision.
+
 - **Polyglot repo support.** Loading a repo path now auto-detects every
   supported language present (Python, JavaScript/TypeScript, Java) and lets
   you select any combination via chips instead of picking exactly one. Each
