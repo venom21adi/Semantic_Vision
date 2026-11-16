@@ -79,6 +79,11 @@ class RawClass:
     """Calls made in this class's decorator expressions, e.g. a class
     decorator factory like `@register("thing")`. These run in the
     *enclosing* scope at class-definition time, not "inside" the class."""
+    declared_elsewhere: bool = False
+    """Go only: this class exists solely to hold methods whose receiver
+    type is declared in a different file of the package -- a stand-in, not
+    the type's real declaration. Lets cross-file type lookups prefer the
+    real one."""
 
 
 @dataclass

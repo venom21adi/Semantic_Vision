@@ -181,6 +181,16 @@ def find_dead_code_candidates(
         if node.file.endswith(".go") and node.label.partition("#")[0] == "init":
             # Go runs every `init` automatically, never via a call.
             continue
+        if (
+            node.file.endswith(".go")
+            and node.label[:1].isupper()
+            and "." in node.id.partition("::")[2]
+        ):
+            # An exported *method*: it may satisfy an interface (`String`,
+            # `Error`, `ServeHTTP`, `Len`...), which is invoked through the
+            # interface, never by name. Satisfaction can't be seen
+            # statically here, so don't claim it's dead.
+            continue
         if _is_test_file(node.file) or _looks_like_test_name(node.label):
             continue
         if node.file not in exports_by_file:

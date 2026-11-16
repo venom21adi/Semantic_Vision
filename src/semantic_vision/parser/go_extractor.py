@@ -115,11 +115,81 @@ def _dotted_name(node: Node | None) -> str | None:
     return None
 
 
-def _collect_calls(node: Node, calls: list[RawCall], receiver: str | None) -> None:
-    """Every call (and struct-literal construction) reachable from `node`.
-    Closures (`func_literal`) are deliberately *not* a boundary: their
-    calls belong to the enclosing function, which is also what a reader
-    of the call graph expects."""
+# Prefix marking a *function value* reference (`http.HandleFunc("/", h)`,
+# `&Cmd{Run: h}`) rather than a call. The shared resolver never resolves
+# these (the prefixed root matches nothing), so `languages/go.py` picks them
+# up as `unresolved::ref:...` edges, turns the ones that name a real
+# package-level function/method into call edges, and drops the rest.
+REF_PREFIX = "ref:"
+
+
+def _rebinds_name(body: Node, name: str) -> bool:
+    """Whether `name` is re-declared anywhere inside `body` (`s := ...`,
+    `var s ...`, `for _, s := range`, a closure parameter, a type-switch
+    alias). Used to disable the receiver->`this` rewrite for the whole
+    method: rewriting without real scoping would silently aim calls on a
+    shadowing local at the receiver's own methods. Losing the rewrite
+    just leaves those calls unresolved, which is honest."""
+
+    def idents(node: Node | None) -> list[str]:
+        if node is None:
+            return []
+        if node.type == "identifier":
+            return [_text(node) or ""]
+        return [_text(c) or "" for c in node.named_children if c.type == "identifier"]
+
+    stack = [body]
+    while stack:
+        node = stack.pop()
+        t = node.type
+        if t == "short_var_declaration":
+            if name in idents(node.child_by_field_name("left")):
+                return True
+        elif t == "var_spec":
+            if any(_text(n) == name for n in node.children_by_field_name("name")):
+                return True
+        elif t == "range_clause":
+            if name in idents(node.child_by_field_name("left")):
+                return True
+        elif t == "type_switch_statement":
+            if name in idents(node.child_by_field_name("alias")):
+                return True
+        elif t == "parameter_declaration":
+            if any(_text(n) == name for n in node.children_by_field_name("name")):
+                return True
+        stack.extend(node.children)
+    return False
+
+
+def _ref_name(node: Node | None, receiver: str | None, receiver_type: str | None) -> str | None:
+    """`ref:`-prefixed dotted name for an argument/literal value that is a
+    bare identifier or selector chain, else `None`. A receiver-rooted
+    selector (`s.handle`) is expressed through the receiver's *type*
+    (`Server.handle`), since a `ref:` name never goes through the shared
+    resolver's `this` handling."""
+    if node is None or node.type not in ("identifier", "selector_expression"):
+        return None
+    dotted = _dotted_name(node)
+    if dotted is None:
+        return None
+    root, sep, rest = dotted.partition(".")
+    if receiver is not None and root == receiver:
+        if not sep or receiver_type is None:
+            return None
+        dotted = f"{receiver_type}.{rest}"
+    return REF_PREFIX + dotted
+
+
+def _collect_calls(
+    node: Node,
+    calls: list[RawCall],
+    receiver: str | None,
+    receiver_type: str | None = None,
+) -> None:
+    """Every call, struct-literal construction, and function-value
+    reference reachable from `node`. Closures (`func_literal`) are
+    deliberately *not* a boundary: their calls belong to the enclosing
+    function, which is also what a reader of the call graph expects."""
     if node.type == "call_expression":
         dotted = _dotted_name(node.child_by_field_name("function"))
         if dotted is not None and receiver is not None:
@@ -127,14 +197,36 @@ def _collect_calls(node: Node, calls: list[RawCall], receiver: str | None) -> No
             if root == receiver and sep:
                 dotted = f"this.{rest}"
         calls.append(RawCall(dotted=dotted, lineno=_line(node)))
+        arguments = node.child_by_field_name("arguments")
+        for arg in arguments.named_children if arguments is not None else []:
+            ref = _ref_name(arg, receiver, receiver_type)
+            if ref is not None:
+                calls.append(RawCall(dotted=ref, lineno=_line(arg)))
     elif node.type == "composite_literal":
         # Only named types are constructions of something in the graph;
         # `[]int{...}` / `map[string]int{...}` are not.
         name = _type_name(node.child_by_field_name("type"))
         if name is not None:
             calls.append(RawCall(dotted=name, lineno=_line(node)))
+    elif node.type == "keyed_element":
+        # `Key: value` -- only the value can be a function reference.
+        elements = [c for c in node.named_children if c.type == "literal_element"]
+        if len(elements) == 2 and elements[1].named_children:
+            ref = _ref_name(elements[1].named_children[0], receiver, receiver_type)
+            if ref is not None:
+                calls.append(RawCall(dotted=ref, lineno=_line(elements[1])))
+    elif (
+        node.type == "literal_element"
+        and node.parent is not None
+        and node.parent.type == "literal_value"
+        and node.named_children
+    ):
+        # A bare element (`[]func(){a, b}`), as opposed to a keyed one.
+        ref = _ref_name(node.named_children[0], receiver, receiver_type)
+        if ref is not None:
+            calls.append(RawCall(dotted=ref, lineno=_line(node)))
     for child in node.children:
-        _collect_calls(child, calls, receiver)
+        _collect_calls(child, calls, receiver, receiver_type)
 
 
 def _receiver_info(method: Node) -> tuple[str | None, str | None]:
@@ -156,11 +248,15 @@ def _receiver_info(method: Node) -> tuple[str | None, str | None]:
     return name, _type_name(decl.child_by_field_name("type"))
 
 
-def _extract_function(node: Node, name: str, receiver: str | None) -> RawFunction:
+def _extract_function(
+    node: Node, name: str, receiver: str | None, receiver_type: str | None = None
+) -> RawFunction:
     body = node.child_by_field_name("body")
     calls: list[RawCall] = []
     if body is not None:
-        _collect_calls(body, calls, receiver)
+        if receiver is not None and _rebinds_name(body, receiver):
+            receiver = receiver_type = None
+        _collect_calls(body, calls, receiver, receiver_type)
     return RawFunction(
         name=name,
         lineno=_line(node),
@@ -335,7 +431,7 @@ def extract_module(tree: tree_sitter.Tree, rel_path: str) -> RawModule:
             # local types); take the bare name defensively.
             type_name = receiver_type.rsplit(".", 1)[-1]
             methods_by_type.setdefault(type_name, []).append(
-                _extract_function(child, name, receiver_name)
+                _extract_function(child, name, receiver_name, type_name)
             )
 
     class_names = [n for n, (_, is_struct_like) in declared.items() if is_struct_like]
@@ -357,6 +453,7 @@ def extract_module(tree: tree_sitter.Tree, rel_path: str) -> RawModule:
                 end_lineno=end_lineno,
                 methods=methods,
                 attributes=_struct_fields(struct) if struct is not None else [],
+                declared_elsewhere=decl is None,
             )
         )
     module.classes.sort(key=lambda c: (c.lineno, c.name))

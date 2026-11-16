@@ -52,6 +52,7 @@ _MODULE_LINE = re.compile(r"^\s*module\s+(\S+)", re.MULTILINE)
 # bounded: a deep walk of a huge repo over a slow Docker bind mount costs
 # far more than the rare deeper module is worth.
 _GO_MOD_SEARCH_DEPTH = 3
+_GO_MOD_PARENT_DEPTH = 6
 _GO_MOD_SKIP_DIRS = frozenset({"vendor", "node_modules", "testdata", "__pycache__"})
 
 
@@ -87,6 +88,26 @@ def find_go_modules(root: Path) -> dict[str, str]:
             continue
         rel = Path(dirpath).relative_to(root).as_posix()
         modules["" if rel == "." else rel] = match.group(1).strip('"`')
+    if modules:
+        return modules
+
+    # No go.mod at or below `root` -- the common case when the user selects
+    # a subdirectory of a module. Look in the parents: the selected root
+    # then corresponds to `<module path>/<root's path inside the module>`.
+    resolved = root.resolve()
+    for ancestor in list(resolved.parents)[:_GO_MOD_PARENT_DEPTH]:
+        go_mod = ancestor / "go.mod"
+        if not go_mod.is_file():
+            continue
+        try:
+            match = _MODULE_LINE.search(go_mod.read_text(encoding="utf-8", errors="replace"))
+        except OSError:
+            break
+        if match is not None:
+            inside = resolved.relative_to(ancestor).as_posix()
+            module_path = match.group(1).strip('"`')
+            return {"": f"{module_path}/{inside}" if inside != "." else module_path}
+        break
     return modules
 
 
@@ -127,7 +148,10 @@ def local_package_dir(
         return None
     best: str | None = None
     for directory in package_dirs:
-        if not directory:
+        # Without a module path, one trailing segment (`.../util`) is far
+        # too weak a signal -- it matches any third-party `.../util`. Only
+        # multi-segment directories (`internal/util`) are matched.
+        if "/" not in directory:
             continue
         if import_path == directory or import_path.endswith("/" + directory):
             if best is None or len(directory) > len(best):
@@ -172,6 +196,7 @@ def _bind_import(
 ) -> None:
     import_path = imp.module or ""
     package_dir = local_package_dir(import_path, go_modules, package_dirs)
+    own_dir = rel_path.rpartition("/")[0]
 
     if package_dir is None:
         edges.append(
@@ -197,8 +222,9 @@ def _bind_import(
         )
         return
 
-    # A repo-root package has no directory node to point an edge at.
-    if package_dir:
+    # A repo-root package has no directory node to point an edge at, and a
+    # file's own package is not an import.
+    if package_dir and package_dir != own_dir:
         edges.append(Edge(source=rel_path, target=package_dir, kind=EdgeKind.IMPORTS))
     if imp.asname in ("_", "."):
         return

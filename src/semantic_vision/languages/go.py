@@ -88,20 +88,40 @@ class _PackageIndex:
         return self._by_dir.get(directory, [])
 
 
-def _lookup(parts: list[str], files: list[ModuleIndex]) -> str | None:
-    """Resolve `Name` or `Type.Method` against a package's files. First hit
-    in sorted-path order wins -- Go forbids duplicate package-level names,
-    so a real package has at most one."""
-    for index in files:
-        if len(parts) == 1:
-            found = index.functions.get(parts[0]) or index.classes.get(parts[0])
-        elif len(parts) == 2:
+def _lookup(
+    parts: list[str],
+    files: list[ModuleIndex],
+    stub_ids: set[str],
+    *,
+    functions_only: bool = False,
+) -> str | None:
+    """Resolve `Name` or `Type.Method` against a package's files. Go forbids
+    duplicate package-level names, so a real package has at most one hit --
+    except that the extractor emits a methods-only stand-in class per file
+    for a type declared elsewhere (`stub_ids`); a type name must resolve to
+    the real declaration, never a stand-in."""
+    if len(parts) == 2:
+        for index in files:
             found = index.methods.get((parts[0], parts[1]))
-        else:
-            found = None
+            if found:
+                return found
+        return None
+    if len(parts) != 1:
+        return None
+    stub_fallback: str | None = None
+    for index in files:
+        found = index.functions.get(parts[0])
         if found:
             return found
-    return None
+        if functions_only:
+            continue
+        class_id = index.classes.get(parts[0])
+        if class_id is None:
+            continue
+        if class_id not in stub_ids:
+            return class_id
+        stub_fallback = stub_fallback or class_id
+    return stub_fallback
 
 
 def _resolve_package_scope(
@@ -110,6 +130,7 @@ def _resolve_package_scope(
     bindings: dict[str, ImportBinding],
     modules: dict[str, ModuleIndex],
     package_index: _PackageIndex,
+    stub_ids: set[str],
 ) -> list[Edge]:
     own_dir = _dir_of(rel_path)
     local_prefixes = {
@@ -124,6 +145,8 @@ def _resolve_package_scope(
             resolved.append(edge)
             continue
         label = edge.target.removeprefix(_UNRESOLVED)
+        is_ref = label.startswith(go_extractor.REF_PREFIX)
+        label = label.removeprefix(go_extractor.REF_PREFIX)
         target: str | None = None
 
         # `util.Helper` / `util.Type.Method` through a local-package import.
@@ -131,23 +154,45 @@ def _resolve_package_scope(
         for prefix in local_prefixes:
             if label.startswith(prefix + "."):
                 rest = label[len(prefix) + 1 :].split(".")
-                target = _lookup(rest, package_index.files_in(prefix, modules))
+                target = _lookup(
+                    rest,
+                    package_index.files_in(prefix, modules),
+                    stub_ids,
+                    functions_only=is_ref,
+                )
                 break
         else:
             # Bare `Helper`, or `Type.method` from `this.method()`, within
             # the file's own package.
             if "this" not in label.split("."):
-                target = _lookup(label.split("."), package_index.files_in(own_dir, modules))
+                target = _lookup(
+                    label.split("."),
+                    package_index.files_in(own_dir, modules),
+                    stub_ids,
+                    functions_only=is_ref and "." not in label,
+                )
 
         if target is not None:
             resolved.append(Edge(source=edge.source, target=target, kind=EdgeKind.CALLS))
-        else:
+        elif not is_ref:
+            # A function-value reference that names nothing known is
+            # simply not an edge (most are plain variables); an unresolved
+            # *call* stays visible as `unresolved::...`.
             resolved.append(edge)
     return resolved
 
 
 def _build_adapter(go_modules: dict[str, str]) -> LanguageAdapter:
     package_index = _PackageIndex()
+    # Ids of methods-only stand-in classes (see `_lookup`), recorded as each
+    # file is parsed. Per adapter, i.e. per `parse_repository` call.
+    stub_ids: set[str] = set()
+
+    def parse(source: str, rel_path: str) -> RawModule:
+        raw = parse_file(source, rel_path)
+        stub_ids.update(f"{rel_path}::{c.name}" for c in raw.classes if c.declared_elsewhere)
+        return raw
+
     shared_resolve_calls = functools.partial(
         resolve_calls,
         self_names=frozenset({"this"}),
@@ -166,12 +211,14 @@ def _build_adapter(go_modules: dict[str, str]) -> LanguageAdapter:
         edges = shared_resolve_calls(
             rel_path, raw, module_index, bindings, modules, module_by_dotted
         )
-        return _resolve_package_scope(rel_path, edges, bindings, modules, package_index)
+        return _resolve_package_scope(
+            rel_path, edges, bindings, modules, package_index, stub_ids
+        )
 
     return LanguageAdapter(
         language_id="go",
         file_extensions=FILE_EXTENSIONS,
-        parse_file=parse_file,
+        parse_file=parse,
         dotted_module_path=go_imports.dotted_module_path,
         resolve_imports=go_imports.make_resolve_imports(go_modules),
         resolve_calls=resolve_go_calls,

@@ -235,6 +235,7 @@ def _build_switch(
     stmt: TSNode,
     breakable_stack: list[LoopCtx],
     same_file_functions: dict[str, str],
+    label: str | None = None,
 ) -> tuple[str, list[PendingExit]]:
     cases = [c for c in stmt.named_children if c.type in _CASE_TYPES]
     first_case = cases[0] if cases else None
@@ -243,7 +244,7 @@ def _build_switch(
     header = " ".join(header.removesuffix("{").split()) or stmt.type.split("_")[0]
     decision_id = builder.add_node(FlowNodeKind.DECISION, header, _line(stmt), _end_line(stmt))
 
-    switch_ctx = LoopCtx(header=None, kind="switch")
+    switch_ctx = LoopCtx(header=None, kind="switch", label=label)
     breakable_stack.append(switch_ctx)
 
     # (is_default, label, first node, pending exits, ends in `fallthrough`)
@@ -262,27 +263,30 @@ def _build_switch(
 
     breakable_stack.pop()
 
-    # An empty case has no node of its own, so both its decision edge and a
-    # prior case's `fallthrough` into it skip forward to the next case that
-    # does -- the same forwarding `java_cfg._build_switch` uses.
-    effective_first: list[str | None] = [None] * len(built)
-    next_real: str | None = None
-    for i in range(len(built) - 1, -1, -1):
-        first = built[i][2]
-        effective_first[i] = first if first is not None else next_real
-        if first is not None:
-            next_real = first
+    # Unlike Java/JS, Go never falls into the next case implicitly: an empty
+    # case does nothing and leaves the switch. Only an explicit
+    # `fallthrough` forwards control, to the next case's first node -- or
+    # past it, if that case is itself empty but also falls through.
+    def entry_of(i: int) -> str | None:
+        while i < len(built):
+            first = built[i][2]
+            if first is not None:
+                return first
+            if not built[i][4]:
+                return None
+            i += 1
+        return None
 
     switch_exits: list[PendingExit] = list(switch_ctx.pending_breaks)
-    for i, (_is_default, label, first, pending, falls_through) in enumerate(built):
-        target = effective_first[i]
+    for i, (_is_default, case_label, _first, pending, falls_through) in enumerate(built):
+        target = entry_of(i)
         if target is not None:
-            builder.add_edge(decision_id, target, FlowEdgeKind.FLOW, label)
-        elif first is None and not falls_through:
-            # An empty case body: matching it just leaves the switch.
-            switch_exits.append((decision_id, FlowEdgeKind.FLOW, label))
-        if falls_through and i + 1 < len(built) and effective_first[i + 1] is not None:
-            builder.connect(pending, effective_first[i + 1])  # type: ignore[arg-type]
+            builder.add_edge(decision_id, target, FlowEdgeKind.FLOW, case_label)
+        else:
+            switch_exits.append((decision_id, FlowEdgeKind.FLOW, case_label))
+        next_target = entry_of(i + 1) if falls_through else None
+        if next_target is not None:
+            builder.connect(pending, next_target)
         else:
             switch_exits.extend(pending)
 
@@ -315,7 +319,7 @@ def _build_stmt(
         return _build_for(builder, stmt, breakable_stack, same_file_functions, label)
 
     if stmt.type in _SWITCH_TYPES:
-        return _build_switch(builder, stmt, breakable_stack, same_file_functions)
+        return _build_switch(builder, stmt, breakable_stack, same_file_functions, label)
 
     if stmt.type == "labeled_statement":
         label_node = stmt.child_by_field_name("label")
@@ -323,12 +327,14 @@ def _build_stmt(
             (c for c in stmt.named_children if c.type != "label_name" and c.type != "comment"),
             None,
         )
-        if wrapped is not None and wrapped.type == "for_statement":
+        if wrapped is not None:
+            # The label only matters as a `break`/`continue` target, which
+            # a `for`/`switch`/`select` records; any other wrapped statement
+            # is built normally rather than collapsed. `goto` targets
+            # aren't modeled.
             return _build_stmt(
                 builder, wrapped, breakable_stack, same_file_functions, _text(label_node)
             )
-        # A labeled non-loop statement (target of `goto`/labeled `break`) isn't
-        # specially modeled.
         node_id = _add_stmt_node(builder, FlowNodeKind.STATEMENT, stmt)
         return node_id, [(node_id, FlowEdgeKind.FLOW, None)]
 
