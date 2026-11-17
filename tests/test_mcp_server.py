@@ -477,3 +477,83 @@ def test_ensure_running_spawns_when_not_reachable(monkeypatch):
         return spawn_calls
 
     assert _run(scenario()) == [1]
+
+
+# --- MCP regressions: language handling, bare-name ids, timeouts -----------------------
+
+GO_REPO = str(FIXTURES / "go_repo")
+
+
+def test_queries_use_the_language_the_repo_was_parsed_with():
+    """Used to default to "python", so every tool after parse_repo(language="go") said
+    "Repository not parsed yet for language 'python'"."""
+
+    async def scenario():
+        mcp = _server()
+        await mcp.call_tool("parse_repo", {"path": GO_REPO, "language": "go"})
+        result = await mcp.call_tool("get_dead_code", {"path": GO_REPO})
+        return result.structured_content
+
+    assert isinstance(_run(scenario()), dict)  # no "not parsed yet" ToolError
+
+
+def test_parse_repo_detects_the_language_when_omitted():
+    async def scenario():
+        mcp = _server()
+        parsed = await mcp.call_tool("parse_repo", {"path": GO_REPO})
+        graph = await mcp.call_tool("get_graph", {"path": GO_REPO})
+        return parsed.structured_content, graph.structured_content
+
+    parsed, graph = _run(scenario())
+    assert parsed["node_count"] > 0
+    assert any(n["id"].endswith(".go") or ".go::" in n["id"] for n in graph["nodes"])
+
+
+def test_bare_function_name_resolves_to_the_exact_node_id():
+    async def scenario():
+        mcp = _server()
+        await mcp.call_tool("parse_repo", {"path": str(FIXTURES / "simple_repo")})
+        exact = await mcp.call_tool(
+            "get_impact", {"path": str(FIXTURES / "simple_repo"), "id": "app.py::Greeter.greet"}
+        )
+        bare = await mcp.call_tool(
+            "get_impact", {"path": str(FIXTURES / "simple_repo"), "id": "greet"}
+        )
+        return exact.structured_content, bare.structured_content
+
+    exact, bare = _run(scenario())
+    assert bare["target"] == exact["target"] == "app.py::Greeter.greet"
+
+
+def test_unknown_name_error_suggests_near_matches():
+    async def scenario():
+        mcp = _server()
+        await mcp.call_tool("parse_repo", {"path": str(FIXTURES / "simple_repo")})
+        await mcp.call_tool(
+            "get_impact", {"path": str(FIXTURES / "simple_repo"), "id": "gree"}
+        )
+
+    with pytest.raises(ToolError) as exc:
+        _run(scenario())
+    assert "Did you mean" in str(exc.value) and "greet" in str(exc.value)
+
+
+def test_get_callees_for_an_unknown_id_is_an_error_not_an_empty_list():
+    """It used to answer {"callees": []} for any id that did not exist."""
+
+    async def scenario():
+        mcp = _server()
+        await mcp.call_tool("parse_repo", {"path": str(FIXTURES / "simple_repo")})
+        await mcp.call_tool(
+            "get_callees", {"path": str(FIXTURES / "simple_repo"), "id": "no_such_function_xyz"}
+        )
+
+    with pytest.raises(ToolError, match="Node not found"):
+        _run(scenario())
+
+
+def test_timeout_message_names_the_error_type():
+    from semantic_vision.mcp_server.client import _unreachable_message
+
+    msg = _unreachable_message("http://127.0.0.1:8000", httpx.ReadTimeout(""))
+    assert "ReadTimeout" in msg and "no detail" in msg

@@ -11,6 +11,7 @@ import ipaddress
 import subprocess
 import sys
 import time
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -32,6 +33,7 @@ from semantic_vision.api.schemas import (
     ImpactResponse,
     ParseRepoResponse,
 )
+from semantic_vision.languages.registry import detect_languages
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
@@ -57,6 +59,20 @@ def _extract_detail(response: httpx.Response) -> str:
     if isinstance(body, dict) and "detail" in body:
         return str(body["detail"])
     return response.text or f"HTTP {response.status_code}"
+
+
+# Parsing a large repo (e.g. ~900 Go files) can take far longer than the 30s a quick query gets,
+# and an httpx ReadTimeout has an empty message, which used to surface as a bare "Could not reach
+# the backend".
+_POST_TIMEOUT_S = 600.0
+
+
+def _unreachable_message(base_url: str, exc: Exception) -> str:
+    detail = str(exc) or "no detail"
+    return (
+        f"Could not reach the backend at {base_url}: {type(exc).__name__}: {detail}. "
+        "If this was parse_repo on a large repository, retry once; the backend may still be busy."
+    )
 
 
 def _is_loopback_host(host: str) -> bool:
@@ -89,6 +105,17 @@ class BackendClient:
         self.base_url = f"http://{host}:{port}"
         self._client = httpx.AsyncClient(base_url=self.base_url, transport=transport, timeout=30.0)
         self._process: subprocess.Popen[bytes] | None = None
+        # language each path was last parsed with: every backend query reads the cache entry for
+        # (path, language), and the language defaults to "python" server-side, so without this a
+        # Go/Java/JS repo parsed via `parse_repo` was invisible to every other tool.
+        self._languages: dict[str, str] = {}
+
+    @staticmethod
+    def _path_key(path: str) -> str:
+        return str(path).replace("\\", "/").rstrip("/").casefold()
+
+    def language_for(self, path: str) -> str | None:
+        return self._languages.get(self._path_key(path))
 
     async def is_reachable(self) -> bool:
         try:
@@ -209,10 +236,14 @@ class BackendClient:
 
     async def _get(self, path: str, params: dict[str, Any] | None = None) -> Any:
         clean_params = {k: v for k, v in (params or {}).items() if v is not None}
+        if "path" in clean_params and "language" not in clean_params:
+            remembered = self.language_for(clean_params["path"])
+            if remembered:
+                clean_params["language"] = remembered
         try:
             response = await self._client.get(path, params=clean_params)
         except httpx.HTTPError as exc:
-            raise BackendError(f"Could not reach the backend at {self.base_url}: {exc}") from exc
+            raise BackendError(_unreachable_message(self.base_url, exc)) from exc
         if response.status_code >= 400:
             raise BackendError(_extract_detail(response))
         return response.json()
@@ -221,21 +252,66 @@ class BackendClient:
         self, path: str, json_body: dict[str, Any], params: dict[str, Any] | None = None
     ) -> Any:
         clean_params = {k: v for k, v in (params or {}).items() if v is not None}
+        if "path" in clean_params and "language" not in clean_params:
+            remembered = self.language_for(clean_params["path"])
+            if remembered:
+                clean_params["language"] = remembered
         try:
-            response = await self._client.post(path, json=json_body, params=clean_params)
+            response = await self._client.post(
+                path, json=json_body, params=clean_params, timeout=_POST_TIMEOUT_S
+            )
         except httpx.HTTPError as exc:
-            raise BackendError(f"Could not reach the backend at {self.base_url}: {exc}") from exc
+            raise BackendError(_unreachable_message(self.base_url, exc)) from exc
         if response.status_code >= 400:
             raise BackendError(_extract_detail(response))
         return response.json()
 
+    def detect_language(self, path: str) -> str:
+        """The repo's language when the caller didn't say. Detected on the local filesystem, so it
+        only helps when the backend sees the same paths; otherwise it falls back to "python"
+        (the historical default). A repo with several languages must be disambiguated by the caller
+        rather than silently picking one."""
+        try:
+            found = detect_languages(Path(path))
+        except OSError:
+            found = []
+        if len(found) == 1:
+            return found[0]
+        if len(found) > 1:
+            raise BackendError(
+                f"{path} contains source files in several languages ({', '.join(found)}); "
+                "call parse_repo again with `language` set to the one you want."
+            )
+        return "python"
+
     async def parse_repo(
-        self, path: str, language: str = "python", doc_root: str | None = None
+        self, path: str, language: str | None = None, doc_root: str | None = None
     ) -> ParseRepoResponse:
+        language = language or self.detect_language(path)
         data = await self._post(
             "/api/parse-repo", {"path": path, "language": language, "doc_root": doc_root}
         )
+        self._languages[self._path_key(path)] = language
         return ParseRepoResponse.model_validate(data)
+
+    async def find_nodes(
+        self, path: str, query: str, limit: int = 8
+    ) -> tuple[list[Any], list[Any]]:
+        """Resolve a bare name ("term_len", "Command.clone") to node ids. Returns (exact matches,
+        looser suggestions): exact = same id, same label, or same final name segment."""
+        graph = await self.get_graph(path)
+        q = query.strip()
+        wanted = q.split("::")[-1]
+        exact, loose = [], []
+        for n in graph.nodes:
+            if n.kind.value not in ("function", "class", "table", "column", "dbt_model"):
+                continue
+            label_tail = n.label.split(".")[-1]
+            if wanted in (n.label, label_tail) or n.id == q or n.id.endswith("::" + wanted):
+                exact.append(n)
+            elif wanted.lower() in n.label.lower():
+                loose.append(n)
+        return exact, loose[:limit]
 
     async def get_graph(self, path: str) -> GraphResponse:
         data = await self._get("/api/graph", {"path": path})
@@ -256,8 +332,9 @@ class BackendClient:
         return ComplexityDiffResponse.model_validate(data)
 
     async def get_complexity_diff_ref(
-        self, path: str, ref: str, to_ref: str | None = None, language: str = "python"
+        self, path: str, ref: str, to_ref: str | None = None, language: str | None = None
     ) -> ComplexityRefDiffResponse:
+        language = language or self.language_for(path) or "python"
         data = await self._get(
             "/api/complexity/diff-ref",
             {"path": path, "ref": ref, "to_ref": to_ref, "language": language},

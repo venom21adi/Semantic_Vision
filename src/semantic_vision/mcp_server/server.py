@@ -12,9 +12,29 @@ from typing import Any
 
 from mcp.server.mcpserver import MCPServer
 
-from semantic_vision.mcp_server.client import BackendClient
+from semantic_vision.mcp_server.client import BackendClient, BackendError
 
 DEFAULT_MAX_GRAPH_NODES = 500
+
+
+def _format_candidates(nodes: list[Any]) -> str:
+    return "; ".join(f"{n.id}" for n in nodes[:10])
+
+
+async def resolve_node_id(client: BackendClient, path: str, node_id: str) -> str:
+    """Turn what an agent naturally types ("term_len", "Command.clone") into the exact graph id
+    ("src/click/_compat.py::term_len"). One match -> use it; several -> list them (never guess
+    between same-named functions); none -> suggest near matches."""
+    exact, loose = await client.find_nodes(path, node_id)
+    if len(exact) == 1:
+        return exact[0].id
+    if len(exact) > 1:
+        raise BackendError(
+            f"'{node_id}' matches {len(exact)} nodes; pass the exact id of the one you mean: "
+            f"{_format_candidates(exact)}"
+        )
+    hint = f" Did you mean: {_format_candidates(loose)}?" if loose else ""
+    raise BackendError(f"Node not found: {node_id}.{hint}")
 
 
 def build_server(client: BackendClient) -> MCPServer:
@@ -24,7 +44,10 @@ def build_server(client: BackendClient) -> MCPServer:
             "Structural facts about a parsed codebase -- call graph, impact analysis, "
             "complexity, and git-history-aware hotspot/diff scoring -- computed once via "
             "static analysis, not guessed from grepping. Call parse_repo first for a given "
-            "path; every other tool needs that repo already parsed. Prefer a targeted tool "
+            "path (the language is detected when omitted; pass it for a multi-language "
+            "repo); every other tool needs that repo already parsed. Node ids look like "
+            "'src/pkg/mod.py::func' or 'file.go::Type.method', but a bare function name "
+            "(e.g. 'term_len') is accepted when it is unambiguous. Prefer a targeted tool "
             "(get_impact, get_callees, get_function_source) over get_graph for a single "
             "function -- get_graph returns the whole repo's structure and is meant for "
             "building an initial mental model, not answering a question about one function."
@@ -33,7 +56,7 @@ def build_server(client: BackendClient) -> MCPServer:
 
     @mcp.tool()
     async def parse_repo(
-        path: str, language: str = "python", doc_root: str | None = None
+        path: str, language: str | None = None, doc_root: str | None = None
     ) -> dict[str, Any]:
         """Parses a repository at `path` (an absolute filesystem path) and
         caches the result server-side. Required before calling any other
@@ -76,7 +99,13 @@ def build_server(client: BackendClient) -> MCPServer:
         (directly or transitively, up to `max_depth`) depends on it --
         i.e. what would be affected by changing or removing it. For the
         opposite direction (what `id` itself calls), use get_callees."""
-        result = await client.get_impact(path, id, max_depth=max_depth)
+        try:
+            result = await client.get_impact(path, id, max_depth=max_depth)
+        except BackendError as exc:
+            if "Node not found" not in str(exc):
+                raise
+            id = await resolve_node_id(client, path, id)
+            result = await client.get_impact(path, id, max_depth=max_depth)
         return result.model_dump(mode="json")
 
     @mcp.tool()
@@ -89,6 +118,8 @@ def build_server(client: BackendClient) -> MCPServer:
         app's own call-graph view shows for the same node."""
         graph = await client.get_graph(path)
         nodes_by_id = {node.id: node for node in graph.nodes}
+        if id not in nodes_by_id:
+            id = await resolve_node_id(client, path, id)
         callee_ids = [
             edge.target for edge in graph.edges if edge.kind == "calls" and edge.source == id
         ]
@@ -123,7 +154,7 @@ def build_server(client: BackendClient) -> MCPServer:
 
     @mcp.tool()
     async def get_complexity_diff_ref(
-        path: str, ref: str, to_ref: str | None = None, language: str = "python"
+        path: str, ref: str, to_ref: str | None = None, language: str | None = None
     ) -> dict[str, Any]:
         """Scores a change, not just a snapshot: diffs `ref`'s complexity
         against either the repo's current on-disk state (`to_ref` omitted
@@ -207,7 +238,13 @@ def build_server(client: BackendClient) -> MCPServer:
         of statement nodes, distinct from get_impact/get_callees which
         describe cross-function call relationships rather than what
         happens inside one function."""
-        result = await client.get_flowchart(path, id)
+        try:
+            result = await client.get_flowchart(path, id)
+        except BackendError as exc:
+            if "Node not found" not in str(exc):
+                raise
+            id = await resolve_node_id(client, path, id)
+            result = await client.get_flowchart(path, id)
         return result.model_dump(mode="json")
 
     @mcp.tool()
@@ -215,7 +252,13 @@ def build_server(client: BackendClient) -> MCPServer:
         """The exact source text of function (or file) node `id`, read
         directly from disk by its recorded line range -- for reading one
         specific function without grepping for it."""
-        result = await client.get_function_source(path, id)
+        try:
+            result = await client.get_function_source(path, id)
+        except BackendError as exc:
+            if "Node not found" not in str(exc):
+                raise
+            id = await resolve_node_id(client, path, id)
+            result = await client.get_function_source(path, id)
         return result.model_dump(mode="json")
 
     # Deliberately not exposed here, unlike every other Code Health signal

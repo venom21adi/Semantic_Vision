@@ -77,7 +77,7 @@ picks up on-disk changes since the last parse.
 
 | Tool | What it answers |
 |---|---|
-| `parse_repo(path, language, doc_root)` | Parses and caches a repo. Required first for every other tool below. |
+| `parse_repo(path, language, doc_root)` | Parses and caches a repo. Required first for every other tool below. `language` is detected when omitted (a repo with several languages needs it set); every later tool for that `path` automatically uses the language it was parsed with. |
 | `get_graph(path, max_nodes)` | The full parsed structure — every node and edge. Truncated past `max_nodes` (default 500) to avoid flooding context with a repo-sized dump; prefer a targeted tool below for a single function. |
 | `get_impact(path, id, max_depth)` | Upstream blast radius: everything that directly or transitively depends on `id`. |
 | `get_callees(path, id)` | The opposite direction — what `id` itself directly calls. |
@@ -95,6 +95,9 @@ picks up on-disk changes since the last parse.
 
 `id` is a node ID from `get_graph`'s output (or from a prior tool call's
 result) — the same IDs the web app and VS Code extension use internally.
+A bare function name (`term_len`, `Command.clone`) is also accepted by `get_impact`,
+`get_callees`, `get_flowchart` and `get_function_source` when it matches exactly one node;
+if it matches several, the error lists them rather than guessing.
 
 ## What's deliberately not exposed
 

@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **MCP server: every tool after `parse_repo` failed for non-Python repos.** The query tools
+  (`get_impact`, `get_callees`, `get_graph`, ...) had no `language` and defaulted to `python`, so
+  after `parse_repo(language="go")` they answered "Repository not parsed yet for language
+  'python'". The server now remembers the language each path was parsed with, and `parse_repo`
+  detects it when omitted.
+- **MCP server: bare function names** (`term_len`) are accepted wherever a node id is, when they
+  match exactly one node; ambiguous or unknown names return candidates instead of a bare
+  "Node not found". `get_callees` on an unknown id is now an error, not an empty list.
+- **MCP server: large-repo parse timeout.** A cold parse of a ~900-file repo (32 s) exceeded the
+  client's 30 s timeout and surfaced as an empty "Could not reach the backend"; parses now allow
+  10 minutes and timeout errors name their type.
+
 ### Added
 
 - **Go support** at full parity with the other languages: call graph (a Go
