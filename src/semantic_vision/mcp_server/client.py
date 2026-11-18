@@ -162,8 +162,12 @@ class BackendClient:
         # connection dropping mid-response (httpcore.ReadError) -- a
         # classic symptom of a subprocess sharing a pipe handle several
         # levels up its ancestry on Windows.
-        process = subprocess.Popen(
-            [
+        if getattr(sys, "frozen", False):
+            # Inside the VS Code extension's PyInstaller binary `sys.executable` is that binary
+            # itself (no `-m` support); it serves the backend when started with --host/--port.
+            command = [sys.executable, "--host", self.host, "--port", str(self.port)]
+        else:
+            command = [
                 sys.executable,
                 "-m",
                 "uvicorn",
@@ -172,7 +176,9 @@ class BackendClient:
                 self.host,
                 "--port",
                 str(self.port),
-            ],
+            ]
+        process = subprocess.Popen(
+            command,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

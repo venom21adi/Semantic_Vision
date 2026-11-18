@@ -12,6 +12,7 @@ import {
 import { findNodeAtCursor, type GraphNodeLike } from './graphLookup'
 import { isWithinRoot, toRelativePath } from './paths'
 import { buildWebviewHtml } from './webviewContent'
+import { claudeCodeCommand, mcpConfigSnippet, resolveMcpLaunch } from './mcp'
 
 /** Backs the `semanticVision.sidebar` Activity Bar view -- there's nothing
  * to show in it (the graph itself renders in `panel`, not here), but VS
@@ -331,6 +332,49 @@ async function impactAnalysisAtCursor(context: vscode.ExtensionContext) {
   void panel?.webview.postMessage({ command: 'runImpactAnalysis', nodeId: node.id })
 }
 
+/** Offers the bundled MCP server to VS Code's own agent (Copilot agent mode) where the editor supports
+ * MCP server providers (VS Code 1.101+). Feature-detected, not version-gated, so older editors still
+ * install and use everything else. */
+function registerMcpProvider(context: vscode.ExtensionContext): void {
+  const lm = (vscode as unknown as { lm?: Record<string, unknown> }).lm
+  const register = lm?.registerMcpServerDefinitionProvider as
+    | ((id: string, provider: unknown) => vscode.Disposable)
+    | undefined
+  const Stdio = (vscode as unknown as { McpStdioServerDefinition?: new (...a: unknown[]) => unknown })
+    .McpStdioServerDefinition
+  if (!register || !Stdio) return
+  context.subscriptions.push(
+    register.call(lm, 'semanticVision.mcp', {
+      provideMcpServerDefinitions: () => {
+        const config = getConfig()
+        const launch = resolveMcpLaunch(context.extensionPath, config.backendUrl, config.backendPath)
+        return launch ? [new Stdio('Semantic Vision', launch.command, launch.args, launch.env)] : []
+      },
+    }),
+  )
+}
+
+async function copyMcpConfig(context: vscode.ExtensionContext): Promise<void> {
+  const config = getConfig()
+  const launch = resolveMcpLaunch(context.extensionPath, config.backendUrl, config.backendPath)
+  if (!launch) {
+    void vscode.window.showWarningMessage(
+      'Semantic Vision: no bundled MCP server found in this install. Set semanticVision.backendPath to a checkout, or see the MCP guide.',
+    )
+    return
+  }
+  const pick = await vscode.window.showQuickPick(
+    [
+      { label: 'Claude Code command', description: 'claude mcp add ...', text: claudeCodeCommand(launch) },
+      { label: 'JSON config', description: 'Cursor, Claude Desktop, other MCP clients', text: mcpConfigSnippet(launch) },
+    ],
+    { placeHolder: 'Copy the MCP setup for your agent' },
+  )
+  if (!pick) return
+  await vscode.env.clipboard.writeText(pick.text)
+  void vscode.window.showInformationMessage(`Semantic Vision: copied the ${pick.label} to the clipboard.`)
+}
+
 export function activate(context: vscode.ExtensionContext) {
   const sidebar = vscode.window.createTreeView('semanticVision.sidebar', {
     treeDataProvider: new EmptySidebarProvider(),
@@ -345,6 +389,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('semanticVision.impactAnalysisAtCursor', () =>
       impactAnalysisAtCursor(context),
     ),
+    vscode.commands.registerCommand('semanticVision.copyMcpConfig', () => copyMcpConfig(context)),
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       const root = workspaceRoot()
       if (editor && root && isWithinRoot(root, editor.document.uri.fsPath)) {
@@ -352,6 +397,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }),
   )
+  registerMcpProvider(context)
 }
 
 export function deactivate() {

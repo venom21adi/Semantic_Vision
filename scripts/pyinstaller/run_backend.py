@@ -23,7 +23,18 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument(
+        "--mcp",
+        action="store_true",
+        help="Run the MCP server (stdio) instead of the HTTP backend. It reuses a backend already "
+        "listening on SEMANTIC_VISION_BACKEND_HOST/PORT (default 127.0.0.1:8000) or starts one.",
+    )
     args = parser.parse_args()
+    if args.mcp:
+        from semantic_vision.mcp_server.__main__ import main as mcp_main
+
+        mcp_main()
+        return
     uvicorn.run(app, host=args.host, port=args.port)
 
 

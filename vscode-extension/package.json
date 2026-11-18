@@ -2,7 +2,7 @@
   "name": "semantic-vision",
   "displayName": "Semantic Vision",
   "description": "Codebase observability for AI-assisted coding, in VS Code. Impact analysis, an interactive call graph, execution flowcharts, seven-signal Code Health, AI-generated docs, and code-to-data lineage for Python, JS, TS, Java, and Go. 100% local.",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "publisher": "venom21adi",
   "icon": "media/icon.png",
   "repository": {
@@ -37,6 +37,10 @@
       {
         "command": "semanticVision.impactAnalysisAtCursor",
         "title": "Semantic Vision: Impact Analysis at Cursor"
+      },
+      {
+        "command": "semanticVision.copyMcpConfig",
+        "title": "Semantic Vision: Copy MCP Config for Your Agent"
       }
     ],
     "menus": {
@@ -84,6 +88,12 @@
       {
         "view": "semanticVision.sidebar",
         "contents": "[Open Call Graph](command:semanticVision.openGraph)"
+      }
+    ],
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "semanticVision.mcp",
+        "label": "Semantic Vision"
       }
     ]
   },

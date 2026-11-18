@@ -56,6 +56,15 @@ For Claude Desktop, or any client configured via JSON, add an entry like:
 }
 ```
 
+### From the VS Code extension
+
+The **Semantic Vision** VS Code extension (1.6.0+) bundles this MCP server — no `uv`, Python or checkout
+needed. In VS Code 1.101+ it is offered to the built-in agent automatically. For any other agent, run
+**Semantic Vision: Copy MCP Config for Your Agent** from the command palette: it copies either a
+`claude mcp add ...` command or a JSON `mcpServers` block that points at the bundled binary
+(`semantic-vision-backend --mcp`). The server reuses the backend the extension already runs, so the
+graph view and your agent share one parsed cache.
+
 Already have a backend running yourself (`uv run uvicorn
 semantic_vision.api.app:app --port 8000`, or the desktop app, or the VS Code
 extension's bundled one)? The MCP server detects it's reachable at

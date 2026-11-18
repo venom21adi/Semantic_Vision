@@ -111,12 +111,16 @@ spanning code and data in one traversal.
 The same analysis this extension shows you is also available to coding
 agents over [MCP](https://modelcontextprotocol.io): call graphs, impact
 analysis, complexity, hotspots, dead code, coverage risk, duplicates,
-execution flow, and more, as tools Claude Code, Cursor, or any
-MCP-compatible agent can call directly — instead of grepping for context
-this project has already computed. Run `semantic-vision-mcp` from the main
-project alongside this extension; see
-[guides/mcp-server.md](https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md)
-for setup.
+execution flow, and more, as tools Claude Code, Cursor, Copilot agent mode,
+or any MCP-compatible agent can call directly — instead of grepping for
+context this project has already computed.
+
+The MCP server is **bundled with this extension**. In VS Code 1.101+ it is
+offered to the built-in agent automatically. For other agents, run
+**Semantic Vision: Copy MCP Config for Your Agent** from the command
+palette and paste the result into Claude Code or your client's MCP config.
+It shares the backend this extension already runs. Full tool list and setup:
+[guides/mcp-server.md](https://github.com/venom21adi/Semantic_Vision/blob/master/guides/mcp-server.md).
 
 ## Requirements
 

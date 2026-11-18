@@ -21,6 +21,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **VS Code extension now bundles the MCP server** (extension 1.6.0). The frozen backend binary has an
+  `--mcp` mode; the extension registers it with VS Code's agent where supported and adds a
+  "Copy MCP Config for Your Agent" command for Claude Code, Cursor and others. It reuses the extension's
+  backend. In a frozen build the MCP client starts the backend by re-running the binary.
 - **Go support** at full parity with the other languages: call graph (a Go
   package is a directory, so same-package calls across files and
   `import`-ed local packages resolve via `go.mod`), methods grouped by

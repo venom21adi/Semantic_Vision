@@ -557,3 +557,23 @@ def test_timeout_message_names_the_error_type():
 
     msg = _unreachable_message("http://127.0.0.1:8000", httpx.ReadTimeout(""))
     assert "ReadTimeout" in msg and "no detail" in msg
+
+
+def test_spawn_backend_uses_the_frozen_binary_itself(monkeypatch):
+    """Inside the VS Code extension's PyInstaller binary there is no `python -m uvicorn`; the binary
+    itself serves the backend when given --host/--port."""
+    import sys
+
+    captured: dict = {}
+
+    class _FakeProc:
+        pass
+
+    def _popen(command, **kwargs):
+        captured["command"] = command
+        return _FakeProc()
+
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr("subprocess.Popen", _popen)
+    BackendClient(host="127.0.0.1", port=8123)._spawn_backend()
+    assert captured["command"] == [sys.executable, "--host", "127.0.0.1", "--port", "8123"]

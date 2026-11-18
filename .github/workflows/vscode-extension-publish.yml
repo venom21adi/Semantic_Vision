@@ -73,6 +73,11 @@ jobs:
           done
           curl -sf http://127.0.0.1:8123/api/health
 
+      - name: Smoke-test the frozen binary's MCP mode
+        shell: bash
+        run: |
+          uv run python scripts/pyinstaller/smoke_mcp.py             ./dist/pyinstaller/${{ matrix.binary_name }} "$PWD/src" 8124
+
       - uses: actions/upload-artifact@v4
         with:
           name: backend-${{ matrix.target }}
