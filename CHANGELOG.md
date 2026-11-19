@@ -19,8 +19,23 @@ All notable changes to this project are documented here. Format follows
   client's 30 s timeout and surfaced as an empty "Could not reach the backend"; parses now allow
   10 minutes and timeout errors name their type.
 
+### Changed
+
+- Repository files are read on a thread pool before parsing. On a machine with antivirus scanning, the
+  first read of each file dominated large-repository loads (a 6,000-file C# repo spent most of its time
+  waiting on disk); parsing itself stays sequential and the output is identical.
+
 ### Added
 
+- **C# support**, at parity with the other languages: call graph, impact analysis, Code Health
+  (complexity, duplicates, dead code, hotspots), execution flowcharts, AI documentation, MCP and the
+  VS Code extension. Calls are resolved the way a compiler does: types and namespaces across the whole
+  repository, `.csproj` project references, receiver types through locals, `var`, `await`, patterns and
+  LINQ lambdas, overloads by argument types, extension methods, generic constraints, partial classes,
+  `#if` blocks. Measured against the real C# compiler (Roslyn): 98.9% / 98.8% recall and 100% / 99.5%
+  precision on Dapper and Newtonsoft.Json, 98.0% / 98.2% on held-out Jellyfin, 89.1% / 96.8% on held-out
+  EF Core (1.8M lines, 90 s). See `guides/csharp.md`; `scripts/csharp/validate.py` reproduces the numbers.
+  New: `guides/adding-a-language.md`, the checklist every language now follows.
 - **VS Code extension now bundles the MCP server** (extension 1.6.0). The frozen backend binary has an
   `--mcp` mode; the extension registers it with VS Code's agent where supported and adds a
   "Copy MCP Config for Your Agent" command for Claude Code, Cursor and others. It reuses the extension's

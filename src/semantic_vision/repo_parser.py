@@ -5,6 +5,7 @@ a deterministic `ParseResult`.
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from semantic_vision.dataflow import sqlalchemy_parser, table_usage
@@ -14,6 +15,24 @@ from semantic_vision.models import Node, ParseError, ParseResult
 from semantic_vision.parser.discovery import discover_files
 from semantic_vision.parser.extractor import RawModule
 from semantic_vision.resolver.symbol_table import build_symbol_table
+
+
+def _read_all(files: list[Path]) -> list[str | Exception]:
+    """File contents in `files` order. Reads run on a thread pool: they are blocked on
+    the filesystem (and on antivirus scanning a first-touched file, which dominated large
+    C# repositories), not on the interpreter, so concurrency hides that latency. Parsing
+    stays sequential and in sorted order, so output is unchanged and deterministic."""
+
+    def read(path: Path) -> str | Exception:
+        try:
+            return path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            return exc
+
+    if len(files) < 32:
+        return [read(f) for f in files]
+    with ThreadPoolExecutor(max_workers=min(16, (os.cpu_count() or 4) * 2)) as pool:
+        return list(pool.map(read, files))
 
 
 def parse_repository(
@@ -56,12 +75,11 @@ def parse_repository(
     sources: dict[str, str] = {}
     parse_errors: list[ParseError] = []
 
-    for path, rel_path in zip(files, all_rel_paths, strict=True):
-        try:
-            source = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as exc:
-            parse_errors.append(ParseError(file=rel_path, message=str(exc)))
+    for rel_path, read in zip(all_rel_paths, _read_all(files), strict=True):
+        if isinstance(read, Exception):
+            parse_errors.append(ParseError(file=rel_path, message=str(read)))
             continue
+        source = read
 
         sources[rel_path] = source
         line_counts[rel_path] = source.count("\n") + (0 if source.endswith("\n") else 1)
@@ -71,6 +89,9 @@ def parse_repository(
         except ParseSyntaxError as exc:
             parse_errors.append(ParseError(file=rel_path, line=exc.line, message=exc.message))
             continue
+
+    if adapter.post_parse is not None:
+        adapter.post_parse(raw_modules)
 
     symbol_table = build_symbol_table(
         all_rel_paths, raw_modules, line_counts, dotted_module_path=adapter.dotted_module_path

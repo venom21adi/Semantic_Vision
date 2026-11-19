@@ -21,14 +21,20 @@ from pathlib import Path
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, go_locate, java_locate, ts_locate
+from semantic_vision import ast_locate, csharp_locate, go_locate, java_locate, ts_locate
 from semantic_vision.ast_locate import locate
 from semantic_vision.models import NodeKind, ParseResult
-from semantic_vision.parser import go_extractor, java_extractor, javascript_extractor
+from semantic_vision.parser import (
+    csharp_extractor,
+    go_extractor,
+    java_extractor,
+    javascript_extractor,
+)
 
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
 _JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
 _GO_EXTENSIONS = frozenset(go_extractor.FILE_EXTENSIONS)
+_CSHARP_EXTENSIONS = frozenset(csharp_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
@@ -41,6 +47,10 @@ def _is_java_file(file: str) -> bool:
 
 def _is_go_file(file: str) -> bool:
     return file.endswith(tuple(_GO_EXTENSIONS))
+
+
+def _is_csharp_file(file: str) -> bool:
+    return file.endswith(tuple(_CSHARP_EXTENSIONS))
 
 
 # A shape tree's total node count (see `_shape_size`) below this is skipped
@@ -115,6 +125,8 @@ def build_duplicate_groups(result: ParseResult) -> list[DuplicateGroup]:
     java_indices: dict[str, java_locate.DefIndex] = {}
     go_trees: dict[str, tree_sitter.Tree | None] = {}
     go_indices: dict[str, go_locate.DefIndex] = {}
+    csharp_trees: dict[str, tree_sitter.Tree | None] = {}
+    csharp_indices: dict[str, csharp_locate.DefIndex] = {}
 
     node_ids_by_hash: dict[str, list[str]] = {}
 
@@ -129,6 +141,11 @@ def build_duplicate_groups(result: ParseResult) -> list[DuplicateGroup]:
             shape = _tree_sitter_shape(def_node)
         elif _is_java_file(node.file):
             def_node = java_locate.locate(root, node, java_trees, java_indices)
+            if def_node is None:
+                continue
+            shape = _tree_sitter_shape(def_node)
+        elif _is_csharp_file(node.file):
+            def_node = csharp_locate.locate(root, node, csharp_trees, csharp_indices)
             if def_node is None:
                 continue
             shape = _tree_sitter_shape(def_node)

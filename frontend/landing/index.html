@@ -6,7 +6,7 @@
 <title>Semantic Vision — Codebase observability for AI-assisted coding</title>
 <meta name="description" content="AI can write your code in seconds. Semantic Vision helps you understand it: interactive call graphs, impact analysis, execution flowcharts, Code Health, AI-generated documentation, code-to-data lineage, and an MCP server so your AI agent sees the same map. Python, JavaScript, TypeScript, Java, and Go. 100% local and private — try the live demo, no install." />
 <meta property="og:title" content="Semantic Vision" />
-<meta property="og:description" content="Codebase observability for AI-assisted coding. Understand any Python, JavaScript, TypeScript, Java, or Go codebase — and let your AI agent understand it too." />
+<meta property="og:description" content="Codebase observability for AI-assisted coding. Understand any Python, JavaScript, TypeScript, Java, Go, or C# codebase — and let your AI agent understand it too." />
 <meta property="og:image" content="./img/Banner.png" />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#121317" />
@@ -1725,7 +1725,7 @@
     <div class="feature-row" data-reveal>
       <div class="feature-copy">
         <h3>No separate browser tab. No Python or uv installation required.</h3>
-        <p>The backend ships bundled with the extension — open any Python, JS/TS, Java, or Go repo and get the full graph, impact analysis, Code Health, flowcharts, AI docs, and lineage in a panel next to your code.</p>
+        <p>The backend ships bundled with the extension — open any Python, JS/TS, Java, Go, or C# repo and get the full graph, impact analysis, Code Health, flowcharts, AI docs, and lineage in a panel next to your code.</p>
         <div style="margin-top: 8px;">
           <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">Install the VS Code extension →</a>
         </div>
@@ -1785,15 +1785,15 @@
     </div>
     <div class="matrix-wrap" data-reveal>
       <table class="matrix">
-        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th><th>Java</th><th>Go</th></tr></thead>
+        <thead><tr><th>Feature</th><th>Python</th><th>JavaScript / TypeScript</th><th>Java</th><th>Go</th><th>C#</th></tr></thead>
         <tbody>
-          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Call graph — imports, classes, functions, calls</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Impact analysis (upstream callers, cycle detection)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Execution flowcharts</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>AI-generated documentation</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Code-to-data lineage (SQLAlchemy, dbt, live DB)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Docker packaging / one-command setup</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -1803,7 +1803,7 @@
     <div class="section-head" data-reveal>
       <div class="kicker">Real numbers</div>
       <h2>Real repositories. Real performance.</h2>
-      <p>Not this project's own fixtures — one large, popular repo per supported language.</p>
+      <p>Not this project's own fixtures — one large, popular repo each for Python, JavaScript / TypeScript, Java and Go. C# is measured separately, against the real C# compiler: see the C# guide.</p>
     </div>
     <div class="bench-wrap" data-reveal>
       <table class="bench">
@@ -1839,7 +1839,7 @@
       <div class="path-card" data-reveal>
         <span class="path-tag">Fastest for real use</span>
         <h4>VS Code extension</h4>
-        <p>Install from the Marketplace and open any Python, JS/TS, Java, or Go repo. The backend ships bundled — no Python or Node toolchain required.</p>
+        <p>Install from the Marketplace and open any Python, JS/TS, Java, Go, or C# repo. The backend ships bundled — no Python or Node toolchain required.</p>
         <a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision" target="_blank" rel="noopener">View on Marketplace →</a>
       </div>
       <div class="path-card" data-reveal>
@@ -1861,7 +1861,7 @@
       <div class="trio-card">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 6v6c0 5 4 9 9 10 5-1 9-5 9-10V6l-9-4Z" stroke="currentColor" stroke-width="1.6"/></svg></div>
         <h4>What's under the hood</h4>
-        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS, Java, and Go. Code is never executed.</p>
+        <p>A FastAPI backend statically parses your code — Python's own <code>ast</code>, <code>tree-sitter</code> for JS/TS, Java, Go, and C#. Code is never executed.</p>
       </div>
     </div>
   </div>

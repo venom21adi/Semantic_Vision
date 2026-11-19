@@ -61,7 +61,7 @@ function parseArgs() {
   if (!args.repo) {
     console.error(
       'Usage: node scripts/benchmark-load.js --repo <path> [--label <name>] ' +
-        '[--timeout <ms>] [--language python|javascript|java|go] [--no-report]',
+        '[--timeout <ms>] [--language python|javascript|java|go|csharp] [--no-report]',
     )
     process.exit(1)
   }
@@ -72,6 +72,7 @@ const LANGUAGE_LABELS = {
   python: 'Python',
   javascript: 'JavaScript / TypeScript',
   java: 'Java',
+  csharp: 'C#',
   go: 'Go',
 }
 
@@ -151,19 +152,29 @@ async function main() {
         // before the tree has mounted its root items -- clicking before they
         // exist would silently click nothing and then time out on render.
         await page.waitForSelector('ul[role="tree"] > li input[type="checkbox"]', { timeout })
-        await page.evaluate(() => {
-          const boxes = document.querySelectorAll(
-            'ul[role="tree"] > li > div[role="treeitem"] > input[type="checkbox"]',
-          )
-          for (const box of boxes) {
-            if (!box.checked) box.click()
-          }
-        })
-
-        const renderOk = await page
-          .waitForSelector('.react-flow__node', { timeout })
-          .then(() => true)
-          .catch(() => false)
+        // On a large repo the tree keeps re-rendering for a few seconds after the
+        // data arrives (Jellyfin, 15k nodes), which silently drops a single batch of
+        // clicks -- the canvas then stays empty and the load looks hung. So select
+        // the roots again until something actually renders; only unchecked boxes are
+        // clicked, so a retry never un-selects what an earlier pass selected.
+        const selectRoots = () =>
+          page.evaluate(() => {
+            const boxes = document.querySelectorAll(
+              'ul[role="tree"] > li > div[role="treeitem"] > input[type="checkbox"]',
+            )
+            for (const box of boxes) {
+              if (!box.checked) box.click()
+            }
+          })
+        const deadline = Date.now() + timeout
+        let renderOk = false
+        while (!renderOk && Date.now() < deadline) {
+          await selectRoots()
+          renderOk = await page
+            .waitForSelector('.react-flow__node', { timeout: Math.min(1500, timeout) })
+            .then(() => true)
+            .catch(() => false)
+        }
         if (renderOk) {
           result.renderSeconds = (Date.now() - clickStart) / 1000
           result.status = 'OK'

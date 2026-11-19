@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any, Literal
 
 
 @dataclass
@@ -63,6 +63,10 @@ class RawFunction:
     a bare `@staticmethod`/`@property` never appears there, but still
     counts here). Threaded onto `Node.has_decorators` for
     `analysis/dead_code.py`'s false-positive suppression."""
+    lang_data: Any = None
+    """Opaque per-language payload (e.g. C#'s call-site and local-type facts).
+    Never read by the shared pipeline; only the owning language adapter's
+    resolver interprets it."""
 
 
 @dataclass
@@ -84,6 +88,8 @@ class RawClass:
     type is declared in a different file of the package -- a stand-in, not
     the type's real declaration. Lets cross-file type lookups prefer the
     real one."""
+    lang_data: Any = None
+    """Opaque per-language payload (see `RawFunction.lang_data`)."""
 
 
 @dataclass
@@ -123,6 +129,8 @@ class RawModule:
     `var`/`const` initializers (`var cmd = &Command{Run: run}`), which have
     no enclosing function. Resolved like any other call, but attributed to
     the *file* node. Always empty for other languages."""
+    lang_data: Any = None
+    """Opaque per-language payload (see `RawFunction.lang_data`)."""
 
 
 def _dotted_name(expr: ast.expr) -> str | None:

@@ -39,3 +39,7 @@ vscode-extension/bin/
 # vercel.json itself (the deploy config) stays tracked -- Vercel's build
 # reads it from the repo, same as any other build config.
 .vercel
+
+# .NET build output (scripts/csharp tools)
+scripts/csharp/**/bin/
+scripts/csharp/**/obj/

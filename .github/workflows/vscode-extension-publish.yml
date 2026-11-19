@@ -78,6 +78,13 @@ jobs:
         run: |
           uv run python scripts/pyinstaller/smoke_mcp.py             ./dist/pyinstaller/${{ matrix.binary_name }} "$PWD/src" 8124
 
+      - name: Smoke-test C# parsing in the frozen binary
+        # Proves the C# grammar and the bundled .NET library-member table survived freezing: without
+        # the table, `text.Contains('a')` wrongly links to the repo's extension method.
+        shell: bash
+        run: |
+          uv run python scripts/pyinstaller/smoke_mcp.py ./dist/pyinstaller/${{ matrix.binary_name }} "$PWD/tests/fixtures/csharp_repo" 8125 csharp "src/App/Services/OrderService.cs::OrderService.CreateAsync" "!src/App/Services/OrderService.cs::OrderService.HasLetter>src/Lib/Util/StringExtensions.cs::StringExtensions.Contains"
+
       - uses: actions/upload-artifact@v4
         with:
           name: backend-${{ matrix.target }}

@@ -59,3 +59,9 @@ class LanguageAdapter:
     returns the adapter to actually parse with (typically `self` with
     `resolve_imports`/`resolve_calls` closed over repo-level facts such as
     Go's `go.mod` module path). Called once per `parse_repository`."""
+    post_parse: Callable[[dict[str, RawModule]], None] | None = None
+    """Optional hook run once after every file has been parsed and before the
+    symbol table is built, with every successfully parsed `RawModule` by
+    relative path. For languages whose resolution needs repository-wide facts
+    (C#'s namespace/type index); it may also refine the raw modules in place
+    (e.g. flag methods that implement an interface member)."""

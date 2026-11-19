@@ -17,13 +17,18 @@ from typing import Literal
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, go_locate, java_locate, ts_locate
+from semantic_vision import ast_locate, csharp_locate, go_locate, java_locate, ts_locate
 from semantic_vision.analysis.complexity import ComplexityScore
 from semantic_vision.analysis.coverage import CoverageRiskScore
 from semantic_vision.analysis.duplicates import DuplicateGroup
 from semantic_vision.analysis.hotspots import HotspotScore
 from semantic_vision.models import EdgeKind, Node, NodeKind, ParseResult
-from semantic_vision.parser import go_extractor, java_extractor, javascript_extractor
+from semantic_vision.parser import (
+    csharp_extractor,
+    go_extractor,
+    java_extractor,
+    javascript_extractor,
+)
 from semantic_vision.parser.javascript_extractor import _CLASS_DECLARATION_TYPES
 
 MAX_CONTEXT_TOKENS = 2000
@@ -40,6 +45,7 @@ AnyDefNode = ast_locate.DefNode | tree_sitter.Node
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
 _JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
 _GO_EXTENSIONS = frozenset(go_extractor.FILE_EXTENSIONS)
+_CSHARP_EXTENSIONS = frozenset(csharp_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
@@ -54,6 +60,10 @@ def _is_go_file(file: str) -> bool:
     return file.endswith(tuple(_GO_EXTENSIONS))
 
 
+def _is_csharp_file(file: str) -> bool:
+    return file.endswith(tuple(_CSHARP_EXTENSIONS))
+
+
 _FENCE_LANGUAGE_BY_EXTENSION = {
     ".py": "python",
     ".ts": "typescript",
@@ -66,6 +76,7 @@ _FENCE_LANGUAGE_BY_EXTENSION = {
     ".cjs": "javascript",
     ".java": "java",
     ".go": "go",
+    ".cs": "csharp",
 }
 
 
@@ -285,6 +296,44 @@ def _render_java_signature(def_node: tree_sitter.Node, *, strip_decorators: bool
     return header or None
 
 
+def _render_csharp_signature(def_node: tree_sitter.Node, *, strip_decorators: bool) -> str | None:
+    """The C# analogue of `_render_java_signature`: the real header sliced out of the
+    source, up to the body. Attributes (`[Fact]`, `[HttpGet]`) are child nodes inside the
+    def node's span, so stripping them for a compact entry is slicing from after the last
+    one. An accessor (`get`/`set`) has no header of its own, so it renders as its
+    property's header followed by the accessor keyword."""
+    if def_node.type == "accessor_declaration":
+        prop = def_node.parent.parent if def_node.parent is not None else None
+        keyword = next(
+            (c.type for c in def_node.children if c.type in ("get", "set", "init")), "get"
+        )
+        if prop is None:
+            return keyword
+        head = _render_csharp_signature(prop, strip_decorators=strip_decorators) or ""
+        return f"{head} {{ {keyword} }}".strip()
+
+    core_start = def_node.start_byte
+    if strip_decorators:
+        attributes = [c for c in def_node.children if c.type == "attribute_list"]
+        if attributes:
+            core_start = attributes[-1].end_byte
+
+    body = def_node.child_by_field_name("body")
+    cut = [
+        n.start_byte
+        for n in (
+            body,
+            def_node.child_by_field_name("accessors"),
+            next((c for c in def_node.children if c.type == "arrow_expression_clause"), None),
+        )
+        if n is not None
+    ]
+    end = min(cut) if cut else def_node.end_byte
+    header_bytes = def_node.text[core_start - def_node.start_byte : end - def_node.start_byte]
+    header = " ".join(header_bytes.decode("utf-8").split())
+    return header or None
+
+
 def _render_go_signature(def_node: tree_sitter.Node) -> str | None:
     """The Go analogue of `_render_java_signature`: slices the real header
     (everything before the body block, so a method keeps its receiver and a
@@ -311,6 +360,8 @@ def _render_signature(
             return _render_java_signature(def_node, strip_decorators=strip_decorators)
         if _is_go_file(file):
             return _render_go_signature(def_node)
+        if _is_csharp_file(file):
+            return _render_csharp_signature(def_node, strip_decorators=strip_decorators)
         return _render_ts_signature(def_node, label, strip_decorators=strip_decorators)
     return _render_py_signature(def_node, strip_decorators=strip_decorators)
 
@@ -335,6 +386,10 @@ def _locate(
         # keyed by file path and a parse holds exactly one language, so a
         # Go file can never collide with a Java one.
         return go_locate.locate(root, node, java_trees, java_indices)
+    if _is_csharp_file(node.file):
+        # Shares Java's cache slots like Go does: caches are keyed by file path and
+        # a parse holds exactly one language.
+        return csharp_locate.locate(root, node, java_trees, java_indices)
     return ast_locate.locate(root, node, ast_trees, ast_indices)
 
 
@@ -494,6 +549,8 @@ def _fallback_signature(node: Node) -> str:
         return f"{node.label}(...)"
     if _is_go_file(node.file):
         return f"func {node.label}(...)"
+    if _is_csharp_file(node.file):
+        return f"{node.label}(...)"
     keyword = "function" if _is_js_file(node.file) else "def"
     return f"{keyword} {node.label}(...):"
 

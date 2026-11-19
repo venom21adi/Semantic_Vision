@@ -12,7 +12,7 @@ along the way), see this project's internal `docs/PERFORMANCE-REPORT.md`.
 
 ## Results
 
-Five comparable repos — similar scale, similar (nested, not flat) directory shape — covering
+Six comparable repos — similar scale, similar (nested, not flat) directory shape — covering
 every supported language (JavaScript and TypeScript share one adapter, so they take two rows):
 
 | Language | Repo | Scope | Files | Nodes | Edges | Parse errors | Backend parse — cold (s) | Backend parse — warm (s) | API round trip (s) | Browser: time to data (s) | Browser: time to render (s) |
@@ -22,8 +22,11 @@ every supported language (JavaScript and TypeScript share one adapter, so they t
 | TypeScript | [nestjs/nest](nest.md) | full repo | 1,907 | 6,848 | 24,528 | 2 | 39.68 | 2.48 | 5.32 | 5.69–5.76 | 6.85–6.88 |
 | Java | [google/guava](guava.md) | `guava/` only | 615 | 14,087 | 47,390 | 5 | 9.83 | 2.52 | 2.14 | 4.21–7.10 | 4.73–7.63 |
 | Go | [gohugoio/hugo](hugo.md) | full repo | 914 | 10,780 | 73,947 | 0 | 4.45 † | 4.38–4.43 | 4.96–5.32 | 5.45–6.35 | 7.90–8.46 |
+| C# | [jellyfin/jellyfin](jellyfin.md) | full repo | 2,252 | 15,673 | 73,022 | 0 | n/a ‡ | 15.1–15.6 | 17.64 | 16.66–17.80 | 19.66–20.54 |
 
 † Not a true cold read: the Go clone had been written seconds earlier, so its files were still in the OS file cache and there is no cold/warm gap to report. See [hugo.md](hugo.md).
+
+‡ No cold figure for C#: the clone had been read many times, and its one truly first-touch read measured antivirus scanning rather than this tool. See [jellyfin.md](jellyfin.md).
 
 *"Backend parse — cold" is the first read of a fresh shallow clone at the pinned commit (below),
 never before touched by this machine's OS file cache. "— warm" is a second parse of the exact same
@@ -185,6 +188,7 @@ Every repo here except nest required a scoping decision, made explicit rather th
 | [nestjs/nest](https://github.com/nestjs/nest) | `cd5ee129162d1d4b9cccfaf2def4cfb051bfe927` | 2026-08-28 |
 | [google/guava](https://github.com/google/guava) | `7e41f72b3e84818e3b997a4bbde5851d01c67ca3` | 2025-04-11 |
 | [gohugoio/hugo](https://github.com/gohugoio/hugo) | `7a15e87270b517093ecbffcae5e5610d783e476c` | 2026-11-13 |
+| [jellyfin/jellyfin](https://github.com/jellyfin/jellyfin) | `df62c85155061aea7b65d7bcfb84e460550f62e2` | 2026-11-18 |
 | [webpack/webpack](https://github.com/webpack/webpack) (case study) | `0b2952e15bb1aa9a198acbbfdcb9a0dc1aabb5af` | 2026-08-27 |
 | [apache/superset](https://github.com/apache/superset) (case study) | `1c8d58a77bda36f892cc27298ed87ded43e6ef9f` | 2026-08-29 |
 
@@ -196,3 +200,7 @@ UI change, not a performance issue) — see [guava.md](guava.md) for the fix.
 Go (hugo) added 2026-11-16 following Milestone 13 (Go language support), on the post-0.2.0
 master that includes it; the browser harness and `benchmark_repo_load.py` were repaired for the
 wizard-based loader and per-language graph cache in the same pass — see [hugo.md](hugo.md).
+C# (jellyfin) added 2026-11-19 following C# language support, same methodology; the browser harness
+gained a retry for a tree-render race that only shows on larger repos — see [jellyfin.md](jellyfin.md).
+C# resolution accuracy, measured separately against the real C# compiler, is in
+[guides/csharp.md](../guides/csharp.md).

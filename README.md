@@ -367,7 +367,7 @@ subfolder for performance — and can be changed at any time.
 
 <img src="assets/icons/fast-local-private.svg" width="16" height="16" align="absmiddle" alt=""/> **Fast, local, and private** — a FastAPI backend statically parses
 your code (Python's own `ast` module for Python, [`tree-sitter`](https://tree-sitter.github.io/tree-sitter/)
-for JavaScript/TypeScript, Java, and Go), a React frontend renders it. No account, no
+for JavaScript/TypeScript, Java, Go, and C#), a React frontend renders it. No account, no
 cloud, no telemetry, nothing installed beyond a Python and a Node
 toolchain you already have.
 
@@ -375,20 +375,22 @@ toolchain you already have.
 
 What works today, per language:
 
-| Feature | Python | JavaScript / TypeScript | Java | Go |
-|---|:---:|:---:|:---:|:---:|
-| Call graph — imports, classes, functions, calls | ✅ | ✅ | ✅ | ✅ |
-| Interactive graph visualization | ✅ | ✅ | ✅ | ✅ |
-| Search | ✅ | ✅ | ✅ | ✅ |
-| Persisted layout & view state | ✅ | ✅ | ✅ | ✅ |
-| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ | ✅ |
-| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations) | ✅ | ✅ | ✅ | ✅ |
-| AI-generated documentation | ✅ | ✅ | ✅ | ✅ |
-| Execution flowcharts | ✅ | ✅ | ✅ | ✅ |
-| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — | — |
-| Docker packaging / one-command setup | ✅ | ✅ | ✅ | ✅ |
+| Feature | Python | JavaScript / TypeScript | Java | Go | C# |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Call graph — imports, classes, functions, calls | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Interactive graph visualization | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Search | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Persisted layout & view state | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Impact analysis (upstream callers, cycle detection) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Code Health (complexity, hotspots, dead code, coverage, duplicates, dependencies, AI recommendations) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| AI-generated documentation | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Execution flowcharts | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Code-to-data lineage (SQLAlchemy, dbt, live DB) | ✅ | — | — | — | — |
+| Docker packaging / one-command setup | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-Most real repos are polyglot, so Semantic Vision auto-detects which supported languages are present in the path you enter and pre-checks them as chips — Python, JavaScript / TypeScript, Java, and Go can all be selected together for the same repo. Each selected language is parsed independently and shown as its own tab in the dashboard (call graph, Code Health, docs, etc. all scoped to that language); there's no cross-language call linking between tabs yet.
+C# resolves calls the way a compiler does (types, namespaces, `.csproj` project references, overloads, extension methods) and is measured against the real C# compiler — about 98% of calls attributed correctly on typical application code, 89% on EF Core's 1.8M lines. Details, the full table and how to reproduce it: [guides/csharp.md](guides/csharp.md). Its Code Health Dependencies tab does not read NuGet yet.
+
+Most real repos are polyglot, so Semantic Vision auto-detects which supported languages are present in the path you enter and pre-checks them as chips — Python, JavaScript / TypeScript, Java, Go, and C# can all be selected together for the same repo. Each selected language is parsed independently and shown as its own tab in the dashboard (call graph, Code Health, docs, etc. all scoped to that language); there's no cross-language call linking between tabs yet.
 
 JS/TS uses tree-sitter for static AST resolution—including full support for JSX/TSX. To preserve precision without execution, dynamic patterns (like computed require() calls) are flagged directly in the UI rather than inferred.
 
@@ -434,7 +436,7 @@ npm run dev
 
 Then open `http://localhost:5173`, enter the absolute path to any local
 repository. Detected languages (**Python**, **JavaScript / TypeScript**,
-**Java**, **Go**) are pre-checked as chips — adjust the selection if needed —
+**Java**, **Go**, **C#**) are pre-checked as chips — adjust the selection if needed —
 then click **Load**.
 
 By default, everything Semantic Vision saves (layout, impact analysis
@@ -497,7 +499,7 @@ changed. See ["Why the first load is slow"](guides/docker-setup.md#why-the-first
 The fastest way to try Semantic Vision: install it straight from the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=venom21adi.semantic-vision)
 (search **Semantic Vision**, or `ext install venom21adi.semantic-vision`)
-and open a Python, JavaScript/TypeScript, Java, or Go repo — no Python, no
+and open a Python, JavaScript/TypeScript, Java, Go, or C# repo — no Python, no
 `uv`, nothing beyond VS Code itself. The backend it needs ships bundled
 inside the extension for Windows, macOS (Intel and Apple Silicon), and
 Linux.
@@ -523,7 +525,7 @@ Semantic Vision has three parts:
 
 - **Backend** (`src/semantic_vision/`) — a FastAPI service that walks a
   repository (Python's `ast` module, or `tree-sitter` for
-  JavaScript/TypeScript, Java, and Go, chosen per load), resolves imports and
+  JavaScript/TypeScript, Java, Go, and C#, chosen per load), resolves imports and
   call sites into a graph of nodes and edges, and serves it over a small
   REST API. Parsing is purely static: your code is never executed. AI
   documentation is generated separately, on demand, via

@@ -18,10 +18,15 @@ from pathlib import Path
 import tree_sitter
 from pydantic import BaseModel
 
-from semantic_vision import ast_locate, go_locate, java_locate, ts_locate
+from semantic_vision import ast_locate, csharp_locate, go_locate, java_locate, ts_locate
 from semantic_vision.ast_locate import locate
 from semantic_vision.models import Edge, EdgeKind, NodeKind, ParseResult
-from semantic_vision.parser import go_extractor, java_extractor, javascript_extractor
+from semantic_vision.parser import (
+    csharp_extractor,
+    go_extractor,
+    java_extractor,
+    javascript_extractor,
+)
 from semantic_vision.parser.java_extractor import (
     _TYPE_DECLARATION_TYPES as _JAVA_TYPE_DECLARATION_TYPES,
 )
@@ -32,10 +37,15 @@ from semantic_vision.parser.javascript_extractor import (
 _JS_EXTENSIONS = frozenset(javascript_extractor.GRAMMAR_BY_EXTENSION)
 _JAVA_EXTENSIONS = frozenset(java_extractor.FILE_EXTENSIONS)
 _GO_EXTENSIONS = frozenset(go_extractor.FILE_EXTENSIONS)
+_CSHARP_EXTENSIONS = frozenset(csharp_extractor.FILE_EXTENSIONS)
 
 
 def _is_js_file(file: str) -> bool:
     return file.endswith(tuple(_JS_EXTENSIONS))
+
+
+def _is_csharp_file(file: str) -> bool:
+    return file.endswith(tuple(_CSHARP_EXTENSIONS))
 
 
 def _is_java_file(file: str) -> bool:
@@ -353,6 +363,55 @@ def _java_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
     return complexity, max_loop_depth >= 2
 
 
+_CSHARP_COMPLEXITY_QUERY = tree_sitter.Query(
+    csharp_extractor.CSHARP,
+    """
+    [
+      (if_statement) (conditional_expression) (catch_clause)
+      (switch_expression_arm)   ; one point per arm, like a switch section
+      (when_clause)             ; a guard on a catch or case is a further condition
+    ] @decision
+    [(for_statement) (foreach_statement) (while_statement) (do_statement)] @loop
+    ; `&&` / `||` / `??` share `binary_expression` with every comparison
+    (binary_expression operator: ["&&" "||" "??"]) @logic
+    (switch_section) @section
+    """,
+)
+
+
+def _csharp_cyclomatic_complexity(def_node: tree_sitter.Node) -> tuple[int, bool]:
+    """The C# analogue of `_java_cyclomatic_complexity`: +1 per
+    `if`/ternary/loop/`catch`/guard, +1 per `&&`/`||`/`??`, and +1 per non-default
+    `switch` section or `switch` expression arm (one point per case label, mirroring
+    how an `if`/`else if` chain counts one point per branch).
+
+    Lambdas and local functions are not separate graph nodes, so their branching
+    counts toward the enclosing method. Counting is done by a tree-sitter query in
+    native code: walking every node from Python made this the dominant cost of
+    building the complexity index on large repositories.
+    """
+    caps = tree_sitter.QueryCursor(_CSHARP_COMPLEXITY_QUERY).captures(def_node)
+    loops = caps.get("loop", [])
+    complexity = (
+        1
+        + len(caps.get("decision", ()))
+        + len(loops)
+        + len(caps.get("logic", ()))
+        + sum(
+            1 for n in caps.get("section", ()) if not any(c.type == "default" for c in n.children)
+        )
+    )
+    # Nested loops: a loop whose byte range lies inside another loop's.
+    ranges = sorted((n.start_byte, n.end_byte) for n in loops)
+    max_depth, open_ends = 0, []
+    for start, end in ranges:
+        while open_ends and open_ends[-1] <= start:
+            open_ends.pop()
+        open_ends.append(end)
+        max_depth = max(max_depth, len(open_ends))
+    return complexity, max_depth >= 2
+
+
 _GO_DECISION_TYPES = frozenset(
     {
         "if_statement",
@@ -426,6 +485,8 @@ def build_complexity_index(
     java_indices: dict[str, java_locate.DefIndex] = {}
     go_trees: dict[str, tree_sitter.Tree | None] = {}
     go_indices: dict[str, go_locate.DefIndex] = {}
+    csharp_trees: dict[str, tree_sitter.Tree | None] = {}
+    csharp_indices: dict[str, csharp_locate.DefIndex] = {}
     forward_index = build_forward_call_index(result.edges)
 
     scores: dict[str, ComplexityScore] = {}
@@ -450,6 +511,17 @@ def build_complexity_index(
             java_def_node = java_locate.locate(root, node, java_trees, java_indices)
             if java_def_node is not None:
                 complexity, has_nested_loops = _java_cyclomatic_complexity(java_def_node)
+                scores[node.id] = ComplexityScore(
+                    node_id=node.id,
+                    cyclomatic_complexity=complexity,
+                    call_chain_depth=depth,
+                    has_nested_loops=has_nested_loops,
+                )
+                continue
+        elif _is_csharp_file(node.file):
+            cs_def_node = csharp_locate.locate(root, node, csharp_trees, csharp_indices)
+            if cs_def_node is not None:
+                complexity, has_nested_loops = _csharp_cyclomatic_complexity(cs_def_node)
                 scores[node.id] = ComplexityScore(
                     node_id=node.id,
                     cyclomatic_complexity=complexity,

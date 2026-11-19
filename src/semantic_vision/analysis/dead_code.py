@@ -74,6 +74,15 @@ def _is_test_file(rel_file: str) -> bool:
         return True
     if lower.endswith("_test.go"):
         return True
+    if lower.endswith(".cs"):
+        # .NET test projects are conventionally `Foo.Tests`/`Foo.UnitTests`/`FooTests`
+        # directories and `FooTests.cs`/`FooTest.cs`/`FooTestBase.cs` files. Case-preserved
+        # for the same reason as Java's check below (`Latest.cs`, `Contest.cs`).
+        if any(part.endswith((".Tests", ".Test", "Tests", ".UnitTests")) for part in parts[:-1]):
+            return True
+        stem = name[: -len(".cs")]
+        if stem.endswith(("Test", "Tests", "TestBase", "Fixture")):
+            return True
     if lower.endswith(".java"):
         # Case-preserved (not `lower`) and boundary-checked -- Java class
         # names are always CapitalCase, so a real test class reads as

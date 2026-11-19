@@ -60,7 +60,7 @@ automatically.
 Right-click any function for its execution flowchart, built from its real
 AST/CST: entry and return points, decisions with Yes/No edges, loops with a
 visible back-edge, I/O calls, and calls out to other functions — each in
-its own conventional shape. Works for Python, JS/TS, Java, and Go, including
+its own conventional shape. Works for Python, JS/TS, Java, Go, and C#, including
 `switch` fallthrough, `do...while`'s bottom-condition check, and labeled
 `break`/`continue`.
 
@@ -152,7 +152,7 @@ opt in to a dependency vulnerability scan.
 ## Getting started
 
 1. Install this extension.
-2. Open a file in a supported repository (Python, JavaScript/TypeScript, Java, or Go).
+2. Open a file in a supported repository (Python, JavaScript/TypeScript, Java, Go, or C#).
 3. Run **Semantic Vision: Open Graph** from the Command Palette, or
    right-click a function and choose **Semantic Vision: Impact Analysis at
    Cursor**. The bundled backend starts automatically — no extra setup.

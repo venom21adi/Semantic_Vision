@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from semantic_vision.languages.base import LanguageAdapter
+from semantic_vision.languages.csharp import CSHARP_ADAPTER
 from semantic_vision.languages.go import GO_ADAPTER
 from semantic_vision.languages.java import JAVA_ADAPTER
 from semantic_vision.languages.javascript import JAVASCRIPT_ADAPTER
@@ -42,6 +43,7 @@ register(PYTHON_ADAPTER)
 register(JAVASCRIPT_ADAPTER)
 register(JAVA_ADAPTER)
 register(GO_ADAPTER)
+register(CSHARP_ADAPTER)
 
 
 def list_adapters() -> list[LanguageAdapter]:

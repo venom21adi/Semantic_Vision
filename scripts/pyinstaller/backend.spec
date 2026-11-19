@@ -28,6 +28,12 @@
 #   the frozen binary crashes on startup with
 #   `ValueError: Unknown encoding cl100k_base`.
 #
+# - `collect_data_files('semantic_vision', includes=['resolver/data/*'])`: the C#
+#   resolver reads `resolver/data/bcl_members.json.gz` (which .NET library types
+#   already have a method of a given name) through `importlib.resources`, i.e. as a
+#   file. It is data, not an import, so it has to be collected explicitly; without
+#   it the frozen binary silently loses that check (precision drops, nothing crashes).
+#
 # Build from the repo root with:
 #   uv run --with pyinstaller pyinstaller scripts/pyinstaller/backend.spec \
 #     --distpath dist/pyinstaller --workpath build/pyinstaller
@@ -46,6 +52,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 datas = []
 hiddenimports = ["tiktoken_ext.openai_public"]
 datas += collect_data_files("litellm")
+datas += collect_data_files("semantic_vision", includes=["resolver/data/*"])
 hiddenimports += collect_submodules("tiktoken_ext")
 
 
